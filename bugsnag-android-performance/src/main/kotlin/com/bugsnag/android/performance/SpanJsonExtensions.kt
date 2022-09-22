@@ -1,6 +1,6 @@
 @file:JvmName("SpanJson")
 
-package com.bugsnag.performance
+package com.bugsnag.android.performance
 
 import android.util.JsonWriter
 import java.util.UUID

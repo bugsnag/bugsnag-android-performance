@@ -1,4 +1,4 @@
-package com.bugsnag.performance
+package com.bugsnag.android.performance
 
 enum class SpanKind(
     @JvmField

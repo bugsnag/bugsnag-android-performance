@@ -1,7 +1,7 @@
-package com.bugsnag.performance
+package com.bugsnag.android.performance
 
 import android.util.JsonWriter
-import com.bugsnag.performance.test.testSpanProcessor
+import com.bugsnag.android.performance.test.testSpanProcessor
 import org.json.JSONObject
 import org.junit.Assert.assertEquals
 import org.junit.Test

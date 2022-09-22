@@ -1,0 +1,13 @@
+steps:
+
+  - label: ':android: Coding standards checks'
+    timeout_in_minutes: 20
+    agents:
+      queue: macos-12-arm
+    command: './gradlew --continue detekt lint ktlintCheck'
+
+  - label: ':android: JVM tests'
+    timeout_in_minutes: 10
+    agents:
+      queue: macos-12-arm
+    command: './gradlew test'

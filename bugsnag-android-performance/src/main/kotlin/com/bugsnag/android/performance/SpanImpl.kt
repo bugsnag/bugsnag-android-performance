@@ -1,7 +1,7 @@
-package com.bugsnag.performance
+package com.bugsnag.android.performance
 
 import android.os.SystemClock
-import com.bugsnag.performance.Span.Companion.NO_END_TIME
+import com.bugsnag.android.performance.Span.Companion.NO_END_TIME
 import java.io.Closeable
 import java.util.UUID
 import kotlin.random.Random

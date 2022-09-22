@@ -1,12 +1,12 @@
-package com.bugsnag.performance.app
+package com.bugsnag.android.performance.app
 
 import android.app.Activity
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
-import com.bugsnag.performance.BugsnagPerformance
-import com.bugsnag.performance.BugsnagPerformanceConfiguration
-import com.bugsnag.performance.measureSpan
+import com.bugsnag.android.performance.BugsnagPerformance
+import com.bugsnag.android.performance.BugsnagPerformanceConfiguration
+import com.bugsnag.android.performance.measureSpan
 
 class MainActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
