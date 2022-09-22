@@ -1,7 +1,9 @@
-package com.bugsnag.android.performance
+package com.bugsnag.android.performance.internal
 
 import android.os.SystemClock
-import com.bugsnag.android.performance.Span.Companion.NO_END_TIME
+import com.bugsnag.android.performance.SpanKind
+import com.bugsnag.android.performance.SpanProcessor
+import com.bugsnag.android.performance.internal.Span.Companion.NO_END_TIME
 import java.io.Closeable
 import java.util.UUID
 import kotlin.random.Random

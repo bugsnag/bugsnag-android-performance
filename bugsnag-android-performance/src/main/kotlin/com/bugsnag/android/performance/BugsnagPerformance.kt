@@ -1,6 +1,9 @@
 package com.bugsnag.android.performance
 
 import android.os.SystemClock
+import com.bugsnag.android.performance.internal.Span
+import com.bugsnag.android.performance.internal.SpanImpl
+import com.bugsnag.android.performance.internal.Tracer
 import java.util.UUID
 
 object BugsnagPerformance {

@@ -1,6 +1,6 @@
 @file:JvmName("SpanJson")
 
-package com.bugsnag.android.performance
+package com.bugsnag.android.performance.internal
 
 import android.util.JsonWriter
 import java.util.UUID
@@ -21,20 +21,21 @@ internal fun Span.toJson(json: JsonWriter) {
 }
 
 @Suppress("NOTHING_TO_INLINE")
-private inline fun StringBuilder.appendHexPair(b: Byte): StringBuilder {
+private inline fun StringBuilder.appendHexPair(b: Int): StringBuilder {
     if (b < 16) append('0')
     return append(b.toString(16))
 }
 
 @Suppress("NOTHING_TO_INLINE")
 private inline fun StringBuilder.appendHexLong(value: Long): StringBuilder {
-    return appendHexPair(((value ushr 56) and 0xff).toByte())
-        .appendHexPair(((value ushr 48) and 0xff).toByte())
-        .appendHexPair(((value ushr 40) and 0xff).toByte())
-        .appendHexPair(((value ushr 32) and 0xff).toByte())
-        .appendHexPair(((value ushr 16) and 0xff).toByte())
-        .appendHexPair(((value ushr 8) and 0xff).toByte())
-        .appendHexPair((value and 0xff).toByte())
+    return appendHexPair(((value ushr 56) and 0xff).toInt())
+        .appendHexPair(((value ushr 48) and 0xff).toInt())
+        .appendHexPair(((value ushr 40) and 0xff).toInt())
+        .appendHexPair(((value ushr 32) and 0xff).toInt())
+        .appendHexPair(((value ushr 24) and 0xff).toInt())
+        .appendHexPair(((value ushr 16) and 0xff).toInt())
+        .appendHexPair(((value ushr 8) and 0xff).toInt())
+        .appendHexPair((value and 0xff).toInt())
 }
 
 private fun UUID.toHexString(): String {

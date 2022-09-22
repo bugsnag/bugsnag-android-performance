@@ -1,4 +1,4 @@
-package com.bugsnag.android.performance
+package com.bugsnag.android.performance.internal
 
 import android.os.SystemClock
 

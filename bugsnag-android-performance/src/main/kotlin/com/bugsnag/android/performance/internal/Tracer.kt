@@ -1,6 +1,7 @@
-package com.bugsnag.android.performance
+package com.bugsnag.android.performance.internal
 
 import android.util.JsonWriter
+import com.bugsnag.android.performance.SpanProcessor
 import java.io.ByteArrayOutputStream
 import java.net.HttpURLConnection
 import java.net.URL

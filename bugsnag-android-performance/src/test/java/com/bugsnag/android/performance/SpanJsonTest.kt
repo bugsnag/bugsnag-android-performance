@@ -1,13 +1,19 @@
 package com.bugsnag.android.performance
 
 import android.util.JsonWriter
+import com.bugsnag.android.performance.internal.BugsnagClock
+import com.bugsnag.android.performance.internal.SpanImpl
+import com.bugsnag.android.performance.internal.toJson
 import com.bugsnag.android.performance.test.testSpanProcessor
 import org.json.JSONObject
 import org.junit.Assert.assertEquals
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
 import java.io.StringWriter
 import java.util.UUID
 
+@RunWith(RobolectricTestRunner::class)
 class SpanJsonTest {
     @Test
     fun testJsonEncoding() {
@@ -22,6 +28,8 @@ class SpanJsonTest {
             testSpanProcessor,
         )
 
+        span.end(currentTime)
+
         val json = StringWriter()
             .apply { use { sw -> JsonWriter(sw).use { jsonw -> span.toJson(jsonw) } } }
             .toString()
@@ -31,10 +39,10 @@ class SpanJsonTest {
                 {
                     "name": "test span",
                     "kind": "SPAN_KIND_INTERNAL",
-                    "spanId": "decafbad",
+                    "spanId": "00000000decafbad",
                     "traceId": "4ee2666146504c7fa35f00f007cd24e7",
-                    "startTimeUnixNano": "0",
-                    "endTimeUnixNano": "$currentTime"
+                    "startTimeUnixNano": "${BugsnagClock.elapsedNanosToUnixTime(0)}",
+                    "endTimeUnixNano": "${BugsnagClock.elapsedNanosToUnixTime(currentTime)}"
                 }
             """.trimIndent(),
             json
