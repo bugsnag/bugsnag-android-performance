@@ -1,6 +1,7 @@
 package com.bugsnag.performance
 
 import android.util.JsonWriter
+import com.bugsnag.performance.test.testSpanProcessor
 import org.json.JSONObject
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -12,17 +13,17 @@ class SpanJsonTest {
     fun testJsonEncoding() {
         val currentTime = System.currentTimeMillis()
 
-        val span = Span(
+        val span = SpanImpl(
             "test span",
             SpanKind.INTERNAL,
             0L,
             UUID.fromString("4ee26661-4650-4c7f-a35f-00f007cd24e7"),
             0xdecafbad,
-            spanProcessor,
+            testSpanProcessor,
         )
 
         val json = StringWriter()
-            .apply { use { sw -> JsonWriter(sw).use { jsonw -> span.jsonify(jsonw) } } }
+            .apply { use { sw -> JsonWriter(sw).use { jsonw -> span.toJson(jsonw) } } }
             .toString()
 
         assertJsonEquals(
@@ -45,10 +46,6 @@ class SpanJsonTest {
         val actualObject = JSONObject(actual).toMap()
 
         assertEquals(expectedObject, actualObject)
-    }
-
-    private val spanProcessor = object : SpanProcessor {
-        override fun onEnd(span: Span) = Unit
     }
 }
 

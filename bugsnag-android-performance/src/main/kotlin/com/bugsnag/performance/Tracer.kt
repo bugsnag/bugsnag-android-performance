@@ -1,6 +1,5 @@
 package com.bugsnag.performance
 
-import android.os.SystemClock
 import android.util.JsonWriter
 import java.io.ByteArrayOutputStream
 import java.net.HttpURLConnection
@@ -15,7 +14,7 @@ internal class Tracer(private val endpoint: String) : Runnable, SpanProcessor {
      * it takes to deliver a a payload this has a natural batching effect, while we avoid locks
      * when enqueuing new `Span`s for delivery.
      */
-    private var tail = AtomicReference<Span?>()
+    private var tail = AtomicReference<SpanImpl?>()
 
     @Volatile
     private var running = true
@@ -36,19 +35,19 @@ internal class Tracer(private val endpoint: String) : Runnable, SpanProcessor {
             connection.doInput = true
             connection.outputStream.use { out -> out.write(payload) }
 
-            val response = connection.inputStream.reader().readText()
+            connection.inputStream.reader().readText()
         }
     }
 
-    fun spansToJson(head: Span): ByteArray {
+    fun spansToJson(head: SpanImpl): ByteArray {
         val buffer = ByteArrayOutputStream()
         val json = JsonWriter(buffer.writer())
 
         json.beginArray()
 
-        var currentSpan: Span? = head
+        var currentSpan: SpanImpl? = head
         while (currentSpan != null) {
-            currentSpan.jsonify(json)
+            currentSpan.toJson(json)
             currentSpan = currentSpan.previous
         }
 
@@ -58,6 +57,7 @@ internal class Tracer(private val endpoint: String) : Runnable, SpanProcessor {
     }
 
     override fun onEnd(span: Span) {
+        if (span !is SpanImpl) return
         while (true) {
             val oldHead = tail.get()
             span.previous = oldHead

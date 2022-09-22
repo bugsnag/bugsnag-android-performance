@@ -1,6 +1,10 @@
 package com.bugsnag.performance
 
-enum class SpanKind(val otel: String) {
+enum class SpanKind(
+    @JvmField
+    @JvmSynthetic
+    internal val otelName: String
+) {
     INTERNAL("SPAN_KIND_INTERNAL"),
     SERVER("SPAN_KIND_SERVER"),
     CLIENT("SPAN_KIND_CLIENT"),
