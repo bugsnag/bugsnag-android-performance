@@ -40,8 +40,8 @@ internal class SpanImpl(
 ) : Span {
     override var name: String = name
         set(value) {
-            require(endTime != NO_END_TIME) {
-                "span '$name' is closed and cannot be modified"
+            if(endTime != NO_END_TIME) {
+                throw IllegalStateException("span '$name' is closed and cannot be modified")
             }
 
             field = value
@@ -58,7 +58,7 @@ internal class SpanImpl(
 
     override fun end(endTime: Long) {
         if (this.endTime != NO_END_TIME) {
-            throw IllegalStateException("span $name already ended")
+            return
         }
 
         this.endTime = endTime

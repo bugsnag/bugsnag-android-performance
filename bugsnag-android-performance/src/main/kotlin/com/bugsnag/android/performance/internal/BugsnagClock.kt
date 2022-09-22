@@ -1,6 +1,7 @@
 package com.bugsnag.android.performance.internal
 
 import android.os.SystemClock
+import androidx.annotation.VisibleForTesting
 
 internal object BugsnagClock {
     private const val NANOS_IN_MILLIS = 1_000_000
@@ -10,7 +11,9 @@ internal object BugsnagClock {
      * [SystemClock.elapsedRealtimeNanos]. This is not a perfect offset, but will be accurate
      * to around a millisecond.
      */
-    private val bootTimeNano =
+    @JvmSynthetic
+    @VisibleForTesting
+    internal val bootTimeNano =
         (System.currentTimeMillis() * NANOS_IN_MILLIS) - SystemClock.elapsedRealtimeNanos()
 
     /**
