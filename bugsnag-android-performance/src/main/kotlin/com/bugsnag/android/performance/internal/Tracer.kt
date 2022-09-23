@@ -1,13 +1,9 @@
 package com.bugsnag.android.performance.internal
 
-import android.util.JsonWriter
 import com.bugsnag.android.performance.SpanProcessor
-import java.io.ByteArrayOutputStream
-import java.net.HttpURLConnection
-import java.net.URL
 import java.util.concurrent.atomic.AtomicReference
 
-internal class Tracer(private val endpoint: String) : Runnable, SpanProcessor {
+internal class Tracer(private val delivery: Delivery) : Runnable, SpanProcessor {
     /*
      * The "head" of the linked-list of `Span`s current queued for delivery. The `Span`s are
      * actually stored in reverse order to keep the list logic simple. The last `Span` queued
@@ -27,34 +23,8 @@ internal class Tracer(private val endpoint: String) : Runnable, SpanProcessor {
     override fun run() {
         while (running) {
             val listHead = tail.getAndSet(null) ?: continue
-
-            val payload = spansToJson(listHead)
-            val connection = URL(endpoint).openConnection() as HttpURLConnection
-            connection.setFixedLengthStreamingMode(payload.size)
-            connection.setRequestProperty("Content-Encoding", "application/json")
-            connection.doOutput = true
-            connection.doInput = true
-            connection.outputStream.use { out -> out.write(payload) }
-
-            connection.inputStream.reader().readText()
+            delivery.deliverSpanChain(listHead)
         }
-    }
-
-    fun spansToJson(head: SpanImpl): ByteArray {
-        val buffer = ByteArrayOutputStream()
-        val json = JsonWriter(buffer.writer())
-
-        json.beginArray()
-
-        var currentSpan: SpanImpl? = head
-        while (currentSpan != null) {
-            currentSpan.toJson(json)
-            currentSpan = currentSpan.previous
-        }
-
-        json.endArray()
-
-        return buffer.toByteArray()
     }
 
     override fun onEnd(span: Span) {

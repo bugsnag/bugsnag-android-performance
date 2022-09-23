@@ -8,7 +8,7 @@ import java.util.UUID
 private const val UUID_ID_STRING_LENGTH = 32
 private const val LONG_ID_STRING_LENGTH = 16
 
-@JvmName("-jsonify")
+@JvmName("-toJson")
 internal fun Span.toJson(json: JsonWriter) {
     json.beginObject()
         .name("name").value(name)

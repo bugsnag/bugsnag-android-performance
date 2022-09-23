@@ -1,6 +1,7 @@
 package com.bugsnag.android.performance
 
 import android.os.SystemClock
+import com.bugsnag.android.performance.internal.Delivery
 import com.bugsnag.android.performance.internal.Span
 import com.bugsnag.android.performance.internal.SpanImpl
 import com.bugsnag.android.performance.internal.Tracer
@@ -12,7 +13,7 @@ object BugsnagPerformance {
     @JvmStatic
     @JvmOverloads
     fun start(configuration: BugsnagPerformanceConfiguration = BugsnagPerformanceConfiguration()) {
-        tracer = Tracer(configuration.endpoint.toString())
+        tracer = Tracer(Delivery(configuration.endpoint.toString()))
 
         Thread(tracer, "Bugsnag Tracer").apply {
             isDaemon = true
