@@ -3,7 +3,6 @@ package com.bugsnag.android.performance.test
 import net.jimblackler.jsonschemafriend.SchemaStore
 import net.jimblackler.jsonschemafriend.Validator
 
-
 object OtelValidator {
     private val schemaStore = SchemaStore()
     private val traceSchema =
