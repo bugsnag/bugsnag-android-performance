@@ -2,13 +2,13 @@
 <SmellBaseline>
   <ManuallySuppressedIssues/>
   <CurrentIssues>
-    <ID>MagicNumber:SpanJsonExtensions.kt$0xff</ID>
-    <ID>MagicNumber:SpanJsonExtensions.kt$16</ID>
-    <ID>MagicNumber:SpanJsonExtensions.kt$24</ID>
-    <ID>MagicNumber:SpanJsonExtensions.kt$32</ID>
-    <ID>MagicNumber:SpanJsonExtensions.kt$40</ID>
-    <ID>MagicNumber:SpanJsonExtensions.kt$48</ID>
-    <ID>MagicNumber:SpanJsonExtensions.kt$56</ID>
-    <ID>MagicNumber:SpanJsonExtensions.kt$8</ID>
+    <ID>MagicNumber:Encodings.kt$0xff</ID>
+    <ID>MagicNumber:Encodings.kt$16</ID>
+    <ID>MagicNumber:Encodings.kt$24</ID>
+    <ID>MagicNumber:Encodings.kt$32</ID>
+    <ID>MagicNumber:Encodings.kt$40</ID>
+    <ID>MagicNumber:Encodings.kt$48</ID>
+    <ID>MagicNumber:Encodings.kt$56</ID>
+    <ID>MagicNumber:Encodings.kt$8</ID>
   </CurrentIssues>
 </SmellBaseline>
