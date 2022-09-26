@@ -2,12 +2,13 @@ package com.bugsnag.android.performance.internal
 
 import android.util.JsonWriter
 import androidx.annotation.VisibleForTesting
+import com.bugsnag.android.performance.Span
 import java.io.ByteArrayOutputStream
 import java.net.HttpURLConnection
 import java.net.URL
 
 internal class Delivery(private val endpoint: String) {
-    fun deliverSpanChain(head: SpanImpl) {
+    fun deliverSpanChain(head: Span) {
         val payload = encodeSpanPayload(head)
 
         val connection = URL(endpoint).openConnection() as HttpURLConnection
@@ -21,10 +22,9 @@ internal class Delivery(private val endpoint: String) {
     }
 
     @VisibleForTesting
-    fun encodeSpanPayload(head: SpanImpl): ByteArray {
+    fun encodeSpanPayload(head: Span): ByteArray {
         val buffer = ByteArrayOutputStream()
         JsonWriter(buffer.writer()).use { json ->
-
             json.beginObject()
                 .name("resourceSpans").beginArray()
                 .beginObject()
@@ -32,17 +32,17 @@ internal class Delivery(private val endpoint: String) {
                 .beginObject()
                 .name("spans").beginArray()
 
-            var currentSpan: SpanImpl? = head
+            var currentSpan: Span? = head
             while (currentSpan != null) {
                 currentSpan.toJson(json)
                 currentSpan = currentSpan.previous
             }
 
-            json.endArray()
+            json.endArray() // spans
                 .endObject()
-                .endArray()
+                .endArray() // scopeSpans
                 .endObject()
-                .endArray()
+                .endArray() // resourceSpans
                 .endObject()
         }
 

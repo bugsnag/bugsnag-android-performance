@@ -1,5 +1,6 @@
 package com.bugsnag.android.performance.internal
 
+import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.SpanKind
 import com.bugsnag.android.performance.SpanProcessor
 import com.bugsnag.android.performance.test.testSpanProcessor
@@ -16,7 +17,7 @@ import java.lang.Thread.sleep
 import java.util.UUID
 
 @RunWith(RobolectricTestRunner::class)
-class SpanImplTest {
+class SpanTest {
     @Test
     fun nameImmutableAfterEnd() {
         val newSpanName = "edited test span"
@@ -35,7 +36,7 @@ class SpanImplTest {
     @Test
     fun idempotentEnd() {
         val mockSpanProcessor = mock<SpanProcessor>()
-        val span = SpanImpl(
+        val span = Span(
             "test span",
             SpanKind.INTERNAL,
             0L,
@@ -63,7 +64,7 @@ class SpanImplTest {
         assertTrue(span.startTime < span.endTime)
     }
 
-    private fun createTestSpan() = SpanImpl(
+    private fun createTestSpan() = Span(
         "test span",
         SpanKind.INTERNAL,
         0L,

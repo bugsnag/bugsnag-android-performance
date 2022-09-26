@@ -1,5 +1,6 @@
 package com.bugsnag.android.performance.internal
 
+import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.SpanProcessor
 import java.util.concurrent.atomic.AtomicReference
 
@@ -11,7 +12,7 @@ internal class Tracer(private val delivery: Delivery) : Runnable, SpanProcessor 
      * it takes to deliver a a payload this has a natural batching effect, while we avoid locks
      * when enqueuing new `Span`s for delivery.
      */
-    private var tail = AtomicReference<SpanImpl?>()
+    private var tail = AtomicReference<Span?>()
 
     @Volatile
     private var running = true
@@ -28,7 +29,6 @@ internal class Tracer(private val delivery: Delivery) : Runnable, SpanProcessor 
     }
 
     override fun onEnd(span: Span) {
-        if (span !is SpanImpl) return
         while (true) {
             val oldHead = tail.get()
             span.previous = oldHead

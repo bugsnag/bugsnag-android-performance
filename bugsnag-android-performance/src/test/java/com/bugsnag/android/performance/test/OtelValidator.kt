@@ -8,7 +8,7 @@ object OtelValidator {
     private val traceSchema =
         schemaStore.loadSchema(OtelValidator::class.java.getResourceAsStream("/otel_trace_schema.json"))
 
-    fun assertTraceData(json: ByteArray) {
+    fun assertTraceDataValid(json: ByteArray) {
         Validator().validate(traceSchema, json.inputStream())
     }
 }

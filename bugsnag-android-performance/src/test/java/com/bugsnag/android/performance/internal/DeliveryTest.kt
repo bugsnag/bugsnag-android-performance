@@ -1,7 +1,8 @@
 package com.bugsnag.android.performance.internal
 
+import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.SpanKind
-import com.bugsnag.android.performance.test.OtelValidator.assertTraceData
+import com.bugsnag.android.performance.test.OtelValidator.assertTraceDataValid
 import com.bugsnag.android.performance.test.testSpanProcessor
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -12,7 +13,7 @@ import java.util.UUID
 class DeliveryTest {
     @Test
     fun testEncodedSpanChain() {
-        val span = SpanImpl(
+        val span = Span(
             "test span",
             SpanKind.INTERNAL,
             0L,
@@ -21,7 +22,7 @@ class DeliveryTest {
             testSpanProcessor,
         ).let { first ->
             first.end(1L)
-            SpanImpl(
+            Span(
                 "second span",
                 SpanKind.INTERNAL,
                 10L,
@@ -37,6 +38,6 @@ class DeliveryTest {
         val delivery = Delivery("")
         val content = delivery.encodeSpanPayload(span)
 
-        assertTraceData(content)
+        assertTraceDataValid(content)
     }
 }

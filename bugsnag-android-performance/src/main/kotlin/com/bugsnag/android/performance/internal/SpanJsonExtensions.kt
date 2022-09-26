@@ -3,10 +3,7 @@
 package com.bugsnag.android.performance.internal
 
 import android.util.JsonWriter
-import java.util.UUID
-
-private const val UUID_ID_STRING_LENGTH = 32
-private const val LONG_ID_STRING_LENGTH = 16
+import com.bugsnag.android.performance.Span
 
 @JvmName("-toJson")
 internal fun Span.toJson(json: JsonWriter) {
@@ -19,35 +16,3 @@ internal fun Span.toJson(json: JsonWriter) {
         .name("endTimeUnixNano").value(BugsnagClock.elapsedNanosToUnixTime(endTime).toString())
         .endObject()
 }
-
-@Suppress("NOTHING_TO_INLINE")
-private inline fun StringBuilder.appendHexPair(b: Int): StringBuilder {
-    if (b < 16) append('0')
-    return append(b.toString(16))
-}
-
-@Suppress("NOTHING_TO_INLINE")
-private inline fun StringBuilder.appendHexLong(value: Long): StringBuilder {
-    return appendHexPair(((value ushr 56) and 0xff).toInt())
-        .appendHexPair(((value ushr 48) and 0xff).toInt())
-        .appendHexPair(((value ushr 40) and 0xff).toInt())
-        .appendHexPair(((value ushr 32) and 0xff).toInt())
-        .appendHexPair(((value ushr 24) and 0xff).toInt())
-        .appendHexPair(((value ushr 16) and 0xff).toInt())
-        .appendHexPair(((value ushr 8) and 0xff).toInt())
-        .appendHexPair((value and 0xff).toInt())
-}
-
-private fun UUID.toHexString(): String {
-    return StringBuilder(UUID_ID_STRING_LENGTH)
-        .appendHexLong(mostSignificantBits)
-        .appendHexLong(leastSignificantBits)
-        .toString()
-}
-
-private fun Long.toHexString(): String {
-    return StringBuilder(LONG_ID_STRING_LENGTH)
-        .appendHexLong(this)
-        .toString()
-}
-
