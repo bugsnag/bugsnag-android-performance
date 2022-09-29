@@ -1,10 +1,20 @@
 package com.bugsnag.android.performance.internal
 
+import com.bugsnag.android.performance.Attributes
 import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.SpanProcessor
 import java.util.concurrent.atomic.AtomicReference
 
-internal class Tracer(private val delivery: Delivery) : Runnable, SpanProcessor {
+internal class Tracer(
+    private val delivery: Delivery,
+    private val serviceName: String
+) : Runnable, SpanProcessor {
+    private val resourceAttributes = Attributes().also { attrs ->
+        attrs["service.name"] = serviceName
+        attrs["telemetry.sdk.name"] = "bugsnag.performance.android"
+        attrs["telemetry.sdk.version"] = "0.0.0"
+    }
+
     /*
      * The "head" of the linked-list of `Span`s current queued for delivery. The `Span`s are
      * actually stored in reverse order to keep the list logic simple. The last `Span` queued
@@ -24,7 +34,7 @@ internal class Tracer(private val delivery: Delivery) : Runnable, SpanProcessor 
     override fun run() {
         while (running) {
             val listHead = tail.getAndSet(null) ?: continue
-            delivery.deliverSpanChain(listHead)
+            delivery.deliverSpanChain(listHead, resourceAttributes)
         }
     }
 

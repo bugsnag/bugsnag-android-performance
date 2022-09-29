@@ -1,7 +1,10 @@
 package com.bugsnag.android.performance
 
+import android.content.Context
 import android.net.Uri
 
-data class BugsnagPerformanceConfiguration @JvmOverloads constructor(
-    var endpoint: Uri = Uri.parse("https://localhost:8888/performance"),
-)
+class BugsnagPerformanceConfiguration constructor(
+    val context: Context,
+) {
+    var endpoint: Uri = Uri.parse("https://localhost:8888/performance")
+}

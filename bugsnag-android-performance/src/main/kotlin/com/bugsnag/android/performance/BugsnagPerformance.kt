@@ -9,9 +9,11 @@ object BugsnagPerformance {
     private lateinit var tracer: Tracer
 
     @JvmStatic
-    @JvmOverloads
-    fun start(configuration: BugsnagPerformanceConfiguration = BugsnagPerformanceConfiguration()) {
-        tracer = Tracer(Delivery(configuration.endpoint.toString()))
+    fun start(configuration: BugsnagPerformanceConfiguration) {
+        tracer = Tracer(
+            Delivery(configuration.endpoint.toString()),
+            configuration.context.packageName
+        )
 
         Thread(tracer, "Bugsnag Tracer").apply {
             isDaemon = true
