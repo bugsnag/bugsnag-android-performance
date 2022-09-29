@@ -5,7 +5,6 @@ package com.bugsnag.android.performance.internal
 import android.util.JsonWriter
 import com.bugsnag.android.performance.Span
 
-@JvmName("-toJson")
 internal fun Span.toJson(json: JsonWriter) {
     json.beginObject()
         .name("name").value(name)
@@ -14,5 +13,10 @@ internal fun Span.toJson(json: JsonWriter) {
         .name("traceId").value(traceId.toHexString())
         .name("startTimeUnixNano").value(BugsnagClock.elapsedNanosToUnixTime(startTime).toString())
         .name("endTimeUnixNano").value(BugsnagClock.elapsedNanosToUnixTime(endTime).toString())
-        .endObject()
+
+    if (attributes.isNotEmpty()) {
+        json.name("attributes").value(attributes)
+    }
+
+    json.endObject()
 }

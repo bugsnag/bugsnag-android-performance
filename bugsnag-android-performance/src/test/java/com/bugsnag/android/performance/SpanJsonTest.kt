@@ -27,6 +27,11 @@ class SpanJsonTest {
             testSpanProcessor,
         )
 
+        span.setAttribute("fps.average", 61.9)
+        span.setAttribute("frameTime.minimum", 1)
+        span.setAttribute("release", true)
+        span.setAttribute("my.custom.attribute", "Computer, belay that order.")
+
         span.end(currentTime)
 
         val json = StringWriter()
@@ -41,7 +46,25 @@ class SpanJsonTest {
                     "spanId": "00000000decafbad",
                     "traceId": "4ee2666146504c7fa35f00f007cd24e7",
                     "startTimeUnixNano": "${BugsnagClock.elapsedNanosToUnixTime(0)}",
-                    "endTimeUnixNano": "${BugsnagClock.elapsedNanosToUnixTime(currentTime)}"
+                    "endTimeUnixNano": "${BugsnagClock.elapsedNanosToUnixTime(currentTime)}",
+                    "attributes": [
+                        {
+                            "key": "fps.average",
+                            "value": { "doubleValue": 61.9 }
+                        },
+                        {
+                            "key": "frameTime.minimum",
+                            "value": { "intValue": "1" }
+                        },
+                        {
+                            "key": "release",
+                            "value": { "boolValue": true }
+                        },
+                        {
+                            "key": "my.custom.attribute",
+                            "value": { "stringValue": "Computer, belay that order." }
+                        }
+                    ]
                 }
             """.trimIndent(),
             json
@@ -49,21 +72,9 @@ class SpanJsonTest {
     }
 
     private fun assertJsonEquals(expected: String, actual: String) {
-        val expectedObject = JSONObject(expected).toMap()
-        val actualObject = JSONObject(actual).toMap()
+        val expectedObject = JSONObject(expected).toString()
+        val actualObject = JSONObject(actual).toString()
 
         assertEquals(expectedObject, actualObject)
     }
-}
-
-private fun JSONObject.toMap(): Map<String, Any> {
-    val keys = names()!!
-    val content = HashMap<String, Any>(keys.length())
-
-    for (i in 0 until keys.length()) {
-        val key = keys.getString(i)
-        content[key] = get(key)
-    }
-
-    return content
 }

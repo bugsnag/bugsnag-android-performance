@@ -75,6 +75,82 @@
         "endTimeUnixNano": {
           "type": "string",
           "pattern": "^-?[0-9]+$"
+        },
+        "attributes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$def/KeyValue"
+          }
+        },
+        "droppedAttributesCount": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "AnyValue": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "stringValue": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "properties": {
+            "boolValue": {
+              "type": "boolean"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "properties": {
+            "intValue": {
+              "oneOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "string",
+                  "pattern": "^[+-]?[0-9]+$"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "properties": {
+            "doubleValue": {
+              "type": "number"
+            }
+          }
+        }
+      ]
+    },
+    "KeyValue": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "$ref": "#/$defs/AnyValue"
+        }
+      }
+    },
+    "KeyValueList": {
+      "type": "object",
+      "properties": {
+        "values": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/KeyValue"
+          }
         }
       }
     }
