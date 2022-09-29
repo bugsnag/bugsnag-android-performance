@@ -12,7 +12,10 @@ class Span internal constructor(
     val traceId: UUID,
     val id: Long = Random.nextLong(),
     private val processor: SpanProcessor,
-) : Closeable {
+) : Closeable, HasAttributes {
+
+    override val attributes: Attributes = Attributes()
+
     var name: String = name
         set(value) {
             if (endTime != NO_END_TIME) {
@@ -23,7 +26,6 @@ class Span internal constructor(
         }
 
     @set:JvmSynthetic
-    @set:JvmName("-setEndTime")
     var endTime: Long = NO_END_TIME
         internal set
 
@@ -33,6 +35,7 @@ class Span internal constructor(
      * also avoid the need for an array or List to contain the spans that are pending delivery.
      */
     @JvmField
+    @JvmSynthetic
     internal var previous: Span? = null
 
     fun end(endTime: Long) {
