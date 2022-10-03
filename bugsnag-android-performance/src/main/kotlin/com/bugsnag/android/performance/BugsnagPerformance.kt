@@ -9,9 +9,9 @@ object BugsnagPerformance {
     private lateinit var tracer: Tracer
 
     @JvmStatic
-    fun start(configuration: BugsnagPerformanceConfiguration) {
+    fun start(configuration: PerformanceConfiguration) {
         tracer = Tracer(
-            Delivery(configuration.endpoint.toString()),
+            Delivery(configuration.endpoint),
             configuration.context.packageName
         )
 

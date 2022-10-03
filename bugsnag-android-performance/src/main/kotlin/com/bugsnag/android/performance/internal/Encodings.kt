@@ -38,8 +38,8 @@ internal fun Long.toHexString(): String {
         .toString()
 }
 
-internal fun ByteArray.toHexString(): String {
-    val buffer = StringBuilder(size * 2)
-    forEach { buffer.appendHexPair(it.toInt() and 0xff) }
-    return buffer.toString()
+internal fun StringBuilder.appendHexString(bytes: ByteArray): StringBuilder {
+    ensureCapacity(length + (bytes.size * 2))
+    bytes.forEach { appendHexPair(it.toInt() and 0xff) }
+    return this
 }
