@@ -3,9 +3,8 @@ package com.bugsnag.android.performance
 import android.util.JsonWriter
 import com.bugsnag.android.performance.internal.BugsnagClock
 import com.bugsnag.android.performance.internal.toJson
+import com.bugsnag.android.performance.test.assertJsonEquals
 import com.bugsnag.android.performance.test.testSpanProcessor
-import org.json.JSONObject
-import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -69,12 +68,5 @@ class SpanJsonTest {
             """.trimIndent(),
             json
         )
-    }
-
-    private fun assertJsonEquals(expected: String, actual: String) {
-        val expectedObject = JSONObject(expected).toString()
-        val actualObject = JSONObject(actual).toString()
-
-        assertEquals(expectedObject, actualObject)
     }
 }

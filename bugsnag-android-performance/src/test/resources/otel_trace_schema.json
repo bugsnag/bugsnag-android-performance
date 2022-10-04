@@ -1,6 +1,17 @@
 {
   "type": "object",
   "properties": {
+    "resource": {
+      "type": "object",
+      "properties": {
+        "attributes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$def/KeyValue"
+          }
+        }
+      }
+    },
     "resourceSpans": {
       "type": "array",
       "items": {
