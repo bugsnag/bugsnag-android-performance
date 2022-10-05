@@ -11,3 +11,43 @@ steps:
     agents:
       queue: macos-12-arm
     command: './gradlew test'
+
+  - label: ':android: Build test fixture'
+    key: 'fixture'
+    timeout_in_minutes: 30
+    agents:
+      queue: macos-12-arm
+    artifact_paths:
+      - "build/test-fixture.apk"
+    commands:
+      - make test-fixture
+
+  - label: ':android: Lint test scenarios'
+    timeout_in_minutes: 10
+    agents:
+      queue: macos-12-arm
+    commands:
+      - cd features/fixtures/mazeracer
+      - ./gradlew ktlintCheck detekt
+
+  - label: ':android: Android 12 tests'
+    key: 'android-12-e2e'
+    depends_on: 'fixture'
+    timeout_in_minutes: 60
+    plugins:
+      artifacts#v1.2.0:
+        download:
+          - "build/test-fixture.apk"
+        upload: "maze_output/failed/**/*"
+      docker-compose#v3.7.0:
+        pull: android-maze-runner
+        run: android-maze-runner
+        command:
+          - "features/"
+          - "--app=/app/build/test-fixture.apk"
+          - "--farm=bs"
+          - "--device=ANDROID_12_0"
+          - "--fail-fast"
+    concurrency: 24
+    concurrency_group: 'browserstack-app'
+    concurrency_method: eager
