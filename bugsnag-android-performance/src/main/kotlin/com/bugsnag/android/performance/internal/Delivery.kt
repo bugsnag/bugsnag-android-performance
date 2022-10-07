@@ -7,17 +7,24 @@ import com.bugsnag.android.performance.Span
 import java.io.ByteArrayOutputStream
 import java.net.HttpURLConnection
 import java.net.URL
+import java.security.MessageDigest
 
 internal class Delivery(private val endpoint: String) {
     fun deliverSpanChain(head: Span, resourceAttributes: Attributes) {
         val payload = encodeSpanPayload(head, resourceAttributes)
 
         val connection = URL(endpoint).openConnection() as HttpURLConnection
-        connection.setFixedLengthStreamingMode(payload.size)
-        connection.setRequestProperty("Content-Encoding", "application/json")
-        connection.doOutput = true
-        connection.doInput = true
-        connection.outputStream.use { out -> out.write(payload) }
+        with(connection) {
+            setFixedLengthStreamingMode(payload.size)
+            setRequestProperty("Content-Encoding", "application/json")
+            computeSha1Digest(payload)?.let { digest ->
+                setRequestProperty("Bugsnag-Integrity", digest)
+            }
+
+            doOutput = true
+            doInput = true
+            outputStream.use { out -> out.write(payload) }
+        }
 
         connection.inputStream.reader().readText()
     }
@@ -53,5 +60,17 @@ internal class Delivery(private val endpoint: String) {
         }
 
         return buffer.toByteArray()
+    }
+
+    private fun computeSha1Digest(payload: ByteArray): String? {
+        runCatching {
+            val shaDigest = MessageDigest.getInstance("SHA-1")
+            shaDigest.update(payload)
+
+            return buildString {
+                append("sha1 ")
+                appendHexString(shaDigest.digest())
+            }
+        }.getOrElse { return null }
     }
 }
