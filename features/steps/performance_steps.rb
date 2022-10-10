@@ -24,3 +24,15 @@ Then('the {word} payload field {string} attribute {string} equals {string}') do 
   attributes = Maze::Helper.read_key_path(list.current[:body], "#{field}.attributes")
   Maze.check.equal attributes.find { |a| a['key'] == key }, { 'key' => key, 'value' => { 'stringValue' => expected } }
 end
+
+Then('a span {word} equals {string}') do |attribute, expected|
+  list = Maze::Server.list_for('traces').all
+  spans = list.flat_map { |req| req[:body]['resourceSpans'] }
+             .flat_map { |r| r['scopeSpans'] }
+             .flat_map { |s| s['spans'] }
+             .select { |s| !s.nil? }
+
+  selected_attributes = spans.map { |span| span[attribute] }
+
+  Maze.check.includes selected_attributes, expected
+end

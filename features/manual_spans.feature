@@ -12,3 +12,11 @@ Feature: Manual creation of spans
     * the trace payload field "resourceSpans.0.resource" attribute "service.name" equals "com.bugsnag.mazeracer"
     * the trace payload field "resourceSpans.0.resource" attribute "telemetry.sdk.name" equals "bugsnag.performance.android"
     * the trace payload field "resourceSpans.0.resource" attribute "telemetry.sdk.version" equals "0.0.0"
+
+  Scenario: Spans can be logged before start
+    Given I run "PreStartSpansScenario"
+    And I wait to receive 2 traces
+    Then a span name equals "Custom/Post Start"
+    * a span name equals "Custom/Thread Span 0"
+    * a span name equals "Custom/Thread Span 1"
+    * a span name equals "Custom/Thread Span 2"

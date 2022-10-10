@@ -15,6 +15,7 @@ internal abstract class AbstractBatchingSpanProcessor : SpanProcessor {
      * it takes to deliver a a payload this has a natural batching effect, while we avoid locks
      * when enqueuing new `Span`s for delivery.
      */
+    @JvmField
     protected var tail = AtomicReference<Span?>()
 
     /**
@@ -68,25 +69,44 @@ internal class BootstrapSpanProcessor : AbstractBatchingSpanProcessor() {
             // drain our Span chain into the new delegate
             // this is in a loop to handle cases where a Span is being added to the chain
             // between the delegate change, and us capturing the Span
-            var drainedSpan = tail.getAndSet(poisonSpan)
-            while (drainedSpan !== poisonSpan && drainedSpan != null) {
-                delegate.onEnd(drainedSpan)
-                drainedSpan = takeSpanChain()
+            val drainedChain = tail.getAndSet(poisonSpan)
+            if (drainedChain === poisonSpan || drainedChain == null) {
+                return
+            }
+
+            // we unwrap the Span chain we have drained to ensure that whatever delegate
+            // we are targeting doesn't have to deal with the side-effect of the Spans being
+            // a chained structure
+            var nextSpan = drainedChain
+            while (nextSpan != null) {
+                val span = nextSpan
+                nextSpan = span.previous
+
+                // unlink the span from the chain - make sure the delegate can safely read/change it
+                span.previous = null
+                delegate.onEnd(span)
             }
         }
     }
 
     override fun putSpanChain(newSpanTail: Span) {
-        while (true) {
+        var pending = true
+        while (pending) {
             val oldTail = tail.get()
             if (oldTail === poisonSpan) {
                 // a delegate must have been set on another thread
                 // we stop trying to enqueue the Span on the bootstrap queue, and send it
-                // for processing on the Delegate
+                // for processing on the delegate
                 delegate.get()?.onEnd(newSpanTail)
+                // exit the loop - the span has been delivered
+                pending = false
             } else {
+                // try and enqueue the new Span in the "normal" way
                 newSpanTail.previous = oldTail
-                if (tail.compareAndSet(oldTail, newSpanTail)) break
+                if (tail.compareAndSet(oldTail, newSpanTail)) {
+                    // exit the loop - the span has been added to the bootstrap chain
+                    pending = false
+                }
             }
         }
     }
@@ -94,6 +114,8 @@ internal class BootstrapSpanProcessor : AbstractBatchingSpanProcessor() {
     override fun onEnd(span: Span) {
         val capturedDelegate = delegate.get()
         if (capturedDelegate != null) {
+            // if there is a delegate - then all inbound Spans go there instead of being
+            // added to the bootstrap queue
             capturedDelegate.onEnd(span)
         } else {
             putSpanChain(span)

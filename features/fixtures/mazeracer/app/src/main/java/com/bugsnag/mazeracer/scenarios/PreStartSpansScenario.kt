@@ -4,15 +4,29 @@ import com.bugsnag.android.performance.BugsnagPerformance
 import com.bugsnag.android.performance.PerformanceConfiguration
 import com.bugsnag.android.performance.measureSpan
 import com.bugsnag.mazeracer.Scenario
+import kotlin.concurrent.thread
 
-class ManualSpanScenario(
+class PreStartSpansScenario(
     config: PerformanceConfiguration,
     scenarioMetadata: String
 ) : Scenario(config, scenarioMetadata) {
     override fun startScenario() {
-        BugsnagPerformance.start(config)
-        measureSpan("ManualSpanScenario") {
-            Thread.sleep(100L)
+        repeat(3) { index ->
+            // these should each be queued for sending once we call 'start'
+            thread {
+                measureSpan("Thread Span $index") {
+                    Thread.sleep(30)
+                }
+            }
         }
+
+        Thread.sleep(100)
+        BugsnagPerformance.start(config)
+
+        measureSpan("Post Start") {
+            Thread.sleep(100)
+        }
+
+        Thread.sleep(50)
     }
 }

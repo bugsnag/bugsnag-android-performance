@@ -35,13 +35,13 @@ object BugsnagPerformance {
             configuration.context.packageName
         )
 
+        (spanProcessor as? BootstrapSpanProcessor)?.drainTo(tracer)
+        spanProcessor = tracer
+
         Thread(tracer, "Bugsnag Tracer").apply {
             isDaemon = true
             start()
         }
-
-        (spanProcessor as? BootstrapSpanProcessor)?.drainTo(tracer)
-        spanProcessor = tracer
     }
 
     @JvmStatic
