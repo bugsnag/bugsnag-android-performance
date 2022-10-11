@@ -2,14 +2,13 @@ package com.bugsnag.android.performance
 
 import android.os.SystemClock
 import android.util.Log
-import com.bugsnag.android.performance.internal.BootstrapSpanProcessor
 import com.bugsnag.android.performance.internal.Delivery
 import com.bugsnag.android.performance.internal.Tracer
 import java.util.UUID
 
 object BugsnagPerformance {
+    private val tracer = Tracer()
     private var isStarted = false
-    private var spanProcessor: SpanProcessor = BootstrapSpanProcessor()
 
     @JvmStatic
     fun start(configuration: PerformanceConfiguration) {
@@ -30,18 +29,10 @@ object BugsnagPerformance {
     }
 
     private fun startUnderLock(configuration: PerformanceConfiguration) {
-        val tracer = Tracer(
+        tracer.start(
             Delivery(configuration.endpoint),
             configuration.context.packageName
         )
-
-        (spanProcessor as? BootstrapSpanProcessor)?.drainTo(tracer)
-        spanProcessor = tracer
-
-        Thread(tracer, "Bugsnag Tracer").apply {
-            isDaemon = true
-            start()
-        }
     }
 
     @JvmStatic
@@ -52,7 +43,7 @@ object BugsnagPerformance {
             kind = SpanKind.INTERNAL,
             startTime = startTime,
             traceId = UUID.randomUUID(),
-            processor = spanProcessor
+            processor = tracer
         )
 }
 
