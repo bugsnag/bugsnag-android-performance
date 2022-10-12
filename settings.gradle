@@ -14,4 +14,7 @@ dependencyResolutionManagement {
     }
 }
 rootProject.name = "bugsnag-android-performance"
-include ':bugsnag-android-performance'
+include (
+    ':bugsnag-android-performance',
+    ':bugsnag-plugin-android-performance-okhttp'
+)
