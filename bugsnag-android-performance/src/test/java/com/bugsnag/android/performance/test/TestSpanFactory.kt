@@ -15,14 +15,14 @@ class TestSpanFactory {
         name: String = "Test/Span$spanCount",
         kind: SpanKind = SpanKind.INTERNAL,
         startTime: Long = spanCount,
-        endTime: (Long) -> Long = { it + 10L },
+        endTime: ((Long) -> Long)? = { it + 10L },
         traceId: UUID = UUID(0L, spanCount),
         spanId: Long = spanCount,
         processor: SpanProcessor
     ): Span {
         spanCount++
         return Span(name, kind, startTime, traceId, spanId, processor)
-            .apply { end(endTime(startTime)) }
+            .apply { if (endTime != null) end(endTime(startTime)) }
     }
 
     fun newSpans(
