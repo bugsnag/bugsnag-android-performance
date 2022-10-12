@@ -2,7 +2,6 @@ package com.bugsnag.android.performance
 
 enum class SpanKind(
     @JvmField
-    @JvmSynthetic
     internal val otelName: String
 ) {
     INTERNAL("SPAN_KIND_INTERNAL"),

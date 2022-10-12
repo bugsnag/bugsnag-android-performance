@@ -3,7 +3,12 @@
   <ManuallySuppressedIssues></ManuallySuppressedIssues>
   <CurrentIssues>
     <ID>MagicNumber:MainActivity.kt$MainActivity$1000</ID>
-    <ID>MagicNumber:ManualSpanScenario.kt$ManualSpanScenario$500L</ID>
+    <ID>MagicNumber:ManualSpanScenario.kt$ManualSpanScenario$100L</ID>
+    <ID>MagicNumber:PreStartSpansScenario.kt$PreStartSpansScenario$100</ID>
+    <ID>MagicNumber:PreStartSpansScenario.kt$PreStartSpansScenario$3</ID>
+    <ID>MagicNumber:PreStartSpansScenario.kt$PreStartSpansScenario$30</ID>
+    <ID>MagicNumber:PreStartSpansScenario.kt$PreStartSpansScenario$50</ID>
+    <ID>MagicNumber:PreStartSpansScenario.kt$PreStartSpansScenario$60</ID>
     <ID>TooGenericExceptionCaught:MainActivity.kt$MainActivity$e: Exception</ID>
     <ID>TooManyFunctions:MainActivity.kt$MainActivity : AppCompatActivity</ID>
   </CurrentIssues>
