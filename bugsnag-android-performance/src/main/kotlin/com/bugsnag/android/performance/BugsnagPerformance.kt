@@ -4,6 +4,8 @@ import android.os.SystemClock
 import android.util.Log
 import com.bugsnag.android.performance.internal.Delivery
 import com.bugsnag.android.performance.internal.Tracer
+import java.net.URL
+import java.util.Locale
 import java.util.UUID
 
 object BugsnagPerformance {
@@ -38,9 +40,22 @@ object BugsnagPerformance {
     @JvmStatic
     @JvmOverloads
     fun startSpan(name: String, startTime: Long = SystemClock.elapsedRealtimeNanos()): Span =
+        startSpan("Custom/$name", SpanKind.INTERNAL, startTime)
+
+    @JvmStatic
+    @JvmOverloads
+    fun startNetworkSpan(url: URL, verb: String, startTime: Long = SystemClock.elapsedRealtimeNanos()): Span {
+        val verbUpper = verb.uppercase()
+        val span = startSpan("HTTP/$verbUpper", SpanKind.CLIENT, startTime)
+        span.attributes.set("http.url", url.toString())
+        span.attributes.set("http.method", verbUpper)
+        return span
+    }
+
+    private fun startSpan(name: String, kind: SpanKind, startTime: Long = SystemClock.elapsedRealtimeNanos()): Span =
         Span(
-            name = "Custom/$name",
-            kind = SpanKind.INTERNAL,
+            name = name,
+            kind = kind,
             startTime = startTime,
             traceId = UUID.randomUUID(),
             processor = tracer
