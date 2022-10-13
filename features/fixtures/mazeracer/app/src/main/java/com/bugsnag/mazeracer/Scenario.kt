@@ -15,12 +15,15 @@ abstract class Scenario(
             scenarioMetadata: String
         ): Scenario {
             try {
+                log("Class.forName(\"com.bugsnag.mazeracer.scenarios.$scenarioName\")")
                 val scenarioClass = Class.forName("com.bugsnag.mazeracer.scenarios.$scenarioName")
+                log("$scenarioName.getConstructor")
                 val constructor = scenarioClass.getConstructor(
                     PerformanceConfiguration::class.java,
                     String::class.java
                 )
 
+                log("$scenarioName.newInstance($config, $scenarioMetadata)")
                 return constructor.newInstance(config, scenarioMetadata) as Scenario
             } catch (cnfe: ClassNotFoundException) {
                 throw IllegalArgumentException("Cannot find scenario class $scenarioName", cnfe)

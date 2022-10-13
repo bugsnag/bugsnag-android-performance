@@ -5,6 +5,8 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.Window
 import android.widget.Button
 import android.widget.EditText
@@ -18,6 +20,8 @@ import kotlin.concurrent.thread
 
 class MainActivity : AppCompatActivity() {
     private val apiKeyKey = "BUGSNAG_API_KEY"
+    private val mainHandler = Handler(Looper.getMainLooper())
+
     lateinit var prefs: SharedPreferences
 
     var scenario: Scenario? = null
@@ -114,7 +118,7 @@ class MainActivity : AppCompatActivity() {
                     log("command.scenarioMode: $scenarioMetadata")
                     log("command.endpoint: $endpointUrl")
 
-                    runOnUiThread {
+                    mainHandler.post {
                         // Display some feedback of the action being run on he UI
                         val actionField = findViewById<EditText>(R.id.command_action)
                         val scenarioField = findViewById<EditText>(R.id.command_scenario)
@@ -151,13 +155,10 @@ class MainActivity : AppCompatActivity() {
          * Enqueues the test case with a delay on the main thread. This avoids the Activity wrapping
          * unhandled Exceptions
          */
-        window.decorView.postDelayed(
-            {
-                log("Executing scenario")
-                scenario?.startScenario()
-            },
-            1
-        )
+        mainHandler.post {
+            log("Executing scenario: $scenarioName")
+            scenario?.startScenario()
+        }
     }
 
     private fun readCommand(): String {
@@ -195,6 +196,7 @@ class MainActivity : AppCompatActivity() {
         scenarioMetadata: String,
         endpoint: String
     ): Scenario {
+        log("loadScenario($scenarioName, $scenarioMetadata, $endpoint)")
         val apiKeyField = findViewById<EditText>(R.id.manualApiKey)
 
         val manualMode = apiKeyField.text.isNotEmpty()
@@ -207,7 +209,11 @@ class MainActivity : AppCompatActivity() {
             log("Running in manual mode with API key: $apiKey")
             setStoredApiKey(apiKey)
         }
+
+        log("prepareConfig($apiKey, $endpoint)")
         val config = prepareConfig(apiKey, endpoint)
+
+        log("Scenario.load($config, $scenarioName, $scenarioMetadata)")
         return Scenario.load(config, scenarioName, scenarioMetadata)
     }
 
