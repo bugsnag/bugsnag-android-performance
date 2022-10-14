@@ -25,6 +25,21 @@ Then('the {word} payload field {string} attribute {string} equals {string}') do 
   Maze.check.equal attributes.find { |a| a['key'] == key }, { 'key' => key, 'value' => { 'stringValue' => expected } }
 end
 
+Then('the {word} payload field {string} attribute {string} matches the regex {string}') do |request_type, field, key, regex_string|
+  regex = Regexp.new(regex_string)
+  list = Maze::Server.list_for(request_type)
+  attributes = Maze::Helper.read_key_path(list.current[:body], "#{field}.attributes")
+  attribute = attributes.find { |a| a['key'] == key }
+  value = attribute["value"]["intValue"]
+  Maze.check.match(regex, value)
+end
+
+Then('the {word} payload field {string} attribute {string} exists') do |request_type, field, key|
+  list = Maze::Server.list_for(request_type)
+  attributes = Maze::Helper.read_key_path(list.current[:body], "#{field}.attributes")
+  Maze.check.not_nil attributes.find { |a| a['key'] == key }
+end
+
 Then('a span {word} equals {string}') do |attribute, expected|
   list = Maze::Server.list_for('traces').all
   spans = list.flat_map { |req| req[:body]['resourceSpans'] }

@@ -2,7 +2,6 @@ package com.bugsnag.mazeracer.scenarios
 
 import com.bugsnag.android.performance.BugsnagPerformance
 import com.bugsnag.android.performance.PerformanceConfiguration
-import com.bugsnag.android.performance.measureSpan
 import com.bugsnag.android.performance.okhttp.BugsnagPerformanceOkhttp
 import com.bugsnag.mazeracer.Scenario
 import okhttp3.OkHttpClient
@@ -18,7 +17,7 @@ class OkhttpSpanScenario(
 
         thread {
             val client = OkHttpClient.Builder()
-                .eventListener(BugsnagPerformanceOkhttp)
+                .eventListenerFactory(BugsnagPerformanceOkhttp.EventListenerFactory)
                 .build()
             val request = Request.Builder()
                 .url("https://google.com?test=true")
@@ -30,9 +29,5 @@ class OkhttpSpanScenario(
             }
         }
         Thread.sleep(1000L)
-
-        measureSpan("OkhttpSpanScenario") {
-            Thread.sleep(100L)
-        }
     }
 }
