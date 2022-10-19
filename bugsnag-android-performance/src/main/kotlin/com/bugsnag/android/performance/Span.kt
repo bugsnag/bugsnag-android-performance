@@ -18,11 +18,12 @@ class Span internal constructor(
 
     var name: String = name
         set(value) {
-            if (endTime != NO_END_TIME) {
-                throw IllegalStateException("span '$name' is closed and cannot be modified")
-            }
+            check(endTime == NO_END_TIME) { "span '$field' is closed and cannot be modified" }
+            val typeSeparator = field.indexOf('/')
 
-            field = value
+            field =
+                if (typeSeparator == -1) value
+                else field.substring(0, typeSeparator + 1) + value
         }
 
     @set:JvmSynthetic
