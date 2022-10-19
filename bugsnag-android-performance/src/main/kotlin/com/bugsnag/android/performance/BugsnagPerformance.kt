@@ -9,7 +9,6 @@ import com.bugsnag.android.performance.internal.SpanFactory
 import com.bugsnag.android.performance.internal.SpanTracker
 import com.bugsnag.android.performance.internal.Tracer
 import java.net.URL
-import java.util.UUID
 
 object BugsnagPerformance {
     private val activitySpanTracker = SpanTracker<Activity>()
@@ -57,7 +56,7 @@ object BugsnagPerformance {
     @JvmStatic
     @JvmOverloads
     fun startSpan(name: String, startTime: Long = SystemClock.elapsedRealtimeNanos()): Span =
-        spanFactory.createSpan(name, startTime)
+        spanFactory.createCustomSpan(name, startTime)
 
     @JvmStatic
     @JvmOverloads
@@ -74,8 +73,8 @@ object BugsnagPerformance {
         startTime: Long = SystemClock.elapsedRealtimeNanos()
     ): Span {
         // create & track Activity referenced ViewLoad spans
-        return spanFactory.createViewLoadSpan(activity, startTime).also {
-            activitySpanTracker[activity] = it
+        return activitySpanTracker.track(activity) {
+            spanFactory.createViewLoadSpan(activity, startTime)
         }
     }
 

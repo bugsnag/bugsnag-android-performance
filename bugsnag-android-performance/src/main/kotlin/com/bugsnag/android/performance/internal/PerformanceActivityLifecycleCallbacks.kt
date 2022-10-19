@@ -15,10 +15,12 @@ internal class PerformanceActivityLifecycleCallbacks(
 
     override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
         if (openLoadSpans) {
-            activityLoadSpans[activity] = spanFactory.createViewLoadSpan(
-                activity,
-                SystemClock.elapsedRealtimeNanos()
-            )
+            activityLoadSpans.track(activity) {
+                spanFactory.createViewLoadSpan(
+                    activity,
+                    SystemClock.elapsedRealtimeNanos()
+                )
+            }
         }
     }
 

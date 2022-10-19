@@ -1,7 +1,6 @@
 package com.bugsnag.android.performance.internal
 
 import android.app.Activity
-import android.os.SystemClock
 import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.SpanKind
 import com.bugsnag.android.performance.SpanProcessor
@@ -11,7 +10,7 @@ import java.util.UUID
 
 @JvmInline
 value class SpanFactory(private val spanProcessor: SpanProcessor) {
-    fun createSpan(name: String, startTime: Long): Span =
+    fun createCustomSpan(name: String, startTime: Long): Span =
         createSpan("Custom/$name", SpanKind.INTERNAL, startTime)
 
     fun createNetworkSpan(url: URL, verb: String, startTime: Long): Span {

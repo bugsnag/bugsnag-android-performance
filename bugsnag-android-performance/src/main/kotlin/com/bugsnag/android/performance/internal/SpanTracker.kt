@@ -4,6 +4,7 @@ import android.os.SystemClock
 import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.Span.Companion.NO_END_TIME
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ConcurrentMap
 
 /**
  * Container for [Span]s that are associated with other objects, which have their own
@@ -15,14 +16,32 @@ import java.util.concurrent.ConcurrentHashMap
  */
 @JvmInline
 internal value class SpanTracker<T>(
-    private val backingStore: MutableMap<T, TrackedSpan> = ConcurrentHashMap<T, TrackedSpan>()
+    private val backingStore: ConcurrentMap<T, TrackedSpan> = ConcurrentHashMap()
 ) {
-    operator fun set(token: T, span: Span) {
-        backingStore[token] = TrackedSpan(span)
-    }
-
     operator fun get(token: T): Span? {
         return backingStore[token]?.span
+    }
+
+    /**
+     * Ensure that the specified `token` is tracked by this `SpanTracker` creating a new `Span`
+     * if required (by calling [createSpan]). If the `token` already has an associated `Span`
+     * then that is returned, otherwise [createSpan] is used.
+     *
+     * Note: in racey scenarios the [createSpan] may be invoked and the resulting `Span` discarded,
+     * the currently tracked `Span` will however always be returned.
+     */
+    inline fun track(token: T, createSpan: () -> Span): Span {
+        var trackedSpan: TrackedSpan? = backingStore[token]
+        if (trackedSpan == null) {
+            trackedSpan = TrackedSpan(createSpan())
+            val racedSpan = backingStore.putIfAbsent(token, trackedSpan)
+
+            if (racedSpan != null) {
+                trackedSpan = racedSpan
+            }
+        }
+
+        return trackedSpan.span
     }
 
     /**
@@ -35,7 +54,7 @@ internal value class SpanTracker<T>(
     }
 
     /**
-     * Attempt to mark a tracked `Span` as "leaked, closing it with its (automatic end)[markSpanAutomaticEnd].
+     * Attempt to mark a tracked `Span` as "leaked", closing it with its (automatic end)[markSpanAutomaticEnd].
      * Returns `true` if the `Span` was marked as leaked, or `false` if the `Span` was already
      * considered to be closed (or was not tracked).
      */

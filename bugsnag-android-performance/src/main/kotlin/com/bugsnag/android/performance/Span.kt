@@ -52,6 +52,10 @@ class Span internal constructor(
 
     override fun close() = end()
 
+    fun isOpen() = endTime == NO_END_TIME
+
+    fun isNotOpen() = !isOpen()
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false

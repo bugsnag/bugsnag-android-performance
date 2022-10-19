@@ -20,8 +20,12 @@ class SpanTrackerTest {
         val autoEndTime = 100L
 
         val tracker = SpanTracker<String>()
-        val span = spanFactory.newSpan(processor = testSpanProcessor, endTime = null)
-        tracker["TestActivity"] = span
+        val span = tracker.track("TestActivity") {
+            spanFactory.newSpan(
+                processor = testSpanProcessor,
+                endTime = null
+            )
+        }
 
         tracker.markSpanAutomaticEnd("TestActivity", autoEndTime)
         tracker.markSpanLeaked("TestActivity")
@@ -36,8 +40,9 @@ class SpanTrackerTest {
         val realEndTime = 500L
 
         val tracker = SpanTracker<String>()
-        val span = spanFactory.newSpan(processor = testSpanProcessor, endTime = null)
-        tracker["TestActivity"] = span
+        val span = tracker.track("TestActivity") {
+            spanFactory.newSpan(processor = testSpanProcessor, endTime = null)
+        }
 
         // Activity.onResume
         tracker.markSpanAutomaticEnd("TestActivity", autoEndTime)
@@ -57,8 +62,9 @@ class SpanTrackerTest {
         val endTime = 150L
 
         val tracker = SpanTracker<String>()
-        val span = spanFactory.newSpan(processor = testSpanProcessor, endTime = null)
-        tracker["TestActivity"] = span
+        val span = tracker.track("TestActivity") {
+            spanFactory.newSpan(processor = testSpanProcessor, endTime = null)
+        }
 
         tracker.endSpan("TestActivity", endTime)
 

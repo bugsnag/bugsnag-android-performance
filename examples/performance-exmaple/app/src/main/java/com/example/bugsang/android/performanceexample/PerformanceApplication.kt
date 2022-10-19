@@ -7,6 +7,8 @@ import com.bugsnag.android.performance.PerformanceConfiguration
 class PerformanceApplication : Application() {
     override fun onCreate() {
         super.onCreate()
-        BugsnagPerformance.start(PerformanceConfiguration(this))
+        BugsnagPerformance.start(PerformanceConfiguration(this).apply {
+            endpoint = "http://10.0.2.2:9339"
+        })
     }
 }

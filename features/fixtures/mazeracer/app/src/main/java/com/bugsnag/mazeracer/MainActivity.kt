@@ -11,6 +11,7 @@ import android.view.Window
 import android.widget.Button
 import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
+import com.bugsnag.android.performance.AutoInstrument
 import com.bugsnag.android.performance.PerformanceConfiguration
 import org.json.JSONObject
 import java.io.IOException
@@ -185,9 +186,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun prepareConfig(apiKey: String, endpoint: String): PerformanceConfiguration {
-        return PerformanceConfiguration(applicationContext).also {
-            it.apiKey = apiKey
-            it.endpoint = endpoint
+        return PerformanceConfiguration(applicationContext).also { config ->
+            config.apiKey = apiKey
+            config.endpoint = endpoint
+            config.autoInstrumentActivities = AutoInstrument.OFF
         }
     }
 
@@ -214,7 +216,9 @@ class MainActivity : AppCompatActivity() {
         val config = prepareConfig(apiKey, endpoint)
 
         log("Scenario.load($config, $scenarioName, $scenarioMetadata)")
-        return Scenario.load(config, scenarioName, scenarioMetadata)
+        return Scenario.load(config, scenarioName, scenarioMetadata).apply {
+            context = this@MainActivity
+        }
     }
 
     private fun apiKeyStored() = prefs.contains(apiKeyKey)
