@@ -8,4 +8,8 @@ class PerformanceConfiguration(val context: Context) {
 
     var endpoint: String = "https://localhost:8888/performance"
 
+    var autoInstrumentAppStarts = true
+
+    var autoInstrumentActivities = AutoInstrument.FULL
+
 }
