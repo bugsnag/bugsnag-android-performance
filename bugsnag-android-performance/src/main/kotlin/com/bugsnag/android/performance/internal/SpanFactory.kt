@@ -1,6 +1,7 @@
 package com.bugsnag.android.performance.internal
 
 import android.app.Activity
+import android.os.SystemClock
 import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.SpanKind
 import com.bugsnag.android.performance.SpanProcessor
@@ -38,6 +39,9 @@ value class SpanFactory(private val spanProcessor: SpanProcessor) {
         span.attributes["bugsnag.view.name"] = viewName
         return span
     }
+
+    fun createAppStartSpan(startType: String): Span =
+        createSpan("AppStart/$startType", SpanKind.INTERNAL, SystemClock.elapsedRealtimeNanos())
 
     private fun createSpan(name: String, kind: SpanKind, startTime: Long): Span =
         Span(name, kind, startTime, UUID.randomUUID(), processor = spanProcessor)

@@ -49,8 +49,8 @@ internal value class SpanTracker<T>(
      * marked as [leaked](markSpanLeaked) then its `endTime` will be set to [autoEndTime]. Otherwise
      * this value will be discarded.
      */
-    fun markSpanAutomaticEnd(token: T, autoEndTime: Long = SystemClock.elapsedRealtimeNanos()) {
-        backingStore[token]?.autoEndTime = autoEndTime
+    fun markSpanAutomaticEnd(token: T) {
+        backingStore[token]?.autoEndTime = SystemClock.elapsedRealtimeNanos()
     }
 
     /**

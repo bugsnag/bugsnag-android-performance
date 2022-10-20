@@ -4,19 +4,21 @@ import android.app.Activity
 import android.app.Application
 import android.os.SystemClock
 import com.bugsnag.android.performance.internal.Delivery
-import com.bugsnag.android.performance.internal.PerformanceActivityLifecycleCallbacks
+import com.bugsnag.android.performance.internal.PerformancePlatformCallbacks
 import com.bugsnag.android.performance.internal.SpanFactory
 import com.bugsnag.android.performance.internal.SpanTracker
 import com.bugsnag.android.performance.internal.Tracer
 import java.net.URL
 
 object BugsnagPerformance {
-    private val activitySpanTracker = SpanTracker<Activity>()
-
     private val tracer = Tracer()
-    private var isStarted = false
 
+    private val activitySpanTracker = SpanTracker<Activity>()
     private val spanFactory = SpanFactory(tracer)
+
+    private val platformCallbacks = PerformancePlatformCallbacks(activitySpanTracker, spanFactory)
+
+    private var isStarted = false
 
     @JvmStatic
     fun start(configuration: PerformanceConfiguration) {
@@ -37,19 +39,24 @@ object BugsnagPerformance {
     }
 
     private fun startUnderLock(configuration: PerformanceConfiguration) {
+        val application = configuration.context.applicationContext as Application
+
+        platformCallbacks.openLoadSpans =
+            configuration.autoInstrumentActivities != AutoInstrument.OFF
+        platformCallbacks.closeLoadSpans =
+            configuration.autoInstrumentActivities == AutoInstrument.FULL
+        platformCallbacks.instrumentAppStart = configuration.autoInstrumentAppStarts
+
+        if (configuration.autoInstrumentAppStarts) {
+            // mark the app as "starting" (if it isn't already)
+            platformCallbacks.startAppLoadSpanUnderLock("Cold")
+        }
+
+        application.registerActivityLifecycleCallbacks(platformCallbacks)
+
         tracer.start(
             Delivery(configuration.endpoint),
             configuration.context.packageName
-        )
-
-        val application = configuration.context.applicationContext as Application
-        application.registerActivityLifecycleCallbacks(
-            PerformanceActivityLifecycleCallbacks(
-                configuration.autoInstrumentActivities != AutoInstrument.OFF,
-                configuration.autoInstrumentActivities == AutoInstrument.FULL,
-                activitySpanTracker,
-                spanFactory
-            )
         )
     }
 
@@ -91,6 +98,13 @@ object BugsnagPerformance {
         viewName: String,
         startTime: Long = SystemClock.elapsedRealtimeNanos()
     ): Span = spanFactory.createViewLoadSpan(viewType, viewName, startTime)
+
+    @JvmStatic
+    fun reportApplicationClassLoaded() {
+        synchronized(this) {
+            platformCallbacks.startAppLoadSpanUnderLock("Cold")
+        }
+    }
 }
 
 inline fun <R> measureSpan(name: String, block: () -> R): R {

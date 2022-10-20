@@ -12,4 +12,12 @@ class PerformanceConfiguration(val context: Context) {
 
     var autoInstrumentActivities = AutoInstrument.FULL
 
+    override fun toString(): String =
+        "PerformanceConfiguration(" +
+            "context=$context, " +
+            "apiKey=$apiKey, " +
+            "endpoint='$endpoint', " +
+            "autoInstrumentAppStarts=$autoInstrumentAppStarts, " +
+            "autoInstrumentActivities=$autoInstrumentActivities" +
+            ")"
 }
