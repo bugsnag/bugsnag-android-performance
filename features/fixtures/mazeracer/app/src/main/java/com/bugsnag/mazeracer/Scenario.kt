@@ -1,11 +1,14 @@
 package com.bugsnag.mazeracer
 
+import android.content.Context
 import com.bugsnag.android.performance.PerformanceConfiguration
 
 abstract class Scenario(
     val config: PerformanceConfiguration,
     val scenarioMetadata: String,
 ) {
+    lateinit var context: Context
+
     abstract fun startScenario()
 
     companion object Factory {

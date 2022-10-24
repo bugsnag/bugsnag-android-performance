@@ -19,10 +19,20 @@ When('I run {string}') do |scenario_name|
   execute_command 'run_scenario', scenario_name
 end
 
+When('I run {string} configured as {string}') do |scenario_name, scenario_metadata|
+  execute_command 'run_scenario', scenario_name, scenario_metadata
+end
+
 Then('the {word} payload field {string} attribute {string} equals {string}') do |request_type, field, key, expected|
-  list = Maze::Server.list_for(request_type)
-  attributes = Maze::Helper.read_key_path(list.current[:body], "#{field}.attributes")
-  Maze.check.equal attributes.find { |a| a['key'] == key }, { 'key' => key, 'value' => { 'stringValue' => expected } }
+  assert_attribute request_type, field, key, { 'stringValue' => expected }
+end
+
+Then('the {word} payload field {string} attribute {string} is true') do |request_type, field, key|
+  assert_attribute request_type, field, key, { 'boolValue' => true }
+end
+
+Then('the {word} payload field {string} attribute {string} is false') do |request_type, field, key|
+  assert_attribute request_type, field, key, { 'boolValue' => false }
 end
 
 Then('the {word} payload field {string} attribute {string} matches the regex {string}') do |request_type, field, key, regex_string|
@@ -50,4 +60,10 @@ Then('a span {word} equals {string}') do |attribute, expected|
   selected_attributes = spans.map { |span| span[attribute] }
 
   Maze.check.includes selected_attributes, expected
+end
+
+def assert_attribute request_type, field, key, expected
+  list = Maze::Server.list_for(request_type)
+  attributes = Maze::Helper.read_key_path(list.current[:body], "#{field}.attributes")
+  Maze.check.equal attributes.find { |a| a['key'] == key }, { 'key' => key, 'value' => expected }
 end

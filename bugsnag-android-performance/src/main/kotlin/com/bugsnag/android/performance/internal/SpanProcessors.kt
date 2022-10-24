@@ -3,6 +3,7 @@ package com.bugsnag.android.performance.internal
 import com.bugsnag.android.performance.Attributes
 import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.SpanProcessor
+import org.json.JSONObject
 import java.util.concurrent.atomic.AtomicReference
 
 internal abstract class AbstractBatchingSpanProcessor : SpanProcessor {

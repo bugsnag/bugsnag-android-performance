@@ -30,7 +30,7 @@ class SpanTest {
             span.name = "cannot be renamed"
         }
 
-        assertEquals(newSpanName, span.name)
+        assertEquals("Test/$newSpanName", span.name)
     }
 
     @Test
@@ -65,7 +65,7 @@ class SpanTest {
     }
 
     private fun createTestSpan() = Span(
-        "test span",
+        "Test/test span",
         SpanKind.INTERNAL,
         0L,
         UUID.fromString("4ee26661-4650-4c7f-a35f-00f007cd24e7"),
