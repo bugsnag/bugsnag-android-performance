@@ -12,7 +12,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
-class PerformanceActivityLifecycleCallbacksTest {
+class PerformancePlatformCallbacksTest {
     private val activity = Activity()
 
     private var spanFactory = SpanFactory(testSpanProcessor)
@@ -38,12 +38,14 @@ class PerformanceActivityLifecycleCallbacksTest {
             .thenReturn(10L)
             .thenReturn(20L)
 
-        val callbacks = PerformanceActivityLifecycleCallbacks(
-            openLoadSpans = true,
-            closeLoadSpans = true,
+        val callbacks = PerformancePlatformCallbacks(
             activityLoadSpans = spanTracker,
             spanFactory = spanFactory
-        )
+        ).apply {
+            openLoadSpans = true
+            closeLoadSpans = true
+            instrumentAppStart = false
+        }
 
         callbacks.onActivityCreated(activity, null)
         callbacks.onActivityStarted(activity) // shouldn't do anything
@@ -68,12 +70,14 @@ class PerformanceActivityLifecycleCallbacksTest {
             .thenReturn(30L)
             .thenReturn(40L)
 
-        val callbacks = PerformanceActivityLifecycleCallbacks(
-            openLoadSpans = true,
-            closeLoadSpans = false,
+        val callbacks = PerformancePlatformCallbacks(
             activityLoadSpans = spanTracker,
             spanFactory = spanFactory
-        )
+        ).apply {
+            openLoadSpans = true
+            closeLoadSpans = false
+            instrumentAppStart = false
+        }
 
         callbacks.onActivityCreated(activity, null)
         callbacks.onActivityStarted(activity) // shouldn't do anything
@@ -94,5 +98,62 @@ class PerformanceActivityLifecycleCallbacksTest {
         assertEquals(20L, span.endTime)
         assertEquals(SpanKind.INTERNAL, span.kind)
         assertTrue(span.isNotOpen())
+    }
+
+    @Test
+    fun repeatedAppStart() = withStaticMock<SystemClock> { mockedClock ->
+        mockedClock.`when`<Long> { SystemClock.elapsedRealtimeNanos() }
+            .thenReturn(10L) // Span1 Start
+            .thenReturn(20L) // Span1 End
+            .thenReturn(30L) //
+            .thenReturn(40L)
+
+        val callbacks = PerformancePlatformCallbacks(
+            activityLoadSpans = spanTracker,
+            spanFactory = spanFactory
+        ).apply {
+            openLoadSpans = false
+            closeLoadSpans = false
+            instrumentAppStart = true
+        }
+
+        callbacks.onActivityCreated(activity, null) // Warm start
+        callbacks.onActivityStarted(activity)
+        callbacks.onActivityResumed(activity)
+
+        val activity2 = Activity()
+        val activity3 = Activity()
+
+        cycleActivity(activity2, callbacks)
+        cycleActivity(activity3, callbacks)
+        cycleActivity(activity2, callbacks)
+
+        callbacks.onActivityPaused(activity)
+        callbacks.onActivityStopped(activity)
+        callbacks.onActivityDestroyed(activity)
+
+        callbacks.onActivityCreated(activity, null) // Warm start
+        callbacks.onActivityStarted(activity)
+        callbacks.onActivityResumed(activity)
+
+        // we expect to see 2 warm starts
+        val spans = spanProcessor.toList()
+        assertEquals(2, spans.size)
+
+        val (span1, span2) = spans
+        assertEquals("AppStart/Warm", span1.name)
+        assertEquals(10L, span1.startTime)
+        assertEquals(20L, span1.endTime)
+
+        assertEquals("AppStart/Warm", span2.name)
+        assertEquals(30L, span2.startTime)
+        assertEquals(40L, span2.endTime)
+    }
+
+    private fun cycleActivity(activity: Activity, callbacks: PerformancePlatformCallbacks) {
+        callbacks.onActivityCreated(activity, null)
+        callbacks.onActivityStarted(activity)
+        callbacks.onActivityStopped(activity)
+        callbacks.onActivityDestroyed(activity)
     }
 }

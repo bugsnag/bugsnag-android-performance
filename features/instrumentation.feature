@@ -24,3 +24,9 @@ Feature: Automatic creation of spans
     * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0" attribute "bugsnag.view.type" equals "activity"
     * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0" attribute "bugsnag.view.name" equals "ActivityViewLoadActivity"
     * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0" attribute "manual_start" is true
+
+  Scenario: AppStart instrumentation
+    Given I run "AppStartScenario"
+    Then I relaunch the app after shutdown
+    Then I wait to receive 1 traces
+    * a span name equals "AppStart/Cold"

@@ -1,7 +1,9 @@
 package com.bugsnag.android.performance.internal
 
+import android.os.SystemClock
 import com.bugsnag.android.performance.test.TestSpanFactory
 import com.bugsnag.android.performance.test.testSpanProcessor
+import com.bugsnag.android.performance.test.withStaticMock
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Before
@@ -16,8 +18,9 @@ class SpanTrackerTest {
     }
 
     @Test
-    fun testAutomaticEndWithLeak() {
+    fun testAutomaticEndWithLeak() = withStaticMock<SystemClock> { mockedClock ->
         val autoEndTime = 100L
+        mockedClock.`when`<Long>(SystemClock::elapsedRealtimeNanos).thenReturn(autoEndTime)
 
         val tracker = SpanTracker<String>()
         val span = tracker.track("TestActivity") {
@@ -27,7 +30,7 @@ class SpanTrackerTest {
             )
         }
 
-        tracker.markSpanAutomaticEnd("TestActivity", autoEndTime)
+        tracker.markSpanAutomaticEnd("TestActivity")
         tracker.markSpanLeaked("TestActivity")
 
         assertEquals(autoEndTime, span.endTime)
@@ -35,9 +38,11 @@ class SpanTrackerTest {
     }
 
     @Test
-    fun testAutomaticEndWithManualEnd() {
+    fun testAutomaticEndWithManualEnd() = withStaticMock<SystemClock> { mockedClock ->
         val autoEndTime = 100L
         val realEndTime = 500L
+
+        mockedClock.`when`<Long>(SystemClock::elapsedRealtimeNanos).thenReturn(autoEndTime)
 
         val tracker = SpanTracker<String>()
         val span = tracker.track("TestActivity") {
@@ -45,7 +50,7 @@ class SpanTrackerTest {
         }
 
         // Activity.onResume
-        tracker.markSpanAutomaticEnd("TestActivity", autoEndTime)
+        tracker.markSpanAutomaticEnd("TestActivity")
 
         // manually end the returned Span
         span.end(realEndTime)

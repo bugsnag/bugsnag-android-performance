@@ -189,6 +189,7 @@ class MainActivity : AppCompatActivity() {
         return PerformanceConfiguration(applicationContext).also { config ->
             config.apiKey = apiKey
             config.endpoint = endpoint
+            config.autoInstrumentAppStarts = false
             config.autoInstrumentActivities = AutoInstrument.OFF
         }
     }

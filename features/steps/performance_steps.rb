@@ -23,6 +23,20 @@ When('I run {string} configured as {string}') do |scenario_name, scenario_metada
   execute_command 'run_scenario', scenario_name, scenario_metadata
 end
 
+When("I relaunch the app after shutdown") do
+  max_attempts = 20
+  attempts = 0
+  state = Maze.driver.app_state('com.bugsnag.mazeracer')
+  until (attempts >= max_attempts) || state == :not_running
+    attempts += 1
+    state = Maze.driver.app_state('com.bugsnag.mazeracer')
+    sleep 0.5
+  end
+  $logger.warn "App state #{state} instead of #{expected_state} after 10s" unless state == :not_running
+
+  Maze.driver.launch_app
+end
+
 Then('the {word} payload field {string} attribute {string} equals {string}') do |request_type, field, key, expected|
   assert_attribute request_type, field, key, { 'stringValue' => expected }
 end
