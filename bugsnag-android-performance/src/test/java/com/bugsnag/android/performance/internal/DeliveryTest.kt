@@ -14,32 +14,30 @@ import java.util.UUID
 @RunWith(RobolectricTestRunner::class)
 class DeliveryTest {
     @Test
-    fun testEncodedSpanChain() {
-        val span = Span(
+    fun testDeliver() {
+        val span1 = Span(
             "test span",
             SpanKind.INTERNAL,
             0L,
             UUID.fromString("4ee26661-4650-4c7f-a35f-00f007cd24e7"),
             0xdecafbad,
             testSpanProcessor,
-        ).let { first ->
-            first.end(1L)
-            Span(
-                "second span",
-                SpanKind.INTERNAL,
-                10L,
-                UUID.fromString("4ee26661-4650-4c7f-a35f-00f007cd24e7"),
-                0xbaddecaf,
-                testSpanProcessor,
-            ).also {
-                it.end(11L)
-                it.previous = first
-            }
-        }
+        )
+        span1.end(1L)
+        val span2 = Span(
+            "second span",
+            SpanKind.INTERNAL,
+            10L,
+            UUID.fromString("4ee26661-4650-4c7f-a35f-00f007cd24e7"),
+            0xbaddecaf,
+            testSpanProcessor,
+        )
+        span2.end(11L)
+        val spans = listOf(span1, span2)
 
         val delivery = Delivery("")
         val content = delivery.encodeSpanPayload(
-            span,
+            spans,
             Attributes().also { attrs ->
                 attrs["service.name"] = "Test app"
                 attrs["telemetry.sdk.name"] = "bugsnag.performance.android"
@@ -79,20 +77,20 @@ class DeliveryTest {
                         {
                           "spans": [
                             {
-                              "name": "second span",
-                              "kind": "SPAN_KIND_INTERNAL",
-                              "spanId": "00000000baddecaf",
-                              "traceId": "4ee2666146504c7fa35f00f007cd24e7",
-                              "startTimeUnixNano": "${BugsnagClock.elapsedNanosToUnixTime(span.startTime)}",
-                              "endTimeUnixNano": "${BugsnagClock.elapsedNanosToUnixTime(span.endTime)}"
-                            },
-                            {
                               "name": "test span",
                               "kind": "SPAN_KIND_INTERNAL",
                               "spanId": "00000000decafbad",
                               "traceId": "4ee2666146504c7fa35f00f007cd24e7",
-                              "startTimeUnixNano": "${BugsnagClock.elapsedNanosToUnixTime(span.previous!!.startTime)}",
-                              "endTimeUnixNano": "${BugsnagClock.elapsedNanosToUnixTime(span.previous!!.endTime)}"
+                              "startTimeUnixNano": "${BugsnagClock.elapsedNanosToUnixTime(span1.startTime)}",
+                              "endTimeUnixNano": "${BugsnagClock.elapsedNanosToUnixTime(span1.endTime)}"
+                            },
+                            {
+                              "name": "second span",
+                              "kind": "SPAN_KIND_INTERNAL",
+                              "spanId": "00000000baddecaf",
+                              "traceId": "4ee2666146504c7fa35f00f007cd24e7",
+                              "startTimeUnixNano": "${BugsnagClock.elapsedNanosToUnixTime(span2.startTime)}",
+                              "endTimeUnixNano": "${BugsnagClock.elapsedNanosToUnixTime(span2.endTime)}"
                             }
                           ]
                         }

@@ -30,15 +30,6 @@ class Span internal constructor(
     var endTime: Long = NO_END_TIME
         internal set
 
-    /*
-     * Internally Spans form a linked-list when they are queued for delivery. By making each `Span`
-     * into a natural link we avoid needing a dedicated `Link` structure or allocation, we
-     * also avoid the need for an array or List to contain the spans that are pending delivery.
-     */
-    @JvmField
-    @JvmSynthetic
-    internal var previous: Span? = null
-
     fun end(endTime: Long) {
         if (this.endTime != NO_END_TIME) {
             return

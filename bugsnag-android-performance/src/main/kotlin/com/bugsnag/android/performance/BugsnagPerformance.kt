@@ -2,6 +2,9 @@ package com.bugsnag.android.performance
 
 import android.app.Activity
 import android.app.Application
+import android.content.ComponentCallbacks
+import android.content.ComponentCallbacks2
+import android.content.res.Configuration
 import android.os.SystemClock
 import com.bugsnag.android.performance.internal.Delivery
 import com.bugsnag.android.performance.internal.PerformancePlatformCallbacks
@@ -10,7 +13,8 @@ import com.bugsnag.android.performance.internal.SpanTracker
 import com.bugsnag.android.performance.internal.Tracer
 import java.net.URL
 
-object BugsnagPerformance {
+
+object BugsnagPerformance: ComponentCallbacks2 {
     private val tracer = Tracer()
 
     private val activitySpanTracker = SpanTracker<Activity>()
@@ -29,8 +33,18 @@ object BugsnagPerformance {
                     isStarted = true
                 }
             }
+            configuration.context.registerComponentCallbacks(this)
         } else {
             logAlreadyStarted()
+        }
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {}
+    override fun onLowMemory() {}
+    override fun onTrimMemory(level: Int) {
+        if (level == ComponentCallbacks2.TRIM_MEMORY_UI_HIDDEN) {
+            // App has been backgrounded
+            tracer.sendNextBatch()
         }
     }
 

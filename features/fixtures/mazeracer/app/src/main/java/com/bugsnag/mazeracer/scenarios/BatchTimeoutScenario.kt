@@ -6,18 +6,31 @@ import com.bugsnag.android.performance.internal.InternalDebug
 import com.bugsnag.android.performance.measureSpan
 import com.bugsnag.mazeracer.Scenario
 
-class ManualSpanScenario(
+class BatchTimeoutScenario(
     config: PerformanceConfiguration,
     scenarioMetadata: String
 ) : Scenario(config, scenarioMetadata) {
     init {
-        InternalDebug.spanBatchSizeSendTriggerPoint = 1
+        InternalDebug.spanBatchTimeout = 100
     }
 
     override fun startScenario() {
         BugsnagPerformance.start(config)
-        measureSpan("ManualSpanScenario") {
-            Thread.sleep(100L)
+
+        measureSpan("Span 1") {
+            Thread.sleep(30)
         }
+
+        measureSpan("Span 2") {
+            Thread.sleep(30)
+        }
+
+        Thread.sleep(100)
+
+        measureSpan("Span 3") {
+            Thread.sleep(30)
+        }
+
+        Thread.sleep(30)
     }
 }

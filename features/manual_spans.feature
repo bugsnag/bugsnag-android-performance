@@ -15,8 +15,20 @@ Feature: Manual creation of spans
 
   Scenario: Spans can be logged before start
     Given I run "PreStartSpansScenario"
-    And I wait to receive 2 traces
+    And I wait to receive a trace
     Then a span name equals "Custom/Post Start"
     * a span name equals "Custom/Thread Span 0"
     * a span name equals "Custom/Thread Span 1"
     * a span name equals "Custom/Thread Span 2"
+
+  Scenario: Span batch times out
+    Given I run "BatchTimeoutScenario"
+    And I wait to receive 1 traces
+    Then a span name equals "Custom/Span 1"
+    * a span name equals "Custom/Span 2"
+
+
+  Scenario: App backgrounded
+    Given I run "AppBackgroundedScenario"
+    And I wait to receive 1 traces
+    Then a span name equals "Custom/Span 1"

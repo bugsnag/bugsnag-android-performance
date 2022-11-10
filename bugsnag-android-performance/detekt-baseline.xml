@@ -2,6 +2,8 @@
 <SmellBaseline>
   <ManuallySuppressedIssues/>
   <CurrentIssues>
+    <ID>EmptyFunctionBlock:BugsnagPerformance.kt$BugsnagPerformance${}</ID>
+    <ID>EmptyFunctionBlock:Tracer.kt$Tracer.&lt;no name provided>${}</ID>
     <ID>MagicNumber:Encodings.kt$0xff</ID>
     <ID>MagicNumber:Encodings.kt$16</ID>
     <ID>MagicNumber:Encodings.kt$24</ID>
@@ -10,5 +12,9 @@
     <ID>MagicNumber:Encodings.kt$48</ID>
     <ID>MagicNumber:Encodings.kt$56</ID>
     <ID>MagicNumber:Encodings.kt$8</ID>
+    <ID>MagicNumber:InternalDebug.kt$InternalDebug$100</ID>
+    <ID>MagicNumber:InternalDebug.kt$InternalDebug$30000L</ID>
+    <ID>TooGenericExceptionCaught:Tracer.kt$Tracer$e: Exception</ID>
+    <ID>TooManyFunctions:BugsnagPerformance.kt$BugsnagPerformance$BugsnagPerformance</ID>
   </CurrentIssues>
 </SmellBaseline>
