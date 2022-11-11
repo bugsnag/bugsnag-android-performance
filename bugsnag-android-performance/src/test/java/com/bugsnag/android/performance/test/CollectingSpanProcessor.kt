@@ -9,11 +9,6 @@ class CollectingSpanProcessor : SpanProcessor {
     fun toList(): List<Span> = spans.sortedBy { it.startTime }
 
     override fun onEnd(span: Span) {
-        // unwind all of the Spans in the chain
-        var s: Span? = span
-        while (s != null) {
-            spans.add(s)
-            s = s.previous
-        }
+        spans.add(span)
     }
 }

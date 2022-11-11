@@ -10,8 +10,8 @@ import java.net.URL
 import java.security.MessageDigest
 
 internal class Delivery(private val endpoint: String) {
-    fun deliverSpanChain(head: Span, resourceAttributes: Attributes) {
-        val payload = encodeSpanPayload(head, resourceAttributes)
+    fun deliver(spans: Collection<Span>, resourceAttributes: Attributes) {
+        val payload = encodeSpanPayload(spans, resourceAttributes)
 
         val connection = URL(endpoint).openConnection() as HttpURLConnection
         with(connection) {
@@ -30,7 +30,7 @@ internal class Delivery(private val endpoint: String) {
     }
 
     @VisibleForTesting
-    fun encodeSpanPayload(head: Span, resourceAttributes: Attributes): ByteArray {
+    fun encodeSpanPayload(spans: Collection<Span>, resourceAttributes: Attributes): ByteArray {
         val buffer = ByteArrayOutputStream()
         JsonWriter(buffer.writer()).use { json ->
             json.beginObject()
@@ -45,11 +45,7 @@ internal class Delivery(private val endpoint: String) {
                 .beginObject()
                 .name("spans").beginArray()
 
-            var currentSpan: Span? = head
-            while (currentSpan != null) {
-                currentSpan.toJson(json)
-                currentSpan = currentSpan.previous
-            }
+            spans.forEach { it.toJson(json) }
 
             json.endArray() // spans
                 .endObject()

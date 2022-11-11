@@ -2,13 +2,16 @@
 <SmellBaseline>
   <ManuallySuppressedIssues></ManuallySuppressedIssues>
   <CurrentIssues>
+    <ID>MagicNumber:AppBackgroundedScenario.kt$AppBackgroundedScenario$10</ID>
+    <ID>MagicNumber:BatchTimeoutScenario.kt$BatchTimeoutScenario$100</ID>
+    <ID>MagicNumber:BatchTimeoutScenario.kt$BatchTimeoutScenario$30</ID>
     <ID>MagicNumber:MainActivity.kt$MainActivity$1000</ID>
     <ID>MagicNumber:ManualSpanScenario.kt$ManualSpanScenario$100L</ID>
     <ID>MagicNumber:OkhttpSpanScenario.kt$OkhttpSpanScenario$1000L</ID>
-    <ID>MagicNumber:OkhttpSpanScenario.kt$OkhttpSpanScenario$100L</ID>
     <ID>MagicNumber:PreStartSpansScenario.kt$PreStartSpansScenario$100</ID>
     <ID>MagicNumber:PreStartSpansScenario.kt$PreStartSpansScenario$3</ID>
     <ID>MagicNumber:PreStartSpansScenario.kt$PreStartSpansScenario$30</ID>
+    <ID>MagicNumber:PreStartSpansScenario.kt$PreStartSpansScenario$4</ID>
     <ID>MagicNumber:PreStartSpansScenario.kt$PreStartSpansScenario$50</ID>
     <ID>TooGenericExceptionCaught:MainActivity.kt$MainActivity$e: Exception</ID>
     <ID>TooManyFunctions:MainActivity.kt$MainActivity : AppCompatActivity</ID>
