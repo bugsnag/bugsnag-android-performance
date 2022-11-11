@@ -53,10 +53,19 @@ class Span internal constructor(
     @FloatRange(from = 0.0, to = 1.0)
     internal var samplingProbability: Double = 1.0
         internal set(value) {
-            require(field in 0.0..1.0) { "samplingProbability out of range (0..1): $value" }
+            require(value in 0.0..1.0) { "samplingProbability out of range (0..1): $value" }
             field = value
-            attributes.set("bugsnag.sampling.p", value)
+            attributes["bugsnag.sampling.p"] = value
         }
+
+    /*
+     * Internally Spans form a linked-list when they are queued for delivery. By making each `Span`
+     * into a natural link we avoid needing a dedicated `Link` structure or allocation, we
+     * also avoid the need for an array or List to contain the spans that are pending delivery.
+     */
+    @JvmField
+    @JvmSynthetic
+    internal var previous: Span? = null
 
     init {
         // Our "random" sampling value is actually derived from the traceId
