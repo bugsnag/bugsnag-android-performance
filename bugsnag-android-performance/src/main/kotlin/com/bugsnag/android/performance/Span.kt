@@ -2,6 +2,7 @@ package com.bugsnag.android.performance
 
 import android.os.SystemClock
 import java.io.Closeable
+import java.util.Date
 import java.util.UUID
 import kotlin.random.Random
 

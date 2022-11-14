@@ -7,5 +7,6 @@ package com.bugsnag.android.performance.internal
  */
 object InternalDebug {
     var spanBatchSizeSendTriggerPoint = 100
-    var spanBatchTimeout = 30000L
+    var spanBatchTimeoutMs = 30000L
+    var dropSpansOlderThanMs = 24L * 60 * 60 * 1000
 }
