@@ -2,12 +2,13 @@ package com.bugsnag.android.performance
 
 import android.app.Activity
 import android.app.Application
-import android.content.ComponentCallbacks
 import android.content.ComponentCallbacks2
 import android.content.res.Configuration
 import android.os.SystemClock
-import com.bugsnag.android.performance.internal.Delivery
+import com.bugsnag.android.performance.internal.HttpDelivery
+import com.bugsnag.android.performance.internal.InternalDebug
 import com.bugsnag.android.performance.internal.PerformancePlatformCallbacks
+import com.bugsnag.android.performance.internal.RetryDelivery
 import com.bugsnag.android.performance.internal.SpanFactory
 import com.bugsnag.android.performance.internal.SpanTracker
 import com.bugsnag.android.performance.internal.Tracer
@@ -69,7 +70,7 @@ object BugsnagPerformance: ComponentCallbacks2 {
         application.registerActivityLifecycleCallbacks(platformCallbacks)
 
         tracer.start(
-            Delivery(configuration.endpoint),
+            RetryDelivery(InternalDebug.dropSpansOlderThanMs, HttpDelivery(configuration.endpoint)),
             configuration.context.packageName
         )
     }

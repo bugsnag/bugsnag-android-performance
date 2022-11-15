@@ -13,6 +13,8 @@
     <ID>MagicNumber:PreStartSpansScenario.kt$PreStartSpansScenario$30</ID>
     <ID>MagicNumber:PreStartSpansScenario.kt$PreStartSpansScenario$4</ID>
     <ID>MagicNumber:PreStartSpansScenario.kt$PreStartSpansScenario$50</ID>
+    <ID>MagicNumber:RetryTimeoutScenario.kt$RetryTimeoutScenario$100</ID>
+    <ID>MagicNumber:RetryTimeoutScenario.kt$RetryTimeoutScenario$1000</ID>
     <ID>TooGenericExceptionCaught:MainActivity.kt$MainActivity$e: Exception</ID>
     <ID>TooManyFunctions:MainActivity.kt$MainActivity : AppCompatActivity</ID>
   </CurrentIssues>

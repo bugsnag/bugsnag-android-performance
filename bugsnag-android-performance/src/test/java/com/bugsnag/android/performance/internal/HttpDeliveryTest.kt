@@ -12,7 +12,7 @@ import org.robolectric.RobolectricTestRunner
 import java.util.UUID
 
 @RunWith(RobolectricTestRunner::class)
-class DeliveryTest {
+class HttpDeliveryTest {
     @Test
     fun testDeliver() {
         val span1 = Span(
@@ -35,7 +35,7 @@ class DeliveryTest {
         span2.end(11L)
         val spans = listOf(span1, span2)
 
-        val delivery = Delivery("")
+        val delivery = HttpDelivery("")
         val content = delivery.encodeSpanPayload(
             spans,
             Attributes().also { attrs ->

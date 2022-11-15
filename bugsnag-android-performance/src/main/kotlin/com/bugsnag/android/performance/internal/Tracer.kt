@@ -30,16 +30,15 @@ internal class Tracer : SpanProcessor, Runnable {
                 sendNextBatch()
             }
         }
-        batchTimer.schedule(newTask, InternalDebug.spanBatchTimeout)
+        batchTimer.schedule(newTask, InternalDebug.spanBatchTimeoutMs)
         batchTimeoutTask = newTask
     }
 
     fun sendNextBatch() {
         batchTimeoutTask.cancel()
         val nextBatch = collectNextBatch()
-        if (nextBatch.isNotEmpty()) {
-            batchSendQueue.add(nextBatch)
-        }
+        // Send even if empty, to kick any retries
+        batchSendQueue.add(nextBatch)
     }
 
     private fun collectNextBatch(): Collection<Span> {
