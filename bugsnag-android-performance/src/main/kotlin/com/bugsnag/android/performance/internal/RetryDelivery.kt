@@ -11,12 +11,7 @@ class RetryDelivery(private val dropOlderThanMs: Long, private val delivery: Del
 
     override fun deliver(spans: Collection<Span>, resourceAttributes: Attributes): DeliveryResult {
         val minimumEndTime = SystemClock.elapsedRealtimeNanos() - TimeUnit.MILLISECONDS.toNanos(dropOlderThanMs)
-        val toDeliver = ArrayList<Span>(retries.size + spans.size)
-        retries.forEach {
-            if (it.endTime >= minimumEndTime) {
-                toDeliver.add(it)
-            }
-        }
+        val toDeliver = retries.filterTo(ArrayList<Span>()) { it.endTime >= minimumEndTime }
         retries.clear()
         spans.forEach {
             if (it.endTime >= minimumEndTime) {
