@@ -31,9 +31,7 @@ internal class HttpDelivery(private val endpoint: String) : Delivery {
         }
 
         val result = getDeliveryResult(connection)
-        if (result == DeliveryResult.SUCCESS) {
-            connection.inputStream.reader().readText()
-        }
+        connection.disconnect()
         return result
     }
 
