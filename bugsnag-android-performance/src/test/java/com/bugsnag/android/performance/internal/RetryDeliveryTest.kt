@@ -157,7 +157,7 @@ class RetryDeliveryTest {
     @Test
     fun testFailPermanent() {
         val attributes = Attributes()
-        val maxAgeMs = 1000000000L
+        val maxAgeMs = 1_000_000_000L
         val stub = StubDelivery()
         val retry = RetryDelivery(maxAgeMs, stub)
 
