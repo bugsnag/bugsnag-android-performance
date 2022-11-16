@@ -3,6 +3,7 @@ package com.bugsnag.android.performance
 import android.os.SystemClock
 import java.io.Closeable
 import java.util.UUID
+import java.util.concurrent.atomic.AtomicLongFieldUpdater
 import kotlin.random.Random
 
 class Span internal constructor(
@@ -26,17 +27,14 @@ class Span internal constructor(
                 else field.substring(0, typeSeparator + 1) + value
         }
 
-    @set:JvmSynthetic
+    @Volatile
     var endTime: Long = NO_END_TIME
-        internal set
+        private set
 
     fun end(endTime: Long) {
-        if (this.endTime != NO_END_TIME) {
-            return
+        if (END_TIME_UPDATER.compareAndSet(this, NO_END_TIME, endTime)) {
+            processor.onEnd(this)
         }
-
-        this.endTime = endTime
-        processor.onEnd(this)
     }
 
     fun end() = end(SystemClock.elapsedRealtimeNanos())
@@ -94,6 +92,9 @@ class Span internal constructor(
     }
 
     companion object {
+        private val END_TIME_UPDATER =
+            AtomicLongFieldUpdater.newUpdater(Span::class.java, "endTime")
+
         /**
          * The value of [Span.endTime] when the `Span` has not yet [ended](Span.end).
          */
