@@ -5,6 +5,8 @@ import android.app.Application
 import android.content.ComponentCallbacks2
 import android.content.res.Configuration
 import android.os.SystemClock
+import com.bugsnag.android.performance.internal.Connectivity
+import com.bugsnag.android.performance.internal.ConnectivityCompat
 import com.bugsnag.android.performance.internal.HttpDelivery
 import com.bugsnag.android.performance.internal.InternalDebug
 import com.bugsnag.android.performance.internal.PerformancePlatformCallbacks
@@ -25,6 +27,8 @@ object BugsnagPerformance: ComponentCallbacks2 {
 
     private var isStarted = false
 
+    private var connectivity: Connectivity? = null
+
     @JvmStatic
     fun start(configuration: PerformanceConfiguration) {
         if (!isStarted) {
@@ -35,6 +39,13 @@ object BugsnagPerformance: ComponentCallbacks2 {
                 }
             }
             configuration.context.registerComponentCallbacks(this)
+            connectivity = ConnectivityCompat(configuration.context, {
+                hasConnection, metering ->
+                if (hasConnection) {
+                    tracer.sendNextBatch()
+                }
+            })
+            connectivity!!.registerForNetworkChanges()
         } else {
             logAlreadyStarted()
         }
