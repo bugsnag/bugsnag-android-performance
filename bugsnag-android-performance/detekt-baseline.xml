@@ -2,8 +2,6 @@
 <SmellBaseline>
   <ManuallySuppressedIssues/>
   <CurrentIssues>
-    <ID>EmptyFunctionBlock:BugsnagPerformance.kt$BugsnagPerformance${}</ID>
-    <ID>EmptyFunctionBlock:Connectivity.kt$UnknownConnectivity${}</ID>
     <ID>EmptyFunctionBlock:Tracer.kt$Tracer.&lt;no name provided>${}</ID>
     <ID>MagicNumber:Encodings.kt$0xff</ID>
     <ID>MagicNumber:Encodings.kt$16</ID>
@@ -22,9 +20,10 @@
     <ID>MagicNumber:InternalDebug.kt$InternalDebug$60</ID>
     <ID>SwallowedException:Connectivity.kt$ConnectivityLegacy$e: NullPointerException</ID>
     <ID>SwallowedException:ContextExtensions.kt$exc: RuntimeException</ID>
+    <ID>SwallowedException:ForegroundTracker.kt$ForegroundTracker$exc: RuntimeException</ID>
     <ID>TooGenericExceptionCaught:Connectivity.kt$ConnectivityLegacy$e: NullPointerException</ID>
     <ID>TooGenericExceptionCaught:ContextExtensions.kt$exc: RuntimeException</ID>
+    <ID>TooGenericExceptionCaught:ForegroundTracker.kt$ForegroundTracker$exc: RuntimeException</ID>
     <ID>TooGenericExceptionCaught:Tracer.kt$Tracer$e: Exception</ID>
-    <ID>TooManyFunctions:BugsnagPerformance.kt$BugsnagPerformance$BugsnagPerformance</ID>
   </CurrentIssues>
 </SmellBaseline>

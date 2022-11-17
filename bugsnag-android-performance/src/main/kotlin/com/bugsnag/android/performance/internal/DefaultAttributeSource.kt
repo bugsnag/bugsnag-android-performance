@@ -11,5 +11,9 @@ internal class DefaultAttributeSource(
         connectivity.networkSubType?.let { networkSubtype ->
             target.setAttribute("net.host.connection.subtype", networkSubtype)
         }
+
+        ForegroundTracker.isInForeground?.let { inForeground ->
+            target.setAttribute("bugsnag.app.in_foreground", inForeground)
+        }
     }
 }
