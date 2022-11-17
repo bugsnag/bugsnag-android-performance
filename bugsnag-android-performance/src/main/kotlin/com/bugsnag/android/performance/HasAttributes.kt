@@ -11,6 +11,10 @@ interface HasAttributes {
         attributes[key] = value
     }
 
+    fun setAttribute(key: String, value: Int) {
+        attributes[key] = value
+    }
+
     fun setAttribute(key: String, value: Double) {
         attributes[key] = value
     }

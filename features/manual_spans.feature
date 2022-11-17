@@ -12,6 +12,7 @@ Feature: Manual creation of spans
     * the trace payload field "resourceSpans.0.resource" attribute "service.name" equals "com.bugsnag.mazeracer"
     * the trace payload field "resourceSpans.0.resource" attribute "telemetry.sdk.name" equals "bugsnag.performance.android"
     * the trace payload field "resourceSpans.0.resource" attribute "telemetry.sdk.version" equals "0.0.0"
+    * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0" attribute "net.host.connection.type" exists
 
   Scenario: Spans can be logged before start
     Given I run "PreStartSpansScenario"
@@ -27,8 +28,8 @@ Feature: Manual creation of spans
     Then a span name equals "Custom/Span 1"
     * a span name equals "Custom/Span 2"
 
-
   Scenario: App backgrounded
     Given I run "AppBackgroundedScenario"
+    And I send the app to the background for 5 seconds
     And I wait to receive 1 traces
     Then a span name equals "Custom/Span 1"
