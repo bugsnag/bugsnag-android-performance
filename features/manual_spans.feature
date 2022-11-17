@@ -13,6 +13,7 @@ Feature: Manual creation of spans
     * the trace payload field "resourceSpans.0.resource" attribute "telemetry.sdk.name" equals "bugsnag.performance.android"
     * the trace payload field "resourceSpans.0.resource" attribute "telemetry.sdk.version" equals "0.0.0"
     * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0" attribute "net.host.connection.type" exists
+    * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0" attribute "bugsnag.app.in_foreground" is true
 
   Scenario: Spans can be logged before start
     Given I run "PreStartSpansScenario"

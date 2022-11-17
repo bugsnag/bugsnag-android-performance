@@ -9,6 +9,7 @@ import org.junit.Test
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 
+@Suppress("DEPRECATION")
 class LegacyNetworkTypeTest {
     @Test
     fun legacyNetworkType() {
