@@ -2,6 +2,7 @@ package com.bugsnag.android.performance.internal
 
 import android.util.Log
 import com.bugsnag.android.performance.Attributes
+import com.bugsnag.android.performance.Logger
 import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.SpanProcessor
 import java.util.Timer
@@ -15,7 +16,9 @@ internal class Tracer : SpanProcessor, Runnable {
     private val resourceAttributes = Attributes()
     private var batch = ArrayList<Span>()
     private val batchSendQueue = ArrayBlockingQueue<Collection<Span>>(batchSendQueueSize)
-    private var batchTimeoutTask: TimerTask = object : TimerTask() {override fun run() {} }
+    private var batchTimeoutTask: TimerTask = object : TimerTask() {
+        override fun run() {}
+    }
     private val batchTimer = Timer()
 
     private var runner: Thread? = null
@@ -71,7 +74,7 @@ internal class Tracer : SpanProcessor, Runnable {
                 val nextBatch = batchSendQueue.take()
                 delivery.deliver(nextBatch, resourceAttributes)
             } catch (e: Exception) {
-                Log.e("BugsnagPerformance", "Unexpected exception " + e)
+                Logger.e("Unexpected exception", e)
             }
         }
     }

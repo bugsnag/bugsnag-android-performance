@@ -10,7 +10,7 @@ import android.net.ConnectivityManager
 import android.os.RemoteException
 import android.os.storage.StorageManager
 import android.telephony.TelephonyManager
-import android.util.Log
+import com.bugsnag.android.performance.Logger
 
 /**
  * Calls [Context.registerReceiver] but swallows [SecurityException] and [RemoteException]
@@ -23,11 +23,11 @@ internal fun Context.registerReceiverSafe(
     try {
         return registerReceiver(receiver, filter)
     } catch (exc: SecurityException) {
-        Log.w("BugsnagPerformance", "Failed to register receiver", exc)
+        Logger.w("Failed to register receiver", exc)
     } catch (exc: RemoteException) {
-        Log.w("BugsnagPerformance", "Failed to register receiver", exc)
+        Logger.w("Failed to register receiver", exc)
     } catch (exc: IllegalArgumentException) {
-        Log.w("BugsnagPerformance", "Failed to register receiver", exc)
+        Logger.w("Failed to register receiver", exc)
     }
     return null
 }
@@ -42,11 +42,11 @@ internal fun Context.unregisterReceiverSafe(
     try {
         unregisterReceiver(receiver)
     } catch (exc: SecurityException) {
-        Log.w("BugsnagPerformance", "Failed to register receiver", exc)
+        Logger.w("Failed to register receiver", exc)
     } catch (exc: RemoteException) {
-        Log.w("BugsnagPerformance", "Failed to register receiver", exc)
+        Logger.w("Failed to register receiver", exc)
     } catch (exc: IllegalArgumentException) {
-        Log.w("BugsnagPerformance", "Failed to register receiver", exc)
+        Logger.w("Failed to register receiver", exc)
     }
 }
 
