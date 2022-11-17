@@ -21,17 +21,17 @@ class BugsnagPerformanceOkhttp: EventListener() {
         span = BugsnagPerformance.startNetworkSpan(call.request().url.toUrl(), call.request().method)
         val contentLength = call.request().body?.contentLength()
         if (contentLength != null) {
-            span?.attributes?.set("http.request_content_length", contentLength)
+            span?.setAttribute("http.request_content_length", contentLength)
         }
     }
 
     override fun responseHeadersEnd(call: Call, response: Response) {
-        span?.attributes?.set("http.status_code", response.code.toLong())
+        span?.setAttribute("http.status_code", response.code.toLong())
         val contentLength = response.body?.contentLength()
         if (contentLength != null) {
-            span?.attributes?.set("http.response_content_length", contentLength)
+            span?.setAttribute("http.response_content_length", contentLength)
         }
-        span?.attributes?.set("http.flavor",
+        span?.setAttribute("http.flavor",
         when (response.protocol) {
             Protocol.HTTP_1_0 -> "1.0"
             Protocol.HTTP_1_1 -> "1.1"
