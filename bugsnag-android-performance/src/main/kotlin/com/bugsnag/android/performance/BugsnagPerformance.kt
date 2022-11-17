@@ -2,13 +2,13 @@ package com.bugsnag.android.performance
 
 import android.app.Activity
 import android.app.Application
-import android.content.ComponentCallbacks2
-import android.content.res.Configuration
 import android.os.SystemClock
 import com.bugsnag.android.performance.internal.Connectivity
 import com.bugsnag.android.performance.internal.ConnectivityCompat
+import com.bugsnag.android.performance.internal.DefaultAttributeSource
 import com.bugsnag.android.performance.internal.HttpDelivery
 import com.bugsnag.android.performance.internal.InternalDebug
+import com.bugsnag.android.performance.internal.PerformanceComponentCallbacks
 import com.bugsnag.android.performance.internal.PerformancePlatformCallbacks
 import com.bugsnag.android.performance.internal.RetryDelivery
 import com.bugsnag.android.performance.internal.SpanFactory
@@ -16,8 +16,7 @@ import com.bugsnag.android.performance.internal.SpanTracker
 import com.bugsnag.android.performance.internal.Tracer
 import java.net.URL
 
-
-object BugsnagPerformance: ComponentCallbacks2 {
+object BugsnagPerformance {
     private val tracer = Tracer()
 
     private val activitySpanTracker = SpanTracker<Activity>()
@@ -27,7 +26,7 @@ object BugsnagPerformance: ComponentCallbacks2 {
 
     private var isStarted = false
 
-    private var connectivity: Connectivity? = null
+    private lateinit var connectivity: Connectivity
 
     @JvmStatic
     fun start(configuration: PerformanceConfiguration) {
@@ -38,25 +37,8 @@ object BugsnagPerformance: ComponentCallbacks2 {
                     isStarted = true
                 }
             }
-            configuration.context.registerComponentCallbacks(this)
-            connectivity = ConnectivityCompat(configuration.context, {
-                hasConnection, metering ->
-                if (hasConnection) {
-                    tracer.sendNextBatch()
-                }
-            })
-            connectivity!!.registerForNetworkChanges()
         } else {
             logAlreadyStarted()
-        }
-    }
-
-    override fun onConfigurationChanged(newConfig: Configuration) {}
-    override fun onLowMemory() {}
-    override fun onTrimMemory(level: Int) {
-        if (level == ComponentCallbacks2.TRIM_MEMORY_UI_HIDDEN) {
-            // App has been backgrounded
-            tracer.sendNextBatch()
         }
     }
 
@@ -78,7 +60,18 @@ object BugsnagPerformance: ComponentCallbacks2 {
             platformCallbacks.startAppLoadSpanUnderLock("Cold")
         }
 
+        connectivity = ConnectivityCompat(application) { hasConnection, _ ->
+            if (hasConnection) {
+                tracer.sendNextBatch()
+            }
+        }
+
+        connectivity.registerForNetworkChanges()
+
         application.registerActivityLifecycleCallbacks(platformCallbacks)
+        application.registerComponentCallbacks(PerformanceComponentCallbacks(tracer))
+
+        spanFactory.spanAttributeSource = DefaultAttributeSource(connectivity)
 
         tracer.start(
             RetryDelivery(InternalDebug.dropSpansOlderThanMs, HttpDelivery(configuration.endpoint)),

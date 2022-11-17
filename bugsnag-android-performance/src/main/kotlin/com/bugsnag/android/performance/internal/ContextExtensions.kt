@@ -9,8 +9,8 @@ import android.location.LocationManager
 import android.net.ConnectivityManager
 import android.os.RemoteException
 import android.os.storage.StorageManager
+import android.telephony.TelephonyManager
 import android.util.Log
-import java.lang.RuntimeException
 
 /**
  * Calls [Context.registerReceiver] but swallows [SecurityException] and [RemoteException]
@@ -65,6 +65,10 @@ internal fun Context.getActivityManager(): ActivityManager? =
 @JvmName("getConnectivityManagerFrom")
 internal fun Context.getConnectivityManager(): ConnectivityManager? =
     safeGetSystemService(Context.CONNECTIVITY_SERVICE)
+
+@JvmName("getTelephonyManagerFrom")
+internal fun Context.getTelephonyManager(): TelephonyManager? =
+    safeGetSystemService(Context.TELEPHONY_SERVICE)
 
 @JvmName("getStorageManagerFrom")
 internal fun Context.getStorageManager(): StorageManager? =

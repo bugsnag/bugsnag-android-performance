@@ -16,6 +16,10 @@ class Attributes : Collection<Pair<String, Any>> {
         content[key] = value
     }
 
+    operator fun set(key: String, value: Int) {
+        content[key] = value.toLong()
+    }
+
     operator fun set(key: String, value: Double) {
         content[key] = value
     }
