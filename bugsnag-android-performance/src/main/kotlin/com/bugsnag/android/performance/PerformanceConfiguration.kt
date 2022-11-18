@@ -12,6 +12,10 @@ class PerformanceConfiguration(val context: Context) {
 
     var autoInstrumentActivities = AutoInstrument.FULL
 
+    var releaseStage: String? = null
+
+    var versionCode: Long? = null
+
     override fun toString(): String =
         "PerformanceConfiguration(" +
             "context=$context, " +

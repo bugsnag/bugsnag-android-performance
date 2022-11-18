@@ -3,7 +3,7 @@ package com.bugsnag.android.performance
 interface HasAttributes {
     val attributes: Attributes
 
-    fun setAttribute(key: String, value: String) {
+    fun setAttribute(key: String, value: String?) {
         attributes[key] = value
     }
 

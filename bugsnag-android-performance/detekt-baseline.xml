@@ -21,9 +21,11 @@
     <ID>SwallowedException:Connectivity.kt$ConnectivityLegacy$e: NullPointerException</ID>
     <ID>SwallowedException:ContextExtensions.kt$exc: RuntimeException</ID>
     <ID>SwallowedException:ForegroundTracker.kt$ForegroundTracker$exc: RuntimeException</ID>
+    <ID>SwallowedException:ResourceAttributes.kt$ex: RuntimeException</ID>
     <ID>TooGenericExceptionCaught:Connectivity.kt$ConnectivityLegacy$e: NullPointerException</ID>
     <ID>TooGenericExceptionCaught:ContextExtensions.kt$exc: RuntimeException</ID>
     <ID>TooGenericExceptionCaught:ForegroundTracker.kt$ForegroundTracker$exc: RuntimeException</ID>
+    <ID>TooGenericExceptionCaught:ResourceAttributes.kt$ex: RuntimeException</ID>
     <ID>TooGenericExceptionCaught:Tracer.kt$Tracer$e: Exception</ID>
   </CurrentIssues>
 </SmellBaseline>

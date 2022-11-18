@@ -2,7 +2,6 @@ package com.bugsnag.android.performance.internal
 
 import android.content.Context
 import android.net.ConnectivityManager
-import android.net.NetworkInfo
 import com.bugsnag.android.performance.NetworkType
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -32,7 +31,8 @@ class LegacyNetworkTypeTest {
         assertEquals(NetworkType.UNAVAILABLE, connectivity.networkType)
     }
 
-    private fun newNetworkInfo(type: Int): NetworkInfo = object : NetworkInfo(type, 0, null, null) {
-        override fun getType(): Int = type
-    }
+    private fun newNetworkInfo(type: Int): android.net.NetworkInfo =
+        object : android.net.NetworkInfo(type, 0, null, null) {
+            override fun getType(): Int = type
+        }
 }

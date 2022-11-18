@@ -5,12 +5,16 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.ApplicationInfo
 import android.location.LocationManager
 import android.net.ConnectivityManager
 import android.os.RemoteException
 import android.os.storage.StorageManager
 import android.telephony.TelephonyManager
 import com.bugsnag.android.performance.Logger
+
+internal const val RELEASE_STAGE_DEVELOPMENT = "development"
+internal const val RELEASE_STAGE_PRODUCTION = "production"
 
 /**
  * Calls [Context.registerReceiver] but swallows [SecurityException] and [RemoteException]
@@ -77,3 +81,10 @@ internal fun Context.getStorageManager(): StorageManager? =
 @JvmName("getLocationManager")
 internal fun Context.getLocationManager(): LocationManager? =
     safeGetSystemService(Context.LOCATION_SERVICE)
+
+internal val Context.releaseStage: String
+    get() {
+        val appInfo = applicationInfo ?: return RELEASE_STAGE_PRODUCTION
+        return if (appInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0) RELEASE_STAGE_DEVELOPMENT
+        else RELEASE_STAGE_PRODUCTION
+    }
