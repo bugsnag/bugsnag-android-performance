@@ -14,6 +14,8 @@ import com.bugsnag.android.performance.internal.Tracer
 import java.net.URL
 
 object BugsnagPerformance {
+    const val VERSION: String = "0.0.0"
+
     private val tracer = Tracer()
 
     private val activitySpanTracker = SpanTracker<Activity>()
