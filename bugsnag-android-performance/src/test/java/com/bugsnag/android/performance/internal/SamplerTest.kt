@@ -66,7 +66,7 @@ class SamplerTest {
         assert(sampler.sampleShouldKeep(span))
         span = spanFactory.newSpan(processor = spanProcessor, traceId = uuidWithUpper(Long.MAX_VALUE.shl(1)))
         assert(!sampler.sampleShouldKeep(span))
-        span = spanFactory.newSpan(processor = spanProcessor, traceId = uuidWithUpper(Long.MAX_VALUE-10000))
+        span = spanFactory.newSpan(processor = spanProcessor, traceId = uuidWithUpper(Long.MAX_VALUE - 10000))
         assert(sampler.sampleShouldKeep(span))
     }
 
@@ -102,11 +102,10 @@ class SamplerTest {
         val batch = listOf<Span>(
             spanFactory.newSpan(processor = spanProcessor, traceId = uuidWithUpper(0)),
             spanFactory.newSpan(processor = spanProcessor, traceId = uuidWithUpper(Long.MAX_VALUE.shl(1))),
-            spanFactory.newSpan(processor = spanProcessor, traceId = uuidWithUpper(Long.MAX_VALUE-10000)),
+            spanFactory.newSpan(processor = spanProcessor, traceId = uuidWithUpper(Long.MAX_VALUE - 10000)),
             spanFactory.newSpan(processor = spanProcessor, traceId = uuidWithUpper(1000000000))
         )
         val sampled = sampler.sampled(batch)
         assert(sampled.size == 3)
     }
-
 }
