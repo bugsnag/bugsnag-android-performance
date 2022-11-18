@@ -51,6 +51,7 @@ dependencies {
     testImplementation 'org.mockito.kotlin:mockito-kotlin:4.0.0'
 
     testImplementation 'net.jimblackler.jsonschemafriend:core:0.11.4'
+    testImplementation 'org.jetbrains.kotlin:kotlin-reflect:1.5.0'
 
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
 }

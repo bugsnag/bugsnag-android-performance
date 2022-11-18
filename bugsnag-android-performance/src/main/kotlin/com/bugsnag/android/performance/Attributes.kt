@@ -8,8 +8,12 @@ class Attributes : Collection<Pair<String, Any>> {
 
     val keys get() = content.keys.toSet()
 
-    operator fun set(key: String, value: String) {
-        content[key] = value
+    operator fun set(key: String, value: String?) {
+        if(value != null) {
+            content[key] = value
+        } else {
+            content.remove(key)
+        }
     }
 
     operator fun set(key: String, value: Long) {

@@ -6,11 +6,8 @@ import android.os.SystemClock
 import com.bugsnag.android.performance.internal.Connectivity
 import com.bugsnag.android.performance.internal.ConnectivityCompat
 import com.bugsnag.android.performance.internal.DefaultAttributeSource
-import com.bugsnag.android.performance.internal.HttpDelivery
-import com.bugsnag.android.performance.internal.InternalDebug
 import com.bugsnag.android.performance.internal.PerformanceComponentCallbacks
 import com.bugsnag.android.performance.internal.PerformancePlatformCallbacks
-import com.bugsnag.android.performance.internal.RetryDelivery
 import com.bugsnag.android.performance.internal.SpanFactory
 import com.bugsnag.android.performance.internal.SpanTracker
 import com.bugsnag.android.performance.internal.Tracer
@@ -73,10 +70,7 @@ object BugsnagPerformance {
 
         spanFactory.spanAttributeSource = DefaultAttributeSource(connectivity)
 
-        tracer.start(
-            RetryDelivery(InternalDebug.dropSpansOlderThanMs, HttpDelivery(configuration.endpoint)),
-            configuration.context.packageName
-        )
+        tracer.start(configuration)
     }
 
     @JvmStatic

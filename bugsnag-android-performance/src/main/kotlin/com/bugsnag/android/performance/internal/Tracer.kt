@@ -1,8 +1,8 @@
 package com.bugsnag.android.performance.internal
 
-import android.util.Log
 import com.bugsnag.android.performance.Attributes
 import com.bugsnag.android.performance.Logger
+import com.bugsnag.android.performance.PerformanceConfiguration
 import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.SpanProcessor
 import java.util.Timer
@@ -12,8 +12,8 @@ import java.util.concurrent.ArrayBlockingQueue
 internal class Tracer : SpanProcessor, Runnable {
     private lateinit var delivery: Delivery
     private lateinit var serviceName: String
+    private lateinit var resourceAttributes: Attributes
 
-    private val resourceAttributes = Attributes()
     private var batch = ArrayList<Span>()
     private val batchSendQueue = ArrayBlockingQueue<Collection<Span>>(batchSendQueueSize)
     private var batchTimeoutTask: TimerTask = object : TimerTask() {
@@ -80,16 +80,18 @@ internal class Tracer : SpanProcessor, Runnable {
     }
 
     @Synchronized
-    fun start(delivery: Delivery, serviceName: String) {
+    fun start(configuration: PerformanceConfiguration) {
         if (running) return
         running = true
 
-        this.delivery = delivery
-        this.serviceName = serviceName
+        val delivery = RetryDelivery(
+            InternalDebug.dropSpansOlderThanMs,
+            HttpDelivery(configuration.endpoint)
+        )
 
-        resourceAttributes["service.name"] = serviceName
-        resourceAttributes["telemetry.sdk.name"] = "bugsnag.performance.android"
-        resourceAttributes["telemetry.sdk.version"] = "0.0.0"
+        this.delivery = delivery
+        this.serviceName = configuration.context.packageName
+        this.resourceAttributes = createResourceAttributes(configuration)
 
         runner = Thread(this, "Bugsnag Tracer").apply {
             isDaemon = true

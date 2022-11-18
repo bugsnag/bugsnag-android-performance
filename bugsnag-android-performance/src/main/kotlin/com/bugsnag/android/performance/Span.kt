@@ -19,7 +19,7 @@ class Span internal constructor(
 
     var name: String = name
         set(value) {
-            check(endTime == NO_END_TIME) { "span '$field' is closed and cannot be modified" }
+            check(isOpen()) { "span '$field' is closed and cannot be modified" }
             val typeSeparator = field.indexOf('/')
 
             field =
