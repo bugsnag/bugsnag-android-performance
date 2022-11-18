@@ -3,6 +3,7 @@ package com.bugsnag.android.performance.internal
 import android.content.Context
 import android.os.Build
 import com.bugsnag.android.performance.Attributes
+import com.bugsnag.android.performance.BugsnagPerformance
 import com.bugsnag.android.performance.PerformanceConfiguration
 
 internal fun createResourceAttributes(configuration: PerformanceConfiguration): Attributes {
@@ -31,7 +32,7 @@ internal fun createResourceAttributes(configuration: PerformanceConfiguration): 
 
     resourceAttributes["service.name"] = configuration.context.packageName
     resourceAttributes["telemetry.sdk.name"] = "bugsnag.performance.android"
-    resourceAttributes["telemetry.sdk.version"] = "0.0.0"
+    resourceAttributes["telemetry.sdk.version"] = BugsnagPerformance.VERSION
 
     return resourceAttributes
 }
