@@ -19,6 +19,21 @@ class SamplerTest {
     }
 
     @Test
+    fun testPExpiry() {
+        val oldExpiry = InternalDebug.pValueExpireAfterMs
+        InternalDebug.pValueExpireAfterMs = 10
+        val sampler = Sampler(1.0)
+        sampler.probability = 0.2
+        val span = spanFactory.newSpan(processor = spanProcessor, traceId = uuidWithUpper(Long.MAX_VALUE))
+        assert(!sampler.sampleShouldKeep(span))
+        assert(sampler.probability == 0.2)
+        Thread.sleep(100)
+        assert(sampler.sampleShouldKeep(span))
+        assert(sampler.probability == 1.0)
+        InternalDebug.pValueExpireAfterMs = oldExpiry
+    }
+
+    @Test
     fun testSampleSpanProbability1() {
         val sampler = Sampler(1.0)
         var span = spanFactory.newSpan(processor = spanProcessor, traceId = uuidWithUpper(0))

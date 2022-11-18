@@ -9,9 +9,9 @@ class Sampler(fallbackProbability: Double) {
     set(value) {
         field = value
         currentProbability = value
-        expiryTime = oneDayFromNow()
+        expiryTime = newExpiryTime()
     }
-    private var expiryTime = oneDayFromNow()
+    private var expiryTime = newExpiryTime()
     private var currentProbability = fallbackProbability
     var probability: Double
     get() {
@@ -22,7 +22,7 @@ class Sampler(fallbackProbability: Double) {
     }
     set(value) {
         currentProbability = value
-        expiryTime = oneDayFromNow()
+        expiryTime = newExpiryTime()
     }
 
     private fun shouldKeep(samplingValue: Double, upperBound: Double): Boolean {
@@ -49,10 +49,10 @@ class Sampler(fallbackProbability: Double) {
     }
 
     companion object {
-        fun oneDayFromNow(): Date {
+        fun newExpiryTime(): Date {
             Calendar.getInstance().apply {
                 time = Date()
-                add(Calendar.DAY_OF_YEAR, 1)
+                add(Calendar.MILLISECOND, InternalDebug.pValueExpireAfterMs)
                 return time
             }
         }
