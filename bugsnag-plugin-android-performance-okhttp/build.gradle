@@ -6,6 +6,8 @@ plugins {
     id 'maven-publish'
 }
 
+apply from: '../gradle/release.gradle'
+
 version = "${project.VERSION_NAME}"
 group = "${project.GROUP}"
 
@@ -24,6 +26,12 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    publishing {
+        singleVariant('release') {
+            withSourcesJar()
+            withJavadocJar()
         }
     }
     testOptions {
@@ -56,19 +64,6 @@ dependencies {
     implementation project(':bugsnag-android-performance')
     compileOnly("com.squareup.okhttp3:okhttp:4.9.1")
     testImplementation("com.squareup.okhttp3:mockwebserver:4.9.1")
-}
-
-project.afterEvaluate {
-    publishing {
-        publications {
-            SDK(MavenPublication) {
-                from components.release
-                groupId = "com.bugsnag"
-                artifactId = archivesBaseName
-                version = version
-            }
-        }
-    }
 }
 
 detekt {

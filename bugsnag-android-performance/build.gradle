@@ -6,6 +6,8 @@ plugins {
     id 'maven-publish'
 }
 
+apply from: '../gradle/release.gradle'
+
 version = "${project.VERSION_NAME}"
 group = "${project.GROUP}"
 
@@ -24,6 +26,12 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    publishing {
+        singleVariant('release') {
+            withSourcesJar()
+            withJavadocJar()
         }
     }
     testOptions {
@@ -54,19 +62,6 @@ dependencies {
     testImplementation 'org.jetbrains.kotlin:kotlin-reflect:1.5.0'
 
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
-}
-
-project.afterEvaluate {
-    publishing {
-        publications {
-            SDK(MavenPublication) {
-                from components.release
-                groupId = "com.bugsnag"
-                artifactId = archivesBaseName
-                version = version
-            }
-        }
-    }
 }
 
 detekt {
