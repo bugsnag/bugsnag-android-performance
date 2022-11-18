@@ -16,6 +16,8 @@ class PerformanceConfiguration(val context: Context) {
 
     var versionCode: Long? = null
 
+    var samplingProbability = 1.0
+
     override fun toString(): String =
         "PerformanceConfiguration(" +
             "context=$context, " +
@@ -23,5 +25,6 @@ class PerformanceConfiguration(val context: Context) {
             "endpoint='$endpoint', " +
             "autoInstrumentAppStarts=$autoInstrumentAppStarts, " +
             "autoInstrumentActivities=$autoInstrumentActivities" +
+            "samplingProbability=$samplingProbability" +
             ")"
 }

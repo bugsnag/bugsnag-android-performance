@@ -39,6 +39,22 @@ class Span internal constructor(
 
     fun end() = end(SystemClock.elapsedRealtimeNanos())
 
+    val samplingValue: Double
+    init {
+        // Our "random" sampling value is actually derived from the traceId
+        val msw = traceId.mostSignificantBits.ushr(1)
+        samplingValue = when(msw) {
+            0L -> 0.0
+            else -> msw.toDouble() / Long.MAX_VALUE.toDouble()
+        }
+    }
+
+    var samplingProbability: Double = 1.0
+    set(value) {
+        field = value
+        attributes.set("bugsnag.sampling.p", value)
+    }
+
     override fun close() = end()
 
     fun isOpen() = endTime == NO_END_TIME
