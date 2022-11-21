@@ -88,7 +88,7 @@ class SamplerTest {
         val sampler = Sampler(0.0)
         val batch = listOf<Span>(
             spanFactory.newSpan(processor = spanProcessor, traceId = uuidWithUpper(0)),
-            spanFactory.newSpan(processor = spanProcessor, traceId = uuidWithUpper(Long.MAX_VALUE.shl(1))),
+            spanFactory.newSpan(processor = spanProcessor, traceId = uuidWithUpper(Long.MAX_VALUE shl 1)),
             spanFactory.newSpan(processor = spanProcessor, traceId = uuidWithUpper(Long.MAX_VALUE)),
             spanFactory.newSpan(processor = spanProcessor, traceId = uuidWithUpper(1000000000))
         )
