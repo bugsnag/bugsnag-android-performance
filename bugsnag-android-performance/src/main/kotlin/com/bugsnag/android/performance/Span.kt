@@ -42,7 +42,7 @@ class Span internal constructor(
     val samplingValue: Double
     init {
         // Our "random" sampling value is actually derived from the traceId
-        val msw = traceId.mostSignificantBits.ushr(1)
+        val msw = traceId.mostSignificantBits ushr 1
         samplingValue = when(msw) {
             0L -> 0.0
             else -> msw.toDouble() / Long.MAX_VALUE.toDouble()
