@@ -50,7 +50,7 @@ class Span internal constructor(
     }
 
     var samplingProbability: Double = 1.0
-    set(value) {
+    internal set(value) {
         field = value
         attributes.set("bugsnag.sampling.p", value)
     }
