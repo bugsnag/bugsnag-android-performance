@@ -1,4 +1,4 @@
-Feature: Sampling
+Feature: Span Sampling
 
   Scenario: No spans should be sent when samplingProbability is zero
     Given I run "SamplingProbabilityZeroScenario"
