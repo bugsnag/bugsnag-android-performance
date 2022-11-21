@@ -49,12 +49,6 @@ class Sampler(fallbackProbability: Double) {
     }
 
     companion object {
-        fun newExpiryTime(): Date {
-            Calendar.getInstance().apply {
-                time = Date()
-                add(Calendar.MILLISECOND, InternalDebug.pValueExpireAfterMs)
-                return time
-            }
-        }
+        fun newExpiryTime() = System.currentTimeMillis() + InternalDebug.pValueExpireAfterMs
     }
 }
