@@ -64,7 +64,7 @@ class SamplerTest {
         val sampler = Sampler(0.5)
         var span = spanFactory.newSpan(processor = spanProcessor, traceId = uuidWithUpper(0))
         assert(sampler.sampleShouldKeep(span))
-        span = spanFactory.newSpan(processor = spanProcessor, traceId = uuidWithUpper(Long.MAX_VALUE.shl(1)))
+        span = spanFactory.newSpan(processor = spanProcessor, traceId = uuidWithUpper(Long.MAX_VALUE shl 1))
         assert(!sampler.sampleShouldKeep(span))
         span = spanFactory.newSpan(processor = spanProcessor, traceId = uuidWithUpper(Long.MAX_VALUE - 10000))
         assert(sampler.sampleShouldKeep(span))
