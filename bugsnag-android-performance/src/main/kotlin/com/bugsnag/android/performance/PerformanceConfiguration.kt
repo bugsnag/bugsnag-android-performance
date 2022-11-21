@@ -16,7 +16,12 @@ class PerformanceConfiguration(val context: Context) {
 
     var versionCode: Long? = null
 
-    var samplingProbability = 1.0
+    @FloatRange(from = 0.0, to = 1.0)
+    var samplingProbability: Double = 1.0
+        set(value) {
+            require(field in 0.0..1.0) { "samplingProbability out of range (0..1): $value" }
+            field = value
+        }
 
     override fun toString(): String =
         "PerformanceConfiguration(" +
