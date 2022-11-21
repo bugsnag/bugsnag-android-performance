@@ -1,29 +1,27 @@
 package com.bugsnag.android.performance.internal
 
 import com.bugsnag.android.performance.Span
-import java.util.Calendar
-import java.util.Date
 
 class Sampler(fallbackProbability: Double) {
     var fallbackProbability = fallbackProbability
-    set(value) {
-        field = value
-        currentProbability = value
-        expiryTime = newExpiryTime()
-    }
+        set(value) {
+            field = value
+            currentProbability = value
+            expiryTime = newExpiryTime()
+        }
     private var expiryTime = newExpiryTime()
     private var currentProbability = fallbackProbability
     var probability: Double
-    get() {
-        return when {
-            Date().after(expiryTime) -> fallbackProbability
-            else -> currentProbability
+        get() {
+            return when {
+                System.currentTimeMillis() > expiryTime -> fallbackProbability
+                else -> currentProbability
+            }
         }
-    }
-    set(value) {
-        currentProbability = value
-        expiryTime = newExpiryTime()
-    }
+        set(value) {
+            currentProbability = value
+            expiryTime = newExpiryTime()
+        }
 
     private fun shouldKeep(samplingValue: Double, upperBound: Double): Boolean {
         return upperBound > 0.0 && samplingValue <= upperBound

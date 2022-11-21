@@ -1,6 +1,7 @@
 package com.bugsnag.android.performance
 
 import android.content.Context
+import androidx.annotation.FloatRange
 
 class PerformanceConfiguration(val context: Context) {
 
