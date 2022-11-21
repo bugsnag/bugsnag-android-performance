@@ -11,13 +11,23 @@ import java.net.URL
 import java.security.MessageDigest
 
 internal class HttpDelivery(private val endpoint: String, private val apiKey: String) : Delivery {
-    override fun deliver(spans: Collection<Span>, resourceAttributes: Attributes): DeliveryResult {
+    override fun deliver(
+        spans: Collection<Span>,
+        resourceAttributes: Attributes,
+        newProbabilityCallback: NewProbabilityCallback?
+    ): DeliveryResult {
         if (spans.isEmpty()) {
             return DeliveryResult.SUCCESS
         }
 
-        val payload = encodeSpanPayload(spans, resourceAttributes)
+        return sendRequest(encodeSpanPayload(spans, resourceAttributes), newProbabilityCallback)
+    }
 
+    override fun deliverInitialPRequest(newProbabilityCallback: NewProbabilityCallback?) {
+        sendRequest("{\"resourceSpans\": []}".toByteArray(), newProbabilityCallback)
+    }
+
+    private fun sendRequest(payload: ByteArray, newProbabilityCallback: NewProbabilityCallback?): DeliveryResult {
         val connection = URL(endpoint).openConnection() as HttpURLConnection
         with(connection) {
             requestMethod = "POST"
@@ -35,12 +45,11 @@ internal class HttpDelivery(private val endpoint: String, private val apiKey: St
         }
 
         val result = getDeliveryResult(connection)
-        if (result != DeliveryResult.SUCCESS) {
-            val errorMessage = connection.errorStream.reader().readText()
-            Logger.w("Could not deliver payload to $endpoint. Response: $errorMessage")
-        }
-
+        val newP = connection.getHeaderField("Bugsnag-Sampling-Probability")?.toDoubleOrNull()
         connection.disconnect()
+        if (newProbabilityCallback != null && newP != null) {
+            newProbabilityCallback(newP)
+        }
         return result
     }
 
