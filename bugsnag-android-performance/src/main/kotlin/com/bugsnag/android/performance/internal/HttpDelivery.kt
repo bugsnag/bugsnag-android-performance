@@ -20,14 +20,15 @@ internal class HttpDelivery(private val endpoint: String, private val apiKey: St
             return DeliveryResult.SUCCESS
         }
 
-        return sendRequest(encodeSpanPayload(spans, resourceAttributes), newProbabilityCallback)
+        return deliverPayload(encodeSpanPayload(spans, resourceAttributes), newProbabilityCallback)
     }
 
-    override fun deliverInitialPRequest(newProbabilityCallback: NewProbabilityCallback?) {
-        sendRequest("{\"resourceSpans\": []}".toByteArray(), newProbabilityCallback)
+    override fun fetchCurrentProbability(newPCallback: NewProbabilityCallback) {
+        // Server expects a call to /traces with an empty set of resource spans
+        deliverPayload("{\"respourceSpans\": []}".toByteArray(), newPCallback)
     }
 
-    private fun sendRequest(payload: ByteArray, newProbabilityCallback: NewProbabilityCallback?): DeliveryResult {
+    private fun deliverPayload(payload: ByteArray, newPCallback: NewProbabilityCallback?): DeliveryResult {
         val connection = URL(endpoint).openConnection() as HttpURLConnection
         with(connection) {
             requestMethod = "POST"
@@ -47,8 +48,8 @@ internal class HttpDelivery(private val endpoint: String, private val apiKey: St
         val result = getDeliveryResult(connection)
         val newP = connection.getHeaderField("Bugsnag-Sampling-Probability")?.toDoubleOrNull()
         connection.disconnect()
-        if (newProbabilityCallback != null && newP != null) {
-            newProbabilityCallback(newP)
+        if (newPCallback != null && newP != null) {
+            newPCallback(newP)
         }
         return result
     }

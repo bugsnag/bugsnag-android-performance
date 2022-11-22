@@ -1,5 +1,11 @@
 Feature: Server responses
 
+  Scenario: Startup P request returns 0
+    Given I set the HTTP status code for the next requests to "200"
+    Given I set the sampling probability for the next traces to "null"
+    And I run "ThreeSpansScenario"
+    And I should receive no traces
+
   Scenario: No P update: success, fail-permament, fail-retriable
     Given I set the HTTP status code for the next requests to "200,200,400,500"
     Given I set the sampling probability for the next traces to "null,null,null"

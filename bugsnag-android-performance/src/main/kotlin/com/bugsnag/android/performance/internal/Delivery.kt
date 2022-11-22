@@ -18,5 +18,5 @@ interface Delivery {
         newProbabilityCallback: NewProbabilityCallback?
     ): DeliveryResult
 
-    fun deliverInitialPRequest(newProbabilityCallback: NewProbabilityCallback?)
+    fun fetchCurrentProbability(newPCallback: NewProbabilityCallback)
 }

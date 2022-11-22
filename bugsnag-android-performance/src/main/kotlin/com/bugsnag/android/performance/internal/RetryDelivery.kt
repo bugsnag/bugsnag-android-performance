@@ -26,10 +26,9 @@ class RetryDelivery(private val dropOlderThanMs: Long, private val delivery: Del
         return result
     }
 
-    override fun deliverInitialPRequest(newProbabilityCallback: NewProbabilityCallback?) {
-        // This does not get retried.
-        delivery.deliverInitialPRequest(newProbabilityCallback)
-    }
-
     override fun toString(): String = "RetryDelivery($delivery)"
+
+    override fun fetchCurrentProbability(newPCallback: NewProbabilityCallback) {
+        delivery.fetchCurrentProbability(newPCallback)
+    }
 }

@@ -72,8 +72,7 @@ internal class Tracer : SpanProcessor, Runnable {
     }
 
     override fun run() {
-        delivery.deliverInitialPRequest { sampler.probability = it }
-
+        delivery.fetchCurrentProbability { sampler.probability = it }
         while (running) {
             try {
                 val nextBatch = batchSendQueue.take()
