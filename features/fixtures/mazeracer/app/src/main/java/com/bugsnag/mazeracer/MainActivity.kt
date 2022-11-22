@@ -132,6 +132,9 @@ class MainActivity : AppCompatActivity() {
                                 polling = false
                                 runScenario(scenarioName, scenarioMetadata, endpointUrl)
                             }
+                            "load_scenario" -> {
+                                loadScenario(scenarioName, scenarioMetadata, endpointUrl)
+                            }
                             else -> throw IllegalArgumentException("Unknown action: $action")
                         }
                     }
