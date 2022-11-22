@@ -5,10 +5,10 @@ package com.bugsnag.android.performance.internal
 import android.util.JsonWriter
 import com.bugsnag.android.performance.Attributes
 
-internal fun JsonWriter.value(value: Attributes): JsonWriter {
+internal fun JsonWriter.value(attributes: Attributes): JsonWriter {
     beginArray()
 
-    value.forEach { (key, value) ->
+    attributes.forEach { (key, value) ->
         beginObject() // attribute
             .name("key").value(key)
             .name("value")

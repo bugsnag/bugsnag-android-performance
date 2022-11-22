@@ -11,6 +11,7 @@ import java.util.UUID
 class TestSpanFactory {
     private var spanCount = 1L
 
+    @Suppress("LongParameterList")
     fun newSpan(
         name: String = "Test/Span$spanCount",
         kind: SpanKind = SpanKind.INTERNAL,

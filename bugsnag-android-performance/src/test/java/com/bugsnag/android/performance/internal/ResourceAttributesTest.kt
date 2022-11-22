@@ -10,8 +10,10 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.Shadows.shadowOf
+import org.robolectric.annotation.Config
 import org.robolectric.shadows.ShadowBuild
 
+@Config(sdk = [32])
 @RunWith(RobolectricTestRunner::class)
 class ResourceAttributesTest {
     @Test

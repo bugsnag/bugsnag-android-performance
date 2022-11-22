@@ -15,6 +15,8 @@ internal class Tracer : SpanProcessor, Runnable {
     private lateinit var resourceAttributes: Attributes
 
     internal val sampler = Sampler(1.0)
+
+    @Suppress("DoubleMutabilityForCollection") // we swap out this ArrayList when we flush batches
     private var batch = ArrayList<Span>()
     private val batchSendQueue = ArrayBlockingQueue<Collection<Span>>(batchSendQueueSize)
     private var batchTimeoutTask: TimerTask = object : TimerTask() {

@@ -14,6 +14,7 @@ import java.util.UUID
 @RunWith(RobolectricTestRunner::class)
 class HttpDeliveryTest {
     @Test
+    @Suppress("LongMethod")
     fun testDeliver() {
         val span1 = Span(
             "test span",
