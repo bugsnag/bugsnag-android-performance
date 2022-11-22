@@ -3,6 +3,7 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("org.jlleitschuh.gradle.ktlint")
     id("io.gitlab.arturbosch.detekt")
+    id("org.jetbrains.dokka")
     id("maven-publish")
 }
 
@@ -18,7 +19,6 @@ android {
 
     defaultConfig {
         minSdk = 17
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         consumerProguardFiles.add(file("consumer-rules.pro"))
