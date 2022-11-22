@@ -10,7 +10,7 @@ import com.bugsnag.android.performance.ViewType
 import java.net.URL
 import java.util.UUID
 
-internal typealias AttributeSource = (HasAttributes) -> Unit
+internal typealias AttributeSource = (target: HasAttributes) -> Unit
 
 class SpanFactory(
     private val spanProcessor: SpanProcessor,

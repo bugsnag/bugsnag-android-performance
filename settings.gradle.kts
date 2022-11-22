@@ -5,16 +5,19 @@ pluginManagement {
         mavenCentral()
     }
 }
+
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
         google()
         mavenCentral()
-        maven { url 'https://jitpack.io' }
+        maven { setUrl("https://jitpack.io") }
     }
 }
+
 rootProject.name = "bugsnag-android-performance"
-include (
-    ':bugsnag-android-performance',
-    ':bugsnag-plugin-android-performance-okhttp'
+
+include(
+        ":bugsnag-android-performance",
+        ":bugsnag-plugin-android-performance-okhttp"
 )
