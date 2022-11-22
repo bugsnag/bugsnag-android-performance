@@ -1,6 +1,7 @@
 package com.bugsnag.android.performance
 
 import android.os.SystemClock
+import androidx.annotation.FloatRange
 import java.io.Closeable
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicLongFieldUpdater
@@ -49,8 +50,10 @@ class Span internal constructor(
         }
     }
 
+    @FloatRange(from = 0.0, to = 1.0)
     var samplingProbability: Double = 1.0
     internal set(value) {
+        require(field in 0.0..1.0) { "samplingProbability out of range (0..1): $value" }
         field = value
         attributes.set("bugsnag.sampling.p", value)
     }

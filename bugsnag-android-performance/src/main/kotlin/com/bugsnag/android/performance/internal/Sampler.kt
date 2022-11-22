@@ -23,30 +23,16 @@ class Sampler(fallbackProbability: Double) {
             expiryTime = newExpiryTime()
         }
 
-    private fun shouldKeep(samplingValue: Double, upperBound: Double): Boolean {
-        return upperBound > 0.0 && samplingValue <= upperBound
-    }
-
     fun sampled(spans: Collection<Span>): Collection<Span> {
-        val p = probability
-        return spans.filter {
-            if (shouldKeep(it.samplingValue, p)) {
-                it.samplingProbability = p
-                true
-            } else {
-                false
-            }
-        }
-
+        return spans.filter { shouldKeepSpan(it) }
     }
 
-    fun sampleShouldKeep(span: Span): Boolean {
-        val p = probability
-        span.samplingProbability = p
-        return shouldKeep(span.samplingValue, p)
+    // Side effect: Sets span.samplingProbability to the current probability
+    fun shouldKeepSpan(span: Span): Boolean {
+        val upperBound = probability
+        span.samplingProbability = upperBound
+        return upperBound > 0.0 && span.samplingValue <= upperBound
     }
 
-    companion object {
-        fun newExpiryTime() = System.currentTimeMillis() + InternalDebug.pValueExpireAfterMs
-    }
+    private fun newExpiryTime() = System.currentTimeMillis() + InternalDebug.pValueExpireAfterMs
 }

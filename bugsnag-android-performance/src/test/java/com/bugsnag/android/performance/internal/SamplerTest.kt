@@ -26,10 +26,10 @@ class SamplerTest {
         val sampler = Sampler(1.0)
         sampler.probability = 0.2
         val span = spanFactory.newSpan(processor = spanProcessor, traceId = uuidWithUpper(Long.MAX_VALUE))
-        assertTrue(!sampler.sampleShouldKeep(span))
+        assertTrue(!sampler.shouldKeepSpan(span))
         assertTrue(sampler.probability == 0.2)
         Thread.sleep(100)
-        assertTrue(sampler.sampleShouldKeep(span))
+        assertTrue(sampler.shouldKeepSpan(span))
         assertTrue(sampler.probability == 1.0)
         InternalDebug.pValueExpireAfterMs = oldExpiry
     }
@@ -38,37 +38,37 @@ class SamplerTest {
     fun testSampleSpanProbability1() {
         val sampler = Sampler(1.0)
         var span = spanFactory.newSpan(processor = spanProcessor, traceId = uuidWithUpper(0))
-        assertTrue(sampler.sampleShouldKeep(span))
+        assertTrue(sampler.shouldKeepSpan(span))
         span = spanFactory.newSpan(processor = spanProcessor, traceId = uuidWithUpper(Long.MAX_VALUE shl 1))
-        assertTrue(sampler.sampleShouldKeep(span))
+        assertTrue(sampler.shouldKeepSpan(span))
         span = spanFactory.newSpan(processor = spanProcessor, traceId = uuidWithUpper(Long.MAX_VALUE))
-        assertTrue(sampler.sampleShouldKeep(span))
+        assertTrue(sampler.shouldKeepSpan(span))
         span = spanFactory.newSpan(processor = spanProcessor, traceId = uuidWithUpper(1000000000))
-        assertTrue(sampler.sampleShouldKeep(span))
+        assertTrue(sampler.shouldKeepSpan(span))
     }
 
     @Test
     fun testSampleSpanProbability0() {
         val sampler = Sampler(0.0)
         var span = spanFactory.newSpan(processor = spanProcessor, traceId = uuidWithUpper(0))
-        assertTrue(!sampler.sampleShouldKeep(span))
+        assertTrue(!sampler.shouldKeepSpan(span))
         span = spanFactory.newSpan(processor = spanProcessor, traceId = uuidWithUpper(Long.MAX_VALUE shl 1))
-        assertTrue(!sampler.sampleShouldKeep(span))
+        assertTrue(!sampler.shouldKeepSpan(span))
         span = spanFactory.newSpan(processor = spanProcessor, traceId = uuidWithUpper(Long.MAX_VALUE))
-        assertTrue(!sampler.sampleShouldKeep(span))
+        assertTrue(!sampler.shouldKeepSpan(span))
         span = spanFactory.newSpan(processor = spanProcessor, traceId = uuidWithUpper(1000000000))
-        assertTrue(!sampler.sampleShouldKeep(span))
+        assertTrue(!sampler.shouldKeepSpan(span))
     }
 
     @Test
     fun testSampleSpanProbability0_5() {
         val sampler = Sampler(0.5)
         var span = spanFactory.newSpan(processor = spanProcessor, traceId = uuidWithUpper(0))
-        assertTrue(sampler.sampleShouldKeep(span))
+        assertTrue(sampler.shouldKeepSpan(span))
         span = spanFactory.newSpan(processor = spanProcessor, traceId = uuidWithUpper(Long.MAX_VALUE shl 1))
-        assertTrue(!sampler.sampleShouldKeep(span))
+        assertTrue(!sampler.shouldKeepSpan(span))
         span = spanFactory.newSpan(processor = spanProcessor, traceId = uuidWithUpper(Long.MAX_VALUE - 10000))
-        assertTrue(sampler.sampleShouldKeep(span))
+        assertTrue(sampler.shouldKeepSpan(span))
     }
 
     @Test

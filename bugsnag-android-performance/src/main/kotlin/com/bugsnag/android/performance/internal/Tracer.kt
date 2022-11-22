@@ -65,7 +65,7 @@ internal class Tracer : SpanProcessor, Runnable {
     }
 
     override fun onEnd(span: Span) {
-        if (sampler.sampleShouldKeep(span)) {
+        if (sampler.shouldKeepSpan(span)) {
             addToBatch(span)
         }
     }
