@@ -1,6 +1,7 @@
 package com.bugsnag.android.performance
 
 import android.content.Context
+import androidx.annotation.FloatRange
 
 class PerformanceConfiguration(val context: Context) {
 
@@ -16,6 +17,13 @@ class PerformanceConfiguration(val context: Context) {
 
     var versionCode: Long? = null
 
+    @FloatRange(from = 0.0, to = 1.0)
+    var samplingProbability: Double = 1.0
+        set(value) {
+            require(field in 0.0..1.0) { "samplingProbability out of range (0..1): $value" }
+            field = value
+        }
+
     override fun toString(): String =
         "PerformanceConfiguration(" +
             "context=$context, " +
@@ -23,5 +31,6 @@ class PerformanceConfiguration(val context: Context) {
             "endpoint='$endpoint', " +
             "autoInstrumentAppStarts=$autoInstrumentAppStarts, " +
             "autoInstrumentActivities=$autoInstrumentActivities" +
+            "samplingProbability=$samplingProbability" +
             ")"
 }

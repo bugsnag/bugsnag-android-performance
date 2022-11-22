@@ -59,6 +59,8 @@ object BugsnagPerformance {
             platformCallbacks.startAppLoadSpanUnderLock("Cold")
         }
 
+        tracer.sampler.fallbackProbability = configuration.samplingProbability
+
         connectivity = ConnectivityCompat(application) { hasConnection, _ ->
             if (hasConnection) {
                 tracer.sendNextBatch()

@@ -9,4 +9,5 @@ object InternalDebug {
     var spanBatchSizeSendTriggerPoint = 100
     var spanBatchTimeoutMs = 30000L
     var dropSpansOlderThanMs = 24L * 60 * 60 * 1000
+    var pValueExpireAfterMs = 24 * 60 * 60 * 1000
 }

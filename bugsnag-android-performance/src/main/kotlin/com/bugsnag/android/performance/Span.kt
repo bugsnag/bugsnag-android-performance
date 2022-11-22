@@ -1,6 +1,7 @@
 package com.bugsnag.android.performance
 
 import android.os.SystemClock
+import androidx.annotation.FloatRange
 import java.io.Closeable
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicLongFieldUpdater
@@ -38,6 +39,24 @@ class Span internal constructor(
     }
 
     fun end() = end(SystemClock.elapsedRealtimeNanos())
+
+    val samplingValue: Double
+    init {
+        // Our "random" sampling value is actually derived from the traceId
+        val msw = traceId.mostSignificantBits ushr 1
+        samplingValue = when(msw) {
+            0L -> 0.0
+            else -> msw.toDouble() / Long.MAX_VALUE.toDouble()
+        }
+    }
+
+    @FloatRange(from = 0.0, to = 1.0)
+    var samplingProbability: Double = 1.0
+    internal set(value) {
+        require(field in 0.0..1.0) { "samplingProbability out of range (0..1): $value" }
+        field = value
+        attributes.set("bugsnag.sampling.p", value)
+    }
 
     override fun close() = end()
 

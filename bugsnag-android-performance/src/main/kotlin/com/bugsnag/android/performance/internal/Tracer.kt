@@ -14,6 +14,7 @@ internal class Tracer : SpanProcessor, Runnable {
     private lateinit var serviceName: String
     private lateinit var resourceAttributes: Attributes
 
+    internal val sampler = Sampler(1.0)
     private var batch = ArrayList<Span>()
     private val batchSendQueue = ArrayBlockingQueue<Collection<Span>>(batchSendQueueSize)
     private var batchTimeoutTask: TimerTask = object : TimerTask() {
@@ -48,7 +49,7 @@ internal class Tracer : SpanProcessor, Runnable {
         synchronized(this) {
             val nextBatch = batch
             batch = ArrayList()
-            return nextBatch
+            return sampler.sampled(nextBatch)
         }
     }
 
@@ -63,9 +64,10 @@ internal class Tracer : SpanProcessor, Runnable {
         }
     }
 
-
     override fun onEnd(span: Span) {
-        addToBatch(span)
+        if (sampler.shouldKeepSpan(span)) {
+            addToBatch(span)
+        }
     }
 
     override fun run() {
@@ -92,6 +94,7 @@ internal class Tracer : SpanProcessor, Runnable {
         this.delivery = delivery
         this.serviceName = configuration.context.packageName
         this.resourceAttributes = createResourceAttributes(configuration)
+        sampler.fallbackProbability = configuration.samplingProbability
 
         runner = Thread(this, "Bugsnag Tracer").apply {
             isDaemon = true
