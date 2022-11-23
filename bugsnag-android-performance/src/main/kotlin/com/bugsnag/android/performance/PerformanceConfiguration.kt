@@ -7,7 +7,7 @@ class PerformanceConfiguration(val context: Context) {
 
     var apiKey: String? = null
 
-    var endpoint: String = "https://localhost:8888/performance"
+    var endpoint: String = "https://otlp.bugsnag.com/v1/traces"
 
     var autoInstrumentAppStarts = true
 
