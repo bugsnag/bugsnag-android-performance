@@ -9,7 +9,7 @@ import java.net.HttpURLConnection
 import java.net.URL
 import java.security.MessageDigest
 
-internal class HttpDelivery(private val endpoint: String) : Delivery {
+internal class HttpDelivery(private val endpoint: String, private val apiKey: String) : Delivery {
     override fun deliver(spans: Collection<Span>, resourceAttributes: Attributes): DeliveryResult {
         if (spans.isEmpty()) {
             return DeliveryResult.SUCCESS
@@ -19,7 +19,10 @@ internal class HttpDelivery(private val endpoint: String) : Delivery {
 
         val connection = URL(endpoint).openConnection() as HttpURLConnection
         with(connection) {
+            requestMethod = "POST"
+
             setFixedLengthStreamingMode(payload.size)
+            setRequestProperty("Bugsnag-Api-Key", apiKey)
             setRequestProperty("Content-Encoding", "application/json")
             computeSha1Digest(payload)?.let { digest ->
                 setRequestProperty("Bugsnag-Integrity", digest)
@@ -85,6 +88,8 @@ internal class HttpDelivery(private val endpoint: String) : Delivery {
             }
         }.getOrElse { return null }
     }
+
+    override fun toString(): String = "HttpDelivery(\"$endpoint\")"
 
     companion object {
         private val retriable400Codes = setOf(

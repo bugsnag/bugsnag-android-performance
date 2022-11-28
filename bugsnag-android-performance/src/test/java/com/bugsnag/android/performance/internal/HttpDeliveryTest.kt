@@ -36,7 +36,7 @@ class HttpDeliveryTest {
         span2.end(11L)
         val spans = listOf(span1, span2)
 
-        val delivery = HttpDelivery("")
+        val delivery = HttpDelivery("", "")
         val content = delivery.encodeSpanPayload(
             spans,
             Attributes().also { attrs ->

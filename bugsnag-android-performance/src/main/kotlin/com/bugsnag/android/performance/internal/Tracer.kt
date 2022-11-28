@@ -76,6 +76,7 @@ internal class Tracer : SpanProcessor, Runnable {
         while (running) {
             try {
                 val nextBatch = batchSendQueue.take()
+                Logger.d("Sending a batch of ${nextBatch.size} spans to $delivery")
                 delivery.deliver(nextBatch, resourceAttributes)
             } catch (e: Exception) {
                 Logger.e("Unexpected exception", e)
@@ -90,7 +91,12 @@ internal class Tracer : SpanProcessor, Runnable {
 
         val delivery = RetryDelivery(
             InternalDebug.dropSpansOlderThanMs,
-            HttpDelivery(configuration.endpoint)
+            HttpDelivery(
+                configuration.endpoint,
+                requireNotNull(configuration.apiKey) {
+                    "PerformanceConfiguration.apiKey may not be null"
+                }
+            )
         )
 
         this.delivery = delivery

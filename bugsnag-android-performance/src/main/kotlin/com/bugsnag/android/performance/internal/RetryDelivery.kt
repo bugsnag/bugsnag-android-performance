@@ -21,4 +21,6 @@ class RetryDelivery(private val dropOlderThanMs: Long, private val delivery: Del
         }
         return result
     }
+
+    override fun toString(): String = "RetryDelivery($delivery)"
 }
