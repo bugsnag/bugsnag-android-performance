@@ -3,14 +3,14 @@ package com.bugsnag.android.performance
 import android.app.Activity
 import android.app.Application
 import android.os.SystemClock
-import com.bugsnag.android.performance.internal.Connectivity
 import com.bugsnag.android.performance.internal.ConnectivityCompat
 import com.bugsnag.android.performance.internal.DefaultAttributeSource
 import com.bugsnag.android.performance.internal.PerformanceComponentCallbacks
-import com.bugsnag.android.performance.internal.PerformancePlatformCallbacks
+import com.bugsnag.android.performance.internal.PerformanceLifecycleCallbacks
 import com.bugsnag.android.performance.internal.SpanFactory
 import com.bugsnag.android.performance.internal.SpanTracker
 import com.bugsnag.android.performance.internal.Tracer
+import com.bugsnag.android.performance.internal.isInForeground
 import java.net.URL
 
 object BugsnagPerformance {
@@ -19,13 +19,12 @@ object BugsnagPerformance {
     private val tracer = Tracer()
 
     private val activitySpanTracker = SpanTracker<Activity>()
-    private val spanFactory = SpanFactory(tracer)
 
-    private val platformCallbacks = PerformancePlatformCallbacks(activitySpanTracker, spanFactory)
+    private val defaultAttributeSource = DefaultAttributeSource()
+    private val spanFactory = SpanFactory(tracer, defaultAttributeSource)
+    private val platformCallbacks = createLifecycleCallbacks()
 
     private var isStarted = false
-
-    private lateinit var connectivity: Connectivity
 
     @JvmStatic
     fun start(configuration: PerformanceConfiguration) {
@@ -47,34 +46,56 @@ object BugsnagPerformance {
 
     private fun startUnderLock(configuration: PerformanceConfiguration) {
         val application = configuration.context.applicationContext as Application
-
-        platformCallbacks.openLoadSpans =
-            configuration.autoInstrumentActivities != AutoInstrument.OFF
-        platformCallbacks.closeLoadSpans =
-            configuration.autoInstrumentActivities == AutoInstrument.FULL
-        platformCallbacks.instrumentAppStart = configuration.autoInstrumentAppStarts
+        configureLifecycleCallbacks(configuration)
 
         if (configuration.autoInstrumentAppStarts) {
             // mark the app as "starting" (if it isn't already)
-            platformCallbacks.startAppLoadSpanUnderLock("Cold")
+            platformCallbacks.startAppLoadSpan("Cold")
+        }
+
+        // update isInForeground to a more accurate value (if accessible)
+        defaultAttributeSource.update {
+            it.copy(isInForeground = isInForeground(application))
         }
 
         tracer.sampler.fallbackProbability = configuration.samplingProbability
 
-        connectivity = ConnectivityCompat(application) { hasConnection, _ ->
-            if (hasConnection) {
-                tracer.sendNextBatch()
+        val connectivity =
+            ConnectivityCompat(application) { hasConnection, _, networkType, networkSubType ->
+                if (hasConnection) {
+                    tracer.sendNextBatch()
+                }
+
+                defaultAttributeSource.update {
+                    it.copy(
+                        networkType = networkType,
+                        networkSubType = networkSubType
+                    )
+                }
             }
-        }
 
         connectivity.registerForNetworkChanges()
 
         application.registerActivityLifecycleCallbacks(platformCallbacks)
         application.registerComponentCallbacks(PerformanceComponentCallbacks(tracer))
 
-        spanFactory.spanAttributeSource = DefaultAttributeSource(connectivity)
-
         tracer.start(configuration)
+    }
+
+    private fun createLifecycleCallbacks(): PerformanceLifecycleCallbacks {
+        return PerformanceLifecycleCallbacks(activitySpanTracker, spanFactory) { inForeground ->
+            defaultAttributeSource.update {
+                it.copy(isInForeground = inForeground)
+            }
+        }
+    }
+
+    private fun configureLifecycleCallbacks(configuration: PerformanceConfiguration) {
+        platformCallbacks.apply {
+            openLoadSpans = configuration.autoInstrumentActivities != AutoInstrument.OFF
+            closeLoadSpans = configuration.autoInstrumentActivities == AutoInstrument.FULL
+            instrumentAppStart = configuration.autoInstrumentAppStarts
+        }
     }
 
     @JvmStatic
@@ -119,7 +140,7 @@ object BugsnagPerformance {
     @JvmStatic
     fun reportApplicationClassLoaded() {
         synchronized(this) {
-            platformCallbacks.startAppLoadSpanUnderLock("Cold")
+            platformCallbacks.startAppLoadSpan("Cold")
         }
     }
 }

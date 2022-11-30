@@ -1,10 +1,14 @@
 package com.bugsnag.android.performance.internal
 
 import android.content.Context
+import android.content.Intent
 import android.net.ConnectivityManager
+import android.net.NetworkInfo
 import com.bugsnag.android.performance.NetworkType
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 
@@ -12,27 +16,55 @@ import org.mockito.kotlin.whenever
 class LegacyNetworkTypeTest {
     @Test
     fun legacyNetworkType() {
-        val context = mock<Context>()
-        val connectivityManager = mock<ConnectivityManager>()
-
-        whenever(connectivityManager.activeNetworkInfo)
-            .thenReturn(newNetworkInfo(ConnectivityManager.TYPE_WIFI))
-            .thenReturn(newNetworkInfo(ConnectivityManager.TYPE_MOBILE))
-            .thenReturn(newNetworkInfo(ConnectivityManager.TYPE_ETHERNET))
-            .thenReturn(newNetworkInfo(ConnectivityManager.TYPE_BLUETOOTH))
-            .thenReturn(null)
-
-        val connectivity = ConnectivityLegacy(context, connectivityManager) { _, _ -> }
-
-        assertEquals(NetworkType.WIFI, connectivity.networkType)
-        assertEquals(NetworkType.CELL, connectivity.networkType)
-        assertEquals(NetworkType.WIRED, connectivity.networkType)
-        assertEquals(NetworkType.UNKNOWN, connectivity.networkType)
-        assertEquals(NetworkType.UNAVAILABLE, connectivity.networkType)
+        testTransportTye(
+            ConnectivityManager.TYPE_WIFI,
+            NetworkType.WIFI,
+            ConnectionMetering.UNMETERED
+        )
+        testTransportTye(
+            ConnectivityManager.TYPE_MOBILE,
+            NetworkType.CELL,
+            ConnectionMetering.POTENTIALLY_METERED
+        )
+        testTransportTye(
+            ConnectivityManager.TYPE_ETHERNET,
+            NetworkType.WIRED,
+            ConnectionMetering.UNMETERED
+        )
+        testTransportTye(
+            ConnectivityManager.TYPE_BLUETOOTH,
+            NetworkType.UNKNOWN,
+            ConnectionMetering.POTENTIALLY_METERED
+        )
     }
 
-    private fun newNetworkInfo(type: Int): android.net.NetworkInfo =
+    private fun testTransportTye(
+        transportType: Int,
+        expectedNetworkType: NetworkType,
+        expectedMetering: ConnectionMetering
+    ) {
+        val context = mock<Context>()
+        var callbackInvoked = false
+        val connectivity = ConnectivityLegacy(context, mock()) { _, metering, networkType, _ ->
+            assertEquals(expectedNetworkType, networkType)
+            assertEquals(expectedMetering, metering)
+            callbackInvoked = true
+        }
+
+        val intent = mock<Intent>()
+        whenever(intent.getParcelableExtra<NetworkInfo>(eq(ConnectivityManager.EXTRA_NETWORK_INFO)))
+            .thenReturn(newNetworkInfo(transportType, null))
+
+        connectivity.onReceive(context, intent) // first is always ignored
+        connectivity.onReceive(context, intent)
+
+        assertTrue("Network callback not invoked", callbackInvoked)
+    }
+
+    private fun newNetworkInfo(type: Int, subType: String?): android.net.NetworkInfo =
         object : android.net.NetworkInfo(type, 0, null, null) {
+            override fun isConnectedOrConnecting(): Boolean = true
             override fun getType(): Int = type
+            override fun getSubtypeName(): String? = subType
         }
 }

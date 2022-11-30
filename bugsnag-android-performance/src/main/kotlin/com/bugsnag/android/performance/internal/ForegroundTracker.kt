@@ -1,32 +1,35 @@
 package com.bugsnag.android.performance.internal
 
 import android.app.ActivityManager
-import android.app.ActivityManager.RunningAppProcessInfo
+import android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND_SERVICE
+import android.app.Application
+import android.os.Build
 
-private const val IMPORTANCE_FOREGROUND_SERVICE = 125
-
-internal object ForegroundTracker {
-    /**
-     * Determines whether or not the application is in the foreground, by using the process'
-     * importance as a proxy.
-     *
-     * In the unlikely event that information about the process cannot be retrieved, this method
-     * will return null, and the 'bugsnag.app.in_foreground' attribute will not be added to
-     * new `Span`s.
-     *
-     * @return whether the application is in the foreground or not
-     */
-    val isInForeground: Boolean?
-        get() = try {
+/**
+ * Attempts to determine whether the app is visible, optionally using a provided `Application` class.
+ * This should be considered an estimate and is not always completely accurate, but serves as a base
+ * before `BugsnagPerformance.start` has been called, and before `PerformanceLifecycleCallbacks`
+ * have started tracking `Activity` creation.
+ */
+internal fun isInForeground(application: Application? = null): Boolean? {
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && application != null) {
+        try {
+            application.getActivityManager()?.appTasks?.any { it.taskInfo.numActivities > 0 } == true
+        } catch (exc: RuntimeException) {
+            null
+        }
+    } else {
+        try {
             processInfo.importance <= IMPORTANCE_FOREGROUND_SERVICE
         } catch (exc: RuntimeException) {
             null
         }
-
-    private val processInfo: RunningAppProcessInfo
-        get() {
-            val info = RunningAppProcessInfo()
-            ActivityManager.getMyMemoryState(info)
-            return info
-        }
+    }
 }
+
+private val processInfo: ActivityManager.RunningAppProcessInfo
+    get() {
+        val info = ActivityManager.RunningAppProcessInfo()
+        ActivityManager.getMyMemoryState(info)
+        return info
+    }

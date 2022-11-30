@@ -14,7 +14,7 @@ internal typealias AttributeSource = (target: HasAttributes) -> Unit
 
 class SpanFactory(
     private val spanProcessor: SpanProcessor,
-    var spanAttributeSource: AttributeSource = {},
+    val spanAttributeSource: AttributeSource = {},
 ) {
     fun createCustomSpan(name: String, startTime: Long): Span =
         createSpan("Custom/$name", SpanKind.INTERNAL, startTime)

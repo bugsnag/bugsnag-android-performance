@@ -6,13 +6,18 @@ import com.bugsnag.android.performance.Logger
 import com.bugsnag.android.performance.SpanKind
 import com.bugsnag.android.performance.test.CollectingSpanProcessor
 import com.bugsnag.android.performance.test.testSpanProcessor
-import com.bugsnag.android.performance.test.withStaticMock
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
+import org.robolectric.shadows.ShadowPausedSystemClock
 
-class PerformancePlatformCallbacksTest {
+@RunWith(RobolectricTestRunner::class)
+@Config(shadows = [ShadowPausedSystemClock::class])
+class PerformanceLifecycleCallbacksTest {
     private val activity = Activity()
 
     private var spanFactory = SpanFactory(testSpanProcessor)
@@ -33,14 +38,15 @@ class PerformancePlatformCallbacksTest {
     }
 
     @Test
-    fun fullActivityTracking() = withStaticMock<SystemClock> { mockedClock ->
-        mockedClock.`when`<Long>(SystemClock::elapsedRealtimeNanos)
-            .thenReturn(10L)
-            .thenReturn(20L)
+    fun fullActivityTracking() {
+        // this is actually the default initial value for Robolectric, but we set it manually
+        // just as a form of documentation
+        SystemClock.setCurrentTimeMillis(100L)
 
-        val callbacks = PerformancePlatformCallbacks(
+        val callbacks = PerformanceLifecycleCallbacks(
             activityLoadSpans = spanTracker,
-            spanFactory = spanFactory
+            spanFactory = spanFactory,
+            inForegroundCallback = {}
         ).apply {
             openLoadSpans = true
             closeLoadSpans = true
@@ -49,6 +55,8 @@ class PerformancePlatformCallbacksTest {
 
         callbacks.onActivityCreated(activity, null)
         callbacks.onActivityStarted(activity) // shouldn't do anything
+
+        SystemClock.setCurrentTimeMillis(200L)
         callbacks.onActivityResumed(activity)
 
         val spans = spanProcessor.toList()
@@ -56,23 +64,23 @@ class PerformancePlatformCallbacksTest {
 
         val span = spans.first()
         assertEquals("ViewLoad/Activity/Activity", span.name)
-        assertEquals(10L, span.startTime)
-        assertEquals(20L, span.endTime)
+        // start and end time are in nanoseconds, not milliseconds
+        assertEquals(100_000_000L, span.startTime)
+        assertEquals(200_000_000L, span.endTime)
         assertEquals(SpanKind.INTERNAL, span.kind)
         assertTrue(span.isNotOpen())
     }
 
     @Test
-    fun startOnlyActivityTrackingWithLeak() = withStaticMock<SystemClock> { mockedClock ->
-        mockedClock.`when`<Long> { SystemClock.elapsedRealtimeNanos() }
-            .thenReturn(10L)
-            .thenReturn(20L)
-            .thenReturn(30L)
-            .thenReturn(40L)
+    fun startOnlyActivityTrackingWithLeak() {
+        // this is actually the default initial value for Robolectric, but we set it manually
+        // just as a form of documentation
+        SystemClock.setCurrentTimeMillis(100L)
 
-        val callbacks = PerformancePlatformCallbacks(
+        val callbacks = PerformanceLifecycleCallbacks(
             activityLoadSpans = spanTracker,
-            spanFactory = spanFactory
+            spanFactory = spanFactory,
+            inForegroundCallback = {}
         ).apply {
             openLoadSpans = true
             closeLoadSpans = false
@@ -81,12 +89,15 @@ class PerformancePlatformCallbacksTest {
 
         callbacks.onActivityCreated(activity, null)
         callbacks.onActivityStarted(activity) // shouldn't do anything
+        SystemClock.setCurrentTimeMillis(200L)
         callbacks.onActivityResumed(activity) // shouldn't do anything
 
         assertEquals(0, spanProcessor.toList().size)
 
+        SystemClock.setCurrentTimeMillis(300L)
         callbacks.onActivityPaused(activity)
         callbacks.onActivityStopped(activity)
+        SystemClock.setCurrentTimeMillis(400L)
         callbacks.onActivityDestroyed(activity)
 
         val spans = spanProcessor.toList()
@@ -94,23 +105,22 @@ class PerformancePlatformCallbacksTest {
 
         val span = spans.first()
         assertEquals("ViewLoad/Activity/Activity", span.name)
-        assertEquals(10L, span.startTime)
-        assertEquals(20L, span.endTime)
+        assertEquals(100_000_000L, span.startTime)
+        assertEquals(200_000_000L, span.endTime)
         assertEquals(SpanKind.INTERNAL, span.kind)
         assertTrue(span.isNotOpen())
     }
 
     @Test
-    fun repeatedAppStart() = withStaticMock<SystemClock> { mockedClock ->
-        mockedClock.`when`<Long> { SystemClock.elapsedRealtimeNanos() }
-            .thenReturn(10L) // Span1 Start
-            .thenReturn(20L) // Span1 End
-            .thenReturn(30L) //
-            .thenReturn(40L)
+    fun repeatedAppStart() {
+        // this is actually the default initial value for Robolectric, but we set it manually
+        // just as a form of documentation
+        SystemClock.setCurrentTimeMillis(100L)
 
-        val callbacks = PerformancePlatformCallbacks(
+        val callbacks = PerformanceLifecycleCallbacks(
             activityLoadSpans = spanTracker,
-            spanFactory = spanFactory
+            spanFactory = spanFactory,
+            inForegroundCallback = {}
         ).apply {
             openLoadSpans = false
             closeLoadSpans = false
@@ -119,6 +129,7 @@ class PerformancePlatformCallbacksTest {
 
         callbacks.onActivityCreated(activity, null) // Warm start
         callbacks.onActivityStarted(activity)
+        SystemClock.setCurrentTimeMillis(200L)
         callbacks.onActivityResumed(activity)
 
         val activity2 = Activity()
@@ -128,12 +139,14 @@ class PerformancePlatformCallbacksTest {
         cycleActivity(activity3, callbacks)
         cycleActivity(activity2, callbacks)
 
+        SystemClock.setCurrentTimeMillis(300L)
         callbacks.onActivityPaused(activity)
         callbacks.onActivityStopped(activity)
         callbacks.onActivityDestroyed(activity)
 
         callbacks.onActivityCreated(activity, null) // Warm start
         callbacks.onActivityStarted(activity)
+        SystemClock.setCurrentTimeMillis(400L)
         callbacks.onActivityResumed(activity)
 
         // we expect to see 2 warm starts
@@ -142,15 +155,15 @@ class PerformancePlatformCallbacksTest {
 
         val (span1, span2) = spans
         assertEquals("AppStart/Warm", span1.name)
-        assertEquals(10L, span1.startTime)
-        assertEquals(20L, span1.endTime)
+        assertEquals(100_000_000L, span1.startTime)
+        assertEquals(200_000_000L, span1.endTime)
 
         assertEquals("AppStart/Warm", span2.name)
-        assertEquals(30L, span2.startTime)
-        assertEquals(40L, span2.endTime)
+        assertEquals(300_000_000L, span2.startTime)
+        assertEquals(400_000_000L, span2.endTime)
     }
 
-    private fun cycleActivity(activity: Activity, callbacks: PerformancePlatformCallbacks) {
+    private fun cycleActivity(activity: Activity, callbacks: PerformanceLifecycleCallbacks) {
         callbacks.onActivityCreated(activity, null)
         callbacks.onActivityStarted(activity)
         callbacks.onActivityStopped(activity)
