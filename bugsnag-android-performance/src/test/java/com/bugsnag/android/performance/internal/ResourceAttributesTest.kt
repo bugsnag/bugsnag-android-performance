@@ -20,7 +20,8 @@ class ResourceAttributesTest {
     fun testAttributeDefaults() {
         val application = configureApplication()
 
-        val configuration = PerformanceConfiguration(application)
+        val configuration = PerformanceConfiguration
+            .load(application, "decafbaddecafbaddecafbaddecafbad")
         val attributes = createResourceAttributes(configuration).toList().toMap()
 
         assertEquals("amd64", attributes["host.arch"])
@@ -39,10 +40,12 @@ class ResourceAttributesTest {
     fun testAttributeOverrides() {
         val application = configureApplication()
 
-        val configuration = PerformanceConfiguration(application).apply {
-            versionCode = 123
-            releaseStage = "production"
-        }
+        val configuration = PerformanceConfiguration
+            .load(application, "decafbaddecafbaddecafbaddecafbad")
+            .apply {
+                versionCode = 123
+                releaseStage = "production"
+            }
 
         val attributes = createResourceAttributes(configuration).toList().toMap()
 

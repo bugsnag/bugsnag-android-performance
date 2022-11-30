@@ -3,14 +3,13 @@ package com.bugsnag.android.performance.internal
 import android.content.Context
 import android.content.Intent
 import android.net.ConnectivityManager
-import android.net.NetworkInfo
 import com.bugsnag.android.performance.NetworkType
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
-import org.mockito.kotlin.whenever
 
 @Suppress("DEPRECATION")
 class LegacyNetworkTypeTest {
@@ -51,9 +50,10 @@ class LegacyNetworkTypeTest {
             callbackInvoked = true
         }
 
-        val intent = mock<Intent>()
-        whenever(intent.getParcelableExtra<NetworkInfo>(eq(ConnectivityManager.EXTRA_NETWORK_INFO)))
-            .thenReturn(newNetworkInfo(transportType, null))
+        val intent = mock<Intent> {
+            on { it.getParcelableExtra<android.net.NetworkInfo>(eq(ConnectivityManager.EXTRA_NETWORK_INFO)) } doReturn
+                newNetworkInfo(transportType, null)
+        }
 
         connectivity.onReceive(context, intent) // first is always ignored
         connectivity.onReceive(context, intent)

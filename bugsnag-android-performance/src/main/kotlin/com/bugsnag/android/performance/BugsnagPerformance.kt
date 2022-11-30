@@ -31,7 +31,7 @@ object BugsnagPerformance {
         if (!isStarted) {
             synchronized(this) {
                 if (!isStarted) {
-                    startUnderLock(configuration)
+                    startUnderLock(configuration.validated())
                     isStarted = true
                 }
             }
