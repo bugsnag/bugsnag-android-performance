@@ -186,8 +186,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun prepareConfig(apiKey: String, endpoint: String): PerformanceConfiguration {
-        return PerformanceConfiguration(applicationContext).also { config ->
-            config.apiKey = apiKey
+        return PerformanceConfiguration.load(applicationContext, apiKey).also { config ->
             config.endpoint = endpoint
             config.autoInstrumentAppStarts = false
             config.autoInstrumentActivities = AutoInstrument.OFF

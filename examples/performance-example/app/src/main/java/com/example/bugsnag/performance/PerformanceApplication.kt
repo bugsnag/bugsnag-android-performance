@@ -1,4 +1,4 @@
-package com.example.bugsang.performance
+package com.example.bugsang.android.performanceexample
 
 import android.app.Application
 import com.bugsnag.android.performance.BugsnagPerformance
@@ -13,8 +13,6 @@ class PerformanceApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        BugsnagPerformance.start(PerformanceConfiguration(this).apply {
-            endpoint = "http://10.0.2.2:9339/"
-        })
+        BugsnagPerformance.start(PerformanceConfiguration.load(this))
     }
 }
