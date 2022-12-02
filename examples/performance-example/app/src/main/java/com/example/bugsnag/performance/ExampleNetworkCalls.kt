@@ -1,4 +1,4 @@
-package com.example.bugsang.performance
+package com.example.bugsnag.performance
 
 import android.content.Context
 import android.os.Handler
@@ -14,7 +14,7 @@ import java.io.IOException
 
 class ExampleNetworkCalls(private val context: Context) {
     private val client = OkHttpClient.Builder()
-        .eventListenerFactory(BugsnagPerformanceOkhttp.EventListenerFactory)
+        .eventListener(BugsnagPerformanceOkhttp())
         .build()
 
     private val mainHandler = Handler(Looper.getMainLooper())
@@ -27,19 +27,20 @@ class ExampleNetworkCalls(private val context: Context) {
         )
 
         call.enqueue(object : Callback {
-            override fun onFailure(call: Call, e: IOException) = Unit
-
             override fun onResponse(call: Call, response: Response) {
+                val contentLength = response.use { it.body?.contentLength() }
                 mainHandler.post {
                     Toast
                         .makeText(
                             context,
-                            "Retrieved ${response.body?.contentLength()} bytes from developer.android.com",
+                            "Retrieved $contentLength bytes from developer.android.com",
                             Toast.LENGTH_LONG
                         )
                         .show()
                 }
             }
+
+            override fun onFailure(call: Call, e: IOException) = Unit
         })
     }
 }

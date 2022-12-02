@@ -1,4 +1,4 @@
-package com.example.bugsang.android.performanceexample
+package com.example.bugsnag.performance
 
 import android.app.Application
 import com.bugsnag.android.performance.BugsnagPerformance

@@ -1,4 +1,4 @@
-package com.example.bugsang.performance
+package com.example.bugsnag.performance
 
 import android.os.Bundle
 import android.widget.Button
