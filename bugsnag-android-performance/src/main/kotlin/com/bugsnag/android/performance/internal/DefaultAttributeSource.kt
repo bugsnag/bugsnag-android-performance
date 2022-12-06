@@ -1,7 +1,6 @@
 package com.bugsnag.android.performance.internal
 
 import com.bugsnag.android.performance.HasAttributes
-import com.bugsnag.android.performance.NetworkType
 import java.util.concurrent.atomic.AtomicReference
 
 internal class DefaultAttributeSource : AttributeSource {
@@ -11,7 +10,7 @@ internal class DefaultAttributeSource : AttributeSource {
 
     /**
      * Safely update the default set of attributes in this `DefaultAttributeSource`. This method
-     * is thread safe and lock-free, so [updateAttributes] is expected to be idempotent as it
+     * is thread safe and lock-free, so [updateAttributes] is expected to be side-effect free as it
      * may be invoked any number of times before returning.
      */
     internal inline fun update(updateAttributes: (DefaultAttributes) -> DefaultAttributes) {

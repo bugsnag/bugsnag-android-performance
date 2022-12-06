@@ -2,7 +2,6 @@ package com.bugsnag.android.performance.internal
 
 import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.SpanKind
-import com.bugsnag.android.performance.SpanProcessor
 import com.bugsnag.android.performance.test.testSpanProcessor
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals

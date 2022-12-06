@@ -2,7 +2,9 @@ package com.bugsnag.android.performance
 
 import android.app.Activity
 import android.app.Application
+import android.content.Context
 import android.os.SystemClock
+import com.bugsnag.android.performance.BugsnagPerformance.start
 import com.bugsnag.android.performance.internal.ConnectivityCompat
 import com.bugsnag.android.performance.internal.DefaultAttributeSource
 import com.bugsnag.android.performance.internal.PerformanceComponentCallbacks
@@ -13,6 +15,11 @@ import com.bugsnag.android.performance.internal.Tracer
 import com.bugsnag.android.performance.internal.isInForeground
 import java.net.URL
 
+/**
+ * Primary access to the Bugsnag Performance SDK.
+ *
+ * @see [start]
+ */
 object BugsnagPerformance {
     const val VERSION: String = "0.0.0"
 
@@ -26,6 +33,28 @@ object BugsnagPerformance {
 
     private var isStarted = false
 
+    /**
+     * Initialise the Bugsnag Performance SDK. This should be called within your
+     * [Application.onCreate] to ensure that all measurements are accurately reported.
+     *
+     * @param context an Android `Context`, typically your `Application` instance
+     */
+    @JvmStatic
+    fun start(context: Context) {
+        start(PerformanceConfiguration.load(context))
+    }
+
+    @JvmStatic
+    fun start(context: Context, apiKey: String) {
+        start(PerformanceConfiguration.load(context, apiKey))
+    }
+
+    /**
+     * Initialise the Bugsnag Performance SDK. This should be called within your
+     * [Application.onCreate] to ensure that all measurements are accurately reported.
+     *
+     * @param configuration the configuration for the SDK
+     */
     @JvmStatic
     fun start(configuration: PerformanceConfiguration) {
         if (!isStarted) {
@@ -98,11 +127,25 @@ object BugsnagPerformance {
         }
     }
 
+    /**
+     * Open a custom span with a given name and optionally a specific [startTime]. The reported
+     * name of these spans is `"Custom/$name"`.
+     *
+     * @param name the name of the custom span to open
+     * @param startTime the [Span.startTime] in nanoseconds relative to [SystemClock.elapsedRealtimeNanos]
+     */
     @JvmStatic
     @JvmOverloads
     fun startSpan(name: String, startTime: Long = SystemClock.elapsedRealtimeNanos()): Span =
         spanFactory.createCustomSpan(name, startTime)
 
+    /**
+     * Open a network span for a given url and HTTP [verb] to measure the time taken for an HTTP request.
+     *
+     * @param url the URL the returned span is measuring
+     * @param verb the HTTP verb / method (GET, POST, PUT, etc.)
+     * @param startTime the [Span.startTime] in nanoseconds relative to [SystemClock.elapsedRealtimeNanos]
+     */
     @JvmStatic
     @JvmOverloads
     fun startNetworkSpan(
@@ -111,6 +154,16 @@ object BugsnagPerformance {
         startTime: Long = SystemClock.elapsedRealtimeNanos()
     ): Span = spanFactory.createNetworkSpan(url, verb, startTime)
 
+    /**
+     * Open a ViewLoad span to measure the time taken to load and render a UI element (typically a screen).
+     * These spans are created and measured [automatically for
+     * activities](PerformanceConfiguration.autoInstrumentActivities). This function can be used
+     * when the automated instrumentation is not well suited to your app.
+     *
+     * @param activity the activity load being measured
+     * @param startTime the [Span.startTime] in nanoseconds relative to [SystemClock.elapsedRealtimeNanos]
+     * @see [endViewLoadSpan]
+     */
     @JvmStatic
     @JvmOverloads
     fun startViewLoadSpan(
@@ -123,12 +176,27 @@ object BugsnagPerformance {
         }
     }
 
+    /**
+     * End a ViewLoad span opened with `startViewLoadSpan`, useful when you don't want to manually
+     * retain a reference to the [Span] returned. If no span is being tracked for the given [Activity]
+     * or the measurement has already been ended this method does nothing.
+     *
+     * @param activity the activity load being measured
+     * @param endTime the time that the load should be considered "ended" relative to [SystemClock.elapsedRealtimeNanos]
+     */
     @JvmStatic
     @JvmOverloads
     fun endViewLoadSpan(activity: Activity, endTime: Long = SystemClock.elapsedRealtimeNanos()) {
         activitySpanTracker.endSpan(activity, endTime)
     }
 
+    /**
+     * Open a ViewLoad span to measure the time taken to load a specific UI element.
+     *
+     * @param viewType the type of UI element being measured
+     * @param viewName the name (typically class name) of the UI element being measured
+     * @param startTime the [Span.startTime] in nanoseconds relative to [SystemClock.elapsedRealtimeNanos]
+     */
     @JvmStatic
     @JvmOverloads
     fun startViewLoadSpan(
@@ -137,6 +205,20 @@ object BugsnagPerformance {
         startTime: Long = SystemClock.elapsedRealtimeNanos()
     ): Span = spanFactory.createViewLoadSpan(viewType, viewName, startTime)
 
+    /**
+     * Report that your apps `Application` class has been loaded. This can be manually called from
+     * a static initializer to improve the app start time measurements:
+     *
+     * ```java
+     * public class MyApplication extends Application {
+     *     static {
+     *         BugsnagPerformance.reportApplicationClassLoaded()
+     * ```
+     *
+     * Kotlin apps can use the `init` block of the `companion object` to achieve the same effect.
+     *
+     * This method is safe to call before [start].
+     */
     @JvmStatic
     fun reportApplicationClassLoaded() {
         synchronized(this) {
@@ -145,6 +227,17 @@ object BugsnagPerformance {
     }
 }
 
+/**
+ * A utility method for Kotlin apps which compliments the standard Kotlin `measureTime`,
+ * `measureTimeMillis`, and `measureNanoTime` methods. This method has the same behaviour as:
+ * ```kotlin
+ * BugsnagPerformance.startSpan(name).use { block() }
+ * ```
+ *
+ * @param name the name of the block to measure
+ * @param block the block of code to measure the execution time
+ * @see [BugsnagPerformance.startSpan]
+ */
 inline fun <R> measureSpan(name: String, block: () -> R): R {
     return BugsnagPerformance.startSpan(name).use { block() }
 }

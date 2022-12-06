@@ -8,28 +8,32 @@ class Attributes : Collection<Pair<String, Any>> {
 
     val keys get() = content.keys.toSet()
 
-    operator fun set(key: String, value: String?) {
+    operator fun set(name: String, value: String?) {
         if(value != null) {
-            content[key] = value
+            content[name] = value
         } else {
-            content.remove(key)
+            content.remove(name)
         }
     }
 
-    operator fun set(key: String, value: Long) {
-        content[key] = value
+    operator fun set(name: String, value: Long) {
+        content[name] = value
     }
 
-    operator fun set(key: String, value: Int) {
-        content[key] = value.toLong()
+    operator fun set(name: String, value: Int) {
+        content[name] = value.toLong()
     }
 
-    operator fun set(key: String, value: Double) {
-        content[key] = value
+    operator fun set(name: String, value: Double) {
+        content[name] = value
     }
 
-    operator fun set(key: String, value: Boolean) {
-        content[key] = value
+    operator fun set(name: String, value: Boolean) {
+        content[name] = value
+    }
+
+    fun remove(name: String) {
+        content.remove(name)
     }
 
     override fun iterator(): Iterator<Pair<String, Any>> =

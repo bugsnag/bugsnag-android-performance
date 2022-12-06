@@ -4,7 +4,6 @@ import com.bugsnag.android.performance.Attributes
 import com.bugsnag.android.performance.Logger
 import com.bugsnag.android.performance.PerformanceConfiguration
 import com.bugsnag.android.performance.Span
-import com.bugsnag.android.performance.SpanProcessor
 import java.util.Timer
 import java.util.TimerTask
 import java.util.concurrent.ArrayBlockingQueue

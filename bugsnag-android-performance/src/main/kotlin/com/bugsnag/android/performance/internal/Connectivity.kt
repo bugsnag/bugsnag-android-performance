@@ -19,7 +19,6 @@ import android.net.NetworkCapabilities.TRANSPORT_WIFI
 import android.os.Build
 import android.telephony.TelephonyManager
 import androidx.annotation.RequiresApi
-import com.bugsnag.android.performance.NetworkType
 import java.util.concurrent.atomic.AtomicBoolean
 
 private const val READ_BASIC_PHONE_STATE = "android.permission.READ_BASIC_PHONE_STATE"

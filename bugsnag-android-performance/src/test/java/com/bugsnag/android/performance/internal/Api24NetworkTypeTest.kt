@@ -3,7 +3,6 @@ package com.bugsnag.android.performance.internal
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
-import com.bugsnag.android.performance.NetworkType
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test

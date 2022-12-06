@@ -35,7 +35,7 @@ dependencies {
 class MyApplication: Application() {
     override fun onCreate() {
         super.onCreate()
-        BugsnagPerformance.start(PerformanceConfiguration.load(this))
+        BugsnagPerformance.start(this)
         // ...
     }
 }

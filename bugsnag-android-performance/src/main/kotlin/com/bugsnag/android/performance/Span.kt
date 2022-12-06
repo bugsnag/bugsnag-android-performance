@@ -2,11 +2,21 @@ package com.bugsnag.android.performance
 
 import android.os.SystemClock
 import androidx.annotation.FloatRange
+import com.bugsnag.android.performance.internal.SpanProcessor
 import java.io.Closeable
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicLongFieldUpdater
 import kotlin.random.Random
 
+/**
+ * Represents an ongoing or complete performance measurement and the associated attributes.
+ * `Span`s are typically used in a try-with-resources in Java, or with the `use` extension function
+ * in Kotlin to ensure they are [closed](Span.end).
+ *
+ * Spans may not be changed once they have been closed.
+ *
+ * @see BugsnagPerformance.startSpan
+ */
 class Span internal constructor(
     name: String,
     val kind: SpanKind,
@@ -18,6 +28,9 @@ class Span internal constructor(
 
     override val attributes: Attributes = Attributes()
 
+    /**
+     * The name of this `Span`
+     */
     var name: String = name
         set(value) {
             check(isOpen()) { "span '$field' is closed and cannot be modified" }
@@ -28,40 +41,66 @@ class Span internal constructor(
                 else field.substring(0, typeSeparator + 1) + value
         }
 
+    /**
+     * The time that this `Span` ended at, or [NO_END_TIME] if still open.
+     */
     @Volatile
     var endTime: Long = NO_END_TIME
         private set
 
+    internal val samplingValue: Double
+
+    @FloatRange(from = 0.0, to = 1.0)
+    internal var samplingProbability: Double = 1.0
+        internal set(value) {
+            require(field in 0.0..1.0) { "samplingProbability out of range (0..1): $value" }
+            field = value
+            attributes.set("bugsnag.sampling.p", value)
+        }
+
+    init {
+        // Our "random" sampling value is actually derived from the traceId
+        val msw = traceId.mostSignificantBits ushr 1
+        samplingValue = when (msw) {
+            0L -> 0.0
+            else -> msw.toDouble() / Long.MAX_VALUE.toDouble()
+        }
+    }
+
+    /**
+     * End this with a specified timestamp relative to [SystemClock.elapsedRealtimeNanos]. If this
+     * span has already been closed this will have no effect.
+     */
     fun end(endTime: Long) {
         if (END_TIME_UPDATER.compareAndSet(this, NO_END_TIME, endTime)) {
             processor.onEnd(this)
         }
     }
 
+    /**
+     * End this span now. This is the same as `end(SystemClock.elapsedRealtimeNanos())`.
+     */
     fun end() = end(SystemClock.elapsedRealtimeNanos())
 
-    val samplingValue: Double
-    init {
-        // Our "random" sampling value is actually derived from the traceId
-        val msw = traceId.mostSignificantBits ushr 1
-        samplingValue = when(msw) {
-            0L -> 0.0
-            else -> msw.toDouble() / Long.MAX_VALUE.toDouble()
-        }
-    }
-
-    @FloatRange(from = 0.0, to = 1.0)
-    var samplingProbability: Double = 1.0
-    internal set(value) {
-        require(field in 0.0..1.0) { "samplingProbability out of range (0..1): $value" }
-        field = value
-        attributes.set("bugsnag.sampling.p", value)
-    }
-
+    /**
+     * Convenience function to call [end], implementing the [Closeable] interface and allowing
+     * `Span` to be used with try-with-resources in Java.
+     */
     override fun close() = end()
 
+    /**
+     * Returns `true` if this span has not yet been closed / ended. If this returns `false` the
+     * span cannot be modified further.
+     *
+     * @see isNotOpen
+     */
     fun isOpen() = endTime == NO_END_TIME
 
+    /**
+     * Returns `true` if this span has been closed / ended.
+     *
+     * @see isOpen
+     */
     fun isNotOpen() = !isOpen()
 
     override fun equals(other: Any?): Boolean {
