@@ -15,8 +15,11 @@ class ThreeSpansScenario(
 
     override fun startScenario() {
         BugsnagPerformance.start(config)
+        Thread.sleep(100)
         BugsnagPerformance.startSpan("span 1").end()
+        Thread.sleep(100)
         BugsnagPerformance.startSpan("span 2").end()
+        Thread.sleep(100)
         BugsnagPerformance.startSpan("span 3").end()
     }
 }

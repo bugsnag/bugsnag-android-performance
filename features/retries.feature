@@ -1,7 +1,7 @@
 Feature: Retries
 
   Scenario: Basic retry
-    Given I set the HTTP status code for the next request to 500
+    Given I set the HTTP status code for the next requests to "200,500"
     And I run "RetryScenario" and discard the initial p-value request
     And I wait to receive 2 traces
     Then the trace payload field "resourceSpans.0.scopeSpans.0.spans.0.name" equals "Custom/span 1"

@@ -25,7 +25,7 @@ internal class HttpDelivery(private val endpoint: String, private val apiKey: St
 
     override fun fetchCurrentProbability(newPCallback: NewProbabilityCallback) {
         // Server expects a call to /traces with an empty set of resource spans
-        deliverPayload("{\"respourceSpans\": []}".toByteArray(), newPCallback)
+        deliverPayload("{\"resourceSpans\": []}".toByteArray(), newPCallback)
     }
 
     private fun deliverPayload(payload: ByteArray, newPCallback: NewProbabilityCallback?): DeliveryResult {
