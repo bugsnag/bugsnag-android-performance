@@ -5,7 +5,6 @@ import android.os.SystemClock
 import com.bugsnag.android.performance.HasAttributes
 import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.SpanKind
-import com.bugsnag.android.performance.SpanProcessor
 import com.bugsnag.android.performance.ViewType
 import java.net.URL
 import java.util.UUID

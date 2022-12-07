@@ -1,7 +1,7 @@
 package com.bugsnag.android.performance.test
 
 import com.bugsnag.android.performance.Span
-import com.bugsnag.android.performance.SpanProcessor
+import com.bugsnag.android.performance.internal.SpanProcessor
 import java.util.concurrent.ConcurrentLinkedQueue
 
 class CollectingSpanProcessor : SpanProcessor {
