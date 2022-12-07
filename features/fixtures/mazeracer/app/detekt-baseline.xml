@@ -4,6 +4,7 @@
   <CurrentIssues>
     <ID>MagicNumber:AppBackgroundedScenario.kt$AppBackgroundedScenario$100</ID>
     <ID>MagicNumber:AppBackgroundedScenario.kt$AppBackgroundedScenario$90_000L</ID>
+    <ID>MagicNumber:AppStartScenario.kt$AppStartScenario$500L</ID>
     <ID>MagicNumber:BatchTimeoutScenario.kt$BatchTimeoutScenario$100</ID>
     <ID>MagicNumber:BatchTimeoutScenario.kt$BatchTimeoutScenario$30</ID>
     <ID>MagicNumber:MainActivity.kt$MainActivity$1000</ID>

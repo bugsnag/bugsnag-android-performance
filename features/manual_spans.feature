@@ -27,7 +27,7 @@ Feature: Manual creation of spans
     * the trace payload field "resourceSpans.0.resource" attribute "deployment.environment" is one of:
       | development |
       | production  |
-    * the trace payload field "resourceSpans.0.resource" attribute "bugsnag.app.version_code" is 1
+    * the trace payload field "resourceSpans.0.resource" attribute "bugsnag.app.version_code" equals "1"
     * the trace payload field "resourceSpans.0.resource" attribute "service.name" equals "com.bugsnag.mazeracer"
     * the trace payload field "resourceSpans.0.resource" attribute "telemetry.sdk.name" equals "bugsnag.performance.android"
     * the trace payload field "resourceSpans.0.resource" attribute "telemetry.sdk.version" equals "0.0.0"

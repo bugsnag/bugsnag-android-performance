@@ -27,7 +27,7 @@ internal fun createResourceAttributes(configuration: PerformanceConfiguration): 
         configuration.releaseStage ?: context.releaseStage
 
     configuration.versionCodeFor(context)?.let { versionCode ->
-        resourceAttributes["bugsnag.app.version_code"] = versionCode
+        resourceAttributes["bugsnag.app.version_code"] = versionCode.toString()
     }
 
     resourceAttributes["service.name"] = configuration.context.packageName

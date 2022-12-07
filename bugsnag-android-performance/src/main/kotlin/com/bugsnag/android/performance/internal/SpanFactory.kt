@@ -21,8 +21,9 @@ class SpanFactory(
     fun createNetworkSpan(url: URL, verb: String, startTime: Long): Span {
         val verbUpper = verb.uppercase()
         val span = createSpan("HTTP/$verbUpper", SpanKind.CLIENT, startTime)
-        span.attributes["http.url"] = url.toString()
-        span.attributes["http.method"] = verbUpper
+        span.setAttribute("bugsnag.span_category", "network")
+        span.setAttribute("http.url", url.toString())
+        span.setAttribute("http.method", verbUpper)
         return span
     }
 
@@ -33,19 +34,22 @@ class SpanFactory(
 
     fun createViewLoadSpan(viewType: ViewType, viewName: String, startTime: Long): Span {
         val span = createSpan(
-            "ViewLoad/${viewType.spanName}/$viewName",
+            "ViewLoaded/${viewType.spanName}/$viewName",
             SpanKind.INTERNAL,
             startTime
         )
 
-        span.attributes["bugsnag.span_category"] = "view_load"
-        span.attributes["bugsnag.view.type"] = viewType.typeName
-        span.attributes["bugsnag.view.name"] = viewName
+        span.setAttribute("bugsnag.span_category", "view_load")
+        span.setAttribute("bugsnag.view.type", viewType.typeName)
+        span.setAttribute("bugsnag.view.name", viewName)
         return span
     }
 
     fun createAppStartSpan(startType: String): Span =
-        createSpan("AppStart/$startType", SpanKind.INTERNAL, SystemClock.elapsedRealtimeNanos())
+        createSpan("AppStart/$startType", SpanKind.INTERNAL, SystemClock.elapsedRealtimeNanos()).apply {
+            setAttribute("bugsnag.span_category", "app_start")
+            setAttribute("bugsnag.app_start.type", startType.lowercase())
+        }
 
     private fun createSpan(name: String, kind: SpanKind, startTime: Long): Span {
         val span = Span(name, kind, startTime, UUID.randomUUID(), processor = spanProcessor)

@@ -20,6 +20,7 @@ class AppStartScenario(
         config.autoInstrumentActivities = AutoInstrument.OFF
         context.saveStartupConfig(config)
 
+        Thread.sleep(500L)
         // quit the app
         exitProcess(0)
     }
