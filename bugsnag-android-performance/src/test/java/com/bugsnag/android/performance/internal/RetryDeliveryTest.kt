@@ -7,8 +7,6 @@ import com.bugsnag.android.performance.SpanKind
 import com.bugsnag.android.performance.test.endedSpans
 import com.bugsnag.android.performance.test.testSpanProcessor
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -32,6 +30,10 @@ class StubDelivery : Delivery {
         lastAttempt = spans
         return nextResult
     }
+
+    override fun fetchCurrentProbability(newPCallback: NewProbabilityCallback) {
+        // Nothing to do
+    }
 }
 
 @RunWith(RobolectricTestRunner::class)
@@ -41,8 +43,6 @@ class RetryDeliveryTest {
     fun testSuccess() {
         val attributes = Attributes()
         val maxAgeMs = 1_000_000_000L
-        val initialProbability = 1.0
-        val expectedProbability = 0.5
         val stub = StubDelivery()
         val retry = RetryDelivery(maxAgeMs, stub)
 
@@ -107,7 +107,6 @@ class RetryDeliveryTest {
         val maxAgeMs = 1_000_000_000L
         val stub = StubDelivery()
         val retry = RetryDelivery(maxAgeMs, stub)
-        val callbackProbability = 1.0
 
         stub.reset(DeliveryResult.FAIL_RETRIABLE)
         retry.deliver(
