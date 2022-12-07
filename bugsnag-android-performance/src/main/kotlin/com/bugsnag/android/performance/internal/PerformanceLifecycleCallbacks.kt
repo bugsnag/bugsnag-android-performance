@@ -81,7 +81,7 @@ internal class PerformanceLifecycleCallbacks(
     }
 
     override fun onActivityResumed(activity: Activity) {
-        maybeEndAppLoad()
+        maybeEndAppLoad(activity)
 
         // we may have an appStartupSpan from before the configuration was in-place
         appStartupSpan = null
@@ -146,8 +146,16 @@ internal class PerformanceLifecycleCallbacks(
         }
     }
 
-    private fun maybeEndAppLoad() {
+    private fun maybeEndAppLoad(activity: Activity?) {
         if (instrumentAppStart) {
+            appStartupSpan?.apply {
+                if (activity != null) {
+                    val activityName = activity::class.java.simpleName
+                    setAttribute("bugsnag.view.type", "Activity")
+                    setAttribute("bugsnag.first_view", activityName)
+                }
+            }
+
             appStartupSpan?.end()
         }
     }

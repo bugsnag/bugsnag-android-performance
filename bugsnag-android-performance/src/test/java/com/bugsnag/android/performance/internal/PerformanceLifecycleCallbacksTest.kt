@@ -63,7 +63,7 @@ class PerformanceLifecycleCallbacksTest {
         assertEquals(1, spans.size)
 
         val span = spans.first()
-        assertEquals("ViewLoad/Activity/Activity", span.name)
+        assertEquals("ViewLoaded/Activity/Activity", span.name)
         // start and end time are in nanoseconds, not milliseconds
         assertEquals(100_000_000L, span.startTime)
         assertEquals(200_000_000L, span.endTime)
@@ -104,7 +104,7 @@ class PerformanceLifecycleCallbacksTest {
         assertEquals(1, spans.size)
 
         val span = spans.first()
-        assertEquals("ViewLoad/Activity/Activity", span.name)
+        assertEquals("ViewLoaded/Activity/Activity", span.name)
         assertEquals(100_000_000L, span.startTime)
         assertEquals(200_000_000L, span.endTime)
         assertEquals(SpanKind.INTERNAL, span.kind)

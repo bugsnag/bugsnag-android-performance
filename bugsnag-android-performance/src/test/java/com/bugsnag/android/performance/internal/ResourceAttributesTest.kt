@@ -31,7 +31,7 @@ class ResourceAttributesTest {
         assertEquals("TEST-1234", attributes["device.model.identifier"])
         assertEquals("Bugsnag", attributes["device.manufacturer"])
         assertEquals("development", attributes["deployment.environment"])
-        assertEquals(321L, attributes["bugsnag.app.version_code"])
+        assertEquals("321", attributes["bugsnag.app.version_code"])
         assertEquals(application.packageName, attributes["service.name"])
         assertEquals("bugsnag.performance.android", attributes["telemetry.sdk.name"])
     }
@@ -56,7 +56,7 @@ class ResourceAttributesTest {
         assertEquals("TEST-1234", attributes["device.model.identifier"])
         assertEquals("Bugsnag", attributes["device.manufacturer"])
         assertEquals("production", attributes["deployment.environment"]) // overridden
-        assertEquals(123L, attributes["bugsnag.app.version_code"]) // overridden
+        assertEquals("123", attributes["bugsnag.app.version_code"]) // overridden
         assertEquals(application.packageName, attributes["service.name"])
         assertEquals("bugsnag.performance.android", attributes["telemetry.sdk.name"])
     }

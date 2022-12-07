@@ -3,6 +3,7 @@ package com.bugsnag.android.performance.internal
 import android.util.JsonWriter
 import androidx.annotation.VisibleForTesting
 import com.bugsnag.android.performance.Attributes
+import com.bugsnag.android.performance.Logger
 import com.bugsnag.android.performance.Span
 import java.io.ByteArrayOutputStream
 import java.net.HttpURLConnection
@@ -34,6 +35,11 @@ internal class HttpDelivery(private val endpoint: String, private val apiKey: St
         }
 
         val result = getDeliveryResult(connection)
+        if (result != DeliveryResult.SUCCESS) {
+            val errorMessage = connection.errorStream.reader().readText()
+            Logger.w("Could not deliver payload to $endpoint. Response: $errorMessage")
+        }
+
         connection.disconnect()
         return result
     }
