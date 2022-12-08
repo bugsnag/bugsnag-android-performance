@@ -77,7 +77,7 @@ internal class Tracer : SpanProcessor, Runnable {
             try {
                 val nextBatch = batchSendQueue.take()
                 Logger.d("Sending a batch of ${nextBatch.size} spans to $delivery")
-                delivery.deliver(nextBatch, resourceAttributes, { sampler.probability = it })
+                delivery.deliver(nextBatch, resourceAttributes) { sampler.probability = it }
             } catch (e: Exception) {
                 Logger.e("Unexpected exception", e)
             }

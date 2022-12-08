@@ -29,6 +29,7 @@ Feature: Automatic creation of spans
     Given I run "AppStartScenario"
     Then I relaunch the app after shutdown
     Then I wait to receive 2 traces
+    And I discard the oldest trace
     * a span name equals "AppStart/Cold"
     * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0" attribute "bugsnag.span_category" equals "app_start"
     * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0" attribute "bugsnag.app_start.type" equals "cold"

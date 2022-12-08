@@ -9,7 +9,7 @@ enum class DeliveryResult {
     FAIL_PERMANENT
 }
 
-typealias NewProbabilityCallback = ((newP: Double)->Unit)
+typealias NewProbabilityCallback = (newP: Double) -> Unit
 
 interface Delivery {
     fun deliver(
