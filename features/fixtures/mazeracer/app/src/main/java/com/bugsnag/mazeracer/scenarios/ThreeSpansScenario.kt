@@ -5,7 +5,7 @@ import com.bugsnag.android.performance.PerformanceConfiguration
 import com.bugsnag.android.performance.internal.InternalDebug
 import com.bugsnag.mazeracer.Scenario
 
-class RetryScenario(
+class ThreeSpansScenario(
     config: PerformanceConfiguration,
     scenarioMetadata: String
 ) : Scenario(config, scenarioMetadata) {
@@ -15,9 +15,11 @@ class RetryScenario(
 
     override fun startScenario() {
         BugsnagPerformance.start(config)
-        Thread.sleep(100)
+        Thread.sleep(300)
         BugsnagPerformance.startSpan("span 1").end()
-        Thread.sleep(100)
+        Thread.sleep(300)
         BugsnagPerformance.startSpan("span 2").end()
+        Thread.sleep(300)
+        BugsnagPerformance.startSpan("span 3").end()
     }
 }

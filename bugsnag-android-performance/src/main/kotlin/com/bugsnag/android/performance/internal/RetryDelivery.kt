@@ -9,13 +9,17 @@ import java.util.concurrent.TimeUnit
 class RetryDelivery(private val dropOlderThanMs: Long, private val delivery: Delivery): Delivery {
     private val retries = LinkedList<Span>()
 
-    override fun deliver(spans: Collection<Span>, resourceAttributes: Attributes): DeliveryResult {
+    override fun deliver(
+        spans: Collection<Span>,
+        resourceAttributes: Attributes,
+        newProbabilityCallback: NewProbabilityCallback?
+    ): DeliveryResult {
         val minimumEndTime = SystemClock.elapsedRealtimeNanos() - TimeUnit.MILLISECONDS.toNanos(dropOlderThanMs)
         val toDeliver = retries.filterTo(ArrayList<Span>()) { it.endTime >= minimumEndTime }
         retries.clear()
         spans.filterTo(toDeliver) { it.endTime >= minimumEndTime }
 
-        val result = delivery.deliver(toDeliver, resourceAttributes)
+        val result = delivery.deliver(toDeliver, resourceAttributes, newProbabilityCallback)
         if (result == DeliveryResult.FAIL_RETRIABLE) {
             retries.addAll(toDeliver)
         }
@@ -23,4 +27,8 @@ class RetryDelivery(private val dropOlderThanMs: Long, private val delivery: Del
     }
 
     override fun toString(): String = "RetryDelivery($delivery)"
+
+    override fun fetchCurrentProbability(newPCallback: NewProbabilityCallback) {
+        delivery.fetchCurrentProbability(newPCallback)
+    }
 }

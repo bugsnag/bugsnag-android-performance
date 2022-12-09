@@ -9,6 +9,14 @@ enum class DeliveryResult {
     FAIL_PERMANENT
 }
 
+typealias NewProbabilityCallback = (newP: Double) -> Unit
+
 interface Delivery {
-    fun deliver(spans: Collection<Span>, resourceAttributes: Attributes): DeliveryResult
+    fun deliver(
+        spans: Collection<Span>,
+        resourceAttributes: Attributes,
+        newProbabilityCallback: NewProbabilityCallback?
+    ): DeliveryResult
+
+    fun fetchCurrentProbability(newPCallback: NewProbabilityCallback)
 }

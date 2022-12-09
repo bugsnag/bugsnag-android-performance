@@ -53,6 +53,24 @@ Then('the {word} payload field {string} attribute {string} is false') do |reques
   assert_attribute request_type, field, key, { 'boolValue' => false }
 end
 
+Then("I run {string} and discard the initial p-value request") do |scenario|
+  steps %Q{
+    When I run "#{scenario}"
+    And I wait to receive at least 1 trace
+    And the trace payload field "resourceSpans" is an array with 0 elements
+    And I discard the oldest trace
+  }
+end
+
+Then("I run {string} configured as {string} and discard the initial p-value request") do |scenario, configured|
+  steps %Q{
+    When I run "#{scenario}" configured as "#{configured}"
+    And I wait to receive at least 1 trace
+    And the trace payload field "resourceSpans" is an array with 0 elements
+    And I discard the oldest trace
+  }
+end
+
 Then('the {word} payload field {string} attribute {string} matches the regex {string}') do |request_type, field, key, regex_string|
   regex = Regexp.new(regex_string)
   list = Maze::Server.list_for(request_type)

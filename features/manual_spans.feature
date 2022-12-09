@@ -1,7 +1,7 @@
 Feature: Manual creation of spans
 
   Scenario: Manual spans can be logged
-    Given I run "ManualSpanScenario"
+    Given I run "ManualSpanScenario" and discard the initial p-value request
     And I wait to receive 1 traces
     Then the trace Bugsnag-Integrity header is valid
     And the trace "Bugsnag-Api-Key" header equals "a35a2a72bd230ac0aa0f52715bbdc6aa"
@@ -33,7 +33,7 @@ Feature: Manual creation of spans
     * the trace payload field "resourceSpans.0.resource" attribute "telemetry.sdk.version" equals "0.0.0"
 
   Scenario: Spans can be logged before start
-    Given I run "PreStartSpansScenario"
+    Given I run "PreStartSpansScenario" and discard the initial p-value request
     And I wait to receive a trace
     Then a span name equals "Custom/Post Start"
     * a span name equals "Custom/Thread Span 0"
@@ -41,19 +41,19 @@ Feature: Manual creation of spans
     * a span name equals "Custom/Thread Span 2"
 
   Scenario: Span batch times out
-    Given I run "BatchTimeoutScenario"
+    Given I run "BatchTimeoutScenario" and discard the initial p-value request
     And I wait to receive 1 traces
     Then a span name equals "Custom/Span 1"
     * a span name equals "Custom/Span 2"
 
   Scenario: Send on App backgrounded
-    Given I run "AppBackgroundedScenario"
+    Given I run "AppBackgroundedScenario" and discard the initial p-value request
     And I send the app to the background for 5 seconds
     And I wait to receive 1 traces
     Then a span name equals "Custom/Span 1"
 
   Scenario: Spans logged in the background
-    Given I run "BackgroundSpanScenario"
+    Given I run "BackgroundSpanScenario" and discard the initial p-value request
     And I send the app to the background for 5 seconds
     And I wait to receive 1 traces
     Then a span name equals "Custom/BackgroundSpan"

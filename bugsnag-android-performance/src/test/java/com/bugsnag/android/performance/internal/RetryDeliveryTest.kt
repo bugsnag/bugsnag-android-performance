@@ -22,9 +22,17 @@ class StubDelivery : Delivery {
         lastAttempt = listOf()
     }
 
-    override fun deliver(spans: Collection<Span>, resourceAttributes: Attributes): DeliveryResult {
+    override fun deliver(
+        spans: Collection<Span>,
+        resourceAttributes: Attributes,
+        newProbabilityCallback: NewProbabilityCallback?
+    ): DeliveryResult {
         lastAttempt = spans
         return nextResult
+    }
+
+    override fun fetchCurrentProbability(newPCallback: NewProbabilityCallback) {
+        // Nothing to do
     }
 }
 
@@ -38,6 +46,7 @@ class RetryDeliveryTest {
         val stub = StubDelivery()
         val retry = RetryDelivery(maxAgeMs, stub)
 
+        // No callback
         stub.reset(DeliveryResult.SUCCESS)
         retry.deliver(
             endedSpans(
@@ -47,10 +56,47 @@ class RetryDeliveryTest {
                     0L,
                     UUID.fromString("4ee26661-4650-4c7f-a35f-00f007cd24e7"),
                     0xdecafbad,
-                    testSpanProcessor,
+                    testSpanProcessor
                 )
             ),
-            attributes
+            attributes,
+            null
+        )
+        assertEquals(1, stub.lastAttempt.size)
+
+        // No new probability value
+        stub.reset(DeliveryResult.SUCCESS)
+        retry.deliver(
+            endedSpans(
+                Span(
+                    "test span",
+                    SpanKind.INTERNAL,
+                    0L,
+                    UUID.fromString("4ee26661-4650-4c7f-a35f-00f007cd24e7"),
+                    0xdecafbad,
+                    testSpanProcessor
+                )
+            ),
+            attributes,
+            null
+        )
+        assertEquals(1, stub.lastAttempt.size)
+
+        // Callback and new probability value
+        stub.reset(DeliveryResult.SUCCESS)
+        retry.deliver(
+            endedSpans(
+                Span(
+                    "test span",
+                    SpanKind.INTERNAL,
+                    0L,
+                    UUID.fromString("4ee26661-4650-4c7f-a35f-00f007cd24e7"),
+                    0xdecafbad,
+                    testSpanProcessor
+                )
+            ),
+            attributes,
+            null
         )
         assertEquals(1, stub.lastAttempt.size)
     }
@@ -71,15 +117,16 @@ class RetryDeliveryTest {
                     0L,
                     UUID.fromString("4ee26661-4650-4c7f-a35f-00f007cd24e7"),
                     0xdecafbad,
-                    testSpanProcessor,
+                    testSpanProcessor
                 )
             ),
-            attributes
+            attributes,
+            null
         )
         assertEquals(1, stub.lastAttempt.size)
 
         stub.reset(DeliveryResult.FAIL_RETRIABLE)
-        retry.deliver(listOf(), attributes)
+        retry.deliver(listOf(), attributes, null)
         assertEquals(1, stub.lastAttempt.size)
 
         stub.reset(DeliveryResult.SUCCESS)
@@ -91,15 +138,16 @@ class RetryDeliveryTest {
                     0L,
                     UUID.fromString("6ee26661-4650-4c7f-a35f-00f007cd24e7"),
                     0xdecafbad,
-                    testSpanProcessor,
+                    testSpanProcessor
                 )
             ),
-            attributes
+            attributes,
+            null
         )
         assertEquals(2, stub.lastAttempt.size)
 
         stub.reset(DeliveryResult.SUCCESS)
-        retry.deliver(listOf(), attributes)
+        retry.deliver(listOf(), attributes, null)
         assertEquals(0, stub.lastAttempt.size)
     }
 
@@ -120,17 +168,18 @@ class RetryDeliveryTest {
                     0L,
                     UUID.fromString("4ee26661-4650-4c7f-a35f-00f007cd24e7"),
                     0xdecafbad,
-                    testSpanProcessor,
+                    testSpanProcessor
                 )
             ),
-            attributes
+            attributes,
+            null
         )
         assertEquals(1, stub.lastAttempt.size)
 
         SystemClock.setCurrentTimeMillis(startTime + 1000)
 
         stub.reset(DeliveryResult.FAIL_RETRIABLE)
-        retry.deliver(listOf(), attributes)
+        retry.deliver(listOf(), attributes, null)
         assertEquals(0, stub.lastAttempt.size)
 
         stub.reset(DeliveryResult.SUCCESS)
@@ -142,15 +191,16 @@ class RetryDeliveryTest {
                     0L,
                     UUID.fromString("6ee26661-4650-4c7f-a35f-00f007cd24e7"),
                     0xdecafbad,
-                    testSpanProcessor,
+                    testSpanProcessor
                 )
             ),
-            attributes
+            attributes,
+            null
         )
         assertEquals(1, stub.lastAttempt.size)
 
         stub.reset(DeliveryResult.SUCCESS)
-        retry.deliver(listOf(), attributes)
+        retry.deliver(listOf(), attributes, null)
         assertEquals(0, stub.lastAttempt.size)
     }
 
@@ -170,15 +220,15 @@ class RetryDeliveryTest {
                     0L,
                     UUID.fromString("4ee26661-4650-4c7f-a35f-00f007cd24e7"),
                     0xdecafbad,
-                    testSpanProcessor,
+                    testSpanProcessor
                 )
             ),
-            attributes
+            attributes,
+            null
         )
         assertEquals(1, stub.lastAttempt.size)
 
-        stub.reset(DeliveryResult.SUCCESS)
-        retry.deliver(listOf(), attributes)
+        retry.deliver(listOf(), attributes, null)
         assertEquals(0, stub.lastAttempt.size)
     }
 }
