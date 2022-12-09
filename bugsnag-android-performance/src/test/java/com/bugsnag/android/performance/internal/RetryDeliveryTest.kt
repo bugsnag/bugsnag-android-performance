@@ -4,6 +4,7 @@ import android.os.SystemClock
 import com.bugsnag.android.performance.Attributes
 import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.SpanKind
+import com.bugsnag.android.performance.test.StubDelivery
 import com.bugsnag.android.performance.test.endedSpans
 import com.bugsnag.android.performance.test.testSpanProcessor
 import org.junit.Assert.assertEquals
@@ -12,29 +13,6 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import java.util.UUID
 import java.util.concurrent.TimeUnit
-
-class StubDelivery : Delivery {
-    var nextResult: DeliveryResult = DeliveryResult.SUCCESS
-    var lastAttempt: Collection<Span> = listOf()
-
-    fun reset(nextResult: DeliveryResult) {
-        this.nextResult = nextResult
-        lastAttempt = listOf()
-    }
-
-    override fun deliver(
-        spans: Collection<Span>,
-        resourceAttributes: Attributes,
-        newProbabilityCallback: NewProbabilityCallback?
-    ): DeliveryResult {
-        lastAttempt = spans
-        return nextResult
-    }
-
-    override fun fetchCurrentProbability(newPCallback: NewProbabilityCallback) {
-        // Nothing to do
-    }
-}
 
 @RunWith(RobolectricTestRunner::class)
 class RetryDeliveryTest {
@@ -62,7 +40,7 @@ class RetryDeliveryTest {
             attributes,
             null
         )
-        assertEquals(1, stub.lastAttempt.size)
+        assertEquals(1, stub.lastAttempt?.size)
 
         // No new probability value
         stub.reset(DeliveryResult.SUCCESS)
@@ -80,7 +58,7 @@ class RetryDeliveryTest {
             attributes,
             null
         )
-        assertEquals(1, stub.lastAttempt.size)
+        assertEquals(1, stub.lastAttempt?.size)
 
         // Callback and new probability value
         stub.reset(DeliveryResult.SUCCESS)
@@ -98,7 +76,7 @@ class RetryDeliveryTest {
             attributes,
             null
         )
-        assertEquals(1, stub.lastAttempt.size)
+        assertEquals(1, stub.lastAttempt?.size)
     }
 
     @Test
@@ -123,11 +101,11 @@ class RetryDeliveryTest {
             attributes,
             null
         )
-        assertEquals(1, stub.lastAttempt.size)
+        assertEquals(1, stub.lastAttempt?.size)
 
         stub.reset(DeliveryResult.FAIL_RETRIABLE)
         retry.deliver(listOf(), attributes, null)
-        assertEquals(1, stub.lastAttempt.size)
+        assertEquals(1, stub.lastAttempt?.size)
 
         stub.reset(DeliveryResult.SUCCESS)
         retry.deliver(
@@ -144,11 +122,11 @@ class RetryDeliveryTest {
             attributes,
             null
         )
-        assertEquals(2, stub.lastAttempt.size)
+        assertEquals(2, stub.lastAttempt?.size)
 
         stub.reset(DeliveryResult.SUCCESS)
         retry.deliver(listOf(), attributes, null)
-        assertEquals(0, stub.lastAttempt.size)
+        assertEquals(0, stub.lastAttempt?.size)
     }
 
     @Test
@@ -174,13 +152,13 @@ class RetryDeliveryTest {
             attributes,
             null
         )
-        assertEquals(1, stub.lastAttempt.size)
+        assertEquals(1, stub.lastAttempt?.size)
 
         SystemClock.setCurrentTimeMillis(startTime + 1000)
 
         stub.reset(DeliveryResult.FAIL_RETRIABLE)
         retry.deliver(listOf(), attributes, null)
-        assertEquals(0, stub.lastAttempt.size)
+        assertEquals(0, stub.lastAttempt?.size)
 
         stub.reset(DeliveryResult.SUCCESS)
         retry.deliver(
@@ -197,11 +175,11 @@ class RetryDeliveryTest {
             attributes,
             null
         )
-        assertEquals(1, stub.lastAttempt.size)
+        assertEquals(1, stub.lastAttempt?.size)
 
         stub.reset(DeliveryResult.SUCCESS)
         retry.deliver(listOf(), attributes, null)
-        assertEquals(0, stub.lastAttempt.size)
+        assertEquals(0, stub.lastAttempt?.size)
     }
 
     @Test
@@ -226,9 +204,9 @@ class RetryDeliveryTest {
             attributes,
             null
         )
-        assertEquals(1, stub.lastAttempt.size)
+        assertEquals(1, stub.lastAttempt?.size)
 
         retry.deliver(listOf(), attributes, null)
-        assertEquals(0, stub.lastAttempt.size)
+        assertEquals(0, stub.lastAttempt?.size)
     }
 }

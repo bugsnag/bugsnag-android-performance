@@ -1,15 +1,18 @@
 package com.bugsnag.android.performance.internal
 
+import androidx.annotation.VisibleForTesting
 import com.bugsnag.android.performance.Attributes
 import com.bugsnag.android.performance.Logger
 import com.bugsnag.android.performance.PerformanceConfiguration
 import com.bugsnag.android.performance.Span
-import java.util.Timer
-import java.util.TimerTask
-import java.util.concurrent.ArrayBlockingQueue
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.locks.ReentrantLock
+import kotlin.concurrent.withLock
 
 internal class Tracer : SpanProcessor, Runnable {
-    private lateinit var delivery: Delivery
+    @VisibleForTesting
+    internal lateinit var delivery: Delivery
+
     private lateinit var serviceName: String
     private lateinit var resourceAttributes: Attributes
 
@@ -17,36 +20,31 @@ internal class Tracer : SpanProcessor, Runnable {
 
     @Suppress("DoubleMutabilityForCollection") // we swap out this ArrayList when we flush batches
     private var batch = ArrayList<Span>()
-    private val batchSendQueue = ArrayBlockingQueue<Collection<Span>>(batchSendQueueSize)
-    private var batchTimeoutTask: TimerTask = object : TimerTask() {
-        override fun run() {}
-    }
-    private val batchTimer = Timer()
+
+    private val lock = ReentrantLock(false)
+    private val sendBatchCondition = lock.newCondition()
 
     private var runner: Thread? = null
 
     @Volatile
     private var running = false
 
-    private fun replaceBatchTimer() {
-        batchTimeoutTask.cancel()
-        val newTask = object : TimerTask() {
-            override fun run() {
-                sendNextBatch()
-            }
-        }
-        batchTimer.schedule(newTask, InternalDebug.spanBatchTimeoutMs)
-        batchTimeoutTask = newTask
-    }
-
-    fun sendNextBatch() {
-        batchTimeoutTask.cancel()
-        val nextBatch = collectNextBatch()
-        // Send even if empty, to kick any retries
-        batchSendQueue.add(nextBatch)
+    fun sendNextBatch() = lock.withLock {
+        sendBatchCondition.signalAll()
     }
 
     private fun collectNextBatch(): Collection<Span> {
+        val batchSize = synchronized(this) { batch.size }
+        // only wait for a batch if the current batch is too small
+        if (batchSize < InternalDebug.spanBatchSizeSendTriggerPoint) {
+            lock.withLock {
+                sendBatchCondition.await(
+                    InternalDebug.spanBatchTimeoutMs,
+                    TimeUnit.MILLISECONDS
+                )
+            }
+        }
+
         synchronized(this) {
             val nextBatch = batch
             batch = ArrayList()
@@ -55,13 +53,13 @@ internal class Tracer : SpanProcessor, Runnable {
     }
 
     private fun addToBatch(span: Span) {
-        synchronized(this) {
+        val batchSize = synchronized(this) {
             batch.add(span)
+            batch.size
         }
-        if (batch.size >= InternalDebug.spanBatchSizeSendTriggerPoint) {
+
+        if (batchSize >= InternalDebug.spanBatchSizeSendTriggerPoint) {
             sendNextBatch()
-        } else {
-            replaceBatchTimer()
         }
     }
 
@@ -75,7 +73,7 @@ internal class Tracer : SpanProcessor, Runnable {
         delivery.fetchCurrentProbability { sampler.probability = it }
         while (running) {
             try {
-                val nextBatch = batchSendQueue.take()
+                val nextBatch = collectNextBatch()
                 Logger.d("Sending a batch of ${nextBatch.size} spans to $delivery")
                 delivery.deliver(nextBatch, resourceAttributes) { sampler.probability = it }
             } catch (e: Exception) {
@@ -110,7 +108,12 @@ internal class Tracer : SpanProcessor, Runnable {
         }
     }
 
-    companion object {
-        private const val batchSendQueueSize = 100
+    fun stop(await: Boolean = true) {
+        running = false
+        runner?.interrupt()
+
+        if (await) {
+            runner?.join()
+        }
     }
 }

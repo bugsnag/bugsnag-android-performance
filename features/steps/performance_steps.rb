@@ -23,6 +23,10 @@ When('I run {string} configured as {string}') do |scenario_name, scenario_metada
   execute_command 'run_scenario', scenario_name, scenario_metadata
 end
 
+When('I load scenario {string}') do |scenario_name|
+  execute_command 'load_scenario', scenario_name
+end
+
 When("I relaunch the app after shutdown") do
   max_attempts = 20
   attempts = 0
