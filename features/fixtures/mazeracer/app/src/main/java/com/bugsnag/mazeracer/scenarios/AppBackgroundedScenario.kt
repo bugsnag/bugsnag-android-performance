@@ -13,7 +13,7 @@ class AppBackgroundedScenario(
     init {
         InternalDebug.spanBatchSizeSendTriggerPoint = 100
         // this should be longer than the Mazerunner timeout
-        InternalDebug.spanBatchTimeoutMs = 90_000L
+        InternalDebug.workerSleepMs = 90_000L
     }
 
     override fun startScenario() {

@@ -11,11 +11,15 @@ class BatchTimeoutScenario(
     scenarioMetadata: String
 ) : Scenario(config, scenarioMetadata) {
     init {
-        InternalDebug.spanBatchTimeoutMs = 100
+        InternalDebug.spanBatchSizeSendTriggerPoint = 100
+        InternalDebug.workerSleepMs = 100
     }
 
     override fun startScenario() {
         BugsnagPerformance.start(config)
+
+        // a short sleep to allow the worker to finish a single pass before continuing
+        Thread.sleep(5)
 
         measureSpan("Span 1") {
             Thread.sleep(30)

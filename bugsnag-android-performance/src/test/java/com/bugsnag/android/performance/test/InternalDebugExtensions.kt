@@ -7,7 +7,7 @@ import com.bugsnag.android.performance.internal.InternalDebug
  */
 inline fun <R> InternalDebug.withDebugValues(block: () -> R): R {
     val oldSpanBatchSizeSendTriggerPoint = spanBatchSizeSendTriggerPoint
-    val oldSpanBatchTimeoutMs = spanBatchTimeoutMs
+    val oldSpanBatchTimeoutMs = workerSleepMs
     val oldDropSpansOlderThanMs = dropSpansOlderThanMs
     val oldPValueExpireAfterMs = pValueExpireAfterMs
 
@@ -15,7 +15,7 @@ inline fun <R> InternalDebug.withDebugValues(block: () -> R): R {
         return block()
     } finally {
         spanBatchSizeSendTriggerPoint = oldSpanBatchSizeSendTriggerPoint
-        spanBatchTimeoutMs = oldSpanBatchTimeoutMs
+        workerSleepMs = oldSpanBatchTimeoutMs
         dropSpansOlderThanMs = oldDropSpansOlderThanMs
         pValueExpireAfterMs = oldPValueExpireAfterMs
     }

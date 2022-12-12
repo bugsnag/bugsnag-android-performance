@@ -12,7 +12,7 @@ class RetryScenario(
 ) : Scenario(config, scenarioMetadata) {
     init {
         InternalDebug.spanBatchSizeSendTriggerPoint = 1
-        InternalDebug.spanBatchTimeoutMs = TimeUnit.SECONDS.toMillis(1)
+        InternalDebug.workerSleepMs = TimeUnit.SECONDS.toMillis(1)
     }
 
     override fun startScenario() {
