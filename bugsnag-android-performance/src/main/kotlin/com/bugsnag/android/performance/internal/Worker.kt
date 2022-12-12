@@ -17,6 +17,19 @@ internal interface Task {
     fun execute(): Boolean
 }
 
+internal abstract class AbstractTask : Task {
+    protected var worker: Worker? = null
+        private set
+
+    override fun onAttach(worker: Worker) {
+        this.worker = worker
+    }
+
+    override fun onDetach(worker: Worker) {
+        this.worker = worker
+    }
+}
+
 internal class Worker(
     private val tasks: List<Task>
 ) : Runnable {
