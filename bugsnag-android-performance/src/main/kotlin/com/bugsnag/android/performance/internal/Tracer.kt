@@ -42,7 +42,7 @@ internal class Tracer : SpanProcessor {
         }
     }
 
-    fun flush() {
+    fun forceCurrentBatch() {
         val localWorker = worker ?: return
         // simply age the "last" batch to ensure that `collectNextBatch` will return whatever is
         // in the current batch, regardless of actual age or size
