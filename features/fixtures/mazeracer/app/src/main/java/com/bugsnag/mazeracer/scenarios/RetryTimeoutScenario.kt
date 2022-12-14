@@ -16,7 +16,7 @@ class RetryTimeoutScenario(
 
     override fun startScenario() {
         BugsnagPerformance.start(config)
-        Thread.sleep(100)
+        Thread.sleep(105)
         BugsnagPerformance.startSpan("span 1").end()
         Thread.sleep(100)
         BugsnagPerformance.startSpan("span 2").end()

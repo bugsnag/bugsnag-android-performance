@@ -1,29 +1,33 @@
 package com.bugsnag.android.performance.internal
 
-import android.os.SystemClock
 import com.bugsnag.android.performance.Attributes
 import com.bugsnag.android.performance.Span
-import java.util.LinkedList
-import java.util.concurrent.TimeUnit
 
-class RetryDelivery(private val dropOlderThanMs: Long, private val delivery: Delivery): Delivery {
-    private val retries = LinkedList<Span>()
-
+internal class RetryDelivery(
+    private val retryQueue: RetryQueue,
+    private val delivery: Delivery
+) : Delivery {
     override fun deliver(
         spans: Collection<Span>,
         resourceAttributes: Attributes,
         newProbabilityCallback: NewProbabilityCallback?
     ): DeliveryResult {
-        val minimumEndTime = SystemClock.elapsedRealtimeNanos() - TimeUnit.MILLISECONDS.toNanos(dropOlderThanMs)
-        val toDeliver = retries.filterTo(ArrayList<Span>()) { it.endTime >= minimumEndTime }
-        retries.clear()
-        spans.filterTo(toDeliver) { it.endTime >= minimumEndTime }
+        if (spans.isEmpty()) {
+            return DeliveryResult.Success
+        }
 
-        val result = delivery.deliver(toDeliver, resourceAttributes, newProbabilityCallback)
-        if (result == DeliveryResult.FAIL_RETRIABLE) {
-            retries.addAll(toDeliver)
+        val result = delivery.deliver(spans, resourceAttributes, newProbabilityCallback)
+        if (result is DeliveryResult.Failed && result.canRetry) {
+            retryQueue.add(result.payload)
         }
         return result
+    }
+
+    override fun deliver(
+        tracePayload: TracePayload,
+        newProbabilityCallback: NewProbabilityCallback?
+    ): DeliveryResult {
+        return delivery.deliver(tracePayload, newProbabilityCallback)
     }
 
     override fun toString(): String = "RetryDelivery($delivery)"
