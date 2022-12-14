@@ -11,6 +11,8 @@ internal class SendBatchTask(
     private val resourceAttributes: Attributes
 ) : AbstractTask(), NewProbabilityCallback {
 
+    private inline val sampler: Sampler get() = tracer.sampler
+
     override fun onAttach(worker: Worker) {
         super.onAttach(worker)
         delivery.fetchCurrentProbability(this)
@@ -23,7 +25,7 @@ internal class SendBatchTask(
         return nextBatch.isNotEmpty()
     }
 
-    override fun invoke(newP: Double) {
-        tracer.sampler.probability = newP
+    override fun onNewProbability(newP: Double) {
+        sampler.probability = newP
     }
 }
