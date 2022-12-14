@@ -17,6 +17,19 @@ internal interface Task {
     fun execute(): Boolean
 }
 
+internal abstract class AbstractTask : Task {
+    protected var worker: Worker? = null
+        private set
+
+    override fun onAttach(worker: Worker) {
+        this.worker = worker
+    }
+
+    override fun onDetach(worker: Worker) {
+        this.worker = worker
+    }
+}
+
 internal class Worker(
     private val tasks: List<Task>
 ) : Runnable {
@@ -24,7 +37,15 @@ internal class Worker(
     constructor(vararg tasks: Task) : this(tasks.toList())
 
     private val lock = ReentrantLock(false)
-    private val workerWaitCondition = lock.newCondition()
+    private val wakeWorker = lock.newCondition()
+
+    /**
+     * This avoids us having to do all of the work under `lock` allowing `wake` to be called between
+     * the time to deciding to "wait for work" and actually entering `lock` to go to sleep. This
+     * allows a call to [wake] to override the decision taken by the main loop, forcing an
+     * additional work iteration instead of going to sleep.
+     */
+    private var wakeIsPending = false
 
     private var runner: Thread? = null
 
@@ -50,11 +71,13 @@ internal class Worker(
         running = false
         runner?.interrupt()
 
-        if (waitForTermination) {
-            runner?.join()
+        try {
+            if (waitForTermination) {
+                runner?.join()
+            }
+        } finally {
+            runner = null
         }
-
-        runner = null
     }
 
     override fun run() {
@@ -83,7 +106,10 @@ internal class Worker(
     fun wake() {
         if (!running) return
         // wake up with worker
-        lock.withLock { workerWaitCondition.signalAll() }
+        lock.withLock {
+            wakeIsPending = true
+            wakeWorker.signalAll()
+        }
     }
 
     private fun runTasks(): Boolean {
@@ -105,10 +131,11 @@ internal class Worker(
 
     private fun waitForWorkOrWakeup() {
         lock.withLock {
-            workerWaitCondition.await(
-                InternalDebug.spanBatchTimeoutMs,
-                TimeUnit.MILLISECONDS
-            )
+            if (!wakeIsPending) {
+                wakeWorker.await(InternalDebug.workerSleepMs, TimeUnit.MILLISECONDS)
+            }
+
+            wakeIsPending = false
         }
     }
 }

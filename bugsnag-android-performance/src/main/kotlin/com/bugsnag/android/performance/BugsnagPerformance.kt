@@ -7,11 +7,17 @@ import android.os.SystemClock
 import com.bugsnag.android.performance.BugsnagPerformance.start
 import com.bugsnag.android.performance.internal.ConnectivityCompat
 import com.bugsnag.android.performance.internal.DefaultAttributeSource
+import com.bugsnag.android.performance.internal.HttpDelivery
+import com.bugsnag.android.performance.internal.InternalDebug
 import com.bugsnag.android.performance.internal.PerformanceComponentCallbacks
 import com.bugsnag.android.performance.internal.PerformanceLifecycleCallbacks
+import com.bugsnag.android.performance.internal.RetryDelivery
+import com.bugsnag.android.performance.internal.SendBatchTask
 import com.bugsnag.android.performance.internal.SpanFactory
 import com.bugsnag.android.performance.internal.SpanTracker
 import com.bugsnag.android.performance.internal.Tracer
+import com.bugsnag.android.performance.internal.Worker
+import com.bugsnag.android.performance.internal.createResourceAttributes
 import com.bugsnag.android.performance.internal.isInForeground
 import java.net.URL
 
@@ -32,6 +38,8 @@ object BugsnagPerformance {
     private val platformCallbacks = createLifecycleCallbacks()
 
     private var isStarted = false
+
+    private var worker: Worker? = null
 
     /**
      * Initialise the Bugsnag Performance SDK. This should be called within your
@@ -92,7 +100,7 @@ object BugsnagPerformance {
         val connectivity =
             ConnectivityCompat(application) { hasConnection, _, networkType, networkSubType ->
                 if (hasConnection) {
-                    tracer.sendNextBatch()
+                    worker?.wake()
                 }
 
                 defaultAttributeSource.update {
@@ -108,7 +116,26 @@ object BugsnagPerformance {
         application.registerActivityLifecycleCallbacks(platformCallbacks)
         application.registerComponentCallbacks(PerformanceComponentCallbacks(tracer))
 
-        tracer.start(configuration)
+        val delivery = RetryDelivery(
+            InternalDebug.dropSpansOlderThanMs,
+            HttpDelivery(
+                configuration.endpoint,
+                requireNotNull(configuration.apiKey) {
+                    "PerformanceConfiguration.apiKey may not be null"
+                }
+            )
+        )
+
+        val bsgWorker = Worker(
+            SendBatchTask(delivery, tracer, createResourceAttributes(configuration))
+        )
+
+        // register the Worker with the components that depend on it
+        tracer.worker = bsgWorker
+
+        bsgWorker.start()
+
+        worker = bsgWorker
     }
 
     private fun createLifecycleCallbacks(): PerformanceLifecycleCallbacks {

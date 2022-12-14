@@ -10,7 +10,7 @@ internal class PerformanceComponentCallbacks(private val tracer: Tracer) : Compo
     override fun onTrimMemory(level: Int) {
         if (level == ComponentCallbacks2.TRIM_MEMORY_UI_HIDDEN) {
             // App has been backgrounded
-            tracer.sendNextBatch()
+            tracer.forceCurrentBatch()
         }
     }
 }

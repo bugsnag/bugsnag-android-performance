@@ -3,7 +3,6 @@ package com.bugsnag.android.performance.internal
 import android.util.JsonWriter
 import androidx.annotation.VisibleForTesting
 import com.bugsnag.android.performance.Attributes
-import com.bugsnag.android.performance.Logger
 import com.bugsnag.android.performance.Span
 import java.io.ByteArrayOutputStream
 import java.net.HttpURLConnection
@@ -49,7 +48,7 @@ internal class HttpDelivery(private val endpoint: String, private val apiKey: St
         val newP = connection.getHeaderField("Bugsnag-Sampling-Probability")?.toDoubleOrNull()
         connection.disconnect()
         if (newPCallback != null && newP != null) {
-            newPCallback(newP)
+            newPCallback.onNewProbability(newP)
         }
         return result
     }
