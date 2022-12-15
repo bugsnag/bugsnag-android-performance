@@ -35,11 +35,11 @@ steps:
     depends_on: 'fixture'
     timeout_in_minutes: 60
     plugins:
-      artifacts#v1.2.0:
+      artifacts#v1.5.0:
         download:
           - "build/test-fixture.apk"
         upload: "maze_output/failed/**/*"
-      docker-compose#v3.7.0:
+      docker-compose#v4.8.0:
         pull: android-maze-runner
         run: android-maze-runner
         command:
@@ -57,11 +57,11 @@ steps:
     depends_on: 'fixture'
     timeout_in_minutes: 60
     plugins:
-      artifacts#v1.2.0:
+      artifacts#v1.5.0:
         download:
           - "build/test-fixture.apk"
         upload: "maze_output/failed/**/*"
-      docker-compose#v3.7.0:
+      docker-compose#v4.8.0:
         pull: android-maze-runner
         run: android-maze-runner
         command:
@@ -79,11 +79,11 @@ steps:
     depends_on: 'fixture'
     timeout_in_minutes: 60
     plugins:
-      artifacts#v1.2.0:
+      artifacts#v1.5.0:
         download:
           - "build/test-fixture.apk"
         upload: "maze_output/failed/**/*"
-      docker-compose#v3.7.0:
+      docker-compose#v4.8.0:
         pull: android-maze-runner
         run: android-maze-runner
         command:
@@ -101,11 +101,11 @@ steps:
     depends_on: 'fixture'
     timeout_in_minutes: 60
     plugins:
-      artifacts#v1.2.0:
+      artifacts#v1.5.0:
         download:
           - "build/test-fixture.apk"
         upload: "maze_output/failed/**/*"
-      docker-compose#v3.7.0:
+      docker-compose#v4.8.0:
         pull: android-maze-runner
         run: android-maze-runner
         command:
@@ -123,11 +123,11 @@ steps:
     depends_on: 'fixture'
     timeout_in_minutes: 60
     plugins:
-      artifacts#v1.2.0:
+      artifacts#v1.5.0:
         download:
           - "build/test-fixture.apk"
         upload: "maze_output/failed/**/*"
-      docker-compose#v3.7.0:
+      docker-compose#v4.8.0:
         pull: android-maze-runner
         run: android-maze-runner
         command:
