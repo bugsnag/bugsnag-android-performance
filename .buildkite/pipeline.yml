@@ -30,6 +30,72 @@ steps:
       - cd features/fixtures/mazeracer
       - ./gradlew ktlintCheck detekt
 
+  - label: ':android: Android 9 tests'
+    key: 'android-12-e2e'
+    depends_on: 'fixture'
+    timeout_in_minutes: 60
+    plugins:
+      artifacts#v1.2.0:
+        download:
+          - "build/test-fixture.apk"
+        upload: "maze_output/failed/**/*"
+      docker-compose#v3.7.0:
+        pull: android-maze-runner
+        run: android-maze-runner
+        command:
+          - "features/"
+          - "--app=/app/build/test-fixture.apk"
+          - "--farm=bs"
+          - "--device=ANDROID_9_0"
+          - "--fail-fast"
+    concurrency: 24
+    concurrency_group: 'browserstack-app'
+    concurrency_method: eager
+
+  - label: ':android: Android 10 tests'
+    key: 'android-12-e2e'
+    depends_on: 'fixture'
+    timeout_in_minutes: 60
+    plugins:
+      artifacts#v1.2.0:
+        download:
+          - "build/test-fixture.apk"
+        upload: "maze_output/failed/**/*"
+      docker-compose#v3.7.0:
+        pull: android-maze-runner
+        run: android-maze-runner
+        command:
+          - "features/"
+          - "--app=/app/build/test-fixture.apk"
+          - "--farm=bs"
+          - "--device=ANDROID_10_0"
+          - "--fail-fast"
+    concurrency: 24
+    concurrency_group: 'browserstack-app'
+    concurrency_method: eager
+
+  - label: ':android: Android 11 tests'
+    key: 'android-12-e2e'
+    depends_on: 'fixture'
+    timeout_in_minutes: 60
+    plugins:
+      artifacts#v1.2.0:
+        download:
+          - "build/test-fixture.apk"
+        upload: "maze_output/failed/**/*"
+      docker-compose#v3.7.0:
+        pull: android-maze-runner
+        run: android-maze-runner
+        command:
+          - "features/"
+          - "--app=/app/build/test-fixture.apk"
+          - "--farm=bs"
+          - "--device=ANDROID_11_0"
+          - "--fail-fast"
+    concurrency: 24
+    concurrency_group: 'browserstack-app'
+    concurrency_method: eager
+
   - label: ':android: Android 12 tests'
     key: 'android-12-e2e'
     depends_on: 'fixture'
@@ -47,6 +113,28 @@ steps:
           - "--app=/app/build/test-fixture.apk"
           - "--farm=bs"
           - "--device=ANDROID_12_0"
+          - "--fail-fast"
+    concurrency: 24
+    concurrency_group: 'browserstack-app'
+    concurrency_method: eager
+
+  - label: ':android: Android 13 tests'
+    key: 'android-12-e2e'
+    depends_on: 'fixture'
+    timeout_in_minutes: 60
+    plugins:
+      artifacts#v1.2.0:
+        download:
+          - "build/test-fixture.apk"
+        upload: "maze_output/failed/**/*"
+      docker-compose#v3.7.0:
+        pull: android-maze-runner
+        run: android-maze-runner
+        command:
+          - "features/"
+          - "--app=/app/build/test-fixture.apk"
+          - "--farm=bs"
+          - "--device=ANDROID_13_0"
           - "--fail-fast"
     concurrency: 24
     concurrency_group: 'browserstack-app'
