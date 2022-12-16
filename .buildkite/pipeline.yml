@@ -73,6 +73,7 @@ steps:
     concurrency_method: eager
 
   - label: ':android: Android 11 tests'
+    skip: Pending PLAT-9364
     depends_on: 'fixture'
     timeout_in_minutes: 60
     plugins:
@@ -94,6 +95,7 @@ steps:
     concurrency_method: eager
 
   - label: ':android: Android 12 tests'
+    skip: Pending PLAT-9364
     depends_on: 'fixture'
     timeout_in_minutes: 60
     plugins:
@@ -115,6 +117,7 @@ steps:
     concurrency_method: eager
 
   - label: ':android: Android 13 tests'
+    skip: Pending PLAT-9364
     depends_on: 'fixture'
     timeout_in_minutes: 60
     plugins:
