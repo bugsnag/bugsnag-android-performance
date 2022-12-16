@@ -40,6 +40,8 @@ Feature: Manual creation of spans
     * a span name equals "Custom/Thread Span 1"
     * a span name equals "Custom/Thread Span 2"
 
+  # TODO: Flaky - Pending PLAT-9364
+  @skip
   Scenario: Span batch times out
     Given I run "BatchTimeoutScenario" and discard the initial p-value request
     And I wait to receive 1 traces
