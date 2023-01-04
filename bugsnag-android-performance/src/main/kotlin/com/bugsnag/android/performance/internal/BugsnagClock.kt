@@ -20,4 +20,9 @@ internal object BugsnagClock {
      * precision.
      */
     fun elapsedNanosToUnixTime(elapsedRealtimeNanos: Long) = elapsedRealtimeNanos + bootTimeNano
+
+    /**
+     * `System.currentTimeMillis` but as nanosecond precision time.
+     */
+    fun currentUnixNanoTime(): Long = elapsedNanosToUnixTime(SystemClock.elapsedRealtimeNanos())
 }

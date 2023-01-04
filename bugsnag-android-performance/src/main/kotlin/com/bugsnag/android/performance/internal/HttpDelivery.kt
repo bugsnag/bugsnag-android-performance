@@ -1,110 +1,82 @@
 package com.bugsnag.android.performance.internal
 
-import android.util.JsonWriter
-import androidx.annotation.VisibleForTesting
 import com.bugsnag.android.performance.Attributes
 import com.bugsnag.android.performance.Span
-import java.io.ByteArrayOutputStream
 import java.net.HttpURLConnection
 import java.net.URL
-import java.security.MessageDigest
 
-internal class HttpDelivery(private val endpoint: String, private val apiKey: String) : Delivery {
+internal class HttpDelivery(
+    private val endpoint: String,
+    private val apiKey: String
+) : Delivery {
     override fun deliver(
         spans: Collection<Span>,
         resourceAttributes: Attributes,
         newProbabilityCallback: NewProbabilityCallback?
     ): DeliveryResult {
-        if (spans.isEmpty()) {
-            return DeliveryResult.SUCCESS
-        }
-
-        return deliverPayload(encodeSpanPayload(spans, resourceAttributes), newProbabilityCallback)
+        return deliver(
+            TracePayload.createTracePayload(apiKey, spans, resourceAttributes),
+            newProbabilityCallback
+        )
     }
 
-    override fun fetchCurrentProbability(newPCallback: NewProbabilityCallback) {
-        // Server expects a call to /traces with an empty set of resource spans
-        deliverPayload("{\"resourceSpans\": []}".toByteArray(), newPCallback)
-    }
-
-    private fun deliverPayload(payload: ByteArray, newPCallback: NewProbabilityCallback?): DeliveryResult {
+    override fun deliver(
+        tracePayload: TracePayload,
+        newProbabilityCallback: NewProbabilityCallback?
+    ): DeliveryResult {
         val connection = URL(endpoint).openConnection() as HttpURLConnection
         with(connection) {
             requestMethod = "POST"
 
-            setFixedLengthStreamingMode(payload.size)
-            setRequestProperty("Bugsnag-Api-Key", apiKey)
-            setRequestProperty("Content-Encoding", "application/json")
-            computeSha1Digest(payload)?.let { digest ->
-                setRequestProperty("Bugsnag-Integrity", digest)
-            }
+            setHeaders(tracePayload)
 
             doOutput = true
             doInput = true
-            outputStream.use { out -> out.write(payload) }
+            outputStream.use { out -> out.write(tracePayload.body) }
         }
 
-        val result = getDeliveryResult(connection)
+        val result = getDeliveryResult(connection.responseCode, tracePayload)
         val newP = connection.getHeaderField("Bugsnag-Sampling-Probability")?.toDoubleOrNull()
         connection.disconnect()
-        if (newPCallback != null && newP != null) {
-            newPCallback.onNewProbability(newP)
+        if (newProbabilityCallback != null && newP != null) {
+            newProbabilityCallback.onNewProbability(newP)
         }
         return result
     }
 
-    private fun getDeliveryResult(connection: HttpURLConnection): DeliveryResult {
-        val statusCode = connection.responseCode
+    override fun fetchCurrentProbability(newPCallback: NewProbabilityCallback) {
+        // Server expects a call to /traces with an empty set of resource spans
+        deliver(
+            TracePayload.createTracePayload(apiKey, "{\"resourceSpans\": []}".toByteArray()),
+            newPCallback
+        )
+    }
 
+    private fun getDeliveryResult(statusCode: Int, payload: TracePayload): DeliveryResult {
         return when {
-            statusCode / 100 == 2 -> DeliveryResult.SUCCESS
-            statusCode / 100 == 4 && statusCode !in retriable400Codes -> DeliveryResult.FAIL_PERMANENT
-            else -> DeliveryResult.FAIL_RETRIABLE
+            statusCode / 100 == 2 -> DeliveryResult.Success
+            statusCode / 100 == 4 && statusCode !in retriable400Codes ->
+                DeliveryResult.Failed(payload, false)
+            else -> DeliveryResult.Failed(payload, true)
         }
-    }
-
-    @VisibleForTesting
-    fun encodeSpanPayload(spans: Collection<Span>, resourceAttributes: Attributes): ByteArray {
-        val buffer = ByteArrayOutputStream()
-        JsonWriter(buffer.writer()).use { json ->
-            json.beginObject()
-                .name("resourceSpans").beginArray()
-                .beginObject()
-
-            json.name("resource").beginObject()
-                .name("attributes").value(resourceAttributes)
-                .endObject()
-
-            json.name("scopeSpans").beginArray()
-                .beginObject()
-                .name("spans").beginArray()
-
-            spans.forEach { it.toJson(json) }
-
-            json.endArray() // spans
-                .endObject()
-                .endArray() // scopeSpans
-                .endObject()
-                .endArray() // resourceSpans
-                .endObject()
-        }
-
-        return buffer.toByteArray()
-    }
-
-    private fun computeSha1Digest(payload: ByteArray): String? {
-        runCatching {
-            val shaDigest = MessageDigest.getInstance("SHA-1")
-            shaDigest.update(payload)
-
-            return buildString {
-                append("sha1 ")
-                appendHexString(shaDigest.digest())
-            }
-        }.getOrElse { return null }
     }
 
     override fun toString(): String = "HttpDelivery(\"$endpoint\")"
+
+    private fun HttpURLConnection.setHeaders(tracePayload: TracePayload) {
+        tracePayload.headers.forEach { (name, value) ->
+            if (name == "Content-Length") {
+                // try and parse this and call setFixedLengthStreamingMode instead of
+                // just setRequestProperty
+                value.toIntOrNull()?.let { setFixedLengthStreamingMode(it) }
+                // if Content-Length isn't an int set it as a normal header
+                // so we don't unexpectedly loose anything
+                    ?: setRequestProperty(name, value)
+            } else {
+                setRequestProperty(name, value)
+            }
+        }
+    }
 
     companion object {
         private val retriable400Codes = setOf(

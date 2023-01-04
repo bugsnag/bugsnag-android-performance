@@ -12,7 +12,7 @@ import org.robolectric.RobolectricTestRunner
 import java.util.UUID
 
 @RunWith(RobolectricTestRunner::class)
-class HttpDeliveryTest {
+class SpanPayloadEncodingTest {
     @Test
     @Suppress("LongMethod")
     fun testDeliver() {
@@ -36,8 +36,7 @@ class HttpDeliveryTest {
         span2.end(11L)
         val spans = listOf(span1, span2)
 
-        val delivery = HttpDelivery("", "")
-        val content = delivery.encodeSpanPayload(
+        val content = TracePayload.encodeSpanPayload(
             spans,
             Attributes().also { attrs ->
                 attrs["service.name"] = "Test app"

@@ -1,10 +1,18 @@
 Feature: Retries
 
   Scenario: Basic retry
+    # 200 - Get p-value, 500 - reject first payload
     Given I set the HTTP status code for the next requests to "200,500"
     And I run "RetryScenario" and discard the initial p-value request
-    And I wait to receive 2 traces
+    And I wait to receive 3 traces
+    # 500 - Payload rejected (but will still be tracked by MazeRunner)
     Then the trace payload field "resourceSpans.0.scopeSpans.0.spans.0.name" equals "Custom/span 1"
+    And I discard the oldest trace
+    # 200 - Payload delivered (retry)
+    Then the trace payload field "resourceSpans.0.scopeSpans.0.spans.0.name" equals "Custom/span 1"
+    And I discard the oldest trace
+    # 200 - Second payload delivered
+    Then the trace payload field "resourceSpans.0.scopeSpans.0.spans.0.name" equals "Custom/span 2"
     * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0.spanId" matches the regex "^[A-Fa-f0-9]{16}$"
     * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0.traceId" matches the regex "^[A-Fa-f0-9]{32}$"
     * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0.kind" equals "SPAN_KIND_INTERNAL"
@@ -13,11 +21,9 @@ Feature: Retries
     * the trace payload field "resourceSpans.0.resource" attribute "service.name" equals "com.bugsnag.mazeracer"
     * the trace payload field "resourceSpans.0.resource" attribute "telemetry.sdk.name" equals "bugsnag.performance.android"
     * the trace payload field "resourceSpans.0.resource" attribute "telemetry.sdk.version" equals "0.0.0"
-    And I discard the oldest trace
-    Then the trace payload field "resourceSpans.0.scopeSpans.0.spans.0.name" equals "Custom/span 1"
-    Then the trace payload field "resourceSpans.0.scopeSpans.0.spans.1.name" equals "Custom/span 2"
 
   Scenario: Retry timeout
+    # 500 - reject all payloads
     Given I set the HTTP status code for the next request to 500
     And I run "RetryTimeoutScenario" and discard the initial p-value request
     And I wait to receive 2 traces

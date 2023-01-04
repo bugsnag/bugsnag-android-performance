@@ -7,8 +7,9 @@
     <ID>MagicNumber:AppStartScenario.kt$AppStartScenario$1000L</ID>
     <ID>MagicNumber:AppStartScenario.kt$AppStartScenario$500L</ID>
     <ID>MagicNumber:BatchTimeoutScenario.kt$BatchTimeoutScenario$100</ID>
+    <ID>MagicNumber:BatchTimeoutScenario.kt$BatchTimeoutScenario$250</ID>
     <ID>MagicNumber:BatchTimeoutScenario.kt$BatchTimeoutScenario$30</ID>
-    <ID>MagicNumber:BatchTimeoutScenario.kt$BatchTimeoutScenario$5</ID>
+    <ID>MagicNumber:BatchTimeoutScenario.kt$BatchTimeoutScenario$50</ID>
     <ID>MagicNumber:MainActivity.kt$MainActivity$1000</ID>
     <ID>MagicNumber:ManualSpanScenario.kt$ManualSpanScenario$100L</ID>
     <ID>MagicNumber:MazeRacerApplication.kt$MazeRacerApplication$1000L</ID>
@@ -20,6 +21,7 @@
     <ID>MagicNumber:PreStartSpansScenario.kt$PreStartSpansScenario$50</ID>
     <ID>MagicNumber:RetryScenario.kt$RetryScenario$100</ID>
     <ID>MagicNumber:RetryTimeoutScenario.kt$RetryTimeoutScenario$100</ID>
+    <ID>MagicNumber:RetryTimeoutScenario.kt$RetryTimeoutScenario$105</ID>
     <ID>MagicNumber:SamplingProbabilityZeroScenario.kt$SamplingProbabilityZeroScenario$100</ID>
     <ID>MagicNumber:ThreeSpansScenario.kt$ThreeSpansScenario$300</ID>
     <ID>TooGenericExceptionCaught:MainActivity.kt$MainActivity$e: Exception</ID>

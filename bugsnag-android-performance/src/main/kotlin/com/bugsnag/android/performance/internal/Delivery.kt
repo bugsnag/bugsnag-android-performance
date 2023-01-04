@@ -3,10 +3,13 @@ package com.bugsnag.android.performance.internal
 import com.bugsnag.android.performance.Attributes
 import com.bugsnag.android.performance.Span
 
-enum class DeliveryResult {
-    SUCCESS,
-    FAIL_RETRIABLE,
-    FAIL_PERMANENT
+sealed class DeliveryResult {
+    object Success : DeliveryResult()
+
+    data class Failed(
+        val payload: TracePayload,
+        val canRetry: Boolean
+    ) : DeliveryResult()
 }
 
 fun interface NewProbabilityCallback {
@@ -17,6 +20,11 @@ interface Delivery {
     fun deliver(
         spans: Collection<Span>,
         resourceAttributes: Attributes,
+        newProbabilityCallback: NewProbabilityCallback?
+    ): DeliveryResult
+
+    fun deliver(
+        tracePayload: TracePayload,
         newProbabilityCallback: NewProbabilityCallback?
     ): DeliveryResult
 

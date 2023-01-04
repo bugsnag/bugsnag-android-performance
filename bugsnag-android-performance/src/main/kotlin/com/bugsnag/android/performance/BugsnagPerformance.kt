@@ -8,10 +8,11 @@ import com.bugsnag.android.performance.BugsnagPerformance.start
 import com.bugsnag.android.performance.internal.ConnectivityCompat
 import com.bugsnag.android.performance.internal.DefaultAttributeSource
 import com.bugsnag.android.performance.internal.HttpDelivery
-import com.bugsnag.android.performance.internal.InternalDebug
 import com.bugsnag.android.performance.internal.PerformanceComponentCallbacks
 import com.bugsnag.android.performance.internal.PerformanceLifecycleCallbacks
+import com.bugsnag.android.performance.internal.Persistence
 import com.bugsnag.android.performance.internal.RetryDelivery
+import com.bugsnag.android.performance.internal.RetryDeliveryTask
 import com.bugsnag.android.performance.internal.SendBatchTask
 import com.bugsnag.android.performance.internal.SpanFactory
 import com.bugsnag.android.performance.internal.SpanTracker
@@ -116,18 +117,20 @@ object BugsnagPerformance {
         application.registerActivityLifecycleCallbacks(platformCallbacks)
         application.registerComponentCallbacks(PerformanceComponentCallbacks(tracer))
 
-        val delivery = RetryDelivery(
-            InternalDebug.dropSpansOlderThanMs,
-            HttpDelivery(
-                configuration.endpoint,
-                requireNotNull(configuration.apiKey) {
-                    "PerformanceConfiguration.apiKey may not be null"
-                }
-            )
+        val httpDelivery = HttpDelivery(
+            configuration.endpoint,
+            requireNotNull(configuration.apiKey) {
+                "PerformanceConfiguration.apiKey may not be null"
+            }
         )
 
+        val persistence = Persistence(application)
+
+        val delivery = RetryDelivery(persistence.retryQueue, httpDelivery)
+
         val bsgWorker = Worker(
-            SendBatchTask(delivery, tracer, createResourceAttributes(configuration))
+            SendBatchTask(delivery, tracer, createResourceAttributes(configuration)),
+            RetryDeliveryTask(persistence.retryQueue, httpDelivery)
         )
 
         // register the Worker with the components that depend on it
