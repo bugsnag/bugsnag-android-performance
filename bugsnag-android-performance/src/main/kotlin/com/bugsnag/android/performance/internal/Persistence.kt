@@ -4,6 +4,7 @@ import android.content.Context
 import com.bugsnag.android.performance.Logger
 import com.bugsnag.android.performance.internal.TraceFileDecoder.FILENAME_PREFIX
 import com.bugsnag.android.performance.internal.TraceFileDecoder.FILENAME_SUFFIX
+import org.json.JSONObject
 import java.io.ByteArrayOutputStream
 import java.io.EOFException
 import java.io.File
@@ -16,6 +17,7 @@ internal class Persistence(val context: Context) {
     val topLevelDirectory = File(context.cacheDir, "bugsnag-performance/v1").apply { mkdirs() }
 
     val retryQueue = RetryQueue(File(topLevelDirectory, "retry-queue"))
+    val persistentState = PersistentState(File(topLevelDirectory, "persistent-state.json"))
 
     fun clear() {
         // delete the contents of the directory, but not the directory itself
@@ -192,5 +194,59 @@ internal class RetryQueue(
             writeHeaders(headers, out)
             out.write(trace)
         }
+    }
+}
+
+internal class PersistentState(
+    private val stateFile: File
+) {
+    var pValue: Double = 1.0
+    var pValueExpiryTime: Long = 0
+
+    init {
+        load()
+    }
+
+    private fun load() {
+        if (!stateFile.exists()) return
+
+        @Suppress("TooGenericExceptionCaught", "SwallowedException")
+        try {
+            val jsonObject = JSONObject(stateFile.readText())
+            this.pValue = jsonObject.optDouble(P_VALUE_KEY, pValue)
+            this.pValueExpiryTime = jsonObject.optLong(P_VALUE_EXPIRY_KEY, pValueExpiryTime)
+        } catch (ex: Exception) {
+            // ignored, the stored values will be discarded and the values will be reset
+        }
+    }
+
+    fun save() {
+        val jsonObject = JSONObject().apply {
+            put(P_VALUE_KEY, pValue)
+            put(P_VALUE_EXPIRY_KEY, pValueExpiryTime)
+        }
+
+        @Suppress("TooGenericExceptionCaught", "SwallowedException")
+        try {
+            stateFile.writer().use { out ->
+                out.write(jsonObject.toString())
+            }
+        } catch (ex: Exception) {
+            // ignored, the stored values will be discarded and the values will be reset
+        }
+    }
+
+    /**
+     * Update this `PersistentState` and then attempt to [save] the changes. This should only
+     * be invoked by [Task]s on the [Worker] thread.
+     */
+    inline fun update(mutator: PersistentState.() -> Unit) {
+        mutator.invoke(this)
+        save()
+    }
+
+    companion object {
+        private const val P_VALUE_KEY = "pValue"
+        private const val P_VALUE_EXPIRY_KEY = "pValueExpiry"
     }
 }

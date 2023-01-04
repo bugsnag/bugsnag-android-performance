@@ -39,9 +39,10 @@ class SendBatchTaskTest {
         }
 
         val delivery = mock<Delivery>()
+        val persistentState = mock<PersistentState>()
 
         val resourceAttributes = Attributes()
-        val sendBatchTask = SendBatchTask(delivery, tracer, resourceAttributes)
+        val sendBatchTask = SendBatchTask(delivery, tracer, persistentState, resourceAttributes)
         val workDone = sendBatchTask.execute()
 
         assertTrue("SendBatchTask should have delivered a batch", workDone)
@@ -55,8 +56,9 @@ class SendBatchTaskTest {
         }
 
         val deliver = mock<Delivery>()
+        val persistentState = mock<PersistentState>()
 
-        val sendBatchTask = SendBatchTask(deliver, tracer, Attributes())
+        val sendBatchTask = SendBatchTask(deliver, tracer, persistentState, Attributes())
         val workDone = sendBatchTask.execute()
 
         assertFalse("SendBatchTask should not have done any work", workDone)
@@ -70,9 +72,10 @@ class SendBatchTaskTest {
         }
 
         val delivery = mock<Delivery>()
+        val persistentState = mock<PersistentState>()
 
         val resourceAttributes = Attributes()
-        val sendBatchTask = SendBatchTask(delivery, tracer, resourceAttributes)
+        val sendBatchTask = SendBatchTask(delivery, tracer, persistentState, resourceAttributes)
         val workDone = sendBatchTask.execute()
 
         assertFalse("SendBatchTask should not have done any work", workDone)

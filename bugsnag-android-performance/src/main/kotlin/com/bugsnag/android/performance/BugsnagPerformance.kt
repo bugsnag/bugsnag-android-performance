@@ -125,11 +125,17 @@ object BugsnagPerformance {
         )
 
         val persistence = Persistence(application)
+        tracer.sampler.loadConfiguration(persistence.persistentState)
 
         val delivery = RetryDelivery(persistence.retryQueue, httpDelivery)
 
         val bsgWorker = Worker(
-            SendBatchTask(delivery, tracer, createResourceAttributes(configuration)),
+            SendBatchTask(
+                delivery,
+                tracer,
+                persistence.persistentState,
+                createResourceAttributes(configuration)
+            ),
             RetryDeliveryTask(persistence.retryQueue, httpDelivery)
         )
 
