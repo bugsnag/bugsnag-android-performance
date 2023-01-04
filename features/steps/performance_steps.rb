@@ -27,6 +27,10 @@ When('I load scenario {string}') do |scenario_name|
   execute_command 'load_scenario', scenario_name
 end
 
+When('I wait for {int} span(s)') do |span_count|
+  assert_received_spans span_count, Maze::Server.list_for('traces')
+end
+
 When("I relaunch the app after shutdown") do
   max_attempts = 20
   attempts = 0
@@ -101,15 +105,39 @@ Then('the {word} payload field {string} attribute {string} exists') do |request_
 end
 
 Then('a span {word} equals {string}') do |attribute, expected|
-  list = Maze::Server.list_for('traces').all
-  spans = list.flat_map { |req| req[:body]['resourceSpans'] }
+  spans = spans_from_request_list(Maze::Server.list_for('traces'))
+  selected_attributes = spans.map { |span| span[attribute] }
+  Maze.check.includes selected_attributes, expected
+end
+
+def spans_from_request_list list
+  return list.remaining
+             .flat_map { |req| req[:body]['resourceSpans'] }
              .flat_map { |r| r['scopeSpans'] }
              .flat_map { |s| s['spans'] }
              .select { |s| !s.nil? }
+end
 
-  selected_attributes = spans.map { |span| span[attribute] }
+def assert_received_spans(span_count, list)
+  timeout = Maze.config.receive_requests_wait
+  wait = Maze::Wait.new(timeout: timeout)
 
-  Maze.check.includes selected_attributes, expected
+  received = wait.until { spans_from_request_list(list).size >= span_count }
+  received_count = spans_from_request_list(list).size
+
+  unless received
+    raise Test::Unit::AssertionFailedError.new <<-MESSAGE
+    Expected #{span_count} spans but received #{received_count} within the #{timeout}s timeout.
+    This could indicate that:
+    - Bugsnag crashed with a fatal error.
+    - Bugsnag did not make the requests that it should have done.
+    - The requests were made, but not deemed to be valid (e.g. missing integrity header).
+    - The requests made were prevented from being received due to a network or other infrastructure issue.
+    Please check the Maze Runner and device logs to confirm.)
+    MESSAGE
+  end
+
+  Maze.check.operator(span_count, :<=, received_count, "#{received_count} spans received")
 end
 
 def assert_attribute request_type, field, key, expected

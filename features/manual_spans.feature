@@ -44,19 +44,19 @@ Feature: Manual creation of spans
   @skip
   Scenario: Span batch times out
     Given I run "BatchTimeoutScenario" and discard the initial p-value request
-    And I wait to receive 1 traces
+    And I wait for 2 spans
     Then a span name equals "Custom/Span 1"
     * a span name equals "Custom/Span 2"
 
   Scenario: Send on App backgrounded
     Given I run "AppBackgroundedScenario" and discard the initial p-value request
     And I send the app to the background for 5 seconds
-    And I wait to receive 1 traces
+    And I wait for 1 span
     Then a span name equals "Custom/Span 1"
 
   Scenario: Spans logged in the background
     Given I run "BackgroundSpanScenario" and discard the initial p-value request
     And I send the app to the background for 5 seconds
-    And I wait to receive 1 traces
+    And I wait for 1 span
     Then a span name equals "Custom/BackgroundSpan"
     * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0" attribute "bugsnag.app.in_foreground" is false
