@@ -8,6 +8,7 @@ internal class SendBatchTask(
     @get:VisibleForTesting
     val delivery: Delivery,
     private val tracer: Tracer,
+    private val persistentState: PersistentState,
     private val resourceAttributes: Attributes
 ) : AbstractTask(), NewProbabilityCallback {
 
@@ -27,5 +28,9 @@ internal class SendBatchTask(
 
     override fun onNewProbability(newP: Double) {
         sampler.probability = newP
+        persistentState.update {
+            pValue = newP
+            pValueExpiryTime = sampler.expiryTime
+        }
     }
 }

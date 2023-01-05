@@ -2,15 +2,14 @@ package com.bugsnag.android.performance.internal
 
 import com.bugsnag.android.performance.Span
 
-class Sampler(fallbackProbability: Double) {
+internal class Sampler(fallbackProbability: Double) {
     var fallbackProbability = fallbackProbability
         set(value) {
             field = value
             currentProbability = value
             expiryTime = newExpiryTime()
         }
-    private var expiryTime = newExpiryTime()
-    private var currentProbability = fallbackProbability
+
     var probability: Double
         get() {
             return when {
@@ -22,6 +21,14 @@ class Sampler(fallbackProbability: Double) {
             currentProbability = value
             expiryTime = newExpiryTime()
         }
+
+    var expiryTime = newExpiryTime()
+    private var currentProbability = fallbackProbability
+
+    fun loadConfiguration(persistentState: PersistentState) {
+        this.currentProbability = persistentState.pValue
+        this.expiryTime = persistentState.pValueExpiryTime
+    }
 
     fun sampled(spans: Collection<Span>): Collection<Span> {
         return spans.filter { shouldKeepSpan(it) }
