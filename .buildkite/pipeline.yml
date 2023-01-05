@@ -4,7 +4,7 @@ steps:
     timeout_in_minutes: 20
     agents:
       queue: macos-12-arm
-    command: './gradlew --continue detekt lint ktlintCheck'
+    command: './gradlew --continue license detekt lint ktlintCheck'
 
   - label: ':android: JVM tests'
     timeout_in_minutes: 10

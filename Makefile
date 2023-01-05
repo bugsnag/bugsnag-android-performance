@@ -1,7 +1,7 @@
 .PHONY: install test-fixture check bump
 
 check:
-	@./gradlew --continue detekt lint ktlintCheck test
+	@./gradlew --continue license detekt lint ktlintCheck test
 	@cd features/fixtures/mazeracer && ./gradlew ktlintCheck detekt
 
 install:
