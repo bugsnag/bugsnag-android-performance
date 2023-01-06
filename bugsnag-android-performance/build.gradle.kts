@@ -3,6 +3,7 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("org.jlleitschuh.gradle.ktlint")
     id("io.gitlab.arturbosch.detekt")
+    id("com.github.hierynomus.license")
     id("org.jetbrains.dokka")
     id("maven-publish")
 }
@@ -59,6 +60,15 @@ dependencies {
     testImplementation("org.mockito:mockito-inline:4.8.1")
     testImplementation("org.mockito.kotlin:mockito-kotlin:4.0.0")
     testImplementation("net.jimblackler.jsonschemafriend:core:0.11.4")
+}
+
+license {
+    header = rootProject.file("LICENSE")
+    ignoreFailures = true
+}
+
+downloadLicenses {
+    dependencyConfiguration = "api"
 }
 
 detekt {
