@@ -2,6 +2,12 @@
 
 App performance monitoring by [Bugsnag](https://www.bugsnag.com).
 
+## Features
+
+- Automatic measurement of `Activity` loading times
+- Reporting of app startup time
+- Report OkHttp request times (with [bugsnag-plugin-android-performance-okhttp])
+
 ## Getting started
 1. [Create a Bugsnag account](https://www.bugsnag.com)
 2. Add `bugsnag-android-performance` to your `build.gradle` files
@@ -42,3 +48,9 @@ class MyApplication: Application() {
 ```
 
 These steps will automatically measure and report the app startup time, and the loading time of all your activities.  
+
+## License
+
+The Bugsnag Android Performance SDK is free software released under the MIT License.
+See the [LICENSE](https://github.com/bugsnag/bugsnag-android-performance/blob/master/LICENSE)
+for details.
