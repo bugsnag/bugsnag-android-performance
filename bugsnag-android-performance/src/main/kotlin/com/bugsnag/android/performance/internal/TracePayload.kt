@@ -7,6 +7,7 @@ import com.bugsnag.android.performance.Attributes
 import com.bugsnag.android.performance.Span
 import java.io.ByteArrayOutputStream
 import java.security.MessageDigest
+import java.util.zip.GZIPOutputStream
 
 data class TracePayload(
     val timestamp: Long,
@@ -34,6 +35,13 @@ data class TracePayload(
     }
 
     companion object Encoder {
+        /**
+         * The minimum number of bytes in a payload before it will be considered for gzip
+         * compression. This avoids wasting cycles on payloads that are trivial or would
+         * actually increase in size (due to the gzip/deflate header overhead).
+         */
+        private const val MIN_GZIP_BYTES = 128
+
         @JvmStatic
         fun createTracePayload(
             apiKey: String,
@@ -54,19 +62,22 @@ data class TracePayload(
         ): TracePayload {
             val headers = mutableMapOf(
                 "Bugsnag-Api-Key" to apiKey,
-                "Content-Encoding" to "application/json",
-                "Content-Length" to payloadBytes.size.toString()
+                "Content-Type" to "application/json"
             )
 
             computeSha1Digest(payloadBytes)?.let { digest ->
                 headers["Bugsnag-Integrity"] = digest
             }
 
-            return TracePayload(
-                timestamp,
-                payloadBytes,
-                headers
-            )
+            var body = payloadBytes
+            // we don't compress trivial payloads to avoid increasing the size of the payload
+            if (payloadBytes.size >= MIN_GZIP_BYTES) {
+                body = payloadBytes.gzipped()
+                headers["Content-Encoding"] = "gzip"
+            }
+            headers["Content-Length"] = body.size.toString()
+
+            return TracePayload(timestamp, body, headers)
         }
 
         @VisibleForTesting
@@ -111,6 +122,17 @@ data class TracePayload(
                     appendHexString(shaDigest.digest())
                 }
             }.getOrElse { return null }
+        }
+
+        private fun ByteArray.gzipped(): ByteArray {
+            val body = ByteArrayOutputStream(size)
+            body.use { out ->
+                GZIPOutputStream(out).use { gzip ->
+                    gzip.write(this@gzipped)
+                    gzip.flush()
+                }
+            }
+            return body.toByteArray()
         }
     }
 }
