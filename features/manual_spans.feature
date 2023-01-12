@@ -11,26 +11,26 @@ Feature: Manual creation of spans
     * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0.kind" equals "SPAN_KIND_INTERNAL"
     * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0.startTimeUnixNano" matches the regex "^[0-9]+$"
     * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0.endTimeUnixNano" matches the regex "^[0-9]+$"
-    * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0" attribute "net.host.connection.type" exists
-    * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0" attribute "bugsnag.app.in_foreground" is true
+    * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0" string attribute "net.host.connection.type" exists
+    * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0" boolean attribute "bugsnag.app.in_foreground" is true
 
-    * the trace payload field "resourceSpans.0.resource" attribute "host.arch" is one of:
+    * the trace payload field "resourceSpans.0.resource" string attribute "host.arch" is one of:
       | x86   |
       | amd64 |
       | arm32 |
       | arm64 |
-    * the trace payload field "resourceSpans.0.resource" attribute "os.type" equals "linux"
-    * the trace payload field "resourceSpans.0.resource" attribute "os.name" equals "android"
-    * the trace payload field "resourceSpans.0.resource" attribute "os.version" exists
-    * the trace payload field "resourceSpans.0.resource" attribute "device.model.identifier" exists
-    * the trace payload field "resourceSpans.0.resource" attribute "device.manufacturer" exists
-    * the trace payload field "resourceSpans.0.resource" attribute "deployment.environment" is one of:
+    * the trace payload field "resourceSpans.0.resource" string attribute "os.type" equals "linux"
+    * the trace payload field "resourceSpans.0.resource" string attribute "os.name" equals "android"
+    * the trace payload field "resourceSpans.0.resource" string attribute "os.version" exists
+    * the trace payload field "resourceSpans.0.resource" string attribute "device.model.identifier" exists
+    * the trace payload field "resourceSpans.0.resource" string attribute "device.manufacturer" exists
+    * the trace payload field "resourceSpans.0.resource" string attribute "deployment.environment" is one of:
       | development |
       | production  |
-    * the trace payload field "resourceSpans.0.resource" attribute "bugsnag.app.version_code" equals "1"
-    * the trace payload field "resourceSpans.0.resource" attribute "service.name" equals "com.bugsnag.mazeracer"
-    * the trace payload field "resourceSpans.0.resource" attribute "telemetry.sdk.name" equals "bugsnag.performance.android"
-    * the trace payload field "resourceSpans.0.resource" attribute "telemetry.sdk.version" equals "0.0.0"
+    * the trace payload field "resourceSpans.0.resource" string attribute "bugsnag.app.version_code" equals "1"
+    * the trace payload field "resourceSpans.0.resource" string attribute "service.name" equals "com.bugsnag.mazeracer"
+    * the trace payload field "resourceSpans.0.resource" string attribute "telemetry.sdk.name" equals "bugsnag.performance.android"
+    * the trace payload field "resourceSpans.0.resource" string attribute "telemetry.sdk.version" equals "0.0.0"
 
   Scenario: Spans can be logged before start
     Given I run "PreStartSpansScenario" and discard the initial p-value request
@@ -59,4 +59,4 @@ Feature: Manual creation of spans
     And I send the app to the background for 5 seconds
     And I wait for 1 span
     Then a span name equals "Custom/BackgroundSpan"
-    * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0" attribute "bugsnag.app.in_foreground" is false
+    * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0" boolean attribute "bugsnag.app.in_foreground" is false
