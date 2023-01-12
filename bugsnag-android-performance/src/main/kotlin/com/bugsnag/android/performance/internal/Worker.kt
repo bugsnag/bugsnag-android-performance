@@ -96,11 +96,23 @@ internal class Worker(
     }
 
     private fun attachTasks() {
-        tasks.forEach { it.onAttach(this) }
+        tasks.forEach { task ->
+            try {
+                task.onAttach(this)
+            } catch (e: Exception) {
+                Logger.w("unhandled exception while attempting to attach worker $task", e)
+            }
+        }
     }
 
     private fun detachWorkers() {
-        tasks.forEach { it.onDetach(this) }
+        tasks.forEach { task ->
+            try {
+                task.onDetach(this)
+            } catch (e: Exception) {
+                Logger.w("unhandled exception while attempting to detach worker $task", e)
+            }
+        }
     }
 
     fun wake() {

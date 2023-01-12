@@ -16,4 +16,6 @@ internal class RetryDeliveryTask(
         }
         return true
     }
+
+    override fun toString(): String = "RetryDeliveryTask"
 }
