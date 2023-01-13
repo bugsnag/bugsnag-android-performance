@@ -60,18 +60,14 @@ end
 Then("I run {string} and discard the initial p-value request") do |scenario|
   steps %Q{
     When I run "#{scenario}"
-    And I wait to receive at least 1 trace
-    And the trace payload field "resourceSpans" is an array with 0 elements
-    And I discard the oldest trace
+    And I receive and discard the initial p-value request
   }
 end
 
 Then("I run {string} configured as {string} and discard the initial p-value request") do |scenario, configured|
   steps %Q{
     When I run "#{scenario}" configured as "#{configured}"
-    And I wait to receive at least 1 trace
-    And the trace payload field "resourceSpans" is an array with 0 elements
-    And I discard the oldest trace
+    And I receive and discard the initial p-value request
   }
 end
 
