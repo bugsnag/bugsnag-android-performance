@@ -41,22 +41,6 @@ When("I relaunch the app after shutdown") do
   Maze.driver.launch_app
 end
 
-# Then('the {word} payload field {string} attribute {string} equals {string}') do |request_type, field, key, expected|
-#   assert_attribute request_type, field, key, { 'stringValue' => expected }
-# end
-#
-# Then('the {word} payload field {string} attribute {string} is {int}') do |request_type, field, key, expected|
-#   assert_attribute request_type, field, key, { 'intValue' => expected.to_s }
-# end
-#
-# Then('the {word} payload field {string} attribute {string} is true') do |request_type, field, key|
-#   assert_attribute request_type, field, key, { 'boolValue' => true }
-# end
-#
-# Then('the {word} payload field {string} attribute {string} is false') do |request_type, field, key|
-#   assert_attribute request_type, field, key, { 'boolValue' => false }
-# end
-
 Then("I run {string} and discard the initial p-value request") do |scenario|
   steps %Q{
     When I run "#{scenario}"
@@ -79,16 +63,3 @@ Then('the {word} payload field {string} attribute {string} matches the regex {st
   value = attribute["value"]["intValue"]
   Maze.check.match(regex, value)
 end
-
-
-# Then('the {word} payload field {string} attribute {string} exists') do |request_type, field, key|
-#   list = Maze::Server.list_for(request_type)
-#   attributes = Maze::Helper.read_key_path(list.current[:body], "#{field}.attributes")
-#   Maze.check.not_nil attributes.find { |a| a['key'] == key }
-# end
-
-# def assert_attribute(request_type, field, key, expected)
-#   list = Maze::Server.list_for(request_type)
-#   attributes = Maze::Helper.read_key_path(list.current[:body], "#{field}.attributes")
-#   Maze.check.equal attributes.find { |a| a['key'] == key }, { 'key' => key, 'value' => expected }
-# end
