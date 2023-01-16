@@ -33,4 +33,6 @@ internal class SendBatchTask(
             pValueExpiryTime = sampler.expiryTime
         }
     }
+
+    override fun toString(): String = "SendBatch[$delivery]"
 }
