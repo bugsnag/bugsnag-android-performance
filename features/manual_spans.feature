@@ -2,7 +2,7 @@ Feature: Manual creation of spans
 
   Scenario: Manual spans can be logged
     Given I run "ManualSpanScenario" and discard the initial p-value request
-    And I wait to receive 1 traces
+    And I wait to receive at least 1 traces
     Then the trace Bugsnag-Integrity header is valid
     And the trace "Bugsnag-Api-Key" header equals "a35a2a72bd230ac0aa0f52715bbdc6aa"
     * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0.name" equals "Custom/ManualSpanScenario"
@@ -44,7 +44,7 @@ Feature: Manual creation of spans
   @skip
   Scenario: Span batch times out
     Given I run "BatchTimeoutScenario" and discard the initial p-value request
-    And I wait for 2 spans
+    And I wait to receive at least 2 spans
     Then a span name equals "Custom/Span 1"
     * a span name equals "Custom/Span 2"
 
