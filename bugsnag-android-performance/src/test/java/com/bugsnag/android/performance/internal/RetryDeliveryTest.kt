@@ -88,7 +88,8 @@ class RetryDeliveryTest {
         val retryQueue = mock<RetryQueue>()
         val retry = RetryDelivery(retryQueue, stub)
 
-        val tracePayload = TracePayload.createTracePayload("fake-api-key", byteArrayOf(), 0L)
+        val tracePayload =
+            TracePayload.createTracePayload("fake-api-key", byteArrayOf(), timestamp = 0L)
 
         stub.reset(DeliveryResult.Failed(tracePayload, true))
         retry.deliver(
@@ -116,7 +117,8 @@ class RetryDeliveryTest {
         val retryQueue = mock<RetryQueue>()
         val retry = RetryDelivery(retryQueue, stub)
 
-        val tracePayload = TracePayload.createTracePayload("fake-api-key", byteArrayOf(), 0L)
+        val tracePayload =
+            TracePayload.createTracePayload("fake-api-key", byteArrayOf(), timestamp = 0L)
 
         stub.reset(DeliveryResult.Failed(tracePayload, false))
         retry.deliver(

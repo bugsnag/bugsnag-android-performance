@@ -7,6 +7,7 @@ import com.bugsnag.android.performance.Attributes
 import com.bugsnag.android.performance.Span
 import java.io.ByteArrayOutputStream
 import java.security.MessageDigest
+import java.util.TreeMap
 import java.util.zip.GZIPOutputStream
 
 data class TracePayload(
@@ -51,19 +52,38 @@ data class TracePayload(
             val payloadBytes = encodeSpanPayload(spans, resourceAttributes)
             val timestamp = spans.maxOf { it.endTime }
 
-            return createTracePayload(apiKey, payloadBytes, timestamp)
+            val headers = mapOf("Bugsnag-Span-Sampling" to calculateSpanSamplingHeader(spans))
+            return createTracePayload(apiKey, payloadBytes, headers, timestamp)
+        }
+
+        private fun calculateSpanSamplingHeader(spans: Collection<Span>): String =
+            calculateProbabilityCounts(spans).entries.joinToString(";") { (pValue, count) ->
+                "$pValue:$count"
+            }
+
+        private fun calculateProbabilityCounts(spans: Collection<Span>): Map<Double, Int> {
+            // using a TreeMap gives us a natural ascending order here
+            val pValueCounts = TreeMap<Double, Int>()
+            spans.forEach { span ->
+                pValueCounts[span.samplingProbability] =
+                    (pValueCounts[span.samplingProbability] ?: 0) + 1
+            }
+
+            return pValueCounts
         }
 
         @JvmStatic
         fun createTracePayload(
             apiKey: String,
             payloadBytes: ByteArray,
+            baseHeaders: Map<String, String> = emptyMap(),
             timestamp: Long = SystemClock.elapsedRealtimeNanos()
         ): TracePayload {
-            val headers = mutableMapOf(
-                "Bugsnag-Api-Key" to apiKey,
-                "Content-Type" to "application/json"
-            )
+            val headers = mutableMapOf<String, String>()
+            headers.putAll(baseHeaders)
+
+            headers["Bugsnag-Api-Key"] = apiKey
+            headers["Content-Type"] = "application/json"
 
             computeSha1Digest(payloadBytes)?.let { digest ->
                 headers["Bugsnag-Integrity"] = digest
