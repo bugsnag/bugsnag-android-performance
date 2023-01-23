@@ -8,7 +8,6 @@ import android.os.Looper
 import android.os.Message
 import android.os.SystemClock
 import com.bugsnag.android.performance.Logger
-import com.bugsnag.android.performance.Span
 import kotlin.math.max
 
 typealias InForegroundCallback = (inForeground: Boolean) -> Unit
@@ -48,7 +47,7 @@ internal class PerformanceLifecycleCallbacks(
      * The Span used to measure the start of the app from when the Application starts until the
      * first Activity resumes.
      */
-    private var appStartupSpan: Span? = null
+    private var appStartupSpan: SpanImpl? = null
 
     internal var openLoadSpans: Boolean = false
 

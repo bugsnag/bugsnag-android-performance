@@ -4,12 +4,11 @@ import android.os.SystemClock
 import android.util.JsonWriter
 import androidx.annotation.VisibleForTesting
 import com.bugsnag.android.performance.Attributes
-import com.bugsnag.android.performance.Span
 import java.io.ByteArrayOutputStream
 import java.security.MessageDigest
 import java.util.zip.GZIPOutputStream
 
-data class TracePayload(
+internal data class TracePayload(
     val timestamp: Long,
     val body: ByteArray,
     val headers: Map<String, String>
@@ -45,7 +44,7 @@ data class TracePayload(
         @JvmStatic
         fun createTracePayload(
             apiKey: String,
-            spans: Collection<Span>,
+            spans: Collection<SpanImpl>,
             resourceAttributes: Attributes
         ): TracePayload {
             val payloadBytes = encodeSpanPayload(spans, resourceAttributes)
@@ -82,7 +81,7 @@ data class TracePayload(
 
         @VisibleForTesting
         internal fun encodeSpanPayload(
-            spans: Collection<Span>,
+            spans: Collection<SpanImpl>,
             resourceAttributes: Attributes
         ): ByteArray {
             val buffer = ByteArrayOutputStream()

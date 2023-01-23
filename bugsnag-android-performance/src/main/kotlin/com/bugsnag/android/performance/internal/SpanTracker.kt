@@ -2,7 +2,7 @@ package com.bugsnag.android.performance.internal
 
 import android.os.SystemClock
 import com.bugsnag.android.performance.Span
-import com.bugsnag.android.performance.Span.Companion.NO_END_TIME
+import com.bugsnag.android.performance.internal.SpanImpl.Companion.NO_END_TIME
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
 
@@ -18,7 +18,7 @@ import java.util.concurrent.ConcurrentMap
 internal value class SpanTracker<T>(
     private val backingStore: ConcurrentMap<T, TrackedSpan> = ConcurrentHashMap()
 ) {
-    operator fun get(token: T): Span? {
+    operator fun get(token: T): SpanImpl? {
         return backingStore[token]?.span
     }
 
@@ -30,7 +30,7 @@ internal value class SpanTracker<T>(
      * Note: in racey scenarios the [createSpan] may be invoked and the resulting `Span` discarded,
      * the currently tracked `Span` will however always be returned.
      */
-    inline fun track(token: T, createSpan: () -> Span): Span {
+    inline fun track(token: T, createSpan: () -> SpanImpl): SpanImpl {
         var trackedSpan: TrackedSpan? = backingStore[token]
         if (trackedSpan == null) {
             trackedSpan = TrackedSpan(createSpan())
@@ -70,7 +70,7 @@ internal value class SpanTracker<T>(
         backingStore.remove(token)?.span?.end(endTime)
     }
 
-    internal class TrackedSpan(val span: Span) {
+    internal class TrackedSpan(val span: SpanImpl) {
         var autoEndTime: Long = NO_END_TIME
 
         fun markLeaked(): Boolean {

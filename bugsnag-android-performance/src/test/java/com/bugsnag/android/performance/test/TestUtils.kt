@@ -1,6 +1,6 @@
 package com.bugsnag.android.performance.test
 
-import com.bugsnag.android.performance.Span
+import com.bugsnag.android.performance.internal.SpanImpl
 import com.bugsnag.android.performance.internal.SpanProcessor
 import org.json.JSONObject
 import org.junit.Assert.assertEquals
@@ -28,7 +28,7 @@ inline fun <reified S> withStaticMock(block: (MockedStatic<S>) -> Unit) {
     }
 }
 
-fun endedSpans(vararg spans: Span): Collection<Span> {
+fun endedSpans(vararg spans: SpanImpl): Collection<SpanImpl> {
     spans.forEach { it.end() }
     return spans.asList()
 }

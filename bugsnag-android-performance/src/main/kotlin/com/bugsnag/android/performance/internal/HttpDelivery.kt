@@ -1,7 +1,6 @@
 package com.bugsnag.android.performance.internal
 
 import com.bugsnag.android.performance.Attributes
-import com.bugsnag.android.performance.Span
 import java.net.HttpURLConnection
 import java.net.URL
 
@@ -10,7 +9,7 @@ internal class HttpDelivery(
     private val apiKey: String
 ) : Delivery {
     override fun deliver(
-        spans: Collection<Span>,
+        spans: Collection<SpanImpl>,
         resourceAttributes: Attributes,
         newProbabilityCallback: NewProbabilityCallback?
     ): DeliveryResult {

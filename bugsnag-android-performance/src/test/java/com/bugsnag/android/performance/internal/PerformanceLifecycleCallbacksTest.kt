@@ -7,7 +7,7 @@ import com.bugsnag.android.performance.SpanKind
 import com.bugsnag.android.performance.test.CollectingSpanProcessor
 import com.bugsnag.android.performance.test.testSpanProcessor
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
+import org.junit.Assert.assertFalse
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -68,7 +68,7 @@ class PerformanceLifecycleCallbacksTest {
         assertEquals(100_000_000L, span.startTime)
         assertEquals(200_000_000L, span.endTime)
         assertEquals(SpanKind.INTERNAL, span.kind)
-        assertTrue(span.isNotOpen())
+        assertFalse(span.isOpen())
     }
 
     @Test
@@ -108,7 +108,7 @@ class PerformanceLifecycleCallbacksTest {
         assertEquals(100_000_000L, span.startTime)
         assertEquals(200_000_000L, span.endTime)
         assertEquals(SpanKind.INTERNAL, span.kind)
-        assertTrue(span.isNotOpen())
+        assertFalse(span.isOpen())
     }
 
     @Test

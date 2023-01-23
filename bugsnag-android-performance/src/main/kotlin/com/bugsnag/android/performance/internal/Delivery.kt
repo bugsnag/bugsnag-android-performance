@@ -1,9 +1,8 @@
 package com.bugsnag.android.performance.internal
 
 import com.bugsnag.android.performance.Attributes
-import com.bugsnag.android.performance.Span
 
-sealed class DeliveryResult {
+internal sealed class DeliveryResult {
     object Success : DeliveryResult() {
         override fun toString(): String = "Success"
     }
@@ -16,13 +15,13 @@ sealed class DeliveryResult {
     }
 }
 
-fun interface NewProbabilityCallback {
+internal fun interface NewProbabilityCallback {
     fun onNewProbability(newP: Double)
 }
 
-interface Delivery {
+internal interface Delivery {
     fun deliver(
-        spans: Collection<Span>,
+        spans: Collection<SpanImpl>,
         resourceAttributes: Attributes,
         newProbabilityCallback: NewProbabilityCallback?
     ): DeliveryResult

@@ -1,7 +1,5 @@
 package com.bugsnag.android.performance.internal
 
-import com.bugsnag.android.performance.Span
-
 internal class Sampler(fallbackProbability: Double) {
     var fallbackProbability = fallbackProbability
         set(value) {
@@ -30,12 +28,12 @@ internal class Sampler(fallbackProbability: Double) {
         this.expiryTime = persistentState.pValueExpiryTime
     }
 
-    fun sampled(spans: Collection<Span>): Collection<Span> {
+    fun sampled(spans: Collection<SpanImpl>): Collection<SpanImpl> {
         return spans.filter { shouldKeepSpan(it) }
     }
 
     // Side effect: Sets span.samplingProbability to the current probability
-    fun shouldKeepSpan(span: Span): Boolean {
+    fun shouldKeepSpan(span: SpanImpl): Boolean {
         val upperBound = probability
         span.samplingProbability = upperBound
         return upperBound > 0.0 && span.samplingValue <= upperBound

@@ -2,7 +2,7 @@ package com.bugsnag.android.performance
 
 import android.util.JsonWriter
 import com.bugsnag.android.performance.internal.BugsnagClock
-import com.bugsnag.android.performance.internal.toJson
+import com.bugsnag.android.performance.internal.SpanImpl
 import com.bugsnag.android.performance.test.assertJsonEquals
 import com.bugsnag.android.performance.test.testSpanProcessor
 import org.junit.Test
@@ -17,7 +17,7 @@ class SpanJsonTest {
     fun testJsonEncoding() {
         val currentTime = System.currentTimeMillis()
 
-        val span = Span(
+        val span = SpanImpl(
             "test span",
             SpanKind.INTERNAL,
             0L,

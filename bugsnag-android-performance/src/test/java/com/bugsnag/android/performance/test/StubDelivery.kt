@@ -1,18 +1,18 @@
 package com.bugsnag.android.performance.test
 
 import com.bugsnag.android.performance.Attributes
-import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.internal.Delivery
 import com.bugsnag.android.performance.internal.DeliveryResult
 import com.bugsnag.android.performance.internal.NewProbabilityCallback
+import com.bugsnag.android.performance.internal.SpanImpl
 import com.bugsnag.android.performance.internal.TracePayload
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 
-class StubDelivery : Delivery {
+internal class StubDelivery : Delivery {
     var nextResult: DeliveryResult = DeliveryResult.Success
-    var lastSpanDelivery: Collection<Span>? = null
+    var lastSpanDelivery: Collection<SpanImpl>? = null
 
     private val lock = ReentrantLock(false)
     private val deliveryCondition = lock.newCondition()
@@ -31,7 +31,7 @@ class StubDelivery : Delivery {
     }
 
     override fun deliver(
-        spans: Collection<Span>,
+        spans: Collection<SpanImpl>,
         resourceAttributes: Attributes,
         newProbabilityCallback: NewProbabilityCallback?
     ): DeliveryResult {

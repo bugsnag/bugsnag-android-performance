@@ -1,14 +1,13 @@
 package com.bugsnag.android.performance.internal
 
 import com.bugsnag.android.performance.Attributes
-import com.bugsnag.android.performance.Span
 
 internal class RetryDelivery(
     private val retryQueue: RetryQueue,
     private val delivery: Delivery
 ) : Delivery {
     override fun deliver(
-        spans: Collection<Span>,
+        spans: Collection<SpanImpl>,
         resourceAttributes: Attributes,
         newProbabilityCallback: NewProbabilityCallback?
     ): DeliveryResult {

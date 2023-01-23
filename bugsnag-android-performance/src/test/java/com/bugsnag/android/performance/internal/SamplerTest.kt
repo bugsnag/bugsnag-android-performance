@@ -1,9 +1,9 @@
 package com.bugsnag.android.performance.internal
 
-import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.test.CollectingSpanProcessor
 import com.bugsnag.android.performance.test.TestSpanFactory
 import com.bugsnag.android.performance.test.withDebugValues
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -108,7 +108,7 @@ class SamplerTest {
     @Test
     fun testSampleSpanBatchProbability1() {
         val sampler = Sampler(1.0)
-        val batch = listOf<Span>(
+        val batch = listOf(
             spanFactory.newSpan(processor = spanProcessor, traceId = uuidWithUpper(0)),
             spanFactory.newSpan(
                 processor = spanProcessor,
@@ -130,7 +130,7 @@ class SamplerTest {
     @Test
     fun testSampleSpanBatchProbability0() {
         val sampler = Sampler(0.0)
-        val batch = listOf<Span>(
+        val batch = listOf(
             spanFactory.newSpan(processor = spanProcessor, traceId = uuidWithUpper(0)),
             spanFactory.newSpan(
                 processor = spanProcessor,
@@ -143,13 +143,13 @@ class SamplerTest {
             )
         )
         val sampled = sampler.sampled(batch)
-        assertTrue(sampled.size == 0)
+        assertEquals("expected all spans to be sampled", 0, sampled.size)
     }
 
     @Test
     fun testSampleSpanBatchProbability0_5() {
         val sampler = Sampler(0.5)
-        val batch = listOf<Span>(
+        val batch = listOf(
             spanFactory.newSpan(processor = spanProcessor, traceId = uuidWithUpper(0)),
             spanFactory.newSpan(
                 processor = spanProcessor,
@@ -162,6 +162,6 @@ class SamplerTest {
             spanFactory.newSpan(processor = spanProcessor, traceId = uuidWithUpper(1000000000))
         )
         val sampled = sampler.sampled(batch)
-        assertTrue(sampled.size == 3)
+        assertEquals(3, sampled.size)
     }
 }
