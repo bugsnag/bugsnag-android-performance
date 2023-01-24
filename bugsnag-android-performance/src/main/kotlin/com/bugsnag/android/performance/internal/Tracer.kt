@@ -5,12 +5,12 @@ import com.bugsnag.android.performance.Span
 
 internal class Tracer : SpanProcessor {
 
-    internal val sampler = Sampler(1.0)
-
     @Suppress("DoubleMutabilityForCollection") // we swap out this ArrayList when we flush batches
     private var batch = ArrayList<SpanImpl>()
 
     private var lastBatchSendTime = SystemClock.elapsedRealtime()
+
+    internal var sampler = Sampler(1.0, null)
 
     internal var worker: Worker? = null
 

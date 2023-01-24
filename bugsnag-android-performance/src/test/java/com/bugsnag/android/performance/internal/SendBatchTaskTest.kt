@@ -10,7 +10,6 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.mockito.kotlin.any
-import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.argWhere
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
@@ -38,14 +37,13 @@ class SendBatchTaskTest {
         }
 
         val delivery = mock<Delivery>()
-        val persistentState = mock<PersistentState>()
 
         val resourceAttributes = Attributes()
-        val sendBatchTask = SendBatchTask(delivery, tracer, persistentState, resourceAttributes)
+        val sendBatchTask = SendBatchTask(delivery, tracer, resourceAttributes)
         val workDone = sendBatchTask.execute()
 
         assertTrue("SendBatchTask should have delivered a batch", workDone)
-        verify(delivery).deliver(argWhere { it.size == 10 }, eq(resourceAttributes), anyOrNull())
+        verify(delivery).deliver(argWhere { it.size == 10 }, eq(resourceAttributes))
     }
 
     @Test
@@ -55,9 +53,8 @@ class SendBatchTaskTest {
         }
 
         val deliver = mock<Delivery>()
-        val persistentState = mock<PersistentState>()
 
-        val sendBatchTask = SendBatchTask(deliver, tracer, persistentState, Attributes())
+        val sendBatchTask = SendBatchTask(deliver, tracer, Attributes())
         val workDone = sendBatchTask.execute()
 
         assertFalse("SendBatchTask should not have done any work", workDone)
@@ -71,13 +68,12 @@ class SendBatchTaskTest {
         }
 
         val delivery = mock<Delivery>()
-        val persistentState = mock<PersistentState>()
 
         val resourceAttributes = Attributes()
-        val sendBatchTask = SendBatchTask(delivery, tracer, persistentState, resourceAttributes)
+        val sendBatchTask = SendBatchTask(delivery, tracer, resourceAttributes)
         val workDone = sendBatchTask.execute()
 
         assertFalse("SendBatchTask should not have done any work", workDone)
-        verify(delivery).deliver(any<List<SpanImpl>>(), eq(resourceAttributes), anyOrNull())
+        verify(delivery).deliver(any<List<SpanImpl>>(), eq(resourceAttributes))
     }
 }

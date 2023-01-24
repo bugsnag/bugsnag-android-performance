@@ -39,7 +39,6 @@ class RetryDeliveryTest {
                 )
             ),
             attributes,
-            null
         )
         assertEquals(1, stub.lastSpanDelivery?.size)
 
@@ -57,7 +56,6 @@ class RetryDeliveryTest {
                 )
             ),
             attributes,
-            null
         )
         assertEquals(1, stub.lastSpanDelivery?.size)
 
@@ -75,7 +73,6 @@ class RetryDeliveryTest {
                 )
             ),
             attributes,
-            null
         )
         assertEquals(1, stub.lastSpanDelivery?.size)
     }
@@ -103,7 +100,6 @@ class RetryDeliveryTest {
                 )
             ),
             attributes,
-            null
         )
         assertEquals(1, stub.lastSpanDelivery?.size)
         verify(retryQueue).add(same(tracePayload))
@@ -132,7 +128,6 @@ class RetryDeliveryTest {
                 )
             ),
             attributes,
-            null
         )
         assertEquals(1, stub.lastSpanDelivery?.size)
 

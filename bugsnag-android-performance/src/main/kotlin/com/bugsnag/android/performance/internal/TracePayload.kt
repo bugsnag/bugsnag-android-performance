@@ -55,12 +55,12 @@ internal data class TracePayload(
             return createTracePayload(apiKey, payloadBytes, headers, timestamp)
         }
 
-        private fun calculateSpanSamplingHeader(spans: Collection<Span>): String =
+        private fun calculateSpanSamplingHeader(spans: Collection<SpanImpl>): String =
             calculateProbabilityCounts(spans).entries.joinToString(";") { (pValue, count) ->
                 "$pValue:$count"
             }
 
-        private fun calculateProbabilityCounts(spans: Collection<Span>): Map<Double, Int> {
+        private fun calculateProbabilityCounts(spans: Collection<SpanImpl>): Map<Double, Int> {
             // using a TreeMap gives us a natural ascending order here
             val pValueCounts = TreeMap<Double, Int>()
             spans.forEach { span ->

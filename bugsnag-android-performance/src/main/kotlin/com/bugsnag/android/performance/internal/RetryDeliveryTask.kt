@@ -6,7 +6,7 @@ internal class RetryDeliveryTask(
 ) : AbstractTask() {
     override fun execute(): Boolean {
         val nextPayload = retryQueue.next() ?: return false
-        val result = delivery.deliver(nextPayload, null)
+        val result = delivery.deliver(nextPayload)
 
         // if it was delivered, or can never be delivered - delete it
         if (result is DeliveryResult.Success ||
