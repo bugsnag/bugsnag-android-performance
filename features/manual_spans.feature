@@ -4,6 +4,7 @@ Feature: Manual creation of spans
     Given I run "ManualSpanScenario" and discard the initial p-value request
     And I wait to receive at least 1 traces
     Then the trace Bugsnag-Integrity header is valid
+    And the trace "Bugsnag-Span-Sampling" header equals "1.0:1"
     And the trace "Bugsnag-Api-Key" header equals "a35a2a72bd230ac0aa0f52715bbdc6aa"
     * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0.name" equals "Custom/ManualSpanScenario"
     * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0.spanId" matches the regex "^[A-Fa-f0-9]{16}$"
