@@ -1,7 +1,6 @@
 package com.bugsnag.android.performance.internal
 
 import com.bugsnag.android.performance.Attributes
-import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.SpanKind
 import com.bugsnag.android.performance.test.StubDelivery
 import com.bugsnag.android.performance.test.endedSpans
@@ -30,7 +29,7 @@ class RetryDeliveryTest {
         stub.reset(DeliveryResult.Success)
         retry.deliver(
             endedSpans(
-                Span(
+                SpanImpl(
                     "test span",
                     SpanKind.INTERNAL,
                     0L,
@@ -48,7 +47,7 @@ class RetryDeliveryTest {
         stub.reset(DeliveryResult.Success)
         retry.deliver(
             endedSpans(
-                Span(
+                SpanImpl(
                     "test span",
                     SpanKind.INTERNAL,
                     0L,
@@ -66,7 +65,7 @@ class RetryDeliveryTest {
         stub.reset(DeliveryResult.Success)
         retry.deliver(
             endedSpans(
-                Span(
+                SpanImpl(
                     "test span",
                     SpanKind.INTERNAL,
                     0L,
@@ -94,7 +93,7 @@ class RetryDeliveryTest {
         stub.reset(DeliveryResult.Failed(tracePayload, true))
         retry.deliver(
             endedSpans(
-                Span(
+                SpanImpl(
                     "test span",
                     SpanKind.INTERNAL,
                     0L,
@@ -123,7 +122,7 @@ class RetryDeliveryTest {
         stub.reset(DeliveryResult.Failed(tracePayload, false))
         retry.deliver(
             endedSpans(
-                Span(
+                SpanImpl(
                     "test span",
                     SpanKind.INTERNAL,
                     0L,

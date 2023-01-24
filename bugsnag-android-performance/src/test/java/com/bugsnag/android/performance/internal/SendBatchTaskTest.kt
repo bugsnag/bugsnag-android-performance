@@ -2,7 +2,6 @@ package com.bugsnag.android.performance.internal
 
 import com.bugsnag.android.performance.Attributes
 import com.bugsnag.android.performance.Logger
-import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.test.TestSpanFactory
 import com.bugsnag.android.performance.test.testSpanProcessor
 import org.junit.After
@@ -79,6 +78,6 @@ class SendBatchTaskTest {
         val workDone = sendBatchTask.execute()
 
         assertFalse("SendBatchTask should not have done any work", workDone)
-        verify(delivery).deliver(any<List<Span>>(), eq(resourceAttributes), anyOrNull())
+        verify(delivery).deliver(any<List<SpanImpl>>(), eq(resourceAttributes), anyOrNull())
     }
 }

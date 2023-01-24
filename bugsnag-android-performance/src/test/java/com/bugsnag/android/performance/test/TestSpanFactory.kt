@@ -1,7 +1,7 @@
 package com.bugsnag.android.performance.test
 
-import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.SpanKind
+import com.bugsnag.android.performance.internal.SpanImpl
 import com.bugsnag.android.performance.internal.SpanProcessor
 import java.util.UUID
 
@@ -20,17 +20,17 @@ class TestSpanFactory {
         traceId: UUID = UUID(0L, spanCount),
         spanId: Long = spanCount,
         processor: SpanProcessor
-    ): Span {
+    ): SpanImpl {
         spanCount++
-        return Span(name, kind, startTime, traceId, spanId, processor)
+        return SpanImpl(name, kind, startTime, traceId, spanId, processor)
             .apply { if (endTime != null) end(endTime(startTime)) }
     }
 
     fun newSpans(
         count: Int,
         processor: SpanProcessor
-    ): MutableList<Span> {
-        val spans = mutableListOf<Span>()
+    ): MutableList<SpanImpl> {
+        val spans = mutableListOf<SpanImpl>()
         repeat(count) { spans.add(newSpan(processor = processor)) }
         return spans
     }

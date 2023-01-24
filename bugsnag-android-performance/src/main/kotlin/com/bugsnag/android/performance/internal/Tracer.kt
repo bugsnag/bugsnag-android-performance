@@ -8,13 +8,13 @@ internal class Tracer : SpanProcessor {
     internal val sampler = Sampler(1.0)
 
     @Suppress("DoubleMutabilityForCollection") // we swap out this ArrayList when we flush batches
-    private var batch = ArrayList<Span>()
+    private var batch = ArrayList<SpanImpl>()
 
     private var lastBatchSendTime = SystemClock.elapsedRealtime()
 
     internal var worker: Worker? = null
 
-    internal fun collectNextBatch(): Collection<Span>? = synchronized(this) {
+    internal fun collectNextBatch(): Collection<SpanImpl>? = synchronized(this) {
         val batchSize = batch.size
         val currentBatchAge = SystemClock.elapsedRealtime() - lastBatchSendTime
         // only wait for a batch if the current batch is too small
@@ -31,7 +31,7 @@ internal class Tracer : SpanProcessor {
         return sampler.sampled(nextBatch)
     }
 
-    private fun addToBatch(span: Span) {
+    private fun addToBatch(span: SpanImpl) {
         val batchSize = synchronized(this) {
             batch.add(span)
             batch.size
@@ -52,6 +52,8 @@ internal class Tracer : SpanProcessor {
     }
 
     override fun onEnd(span: Span) {
+        if (span !is SpanImpl) return
+
         if (sampler.shouldKeepSpan(span)) {
             addToBatch(span)
         }

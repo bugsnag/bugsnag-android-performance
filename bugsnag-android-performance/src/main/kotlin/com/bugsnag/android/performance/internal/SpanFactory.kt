@@ -3,7 +3,6 @@ package com.bugsnag.android.performance.internal
 import android.app.Activity
 import android.os.SystemClock
 import com.bugsnag.android.performance.HasAttributes
-import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.SpanKind
 import com.bugsnag.android.performance.ViewType
 import java.net.URL
@@ -15,10 +14,10 @@ class SpanFactory(
     private val spanProcessor: SpanProcessor,
     val spanAttributeSource: AttributeSource = {},
 ) {
-    fun createCustomSpan(name: String, startTime: Long): Span =
+    fun createCustomSpan(name: String, startTime: Long): SpanImpl =
         createSpan("Custom/$name", SpanKind.INTERNAL, startTime)
 
-    fun createNetworkSpan(url: URL, verb: String, startTime: Long): Span {
+    fun createNetworkSpan(url: URL, verb: String, startTime: Long): SpanImpl {
         val verbUpper = verb.uppercase()
         val span = createSpan("HTTP/$verbUpper", SpanKind.CLIENT, startTime)
         span.setAttribute("bugsnag.span_category", "network")
@@ -27,12 +26,12 @@ class SpanFactory(
         return span
     }
 
-    fun createViewLoadSpan(activity: Activity, startTime: Long): Span {
+    fun createViewLoadSpan(activity: Activity, startTime: Long): SpanImpl {
         val activityName = activity::class.java.simpleName
         return createViewLoadSpan(ViewType.ACTIVITY, activityName, startTime)
     }
 
-    fun createViewLoadSpan(viewType: ViewType, viewName: String, startTime: Long): Span {
+    fun createViewLoadSpan(viewType: ViewType, viewName: String, startTime: Long): SpanImpl {
         val span = createSpan(
             "ViewLoaded/${viewType.spanName}/$viewName",
             SpanKind.INTERNAL,
@@ -45,14 +44,14 @@ class SpanFactory(
         return span
     }
 
-    fun createAppStartSpan(startType: String): Span =
+    fun createAppStartSpan(startType: String): SpanImpl =
         createSpan("AppStart/$startType", SpanKind.INTERNAL, SystemClock.elapsedRealtimeNanos()).apply {
             setAttribute("bugsnag.span_category", "app_start")
             setAttribute("bugsnag.app_start.type", startType.lowercase())
         }
 
-    private fun createSpan(name: String, kind: SpanKind, startTime: Long): Span {
-        val span = Span(name, kind, startTime, UUID.randomUUID(), processor = spanProcessor)
+    private fun createSpan(name: String, kind: SpanKind, startTime: Long): SpanImpl {
+        val span = SpanImpl(name, kind, startTime, UUID.randomUUID(), processor = spanProcessor)
         spanAttributeSource(span)
         return span
     }

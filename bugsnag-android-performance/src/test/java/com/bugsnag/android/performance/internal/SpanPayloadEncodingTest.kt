@@ -1,7 +1,6 @@
 package com.bugsnag.android.performance.internal
 
 import com.bugsnag.android.performance.Attributes
-import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.SpanKind
 import com.bugsnag.android.performance.test.OtelValidator.assertTraceDataValid
 import com.bugsnag.android.performance.test.assertJsonEquals
@@ -16,7 +15,7 @@ class SpanPayloadEncodingTest {
     @Test
     @Suppress("LongMethod")
     fun testDeliver() {
-        val span1 = Span(
+        val span1 = SpanImpl(
             "test span",
             SpanKind.INTERNAL,
             0L,
@@ -25,7 +24,7 @@ class SpanPayloadEncodingTest {
             testSpanProcessor,
         )
         span1.end(1L)
-        val span2 = Span(
+        val span2 = SpanImpl(
             "second span",
             SpanKind.INTERNAL,
             10L,

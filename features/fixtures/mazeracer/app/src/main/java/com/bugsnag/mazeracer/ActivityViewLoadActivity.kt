@@ -8,6 +8,7 @@ import android.os.Handler
 import android.os.Looper
 import com.bugsnag.android.performance.AutoInstrument
 import com.bugsnag.android.performance.BugsnagPerformance
+import com.bugsnag.android.performance.internal.SpanImpl
 
 private const val ON_SCREEN_TIME_MS = 150L
 
@@ -22,7 +23,7 @@ class ActivityViewLoadActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         if (autoInstrument == AutoInstrument.OFF) {
             BugsnagPerformance.startViewLoadSpan(this).also {
-                it.attributes["manual_start"] = true
+                (it as SpanImpl).attributes["manual_start"] = true
             }
         }
 

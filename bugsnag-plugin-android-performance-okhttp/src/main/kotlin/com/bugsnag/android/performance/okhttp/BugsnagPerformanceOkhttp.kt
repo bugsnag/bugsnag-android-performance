@@ -1,7 +1,7 @@
 package com.bugsnag.android.performance.okhttp
 
 import com.bugsnag.android.performance.BugsnagPerformance
-import com.bugsnag.android.performance.Span
+import com.bugsnag.android.performance.internal.SpanImpl
 import okhttp3.Call
 import okhttp3.EventListener
 import okhttp3.Protocol
@@ -16,11 +16,13 @@ class BugsnagPerformanceOkhttp : EventListener() {
         }
     }
 
-    private val spans = ConcurrentHashMap<Call, Span>()
+    private val spans = ConcurrentHashMap<Call, SpanImpl>()
 
     override fun callStart(call: Call) {
         val url = call.request().url.toUrl()
         val span = BugsnagPerformance.startNetworkSpan(url, call.request().method)
+            as SpanImpl
+
         val contentLength = call.request().body?.contentLength()
         if (contentLength != null) {
             span.setAttribute("http.request_content_length", contentLength)
