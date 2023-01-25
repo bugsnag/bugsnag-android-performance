@@ -10,7 +10,7 @@ internal class Tracer : SpanProcessor {
 
     private var lastBatchSendTime = SystemClock.elapsedRealtime()
 
-    internal var sampler = Sampler(1.0, null)
+    internal var sampler = Sampler(1.0)
 
     internal var worker: Worker? = null
 

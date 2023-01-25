@@ -14,6 +14,7 @@ import com.bugsnag.android.performance.internal.Persistence
 import com.bugsnag.android.performance.internal.RetryDelivery
 import com.bugsnag.android.performance.internal.RetryDeliveryTask
 import com.bugsnag.android.performance.internal.Sampler
+import com.bugsnag.android.performance.internal.SamplerTask
 import com.bugsnag.android.performance.internal.SendBatchTask
 import com.bugsnag.android.performance.internal.SpanFactory
 import com.bugsnag.android.performance.internal.SpanTracker
@@ -126,17 +127,20 @@ object BugsnagPerformance {
         val persistence = Persistence(application)
         val delivery = RetryDelivery(persistence.retryQueue, httpDelivery)
 
-        val sampler = Sampler(configuration.samplingProbability, persistence.persistentState)
-        delivery.newProbabilityCallback = sampler
+        val sampler = Sampler(configuration.samplingProbability)
+        val samplerTask = SamplerTask(
+            delivery,
+            sampler,
+            persistence.persistentState
+        )
 
         val bsgWorker = Worker(
-            SendBatchTask(
-                delivery,
-                tracer,
-                createResourceAttributes(configuration)
-            ),
+            samplerTask,
+            SendBatchTask(delivery, tracer, createResourceAttributes(configuration)),
             RetryDeliveryTask(persistence.retryQueue, httpDelivery),
         )
+
+        delivery.newProbabilityCallback = samplerTask
 
         // register the Worker with the components that depend on it
         tracer.worker = bsgWorker

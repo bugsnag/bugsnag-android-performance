@@ -10,7 +10,10 @@ internal class HttpDelivery(
 ) : Delivery {
     override var newProbabilityCallback: NewProbabilityCallback? = null
 
-    override fun deliver(spans: Collection<SpanImpl>, resourceAttributes: Attributes): DeliveryResult {
+    override fun deliver(
+        spans: Collection<SpanImpl>,
+        resourceAttributes: Attributes
+    ): DeliveryResult {
         return deliver(TracePayload.createTracePayload(apiKey, spans, resourceAttributes))
     }
 
