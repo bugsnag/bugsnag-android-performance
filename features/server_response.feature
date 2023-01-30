@@ -87,42 +87,42 @@ Feature: Server responses
 
   Scenario: Update P to 0 on first response: success, fail-permanent, fail-retriable
     Given I set the HTTP status code for the next requests to "200,200,400,500"
-    Given I set the sampling probability for the next traces to "null,0"
+    Given I set the sampling probability for the next traces to "1,0"
     And I run "ThreeSpansScenario" and discard the initial p-value request
-    And I wait to receive at least 1 traces
+    And I wait for 1 span
     Then the trace payload field "resourceSpans.0.scopeSpans.0.spans.0.name" equals "Custom/span 1"
 
   Scenario: Update P to 0 on first response: success, fail-retriable, fail-permanent
     Given I set the HTTP status code for the next requests to "200,200,500,400"
-    Given I set the sampling probability for the next traces to "null,0"
+    Given I set the sampling probability for the next traces to "1,0"
     And I run "ThreeSpansScenario" and discard the initial p-value request
     And I wait to receive at least 1 traces
     Then the trace payload field "resourceSpans.0.scopeSpans.0.spans.0.name" equals "Custom/span 1"
 
   Scenario: Update P to 0 on first response: fail-retriable, fail-permanent, success
     Given I set the HTTP status code for the next requests to "200,500,400,200"
-    Given I set the sampling probability for the next traces to "null,0"
+    Given I set the sampling probability for the next traces to "1,0"
     And I run "ThreeSpansScenario" and discard the initial p-value request
     And I wait to receive at least 1 traces
     Then the trace payload field "resourceSpans.0.scopeSpans.0.spans.0.name" equals "Custom/span 1"
 
   Scenario: Update P to 0 on first response: fail-retriable, success, fail-permanent
     Given I set the HTTP status code for the next requests to "200,500,200,400"
-    Given I set the sampling probability for the next traces to "null,0"
+    Given I set the sampling probability for the next traces to "1,0"
     And I run "ThreeSpansScenario" and discard the initial p-value request
     And I wait to receive at least 1 traces
     Then the trace payload field "resourceSpans.0.scopeSpans.0.spans.0.name" equals "Custom/span 1"
 
   Scenario: Update P to 0 on first response: fail-permanent, fail-retriable, success
     Given I set the HTTP status code for the next requests to "200,400,500,200"
-    Given I set the sampling probability for the next traces to "null,0"
+    Given I set the sampling probability for the next traces to "1,0"
     And I run "ThreeSpansScenario" and discard the initial p-value request
     And I wait to receive at least 1 traces
     Then the trace payload field "resourceSpans.0.scopeSpans.0.spans.0.name" equals "Custom/span 1"
 
   Scenario: Update P to 0 on first response: fail-permanent, success, fail-retriable
     Given I set the HTTP status code for the next requests to "200,400,200,500"
-    Given I set the sampling probability for the next traces to "null,0"
+    Given I set the sampling probability for the next traces to "1,0"
     And I run "ThreeSpansScenario" and discard the initial p-value request
     And I wait to receive at least 1 traces
     Then the trace payload field "resourceSpans.0.scopeSpans.0.spans.0.name" equals "Custom/span 1"
@@ -131,7 +131,7 @@ Feature: Server responses
 
   Scenario: Update P to 0 on second response: success, fail-permanent, fail-retriable
     Given I set the HTTP status code for the next requests to "200,200,400,500"
-    Given I set the sampling probability for the next traces to "null,null,0"
+    Given I set the sampling probability for the next traces to "1,null,0"
     And I run "ThreeSpansScenario" and discard the initial p-value request
     And I wait to receive at least 2 traces
     Then the trace payload field "resourceSpans.0.scopeSpans.0.spans.0.name" equals "Custom/span 1"
@@ -140,7 +140,7 @@ Feature: Server responses
 
   Scenario: Update P to 0 on second response: success, fail-retriable, fail-permanent
     Given I set the HTTP status code for the next requests to "200,200,500,400"
-    Given I set the sampling probability for the next traces to "null,null,0"
+    Given I set the sampling probability for the next traces to "1,null,0"
     And I run "ThreeSpansScenario" and discard the initial p-value request
     And I wait to receive at least 2 traces
     Then the trace payload field "resourceSpans.0.scopeSpans.0.spans.0.name" equals "Custom/span 1"
@@ -149,7 +149,7 @@ Feature: Server responses
 
   Scenario: Update P to 0 on second response: fail-retriable, fail-permanent, success
     Given I set the HTTP status code for the next requests to "200,500,400,200"
-    Given I set the sampling probability for the next traces to "null,null,0"
+    Given I set the sampling probability for the next traces to "1,null,0"
     And I run "ThreeSpansScenario" and discard the initial p-value request
     And I wait to receive at least 2 traces
     # 500 - Payload rejected (retry)
@@ -160,7 +160,7 @@ Feature: Server responses
 
   Scenario: Update P to 0 on second response: fail-retriable, success, fail-permanent
     Given I set the HTTP status code for the next requests to "200,500,200,400"
-    Given I set the sampling probability for the next traces to "null,null,0"
+    Given I set the sampling probability for the next traces to "1,null,0"
     And I run "ThreeSpansScenario" and discard the initial p-value request
     And I wait to receive at least 2 traces
     # 500 - Payload rejected (retry)
@@ -171,7 +171,7 @@ Feature: Server responses
 
   Scenario: Update P to 0 on second response: fail-permanent, fail-retriable, success
     Given I set the HTTP status code for the next requests to "200,400,500,200"
-    Given I set the sampling probability for the next traces to "null,null,0"
+    Given I set the sampling probability for the next traces to "1,null,0"
     And I run "ThreeSpansScenario" and discard the initial p-value request
     And I wait to receive at least 2 traces
     Then the trace payload field "resourceSpans.0.scopeSpans.0.spans.0.name" equals "Custom/span 1"
@@ -180,7 +180,7 @@ Feature: Server responses
 
   Scenario: Update P to 0 on second response: fail-permanent, success, fail-retriable
     Given I set the HTTP status code for the next requests to "200,400,200,500"
-    Given I set the sampling probability for the next traces to "null,null ,0"
+    Given I set the sampling probability for the next traces to "1,null ,0"
     And I run "ThreeSpansScenario" and discard the initial p-value request
     And I wait to receive at least 2 traces
     Then the trace payload field "resourceSpans.0.scopeSpans.0.spans.0.name" equals "Custom/span 1"

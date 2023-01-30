@@ -10,12 +10,6 @@ internal class SendBatchTask(
     private val tracer: Tracer,
     private val resourceAttributes: Attributes
 ) : AbstractTask() {
-
-    override fun onAttach(worker: Worker) {
-        super.onAttach(worker)
-        delivery.fetchCurrentProbability()
-    }
-
     override fun execute(): Boolean {
         val nextBatch = tracer.collectNextBatch() ?: return false
         Logger.d("Sending a batch of ${nextBatch.size} spans to $delivery")

@@ -1,9 +1,9 @@
 GIT
   remote: https://github.com/bugsnag/maze-runner
-  revision: ecb929bfb312edf56ac956416118b804b055c72c
-  tag: v7.12.0
+  revision: b39799d1fdc49fa69676c5732dd68ea62e66d975
+  tag: v7.14.0
   specs:
-    bugsnag-maze-runner (7.12.0)
+    bugsnag-maze-runner (7.14.0)
       appium_lib (~> 12.0.0)
       appium_lib_core (~> 5.4.0)
       bugsnag (~> 6.24)
@@ -33,7 +33,7 @@ GEM
       concurrent-ruby (~> 1.0)
     builder (3.2.4)
     childprocess (4.1.0)
-    concurrent-ruby (1.1.10)
+    concurrent-ruby (1.2.0)
     cucumber (7.1.0)
       builder (~> 3.2, >= 3.2.4)
       cucumber-core (~> 10.1, >= 10.1.0)
@@ -98,7 +98,7 @@ GEM
     power_assert (2.0.3)
     racc (1.6.2)
     rake (12.3.3)
-    regexp_parser (2.6.1)
+    regexp_parser (2.6.2)
     rexml (3.2.5)
     rubyzip (2.3.2)
     selenium-webdriver (4.5.0)
