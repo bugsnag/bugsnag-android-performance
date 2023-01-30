@@ -13,6 +13,7 @@ import com.bugsnag.android.performance.internal.PerformanceLifecycleCallbacks
 import com.bugsnag.android.performance.internal.Persistence
 import com.bugsnag.android.performance.internal.RetryDelivery
 import com.bugsnag.android.performance.internal.RetryDeliveryTask
+import com.bugsnag.android.performance.internal.Sampler
 import com.bugsnag.android.performance.internal.SendBatchTask
 import com.bugsnag.android.performance.internal.SpanFactory
 import com.bugsnag.android.performance.internal.SpanTracker
@@ -96,8 +97,6 @@ object BugsnagPerformance {
             it.copy(isInForeground = isInForeground(application))
         }
 
-        tracer.sampler.fallbackProbability = configuration.samplingProbability
-
         val connectivity =
             ConnectivityCompat(application) { hasConnection, _, networkType, networkSubType ->
                 if (hasConnection) {
@@ -125,22 +124,23 @@ object BugsnagPerformance {
         )
 
         val persistence = Persistence(application)
-        tracer.sampler.loadConfiguration(persistence.persistentState)
-
         val delivery = RetryDelivery(persistence.retryQueue, httpDelivery)
+
+        val sampler = Sampler(configuration.samplingProbability, persistence.persistentState)
+        delivery.newProbabilityCallback = sampler
 
         val bsgWorker = Worker(
             SendBatchTask(
                 delivery,
                 tracer,
-                persistence.persistentState,
                 createResourceAttributes(configuration)
             ),
-            RetryDeliveryTask(persistence.retryQueue, httpDelivery)
+            RetryDeliveryTask(persistence.retryQueue, httpDelivery),
         )
 
         // register the Worker with the components that depend on it
         tracer.worker = bsgWorker
+        tracer.sampler = sampler
 
         bsgWorker.start()
 

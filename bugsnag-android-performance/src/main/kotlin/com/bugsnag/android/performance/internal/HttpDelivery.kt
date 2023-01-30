@@ -8,21 +8,13 @@ internal class HttpDelivery(
     private val endpoint: String,
     private val apiKey: String
 ) : Delivery {
-    override fun deliver(
-        spans: Collection<SpanImpl>,
-        resourceAttributes: Attributes,
-        newProbabilityCallback: NewProbabilityCallback?
-    ): DeliveryResult {
-        return deliver(
-            TracePayload.createTracePayload(apiKey, spans, resourceAttributes),
-            newProbabilityCallback
-        )
+    override var newProbabilityCallback: NewProbabilityCallback? = null
+
+    override fun deliver(spans: Collection<SpanImpl>, resourceAttributes: Attributes): DeliveryResult {
+        return deliver(TracePayload.createTracePayload(apiKey, spans, resourceAttributes))
     }
 
-    override fun deliver(
-        tracePayload: TracePayload,
-        newProbabilityCallback: NewProbabilityCallback?
-    ): DeliveryResult {
+    override fun deliver(tracePayload: TracePayload): DeliveryResult {
         val connection = URL(endpoint).openConnection() as HttpURLConnection
         with(connection) {
             requestMethod = "POST"
@@ -37,24 +29,19 @@ internal class HttpDelivery(
         val result = getDeliveryResult(connection.responseCode, tracePayload)
         val newP = connection.getHeaderField("Bugsnag-Sampling-Probability")?.toDoubleOrNull()
         connection.disconnect()
-        if (newProbabilityCallback != null && newP != null) {
-            newProbabilityCallback.onNewProbability(newP)
-        }
+        newP?.let { newProbabilityCallback?.onNewProbability(it) }
         return result
     }
 
-    override fun fetchCurrentProbability(newPCallback: NewProbabilityCallback) {
+    override fun fetchCurrentProbability() {
         // Server expects a call to /traces with an empty set of resource spans
-        deliver(
-            TracePayload.createTracePayload(apiKey, "{\"resourceSpans\": []}".toByteArray()),
-            newPCallback
-        )
+        deliver(TracePayload.createTracePayload(apiKey, "{\"resourceSpans\": []}".toByteArray()))
     }
 
     private fun getDeliveryResult(statusCode: Int, payload: TracePayload): DeliveryResult {
         return when {
             statusCode / 100 == 2 -> DeliveryResult.Success
-            statusCode / 100 == 4 && statusCode !in retriable400Codes ->
+            statusCode / 100 == 4 && statusCode !in httpRetryCodes ->
                 DeliveryResult.Failed(payload, false)
             else -> DeliveryResult.Failed(payload, true)
         }
@@ -78,7 +65,7 @@ internal class HttpDelivery(
     }
 
     companion object {
-        private val retriable400Codes = setOf(
+        private val httpRetryCodes = setOf(
             // 402 Payment Required: a nonstandard client error status response code that is
             // reserved for future use. This status code is returned by ngrok when a tunnel has expired.
             402,

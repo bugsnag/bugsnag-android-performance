@@ -20,16 +20,9 @@ internal fun interface NewProbabilityCallback {
 }
 
 internal interface Delivery {
-    fun deliver(
-        spans: Collection<SpanImpl>,
-        resourceAttributes: Attributes,
-        newProbabilityCallback: NewProbabilityCallback?
-    ): DeliveryResult
+    var newProbabilityCallback: NewProbabilityCallback?
 
-    fun deliver(
-        tracePayload: TracePayload,
-        newProbabilityCallback: NewProbabilityCallback?
-    ): DeliveryResult
-
-    fun fetchCurrentProbability(newPCallback: NewProbabilityCallback)
+    fun deliver(spans: Collection<SpanImpl>, resourceAttributes: Attributes): DeliveryResult
+    fun deliver(tracePayload: TracePayload): DeliveryResult
+    fun fetchCurrentProbability()
 }

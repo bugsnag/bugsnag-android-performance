@@ -8,30 +8,19 @@ internal class SendBatchTask(
     @get:VisibleForTesting
     val delivery: Delivery,
     private val tracer: Tracer,
-    private val persistentState: PersistentState,
     private val resourceAttributes: Attributes
-) : AbstractTask(), NewProbabilityCallback {
-
-    private inline val sampler: Sampler get() = tracer.sampler
+) : AbstractTask() {
 
     override fun onAttach(worker: Worker) {
         super.onAttach(worker)
-        delivery.fetchCurrentProbability(this)
+        delivery.fetchCurrentProbability()
     }
 
     override fun execute(): Boolean {
         val nextBatch = tracer.collectNextBatch() ?: return false
         Logger.d("Sending a batch of ${nextBatch.size} spans to $delivery")
-        delivery.deliver(nextBatch, resourceAttributes, this)
+        delivery.deliver(nextBatch, resourceAttributes)
         return nextBatch.isNotEmpty()
-    }
-
-    override fun onNewProbability(newP: Double) {
-        sampler.probability = newP
-        persistentState.update {
-            pValue = newP
-            pValueExpiryTime = sampler.expiryTime
-        }
     }
 
     override fun toString(): String = "SendBatch[$delivery]"

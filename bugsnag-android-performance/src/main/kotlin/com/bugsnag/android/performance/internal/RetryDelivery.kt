@@ -5,33 +5,21 @@ import com.bugsnag.android.performance.Attributes
 internal class RetryDelivery(
     private val retryQueue: RetryQueue,
     private val delivery: Delivery
-) : Delivery {
+) : Delivery by delivery {
     override fun deliver(
         spans: Collection<SpanImpl>,
-        resourceAttributes: Attributes,
-        newProbabilityCallback: NewProbabilityCallback?
+        resourceAttributes: Attributes
     ): DeliveryResult {
         if (spans.isEmpty()) {
             return DeliveryResult.Success
         }
 
-        val result = delivery.deliver(spans, resourceAttributes, newProbabilityCallback)
+        val result = delivery.deliver(spans, resourceAttributes)
         if (result is DeliveryResult.Failed && result.canRetry) {
             retryQueue.add(result.payload)
         }
         return result
     }
 
-    override fun deliver(
-        tracePayload: TracePayload,
-        newProbabilityCallback: NewProbabilityCallback?
-    ): DeliveryResult {
-        return delivery.deliver(tracePayload, newProbabilityCallback)
-    }
-
     override fun toString(): String = "RetryDelivery($delivery)"
-
-    override fun fetchCurrentProbability(newPCallback: NewProbabilityCallback) {
-        delivery.fetchCurrentProbability(newPCallback)
-    }
 }

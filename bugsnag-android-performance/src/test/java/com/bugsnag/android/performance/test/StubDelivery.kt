@@ -16,6 +16,9 @@ internal class StubDelivery : Delivery {
 
     private val lock = ReentrantLock(false)
     private val deliveryCondition = lock.newCondition()
+    override var newProbabilityCallback: NewProbabilityCallback?
+        set(_) = Unit
+        get() = null
 
     fun awaitDelivery(timeout: Long = 60_000L) {
         lock.withLock {
@@ -30,11 +33,7 @@ internal class StubDelivery : Delivery {
         lastSpanDelivery = null
     }
 
-    override fun deliver(
-        spans: Collection<SpanImpl>,
-        resourceAttributes: Attributes,
-        newProbabilityCallback: NewProbabilityCallback?
-    ): DeliveryResult {
+    override fun deliver(spans: Collection<SpanImpl>, resourceAttributes: Attributes): DeliveryResult {
         lock.withLock {
             lastSpanDelivery = spans
             deliveryCondition.signalAll()
@@ -42,10 +41,7 @@ internal class StubDelivery : Delivery {
         }
     }
 
-    override fun deliver(
-        tracePayload: TracePayload,
-        newProbabilityCallback: NewProbabilityCallback?
-    ): DeliveryResult = nextResult
+    override fun deliver(tracePayload: TracePayload): DeliveryResult = nextResult
 
-    override fun fetchCurrentProbability(newPCallback: NewProbabilityCallback) = Unit
+    override fun fetchCurrentProbability() = Unit
 }
