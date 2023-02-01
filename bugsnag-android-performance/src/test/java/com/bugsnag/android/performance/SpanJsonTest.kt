@@ -23,6 +23,7 @@ class SpanJsonTest {
             0L,
             UUID.fromString("4ee26661-4650-4c7f-a35f-00f007cd24e7"),
             0xdecafbad,
+            123L,
             testSpanProcessor,
         )
 
@@ -46,6 +47,7 @@ class SpanJsonTest {
                     "traceId": "4ee2666146504c7fa35f00f007cd24e7",
                     "startTimeUnixNano": "${BugsnagClock.elapsedNanosToUnixTime(0)}",
                     "endTimeUnixNano": "${BugsnagClock.elapsedNanosToUnixTime(currentTime)}",
+                    "parentSpanId": "000000000000007b",
                     "attributes": [
                         {
                             "key": "fps.average",

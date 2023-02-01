@@ -21,6 +21,7 @@ class SpanPayloadEncodingTest {
             0L,
             UUID.fromString("4ee26661-4650-4c7f-a35f-00f007cd24e7"),
             0xdecafbad,
+            0L,
             testSpanProcessor,
         )
         span1.end(1L)
@@ -30,6 +31,7 @@ class SpanPayloadEncodingTest {
             10L,
             UUID.fromString("4ee26661-4650-4c7f-a35f-00f007cd24e7"),
             0xbaddecaf,
+            0L,
             testSpanProcessor,
         )
         span2.end(11L)

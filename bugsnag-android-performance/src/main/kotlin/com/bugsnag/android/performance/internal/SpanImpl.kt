@@ -6,17 +6,20 @@ import androidx.annotation.FloatRange
 import com.bugsnag.android.performance.Attributes
 import com.bugsnag.android.performance.HasAttributes
 import com.bugsnag.android.performance.Span
+import com.bugsnag.android.performance.SpanContext
 import com.bugsnag.android.performance.SpanKind
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicLongFieldUpdater
 import kotlin.random.Random
 
+@Suppress("LongParameterList")
 class SpanImpl internal constructor(
     name: String,
     internal val kind: SpanKind,
     internal val startTime: Long,
     internal val traceId: UUID,
     internal val id: Long = Random.nextLong(),
+    internal val parentSpanId: Long,
     private val processor: SpanProcessor,
 ) : Span(), HasAttributes {
 
@@ -74,8 +77,13 @@ class SpanImpl internal constructor(
             .name("kind").value(kind.otelName)
             .name("spanId").value(id.toHexString())
             .name("traceId").value(traceId.toHexString())
-            .name("startTimeUnixNano").value(BugsnagClock.elapsedNanosToUnixTime(startTime).toString())
+            .name("startTimeUnixNano")
+            .value(BugsnagClock.elapsedNanosToUnixTime(startTime).toString())
             .name("endTimeUnixNano").value(BugsnagClock.elapsedNanosToUnixTime(endTime).toString())
+
+        if (parentSpanId != 0L) {
+            json.name("parentSpanId").value(parentSpanId.toHexString())
+        }
 
         if (attributes.isNotEmpty()) {
             json.name("attributes").value(attributes)

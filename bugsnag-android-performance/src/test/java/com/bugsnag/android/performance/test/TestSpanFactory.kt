@@ -19,10 +19,11 @@ class TestSpanFactory {
         endTime: ((Long) -> Long)? = { it + 10L },
         traceId: UUID = UUID(0L, spanCount),
         spanId: Long = spanCount,
+        parentSpanId: Long = 0L,
         processor: SpanProcessor
     ): SpanImpl {
         spanCount++
-        return SpanImpl(name, kind, startTime, traceId, spanId, processor)
+        return SpanImpl(name, kind, startTime, traceId, spanId, parentSpanId, processor)
             .apply { if (endTime != null) end(endTime(startTime)) }
     }
 
