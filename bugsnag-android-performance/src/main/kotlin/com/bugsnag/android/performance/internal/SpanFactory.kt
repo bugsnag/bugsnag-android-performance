@@ -3,6 +3,7 @@ package com.bugsnag.android.performance.internal
 import android.app.Activity
 import android.os.SystemClock
 import com.bugsnag.android.performance.HasAttributes
+import com.bugsnag.android.performance.SpanContext
 import com.bugsnag.android.performance.SpanKind
 import com.bugsnag.android.performance.ViewType
 import java.net.URL
@@ -45,14 +46,33 @@ class SpanFactory(
     }
 
     fun createAppStartSpan(startType: String): SpanImpl =
-        createSpan("AppStart/$startType", SpanKind.INTERNAL, SystemClock.elapsedRealtimeNanos()).apply {
+        createSpan(
+            "AppStart/$startType",
+            SpanKind.INTERNAL,
+            SystemClock.elapsedRealtimeNanos()
+        ).apply {
             setAttribute("bugsnag.span_category", "app_start")
             setAttribute("bugsnag.app_start.type", startType.lowercase())
         }
 
-    private fun createSpan(name: String, kind: SpanKind, startTime: Long): SpanImpl {
-        val span = SpanImpl(name, kind, startTime, UUID.randomUUID(), processor = spanProcessor)
+    private fun createSpan(
+        name: String,
+        kind: SpanKind,
+        startTime: Long,
+        spanContext: SpanContext = SpanContext.current
+    ): SpanImpl {
+        val span = SpanImpl(
+            name = name,
+            kind = kind,
+            startTime = startTime,
+            traceId = spanContext.traceId.takeIf { it.isValidTraceId() } ?: UUID.randomUUID(),
+            parentSpanId = spanContext.spanId,
+            processor = spanProcessor
+        )
+
         spanAttributeSource(span)
         return span
     }
+
+    private fun UUID.isValidTraceId() = mostSignificantBits != 0L && leastSignificantBits != 0L
 }

@@ -35,6 +35,7 @@ class RetryDeliveryTest {
                     0L,
                     UUID.fromString("4ee26661-4650-4c7f-a35f-00f007cd24e7"),
                     0xdecafbad,
+                    0L,
                     testSpanProcessor
                 )
             ),
@@ -52,6 +53,7 @@ class RetryDeliveryTest {
                     0L,
                     UUID.fromString("4ee26661-4650-4c7f-a35f-00f007cd24e7"),
                     0xdecafbad,
+                    0L,
                     testSpanProcessor
                 )
             ),
@@ -69,6 +71,7 @@ class RetryDeliveryTest {
                     0L,
                     UUID.fromString("4ee26661-4650-4c7f-a35f-00f007cd24e7"),
                     0xdecafbad,
+                    0L,
                     testSpanProcessor
                 )
             ),
@@ -96,6 +99,7 @@ class RetryDeliveryTest {
                     0L,
                     UUID.fromString("4ee26661-4650-4c7f-a35f-00f007cd24e7"),
                     0xdecafbad,
+                    0L,
                     testSpanProcessor
                 )
             ),
@@ -124,6 +128,7 @@ class RetryDeliveryTest {
                     0L,
                     UUID.fromString("4ee26661-4650-4c7f-a35f-00f007cd24e7"),
                     0xdecafbad,
+                    0L,
                     testSpanProcessor
                 )
             ),
