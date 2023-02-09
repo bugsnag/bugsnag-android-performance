@@ -3,6 +3,7 @@
   <ManuallySuppressedIssues/>
   <CurrentIssues>
     <ID>ComplexMethod:Connectivity.kt$ConnectivityApi24$private fun nameForDataNetworkType(dataNetworkType: Int): String</ID>
+    <ID>ComplexMethod:SpanOptions.kt$SpanOptions$override fun equals(other: Any?): Boolean</ID>
     <ID>MagicNumber:Encodings.kt$0xff</ID>
     <ID>MagicNumber:Encodings.kt$16</ID>
     <ID>MagicNumber:Encodings.kt$24</ID>

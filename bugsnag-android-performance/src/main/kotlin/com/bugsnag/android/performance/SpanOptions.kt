@@ -12,39 +12,56 @@ import com.bugsnag.android.performance.SpanOptions.Companion.defaults
  * @see defaults
  */
 class SpanOptions private constructor(
-    @JvmField
-    @JvmSynthetic
-    internal val optionsSet: Int,
+    private val optionsSet: Int,
     startTime: Long,
     val parentContext: SpanContext?,
     val makeContext: Boolean,
+    isFirstClass: Boolean
 ) {
     private val _startTime: Long = startTime
+
+    private val _isFirstClass: Boolean = isFirstClass
 
     val startTime: Long
         get() =
             if (isOptionSet(OPT_START_TIME)) _startTime
             else SystemClock.elapsedRealtimeNanos()
 
+    val isFirstClass: Boolean
+        get() =
+            if (isOptionSet(OPT_IS_FIRST_CLASS)) _isFirstClass
+            else SpanContext.current.spanId != 0L
+
     fun startTime(startTime: Long) = SpanOptions(
         optionsSet or OPT_START_TIME,
         startTime,
         parentContext,
-        makeContext
+        makeContext,
+        _isFirstClass
     )
 
     fun within(parentContext: SpanContext) = SpanOptions(
         optionsSet or OPT_PARENT_CONTEXT,
         _startTime,
         parentContext,
-        makeContext
+        makeContext,
+        _isFirstClass
     )
 
     fun makeCurrentContext(makeContext: Boolean) = SpanOptions(
         optionsSet or OPT_MAKE_CONTEXT,
         _startTime,
         parentContext,
-        makeContext
+        makeContext,
+        _isFirstClass
+    )
+
+    fun setFirstClass(isFirstClass: Boolean) = SpanOptions(
+        optionsSet or OPT_IS_FIRST_CLASS,
+        _startTime,
+        parentContext,
+        makeContext,
+        isFirstClass
     )
 
     override fun equals(other: Any?): Boolean {
@@ -52,11 +69,20 @@ class SpanOptions private constructor(
         if (other !is SpanOptions) return false
 
         if ((isOptionSet(OPT_START_TIME) || other.isOptionSet(OPT_START_TIME))
-            && this._startTime != other._startTime) return false
+            && this._startTime != other._startTime
+        ) return false
+
         if ((isOptionSet(OPT_PARENT_CONTEXT) || other.isOptionSet(OPT_PARENT_CONTEXT))
-            && this.parentContext != other.parentContext) return false
+            && this.parentContext != other.parentContext
+        ) return false
+
         if ((isOptionSet(OPT_MAKE_CONTEXT) || other.isOptionSet(OPT_MAKE_CONTEXT))
-            && this.makeContext != other.makeContext) return false
+            && this.makeContext != other.makeContext
+        ) return false
+
+        if ((isOptionSet(OPT_IS_FIRST_CLASS) || other.isOptionSet(OPT_IS_FIRST_CLASS))
+            && this._isFirstClass != other._isFirstClass
+        ) return false
 
         return true
     }
@@ -65,6 +91,7 @@ class SpanOptions private constructor(
         var result = 31 * _startTime.hashCode()
         result = 31 * result + (parentContext?.hashCode() ?: 0)
         result = 31 * result + makeContext.hashCode()
+        result = 31 * result + _isFirstClass.hashCode()
         return result
     }
 
@@ -89,6 +116,10 @@ class SpanOptions private constructor(
             append("makeCurrentContext=").append(makeContext).append(',')
         }
 
+        if (isOptionSet(OPT_IS_FIRST_CLASS)) {
+            append("isFirstClass=").append(_isFirstClass).append(',')
+        }
+
         // if we are here, the last character will always be ',' - replace it with ']'
         setCharAt(lastIndex, ']')
     }
@@ -101,11 +132,12 @@ class SpanOptions private constructor(
         private const val OPT_START_TIME = 1
         private const val OPT_PARENT_CONTEXT = 2
         private const val OPT_MAKE_CONTEXT = 4
+        private const val OPT_IS_FIRST_CLASS = 8
 
         /**
          * The default set of `SpanOptions` with no overrides set.
          */
         @JvmField
-        val defaults = SpanOptions(OPT_NONE, 0, null, true)
+        val defaults = SpanOptions(OPT_NONE, 0, null, true, false)
     }
 }
