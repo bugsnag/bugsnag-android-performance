@@ -114,6 +114,7 @@ object BugsnagPerformance {
             requireNotNull(configuration.apiKey) {
                 "PerformanceConfiguration.apiKey may not be null"
             },
+            connectivity,
         )
 
         val persistence = Persistence(application)
@@ -129,7 +130,7 @@ object BugsnagPerformance {
         val bsgWorker = Worker(
             samplerTask,
             SendBatchTask(delivery, tracer, createResourceAttributes(configuration)),
-            RetryDeliveryTask(persistence.retryQueue, httpDelivery),
+            RetryDeliveryTask(persistence.retryQueue, httpDelivery, connectivity),
         )
 
         delivery.newProbabilityCallback = samplerTask

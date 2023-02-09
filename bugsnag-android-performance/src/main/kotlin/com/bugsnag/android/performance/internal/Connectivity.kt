@@ -40,6 +40,10 @@ internal enum class ConnectionMetering {
 internal interface Connectivity {
     fun registerForNetworkChanges()
     fun unregisterForNetworkChanges()
+    val hasConnection: Boolean
+    val metering: ConnectionMetering
+    val networkType: NetworkType
+    val networkSubType: String?
 }
 
 private object UnknownNetwork {
@@ -73,6 +77,15 @@ internal class ConnectivityCompat(
     override fun unregisterForNetworkChanges() {
         runCatching { connectivity.unregisterForNetworkChanges() }
     }
+
+    override val hasConnection: Boolean
+        get() = connectivity.hasConnection
+    override val metering: ConnectionMetering
+        get() = connectivity.metering
+    override val networkType: NetworkType
+        get() = connectivity.networkType
+    override val networkSubType: String?
+        get() = connectivity.networkSubType
 }
 
 @Suppress("DEPRECATION")
@@ -81,6 +94,15 @@ internal class ConnectivityLegacy(
     private val cm: ConnectivityManager,
     private val callback: NetworkChangeCallback?
 ) : BroadcastReceiver(), Connectivity {
+
+    override val hasConnection: Boolean
+        get() { return activeNetworkInfo?.isConnectedOrConnecting ?: UnknownNetwork.HAS_CONNECTION }
+    override val metering: ConnectionMetering
+        get() { return activeNetworkInfo?.metering ?: UnknownNetwork.METERING }
+    override val networkType: NetworkType
+        get() { return activeNetworkInfo?.networkType ?: UnknownNetwork.NETWORK_TYPE }
+    override val networkSubType: String?
+        get() { return activeNetworkInfo?.subtypeName }
 
     private val receivedFirstCallback = AtomicBoolean(false)
 
@@ -138,11 +160,22 @@ internal open class ConnectivityApi24(
     private val callback: NetworkChangeCallback?
 ) : ConnectivityManager.NetworkCallback(), Connectivity {
 
+    override val hasConnection: Boolean
+        get() { return connectedFor(capabilities) }
+    override val metering: ConnectionMetering
+        get() { return meteringFor(capabilities) }
+    override val networkType: NetworkType
+        get() { return networkTypeFor(capabilities) }
+    override val networkSubType: String?
+        get() { return networkSubTypeFor(capabilities) }
+
+    private var capabilities: NetworkCapabilities? = cm.getNetworkCapabilities(cm.boundNetworkForProcess)
     private val receivedFirstCallback = AtomicBoolean(false)
     private val tm: TelephonyManager? = context.getTelephonyManager()
 
-    protected open fun networkTypeFor(capabilities: NetworkCapabilities): NetworkType {
+    protected open fun networkTypeFor(capabilities: NetworkCapabilities?): NetworkType {
         return when {
+            capabilities == null -> UnknownConnectivity.networkType
             capabilities.hasTransport(TRANSPORT_ETHERNET) ||
                 capabilities.hasTransport(TRANSPORT_USB) -> NetworkType.WIRED
             capabilities.hasTransport(TRANSPORT_WIFI) -> NetworkType.WIFI
@@ -152,8 +185,8 @@ internal open class ConnectivityApi24(
     }
 
     @SuppressLint("MissingPermission")
-    protected open fun networkSubTypeFor(capabilities: NetworkCapabilities): String? {
-        if (networkTypeFor(capabilities) != NetworkType.CELL || tm == null) {
+    protected open fun networkSubTypeFor(capabilities: NetworkCapabilities?): String? {
+        if (capabilities == null || networkTypeFor(capabilities) != NetworkType.CELL || tm == null) {
             return null
         }
 
@@ -184,14 +217,20 @@ internal open class ConnectivityApi24(
         else -> "UNKNOWN"
     }
 
-    protected open fun meteringFor(capabilities: NetworkCapabilities): ConnectionMetering {
+    protected open fun meteringFor(capabilities: NetworkCapabilities?): ConnectionMetering {
         return when {
+            capabilities == null -> UnknownConnectivity.metering
             capabilities.hasTransport(TRANSPORT_WIFI) -> ConnectionMetering.UNMETERED
             capabilities.hasTransport(TRANSPORT_ETHERNET) ||
                 capabilities.hasTransport(TRANSPORT_USB) -> ConnectionMetering.UNMETERED
             capabilities.hasTransport(TRANSPORT_CELLULAR) -> ConnectionMetering.POTENTIALLY_METERED
             else -> ConnectionMetering.DISCONNECTED
         }
+    }
+
+    protected open fun connectedFor(capabilities: NetworkCapabilities?): Boolean {
+        return capabilities?.hasCapability(NET_CAPABILITY_INTERNET) == true &&
+                receivedFirstCallback.get();
     }
 
     override fun registerForNetworkChanges() = cm.registerDefaultNetworkCallback(this)
@@ -209,8 +248,8 @@ internal open class ConnectivityApi24(
     }
 
     override fun onAvailable(network: Network) {
-        val capabilities = cm.getNetworkCapabilities(network) ?: return
-        if (capabilities.hasCapability(NET_CAPABILITY_INTERNET) &&
+        capabilities = cm.getNetworkCapabilities(network)
+        if (capabilities?.hasCapability(NET_CAPABILITY_INTERNET) == true &&
             receivedFirstCallback.getAndSet(true)
         ) {
             callback?.invoke(
@@ -230,8 +269,9 @@ internal class ConnectivityApi31(
     callback: NetworkChangeCallback?
 ) : ConnectivityApi24(context, cm, callback) {
 
-    override fun meteringFor(capabilities: NetworkCapabilities): ConnectionMetering {
+    override fun meteringFor(capabilities: NetworkCapabilities?): ConnectionMetering {
         return when {
+            capabilities == null -> UnknownConnectivity.metering
             capabilities.hasCapability(NET_CAPABILITY_NOT_METERED) ||
                 capabilities.hasCapability(NET_CAPABILITY_TEMPORARILY_NOT_METERED) -> ConnectionMetering.UNMETERED
 
@@ -247,4 +287,8 @@ internal class ConnectivityApi31(
 internal object UnknownConnectivity : Connectivity {
     override fun registerForNetworkChanges() = Unit
     override fun unregisterForNetworkChanges() = Unit
+    override val hasConnection = false
+    override val metering = ConnectionMetering.DISCONNECTED
+    override val networkType = NetworkType.UNKNOWN
+    override val networkSubType = null
 }

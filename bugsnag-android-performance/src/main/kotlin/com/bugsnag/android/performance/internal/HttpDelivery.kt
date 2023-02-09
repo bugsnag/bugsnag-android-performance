@@ -7,6 +7,7 @@ import java.net.URL
 internal class HttpDelivery(
     private val endpoint: String,
     private val apiKey: String,
+    private val connectivity: Connectivity,
 ) : Delivery {
     override var newProbabilityCallback: NewProbabilityCallback? = null
 
@@ -18,6 +19,11 @@ internal class HttpDelivery(
     }
 
     override fun deliver(tracePayload: TracePayload): DeliveryResult {
+        if (!connectivity.hasConnection) {
+            // We can't deliver now but can retry later.
+            return DeliveryResult.Failed(tracePayload, true)
+        }
+
         val connection = URL(endpoint).openConnection() as HttpURLConnection
         with(connection) {
             requestMethod = "POST"
