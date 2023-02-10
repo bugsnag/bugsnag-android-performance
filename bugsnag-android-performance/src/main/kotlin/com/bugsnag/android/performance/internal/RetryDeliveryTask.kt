@@ -6,9 +6,9 @@ internal class RetryDeliveryTask(
     private val connectivity: Connectivity
 ) : AbstractTask() {
     override fun execute(): Boolean {
-        if (!connectivity.hasConnection) {
-            return false;
-        }
+//        if (!connectivity.hasConnection) {
+//            return false;
+//        }
 
         val nextPayload = retryQueue.next() ?: return false
         val result = delivery.deliver(nextPayload)
