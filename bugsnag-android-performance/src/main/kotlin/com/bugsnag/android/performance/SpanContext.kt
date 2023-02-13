@@ -13,8 +13,9 @@ interface SpanContext {
             override fun initialValue(): Deque<SpanContext> = ArrayDeque()
         }
 
-        private val contextStack: Deque<SpanContext> =
-            threadLocalStorage.get() as Deque<SpanContext>
+        @get:JvmSynthetic
+        internal val contextStack: Deque<SpanContext>
+            get() = threadLocalStorage.get() as Deque<SpanContext>
 
         /**
          * Retrieve the current [SpanContext] for this thread (or [invalid] if not available).
@@ -23,10 +24,12 @@ interface SpanContext {
         val current: SpanContext
             get() = contextStack.peekFirst() ?: invalid
 
+        @JvmSynthetic
         internal fun attach(toAttach: SpanContext) {
             contextStack.push(toAttach)
         }
 
+        @JvmSynthetic
         internal fun detach(spanContext: SpanContext) {
             val stack = contextStack
             // assume that the top of the stack is 'spanContext' and 'poll' it off
