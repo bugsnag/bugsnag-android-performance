@@ -12,7 +12,7 @@ import java.io.Closeable
  *
  * @see BugsnagPerformance.startSpan
  */
-abstract class Span internal constructor() : Closeable {
+abstract class Span internal constructor() : SpanContext, Closeable {
     /**
      * End this with a specified timestamp relative to [SystemClock.elapsedRealtimeNanos]. If this
      * span has already been closed this will have no effect.

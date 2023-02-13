@@ -17,8 +17,8 @@ class SpanImpl internal constructor(
     name: String,
     internal val kind: SpanKind,
     internal val startTime: Long,
-    internal val traceId: UUID,
-    internal val id: Long = Random.nextLong(),
+    override val traceId: UUID,
+    override val spanId: Long = Random.nextLong(),
     internal val parentSpanId: Long,
     private val processor: SpanProcessor,
 ) : Span(), HasAttributes {
@@ -59,11 +59,15 @@ class SpanImpl internal constructor(
             0L -> 0.0
             else -> msw.toDouble() / Long.MAX_VALUE.toDouble()
         }
+
+        // Starting a Span should cause it to become the current context
+        SpanContext.attach(this)
     }
 
     override fun end(endTime: Long) {
         if (END_TIME_UPDATER.compareAndSet(this, NO_END_TIME, endTime)) {
             processor.onEnd(this)
+            SpanContext.detach(this)
         }
     }
 
@@ -75,7 +79,7 @@ class SpanImpl internal constructor(
         json.beginObject()
             .name("name").value(name)
             .name("kind").value(kind.otelName)
-            .name("spanId").value(id.toHexString())
+            .name("spanId").value(spanId.toHexString())
             .name("traceId").value(traceId.toHexString())
             .name("startTimeUnixNano")
             .value(BugsnagClock.elapsedNanosToUnixTime(startTime).toString())
@@ -101,7 +105,7 @@ class SpanImpl internal constructor(
         if (kind != other.kind) return false
         if (startTime != other.startTime) return false
         if (traceId != other.traceId) return false
-        if (id != other.id) return false
+        if (spanId != other.spanId) return false
         if (attributes != other.attributes) return false
         if (name != other.name) return false
         if (endTime != other.endTime) return false
@@ -113,7 +117,7 @@ class SpanImpl internal constructor(
         var result = kind.hashCode()
         result = 31 * result + startTime.hashCode()
         result = 31 * result + traceId.hashCode()
-        result = 31 * result + id.hashCode()
+        result = 31 * result + spanId.hashCode()
         result = 31 * result + attributes.hashCode()
         result = 31 * result + name.hashCode()
         result = 31 * result + endTime.hashCode()
@@ -127,7 +131,7 @@ class SpanImpl internal constructor(
                 .append(' ')
                 .append(name)
 
-            append(", id=").append(id)
+            append(", id=").append(spanId)
             append(", traceId=").append(traceId)
             append(", startTime=").append(startTime)
 

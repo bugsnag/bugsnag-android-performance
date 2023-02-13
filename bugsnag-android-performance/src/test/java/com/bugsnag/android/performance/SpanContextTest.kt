@@ -1,6 +1,8 @@
 package com.bugsnag.android.performance
 
+import com.bugsnag.android.performance.internal.SpanImpl
 import com.bugsnag.android.performance.test.task
+import com.bugsnag.android.performance.test.testSpanProcessor
 import org.junit.Assert.assertSame
 import org.junit.Before
 import org.junit.Test
@@ -42,6 +44,34 @@ internal class SpanContextTest {
             }
             .forEach { it.get() }
     }
+
+    @Test
+    fun spanAsSpanContext() {
+        val spanA = createTestSpan()
+        assertSame(spanA, SpanContext.current)
+
+        val spanB = createTestSpan()
+        assertSame(spanB, SpanContext.current)
+
+        val spanC = createTestSpan()
+        assertSame(spanC, SpanContext.current)
+
+        spanA.end(1L)
+        spanB.end(2L)
+        assertSame(spanC, SpanContext.current)
+
+        spanC.end(3L)
+        assertSame(SpanContext.invalid, SpanContext.current)
+    }
+
+    private fun createTestSpan() = SpanImpl(
+        name = "Test/test span",
+        kind = SpanKind.INTERNAL,
+        startTime = 0L,
+        traceId = UUID.fromString("4ee26661-4650-4c7f-a35f-00f007cd24e7"),
+        parentSpanId = 0L,
+        processor = testSpanProcessor,
+    )
 
     private data class TestSpanContext(
         override val spanId: Long,

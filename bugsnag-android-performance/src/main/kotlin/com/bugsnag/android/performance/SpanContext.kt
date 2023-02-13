@@ -34,11 +34,15 @@ interface SpanContext {
             val stack = contextStack
             // assume that the top of the stack is 'spanContext' and 'poll' it off
             // since poll returns null instead of throwing an exception
-            val top = contextStack.pollFirst()
+            val top = contextStack.pollFirst() ?: return
 
             if (top != spanContext) {
                 // oops! the top of the stack wasn't what we expected so we put it back here
                 stack.push(top)
+            }
+            // remove any closed contexts from the top of the stack
+            while(stack.size > 0 && (current as? Span)?.isOpen() == false) {
+                contextStack.pollFirst()
             }
         }
 
