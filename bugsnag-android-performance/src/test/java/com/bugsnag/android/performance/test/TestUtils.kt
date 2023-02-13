@@ -6,6 +6,8 @@ import org.json.JSONObject
 import org.junit.Assert.assertEquals
 import org.mockito.MockedStatic
 import org.mockito.Mockito
+import java.util.concurrent.Future
+import java.util.concurrent.FutureTask
 
 val testSpanProcessor = SpanProcessor { }
 
@@ -31,4 +33,13 @@ inline fun <reified S> withStaticMock(block: (MockedStatic<S>) -> Unit) {
 fun endedSpans(vararg spans: SpanImpl): Collection<SpanImpl> {
     spans.forEach { it.end() }
     return spans.asList()
+}
+
+/**
+ * Run [block] on a background thread and return a `Future` handle to access its result (or exception)
+ */
+fun <V> task(block: () -> V): Future<V> {
+    val task = FutureTask { block() }
+    Thread(task).start()
+    return task
 }

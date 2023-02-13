@@ -1,10 +1,10 @@
 package com.bugsnag.android.performance
 
+import com.bugsnag.android.performance.test.task
 import org.junit.Assert.assertSame
 import org.junit.Before
 import org.junit.Test
 import java.util.UUID
-import kotlin.concurrent.thread
 
 internal class SpanContextTest {
     @Before
@@ -23,10 +23,11 @@ internal class SpanContextTest {
     fun testThreadedContext() {
         (0..5)
             .map {
-                thread {
+                task {
+                    val threadId = Thread.currentThread().id
                     val expectedStack = mutableListOf<SpanContext>()
-                    repeat(10) {
-                        val newContext = TestSpanContext(it.toLong())
+                    repeat(1000) {
+                        val newContext = TestSpanContext(it.toLong(), UUID.randomUUID(), threadId)
                         SpanContext.attach(newContext)
                         expectedStack.add(newContext)
 
@@ -39,11 +40,12 @@ internal class SpanContextTest {
                     }
                 }
             }
-            .forEach { it.join() }
+            .forEach { it.get() }
     }
 
     private data class TestSpanContext(
         override val spanId: Long,
-        override val traceId: UUID = UUID.randomUUID()
+        override val traceId: UUID,
+        val threadId: Long
     ) : SpanContext
 }
