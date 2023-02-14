@@ -21,7 +21,7 @@ class SpanFactory(
     fun createNetworkSpan(url: URL, verb: String, startTime: Long): SpanImpl {
         val verbUpper = verb.uppercase()
         val span = createSpan("HTTP/$verbUpper", SpanKind.CLIENT, startTime)
-        span.setAttribute("bugsnag.span_category", "network")
+        span.setAttribute("bugsnag.span.category", "network")
         span.setAttribute("http.url", url.toString())
         span.setAttribute("http.method", verbUpper)
         return span
@@ -39,7 +39,7 @@ class SpanFactory(
             startTime
         )
 
-        span.setAttribute("bugsnag.span_category", "view_load")
+        span.setAttribute("bugsnag.span.category", "view_load")
         span.setAttribute("bugsnag.view.type", viewType.typeName)
         span.setAttribute("bugsnag.view.name", viewName)
         return span
@@ -51,7 +51,7 @@ class SpanFactory(
             SpanKind.INTERNAL,
             SystemClock.elapsedRealtimeNanos()
         ).apply {
-            setAttribute("bugsnag.span_category", "app_start")
+            setAttribute("bugsnag.span.category", "app_start")
             setAttribute("bugsnag.app_start.type", startType.lowercase())
         }
 
