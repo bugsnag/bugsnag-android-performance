@@ -41,7 +41,7 @@ interface SpanContext {
                 stack.push(top)
             }
             // remove any closed contexts from the top of the stack
-            while(stack.size > 0 && (current as? Span)?.isOpen() == false) {
+            while((contextStack.peekFirst() as? Span)?.isOpen() == false) {
                 contextStack.pollFirst()
             }
         }
