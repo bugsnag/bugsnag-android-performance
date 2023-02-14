@@ -3,6 +3,7 @@ package com.bugsnag.android.performance
 import com.bugsnag.android.performance.internal.SpanImpl
 import com.bugsnag.android.performance.test.task
 import com.bugsnag.android.performance.test.testSpanProcessor
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertSame
 import org.junit.Before
 import org.junit.Test
@@ -76,6 +77,23 @@ internal class SpanContextTest {
 
         spanC.end(3L)
         assertSame(SpanContext.invalid, SpanContext.current)
+    }
+
+    @Test
+    fun currentContextCannotBeClosed() {
+        // End the spans in a different thread so that they remain on the stack
+        val spanA = createTestSpan()
+        val spanB = createTestSpan()
+        task {
+            spanA.end()
+            spanB.end()
+        }.get()
+
+        assertEquals(2, SpanContext.contextStack.size)
+
+        // SpanContext.current should not return closed contexts
+        assertSame(SpanContext.invalid, SpanContext.current)
+        assertEquals(0, SpanContext.contextStack.size)
     }
 
     private fun createTestSpan() = SpanImpl(

@@ -22,7 +22,10 @@ interface SpanContext {
          */
         @JvmStatic
         val current: SpanContext
-            get() = contextStack.peekFirst() ?: invalid
+            get() {
+                removeClosedContexts()
+                return contextStack.peekFirst() ?: invalid
+            }
 
         @JvmSynthetic
         internal fun attach(toAttach: SpanContext) {
@@ -41,9 +44,7 @@ interface SpanContext {
                 stack.push(top)
             }
             // remove any closed contexts from the top of the stack
-            while((contextStack.peekFirst() as? Span)?.isOpen() == false) {
-                contextStack.pollFirst()
-            }
+            removeClosedContexts()
         }
 
         @JvmStatic
@@ -54,6 +55,12 @@ interface SpanContext {
                 get() = UUID(0, 0)
 
             override fun toString() = "InvalidContext"
+        }
+
+        private fun removeClosedContexts() {
+            while((contextStack.peekFirst() as? Span)?.isOpen() == false) {
+                contextStack.pollFirst()
+            }
         }
     }
 }
