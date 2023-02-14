@@ -6,8 +6,11 @@ import com.bugsnag.android.performance.test.testSpanProcessor
 import org.junit.Assert.assertSame
 import org.junit.Before
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
 import java.util.UUID
 
+@RunWith(RobolectricTestRunner::class)
 internal class SpanContextTest {
     @Before
     fun ensureContextClear() {
@@ -46,15 +49,26 @@ internal class SpanContextTest {
     }
 
     @Test
-    fun spanAsSpanContext() {
+    fun spansClosedInOrder() {
+        createTestSpan().use { spanA ->
+            assertSame(spanA, SpanContext.current)
+            createTestSpan().use { spanB ->
+                assertSame(spanB, SpanContext.current)
+                createTestSpan().use { spanC ->
+                    assertSame(spanC, SpanContext.current)
+                }
+                assertSame(spanB, SpanContext.current)
+            }
+            assertSame(spanA, SpanContext.current)
+        }
+        assertSame(SpanContext.invalid, SpanContext.current)
+    }
+
+    @Test
+    fun spansClosedOutOfOrder() {
         val spanA = createTestSpan()
-        assertSame(spanA, SpanContext.current)
-
         val spanB = createTestSpan()
-        assertSame(spanB, SpanContext.current)
-
         val spanC = createTestSpan()
-        assertSame(spanC, SpanContext.current)
 
         spanA.end(1L)
         spanB.end(2L)
