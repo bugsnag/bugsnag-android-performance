@@ -188,7 +188,7 @@ object BugsnagPerformance {
      */
     @JvmStatic
     @JvmOverloads
-    fun startNetworkSpan(
+    fun startNetworkRequestSpan(
         url: URL,
         verb: String,
         startTime: Long = SystemClock.elapsedRealtimeNanos()
