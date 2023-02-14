@@ -3,7 +3,7 @@ Feature: Automatic creation of spans
   Scenario: Activity with full ViewLoad instrumentation
     Given I run "ActivityLoadInstrumentationScenario" configured as "FULL" and discard the initial p-value request
     And I wait to receive 1 traces
-    Then a span name equals "ViewLoaded/Activity/ActivityViewLoadActivity"
+    Then a span name equals "ViewLoad/Activity/ActivityViewLoadActivity"
     * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0" string attribute "bugsnag.span_category" equals "view_load"
     * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0" string attribute "bugsnag.view.type" equals "activity"
     * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0" string attribute "bugsnag.view.name" equals "ActivityViewLoadActivity"
@@ -11,7 +11,7 @@ Feature: Automatic creation of spans
   Scenario: Activity with start-only ViewLoad instrumentation
     Given I run "ActivityLoadInstrumentationScenario" configured as "START_ONLY" and discard the initial p-value request
     And I wait to receive 1 traces
-    Then a span name equals "ViewLoaded/Activity/ActivityViewLoadActivity"
+    Then a span name equals "ViewLoad/Activity/ActivityViewLoadActivity"
     * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0" string attribute "bugsnag.span_category" equals "view_load"
     * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0" string attribute "bugsnag.view.type" equals "activity"
     * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0" string attribute "bugsnag.view.name" equals "ActivityViewLoadActivity"
@@ -19,7 +19,7 @@ Feature: Automatic creation of spans
   Scenario: Activity with no automatic ViewLoad instrumentation
     Given I run "ActivityLoadInstrumentationScenario" configured as "OFF" and discard the initial p-value request
     And I wait to receive 1 traces
-    Then a span name equals "ViewLoaded/Activity/ActivityViewLoadActivity"
+    Then a span name equals "ViewLoad/Activity/ActivityViewLoadActivity"
     * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0" string attribute "bugsnag.span_category" equals "view_load"
     * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0" string attribute "bugsnag.view.type" equals "activity"
     * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0" string attribute "bugsnag.view.name" equals "ActivityViewLoadActivity"
