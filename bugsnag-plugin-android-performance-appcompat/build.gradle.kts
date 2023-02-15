@@ -16,13 +16,12 @@ version = "${project.properties["VERSION_NAME"]}"
 group = "${project.properties["GROUP"]}"
 
 android {
-    compileSdk = 32
-    namespace = "com.bugsnag.android.performance.okhttp"
+    compileSdk = 33
+    namespace = "com.bugsnag.android.performance.appcompat"
 
     defaultConfig {
         minSdk = 17
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-
         consumerProguardFiles.add(file("consumer-rules.pro"))
     }
 
@@ -52,31 +51,12 @@ android {
 dependencies {
     api("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
 
-    compileOnly("com.squareup.okhttp3:okhttp:4.9.1")
-
     implementation(project(":bugsnag-android-performance"))
-    implementation("androidx.annotation:annotation:1.3.0")
+
+    implementation("androidx.appcompat:appcompat:1.5.0")
 
     testImplementation("junit:junit:4.13.2")
-    testImplementation("androidx.test.ext:junit:1.1.3")
-    testImplementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
-    testImplementation("org.robolectric:robolectric:4.8")
-    testImplementation("org.mockito:mockito-inline:4.8.1")
-    testImplementation("org.mockito.kotlin:mockito-kotlin:4.0.0")
-    testImplementation("net.jimblackler.jsonschemafriend:core:0.11.4")
-    testImplementation("com.squareup.okhttp3:mockwebserver:4.9.1")
-}
 
-license {
-    header = rootProject.file("LICENSE")
-    ignoreFailures = true
-}
-
-downloadLicenses {
-    dependencyConfiguration = "api"
-}
-
-detekt {
-    source.from(files("src/main/kotlin"))
-    baseline = file("detekt-baseline.xml")
+    androidTestImplementation("androidx.test.ext:junit:1.1.5")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
 }
