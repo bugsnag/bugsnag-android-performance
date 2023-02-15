@@ -34,7 +34,7 @@ class SpanFactory(
 
     fun createViewLoadSpan(viewType: ViewType, viewName: String, startTime: Long): SpanImpl {
         val span = createSpan(
-            "ViewLoaded/${viewType.spanName}/$viewName",
+            "ViewLoad/${viewType.spanName}/$viewName",
             SpanKind.INTERNAL,
             startTime
         )
