@@ -1,11 +1,17 @@
 package com.bugsnag.android.performance
 
+import com.bugsnag.android.performance.internal.SpanImpl
 import com.bugsnag.android.performance.test.task
+import com.bugsnag.android.performance.test.testSpanProcessor
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertSame
 import org.junit.Before
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
 import java.util.UUID
 
+@RunWith(RobolectricTestRunner::class)
 internal class SpanContextTest {
     @Before
     fun ensureContextClear() {
@@ -42,6 +48,62 @@ internal class SpanContextTest {
             }
             .forEach { it.get() }
     }
+
+    @Test
+    fun spansClosedInOrder() {
+        createTestSpan().use { spanA ->
+            assertSame(spanA, SpanContext.current)
+            createTestSpan().use { spanB ->
+                assertSame(spanB, SpanContext.current)
+                createTestSpan().use { spanC ->
+                    assertSame(spanC, SpanContext.current)
+                }
+                assertSame(spanB, SpanContext.current)
+            }
+            assertSame(spanA, SpanContext.current)
+        }
+        assertSame(SpanContext.invalid, SpanContext.current)
+    }
+
+    @Test
+    fun spansClosedOutOfOrder() {
+        val spanA = createTestSpan()
+        val spanB = createTestSpan()
+        val spanC = createTestSpan()
+
+        spanA.end(1L)
+        spanB.end(2L)
+        assertSame(spanC, SpanContext.current)
+
+        spanC.end(3L)
+        assertSame(SpanContext.invalid, SpanContext.current)
+    }
+
+    @Test
+    fun currentContextCannotBeClosed() {
+        // End the spans in a different thread so that they remain on the stack
+        val spanA = createTestSpan()
+        val spanB = createTestSpan()
+        task {
+            spanA.end()
+            spanB.end()
+        }.get()
+
+        assertEquals(2, SpanContext.contextStack.size)
+
+        // SpanContext.current should not return closed contexts
+        assertSame(SpanContext.invalid, SpanContext.current)
+        assertEquals(0, SpanContext.contextStack.size)
+    }
+
+    private fun createTestSpan() = SpanImpl(
+        name = "Test/test span",
+        kind = SpanKind.INTERNAL,
+        startTime = 0L,
+        traceId = UUID.fromString("4ee26661-4650-4c7f-a35f-00f007cd24e7"),
+        parentSpanId = 0L,
+        processor = testSpanProcessor,
+    )
 
     private data class TestSpanContext(
         override val spanId: Long,
