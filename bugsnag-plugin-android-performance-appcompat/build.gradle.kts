@@ -16,7 +16,8 @@ version = "${project.properties["VERSION_NAME"]}"
 group = "${project.properties["GROUP"]}"
 
 android {
-    compileSdk = 32
+    compileSdk = 33
+    namespace = "com.bugsnag.android.performance.appcompat"
 
     defaultConfig {
         minSdk = 17
@@ -52,7 +53,7 @@ dependencies {
 
     implementation(project(":bugsnag-android-performance"))
 
-    implementation("androidx.appcompat:appcompat:1.6.0")
+    implementation("androidx.appcompat:appcompat:1.5.0")
 
     testImplementation("junit:junit:4.13.2")
 

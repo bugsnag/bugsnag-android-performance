@@ -17,6 +17,7 @@ group = "${project.properties["GROUP"]}"
 
 android {
     compileSdk = 32
+    namespace = "com.bugsnag.android.performance"
 
     defaultConfig {
         minSdk = 17
