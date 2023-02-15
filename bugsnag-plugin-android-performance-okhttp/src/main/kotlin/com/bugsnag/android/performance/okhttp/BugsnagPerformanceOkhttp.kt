@@ -20,7 +20,7 @@ class BugsnagPerformanceOkhttp : EventListener() {
 
     override fun callStart(call: Call) {
         val url = call.request().url.toUrl()
-        val span = BugsnagPerformance.startNetworkSpan(url, call.request().method)
+        val span = BugsnagPerformance.startNetworkRequestSpan(url, call.request().method)
             as SpanImpl
 
         val contentLength = call.request().body?.contentLength()
