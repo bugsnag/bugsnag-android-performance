@@ -8,9 +8,9 @@ import com.bugsnag.android.performance.HasAttributes
 import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.SpanContext
 import com.bugsnag.android.performance.SpanKind
+import java.util.Random
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicLongFieldUpdater
-import kotlin.random.Random
 
 @Suppress("LongParameterList")
 class SpanImpl internal constructor(
@@ -18,7 +18,7 @@ class SpanImpl internal constructor(
     internal val kind: SpanKind,
     internal val startTime: Long,
     override val traceId: UUID,
-    override val spanId: Long = Random.nextLong(),
+    override val spanId: Long = nextSpanId(),
     internal val parentSpanId: Long,
     private val processor: SpanProcessor,
 ) : Span(), HasAttributes {
@@ -146,6 +146,18 @@ class SpanImpl internal constructor(
         private val END_TIME_UPDATER =
             AtomicLongFieldUpdater.newUpdater(SpanImpl::class.java, "endTime")
 
+        private const val INVALID_ID = 0L
+
         const val NO_END_TIME = -1L
+
+        private val spanIdRandom = Random()
+
+        private fun nextSpanId(): Long {
+            var id: Long
+            do {
+                id = spanIdRandom.nextLong()
+            } while (id == INVALID_ID)
+            return id
+        }
     }
 }
