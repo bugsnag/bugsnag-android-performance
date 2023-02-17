@@ -1,10 +1,10 @@
 package com.bugsnag.android.performance.internal
 
 import android.app.Activity
-import android.os.SystemClock
 import com.bugsnag.android.performance.HasAttributes
 import com.bugsnag.android.performance.SpanContext
 import com.bugsnag.android.performance.SpanKind
+import com.bugsnag.android.performance.SpanOptions
 import com.bugsnag.android.performance.ViewType
 import java.net.URL
 import java.util.UUID
@@ -15,41 +15,49 @@ class SpanFactory(
     private val spanProcessor: SpanProcessor,
     val spanAttributeSource: AttributeSource = {},
 ) {
-    fun createCustomSpan(name: String, startTime: Long): SpanImpl =
-        createSpan("Custom/$name", SpanKind.INTERNAL, startTime)
+    fun createCustomSpan(name: String, options: SpanOptions = SpanOptions.defaults): SpanImpl {
+        val isFirstClass = options.isFirstClass
+        val span = createSpan("Custom/$name", SpanKind.INTERNAL, options)
+        span.setAttribute("bugsnag.span.first_class", isFirstClass)
+        return span
+    }
 
-    fun createNetworkSpan(url: URL, verb: String, startTime: Long): SpanImpl {
+
+    fun createNetworkSpan(url: URL, verb: String, options: SpanOptions = SpanOptions.defaults): SpanImpl {
         val verbUpper = verb.uppercase()
-        val span = createSpan("HTTP/$verbUpper", SpanKind.CLIENT, startTime)
+        val span = createSpan("HTTP/$verbUpper", SpanKind.CLIENT, options)
         span.setAttribute("bugsnag.span.category", "network")
         span.setAttribute("http.url", url.toString())
         span.setAttribute("http.method", verbUpper)
         return span
     }
 
-    fun createViewLoadSpan(activity: Activity, startTime: Long): SpanImpl {
+    fun createViewLoadSpan(activity: Activity, options: SpanOptions = SpanOptions.defaults): SpanImpl {
         val activityName = activity::class.java.simpleName
-        return createViewLoadSpan(ViewType.ACTIVITY, activityName, startTime)
+        return createViewLoadSpan(ViewType.ACTIVITY, activityName, options)
     }
 
-    fun createViewLoadSpan(viewType: ViewType, viewName: String, startTime: Long): SpanImpl {
+    fun createViewLoadSpan(viewType: ViewType, viewName: String,
+                           options: SpanOptions = SpanOptions.defaults
+    ): SpanImpl {
+        val isFirstClass = options.isFirstClass
         val span = createSpan(
             "ViewLoad/${viewType.spanName}/$viewName",
             SpanKind.INTERNAL,
-            startTime
+            options
         )
 
         span.setAttribute("bugsnag.span.category", "view_load")
         span.setAttribute("bugsnag.view.type", viewType.typeName)
         span.setAttribute("bugsnag.view.name", viewName)
+        span.setAttribute("bugsnag.span.first_class", isFirstClass)
         return span
     }
 
     fun createAppStartSpan(startType: String): SpanImpl =
         createSpan(
             "AppStart/$startType",
-            SpanKind.INTERNAL,
-            SystemClock.elapsedRealtimeNanos()
+            SpanKind.INTERNAL
         ).apply {
             setAttribute("bugsnag.span.category", "app_start")
             setAttribute("bugsnag.app_start.type", startType.lowercase())
@@ -58,19 +66,20 @@ class SpanFactory(
     private fun createSpan(
         name: String,
         kind: SpanKind,
-        startTime: Long,
-        spanContext: SpanContext = SpanContext.current
+        options: SpanOptions = SpanOptions.defaults
     ): SpanImpl {
         val span = SpanImpl(
             name = name,
             kind = kind,
-            startTime = startTime,
-            traceId = spanContext.traceId.takeIf { it.isValidTraceId() } ?: UUID.randomUUID(),
-            parentSpanId = spanContext.spanId,
-            processor = spanProcessor
+            startTime = options.startTime,
+            traceId = options.parentContext?.traceId.takeIf { it?.isValidTraceId() ?: false } ?: UUID.randomUUID(),
+            parentSpanId = options.parentContext?.spanId ?: 0L,
+            processor = spanProcessor,
+            makeContext = options.makeContext
         )
 
         spanAttributeSource(span)
+
         return span
     }
 

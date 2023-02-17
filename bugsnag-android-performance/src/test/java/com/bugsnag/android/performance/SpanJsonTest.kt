@@ -25,6 +25,7 @@ class SpanJsonTest {
             0xdecafbad,
             123L,
             testSpanProcessor,
+            false
         )
 
         span.setAttribute("fps.average", 61.9)

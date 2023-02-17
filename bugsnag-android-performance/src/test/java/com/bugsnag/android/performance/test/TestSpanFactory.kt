@@ -23,7 +23,7 @@ class TestSpanFactory {
         processor: SpanProcessor
     ): SpanImpl {
         spanCount++
-        return SpanImpl(name, kind, startTime, traceId, spanId, parentSpanId, processor)
+        return SpanImpl(name, kind, startTime, traceId, spanId, parentSpanId, processor, true)
             .apply { if (endTime != null) end(endTime(startTime)) }
     }
 

@@ -21,6 +21,7 @@ class SpanImpl internal constructor(
     override val spanId: Long = nextSpanId(),
     internal val parentSpanId: Long,
     private val processor: SpanProcessor,
+    private val makeContext: Boolean
 ) : Span(), HasAttributes {
 
     override val attributes: Attributes = Attributes()
@@ -61,13 +62,13 @@ class SpanImpl internal constructor(
         }
 
         // Starting a Span should cause it to become the current context
-        SpanContext.attach(this)
+        if (makeContext) SpanContext.attach(this)
     }
 
     override fun end(endTime: Long) {
         if (END_TIME_UPDATER.compareAndSet(this, NO_END_TIME, endTime)) {
             processor.onEnd(this)
-            SpanContext.detach(this)
+            if (makeContext) SpanContext.detach(this)
         }
     }
 
