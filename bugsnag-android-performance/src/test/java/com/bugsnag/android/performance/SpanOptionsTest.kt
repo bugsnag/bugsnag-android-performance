@@ -113,11 +113,11 @@ class SpanOptionsTest {
 
         // test nested span creation
         spanFactory.createCustomSpan("parent").use { rootSpan ->
-            assertTrue(rootSpan.attributes.contains(Pair("bugsnag.span.first_class", true)))
+            assertTrue(rootSpan.attributes.contains("bugsnag.span.first_class" to true))
             spanFactory.createCustomSpan("child").use { childSpan ->
-                assertTrue(childSpan.attributes.contains(Pair("bugsnag.span.first_class", false)))
+                assertTrue(childSpan.attributes.contains("bugsnag.span.first_class" to false))
                 spanFactory.createCustomSpan("override", SpanOptions.defaults.setFirstClass(true)).use { overrideSpan ->
-                    assertTrue(overrideSpan.attributes.contains(Pair("bugsnag.span.first_class", true)))
+                    assertTrue(overrideSpan.attributes.contains("bugsnag.span.first_class" to true))
                 }
             }
         }
