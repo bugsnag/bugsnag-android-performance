@@ -72,7 +72,7 @@ class SpanFactory(
             name = name,
             kind = kind,
             startTime = options.startTime,
-            traceId = options.parentContext?.traceId.takeIf { it?.isValidTraceId() ?: false } ?: UUID.randomUUID(),
+            traceId = options.parentContext?.traceId?.takeIf { it.isValidTraceId() } ?: UUID.randomUUID(),
             parentSpanId = options.parentContext?.spanId ?: 0L,
             processor = spanProcessor,
             makeContext = options.makeContext
