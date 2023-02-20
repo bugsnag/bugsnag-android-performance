@@ -3,10 +3,43 @@ package com.bugsnag.android.performance
 import java.util.ArrayDeque
 import java.util.Deque
 import java.util.UUID
+import java.util.concurrent.Callable
 
 interface SpanContext {
     val spanId: Long
     val traceId: UUID
+
+    /**
+     * Convenience function to wrap a given [Runnable] in the current [SpanContext].
+     * This can be used when submitting tasks to Executors or other targets that are not aware of
+     * the BugSnag [SpanContext].
+     */
+    fun wrap(runnable: Runnable): Runnable {
+        return Runnable {
+            try {
+                SpanContext.attach(this)
+                runnable.run()
+            } finally {
+                SpanContext.detach(this)
+            }
+        }
+    }
+
+    /**
+     * Convenience function to wrap a given [Callable] in the current [SpanContext].
+     * This can be used when submitting tasks to Executors or other targets that are not aware of
+     * the BugSnag [SpanContext].
+     */
+    fun <T> wrap(callable: Callable<T>): Callable<T> {
+        return Callable<T> {
+            try {
+                SpanContext.attach(this)
+                callable.call()
+            } finally {
+                SpanContext.detach(this)
+            }
+        }
+    }
 
     companion object Storage {
         private val threadLocalStorage = object : ThreadLocal<Deque<SpanContext>>() {
@@ -55,6 +88,10 @@ interface SpanContext {
                 get() = UUID(0, 0)
 
             override fun toString() = "InvalidContext"
+
+            override fun wrap(runnable: Runnable): Runnable = runnable
+
+            override fun <T> wrap(callable: Callable<T>): Callable<T> = callable
         }
 
         private fun removeClosedContexts() {
