@@ -6,8 +6,8 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
-import android.os.SystemClock
 import com.bugsnag.android.performance.Logger
+import com.bugsnag.android.performance.SpanOptions
 import kotlin.math.max
 
 typealias InForegroundCallback = (inForeground: Boolean) -> Unit
@@ -61,7 +61,7 @@ internal class PerformanceLifecycleCallbacks(
 
             if (openLoadSpans) {
                 activityLoadSpans.track(activity) {
-                    spanFactory.createViewLoadSpan(activity, SystemClock.elapsedRealtimeNanos())
+                    spanFactory.createViewLoadSpan(activity)
                 }
             }
         } finally {

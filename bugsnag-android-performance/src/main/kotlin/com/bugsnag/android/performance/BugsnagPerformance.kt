@@ -168,31 +168,31 @@ object BugsnagPerformance {
     }
 
     /**
-     * Open a custom span with a given name and optionally a specific [startTime]. The reported
+     * Open a custom span with a given name and options. The reported
      * name of these spans is `"Custom/$name"`.
      *
      * @param name the name of the custom span to open
-     * @param startTime the [Span.startTime] in nanoseconds relative to [SystemClock.elapsedRealtimeNanos]
+     * @param options the optional configuration for the span
      */
     @JvmStatic
     @JvmOverloads
-    fun startSpan(name: String, startTime: Long = SystemClock.elapsedRealtimeNanos()): Span =
-        spanFactory.createCustomSpan(name, startTime)
+    fun startSpan(name: String, options: SpanOptions = SpanOptions.defaults): Span =
+        spanFactory.createCustomSpan(name, options)
 
     /**
      * Open a network span for a given url and HTTP [verb] to measure the time taken for an HTTP request.
      *
      * @param url the URL the returned span is measuring
      * @param verb the HTTP verb / method (GET, POST, PUT, etc.)
-     * @param startTime the [Span.startTime] in nanoseconds relative to [SystemClock.elapsedRealtimeNanos]
+     * @param options the optional configuration for the span
      */
     @JvmStatic
     @JvmOverloads
     fun startNetworkRequestSpan(
         url: URL,
         verb: String,
-        startTime: Long = SystemClock.elapsedRealtimeNanos()
-    ): Span = spanFactory.createNetworkSpan(url, verb, startTime)
+        options: SpanOptions = SpanOptions.defaults
+    ): Span = spanFactory.createNetworkSpan(url, verb, options)
 
     /**
      * Open a ViewLoad span to measure the time taken to load and render a UI element (typically a screen).
@@ -201,18 +201,18 @@ object BugsnagPerformance {
      * when the automated instrumentation is not well suited to your app.
      *
      * @param activity the activity load being measured
-     * @param startTime the [Span.startTime] in nanoseconds relative to [SystemClock.elapsedRealtimeNanos]
+     * @param options the optional configuration for the span
      * @see [endViewLoadSpan]
      */
     @JvmStatic
     @JvmOverloads
     fun startViewLoadSpan(
         activity: Activity,
-        startTime: Long = SystemClock.elapsedRealtimeNanos()
+        options: SpanOptions = SpanOptions.defaults
     ): Span {
         // create & track Activity referenced ViewLoad spans
         return activitySpanTracker.track(activity) {
-            spanFactory.createViewLoadSpan(activity, startTime)
+            spanFactory.createViewLoadSpan(activity, options)
         }
     }
 
@@ -235,15 +235,15 @@ object BugsnagPerformance {
      *
      * @param viewType the type of UI element being measured
      * @param viewName the name (typically class name) of the UI element being measured
-     * @param startTime the [Span.startTime] in nanoseconds relative to [SystemClock.elapsedRealtimeNanos]
+     * @param options the optional configuration for the span
      */
     @JvmStatic
     @JvmOverloads
     fun startViewLoadSpan(
         viewType: ViewType,
         viewName: String,
-        startTime: Long = SystemClock.elapsedRealtimeNanos()
-    ): Span = spanFactory.createViewLoadSpan(viewType, viewName, startTime)
+        options: SpanOptions = SpanOptions.defaults
+    ): Span = spanFactory.createViewLoadSpan(viewType, viewName, options)
 
     /**
      * Report that your apps `Application` class has been loaded. This can be manually called from

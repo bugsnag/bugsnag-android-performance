@@ -14,13 +14,15 @@ import com.bugsnag.android.performance.SpanOptions.Companion.defaults
 class SpanOptions private constructor(
     private val optionsSet: Int,
     startTime: Long,
-    val parentContext: SpanContext?,
+    parentContext: SpanContext?,
     val makeContext: Boolean,
     isFirstClass: Boolean
 ) {
     private val _startTime: Long = startTime
 
     private val _isFirstClass: Boolean = isFirstClass
+
+    private val _parentContext: SpanContext? = parentContext
 
     val startTime: Long
         get() =
@@ -30,17 +32,22 @@ class SpanOptions private constructor(
     val isFirstClass: Boolean
         get() =
             if (isOptionSet(OPT_IS_FIRST_CLASS)) _isFirstClass
-            else SpanContext.current.spanId != 0L
+            else SpanContext.current.spanId == 0L
+
+    val parentContext: SpanContext?
+        get() =
+            if (isOptionSet(OPT_PARENT_CONTEXT)) _parentContext
+            else SpanContext.current
 
     fun startTime(startTime: Long) = SpanOptions(
         optionsSet or OPT_START_TIME,
         startTime,
-        parentContext,
+        _parentContext,
         makeContext,
         _isFirstClass
     )
 
-    fun within(parentContext: SpanContext) = SpanOptions(
+    fun within(parentContext: SpanContext?) = SpanOptions(
         optionsSet or OPT_PARENT_CONTEXT,
         _startTime,
         parentContext,
@@ -51,7 +58,7 @@ class SpanOptions private constructor(
     fun makeCurrentContext(makeContext: Boolean) = SpanOptions(
         optionsSet or OPT_MAKE_CONTEXT,
         _startTime,
-        parentContext,
+        _parentContext,
         makeContext,
         _isFirstClass
     )
@@ -59,7 +66,7 @@ class SpanOptions private constructor(
     fun setFirstClass(isFirstClass: Boolean) = SpanOptions(
         optionsSet or OPT_IS_FIRST_CLASS,
         _startTime,
-        parentContext,
+        _parentContext,
         makeContext,
         isFirstClass
     )
@@ -81,7 +88,7 @@ class SpanOptions private constructor(
         ) return false
 
         if ((isOptionSet(OPT_IS_FIRST_CLASS) || other.isOptionSet(OPT_IS_FIRST_CLASS))
-            && this._isFirstClass != other._isFirstClass
+            && this.isFirstClass != other.isFirstClass
         ) return false
 
         return true

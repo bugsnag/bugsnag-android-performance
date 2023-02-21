@@ -23,6 +23,7 @@ class SpanPayloadEncodingTest {
             0xdecafbad,
             0L,
             testSpanProcessor,
+            false
         )
         span1.end(1L)
         val span2 = SpanImpl(
@@ -33,6 +34,7 @@ class SpanPayloadEncodingTest {
             0xbaddecaf,
             0L,
             testSpanProcessor,
+            false
         )
         span2.end(11L)
         val spans = listOf(span1, span2)
