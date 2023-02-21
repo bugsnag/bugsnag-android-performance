@@ -121,7 +121,7 @@ internal class SpanContextTest {
         }
 
         val collectedSpans = spanProcessor.toList()
-        assertSame(2, collectedSpans.size)
+        assertEquals(2, collectedSpans.size)
         assertEquals(collectedSpans[1].spanId, collectedSpans[0].parentSpanId)
     }
 
@@ -139,7 +139,7 @@ internal class SpanContextTest {
         }
 
         val collectedSpans = spanProcessor.toList()
-        assertSame(2, collectedSpans.size)
+        assertEquals(2, collectedSpans.size)
         assertEquals(collectedSpans[1].spanId, collectedSpans[0].parentSpanId)
     }
 
