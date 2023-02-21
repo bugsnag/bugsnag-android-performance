@@ -1,8 +1,8 @@
 package com.bugsnag.android.performance
 
-import com.bugsnag.android.performance.internal.SpanImpl
+import com.bugsnag.android.performance.internal.SpanFactory
+import com.bugsnag.android.performance.test.CollectingSpanProcessor
 import com.bugsnag.android.performance.test.task
-import com.bugsnag.android.performance.test.testSpanProcessor
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertSame
 import org.junit.Before
@@ -10,14 +10,25 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import java.util.UUID
+import java.util.concurrent.Callable
+import java.util.concurrent.Executors
 
 @RunWith(RobolectricTestRunner::class)
 internal class SpanContextTest {
+    private lateinit var spanFactory: SpanFactory
+    private lateinit var spanProcessor: CollectingSpanProcessor
+
     @Before
     fun ensureContextClear() {
         while (SpanContext.current != SpanContext.invalid) {
             SpanContext.detach(SpanContext.current)
         }
+    }
+
+    @Before
+    fun newSpanFactory() {
+        spanProcessor = CollectingSpanProcessor()
+        spanFactory = SpanFactory(spanProcessor)
     }
 
     @Test
@@ -96,19 +107,51 @@ internal class SpanContextTest {
         assertEquals(0, SpanContext.contextStack.size)
     }
 
-    private fun createTestSpan() = SpanImpl(
-        name = "Test/test span",
-        kind = SpanKind.INTERNAL,
-        startTime = 0L,
-        traceId = UUID.fromString("4ee26661-4650-4c7f-a35f-00f007cd24e7"),
-        parentSpanId = 0L,
-        processor = testSpanProcessor,
-        makeContext = true
-    )
+    @Test
+    fun runnableWrapper() {
+        spanFactory.createCustomSpan("parent thread").use {
+            val executorService = Executors.newSingleThreadExecutor()
+            executorService.submit(
+                SpanContext.current.wrap(
+                    Runnable {
+                        spanFactory.createCustomSpan("worker thread").end(1L)
+                    }
+                )
+            ).get()
+        }
+
+        val collectedSpans = spanProcessor.toList()
+        assertEquals(2, collectedSpans.size)
+        assertEquals(collectedSpans[1].spanId, collectedSpans[0].parentSpanId)
+    }
+
+    @Test
+    fun callableWrapper() {
+        spanFactory.createCustomSpan("parent").use {
+            val executorService = Executors.newSingleThreadExecutor()
+            executorService.submit(
+                SpanContext.current.wrap(
+                    Callable {
+                        spanFactory.createCustomSpan("child").end()
+                    }
+                )
+            ).get()
+        }
+
+        val collectedSpans = spanProcessor.toList()
+        assertEquals(2, collectedSpans.size)
+        assertEquals(collectedSpans[1].spanId, collectedSpans[0].parentSpanId)
+    }
+
+    private fun createTestSpan(name: String = "Test/test span", options: SpanOptions = SpanOptions.defaults) =
+        spanFactory.createCustomSpan(name, options)
 
     private data class TestSpanContext(
         override val spanId: Long,
         override val traceId: UUID,
         val threadId: Long
-    ) : SpanContext
+    ) : SpanContext {
+        override fun wrap(runnable: Runnable) = runnable
+        override fun <T> wrap(callable: Callable<T>) = callable
+    }
 }
