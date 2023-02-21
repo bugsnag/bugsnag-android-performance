@@ -19,10 +19,10 @@ internal class HttpDelivery(
     }
 
     override fun deliver(tracePayload: TracePayload): DeliveryResult {
-//        if (!connectivity.hasConnection) {
-//            // We can't deliver now but can retry later.
-//            return DeliveryResult.Failed(tracePayload, true)
-//        }
+        if (!connectivity.hasConnection) {
+            // We can't deliver now but can retry later.
+            return DeliveryResult.Failed(tracePayload, true)
+        }
 
         val connection = URL(endpoint).openConnection() as HttpURLConnection
         with(connection) {

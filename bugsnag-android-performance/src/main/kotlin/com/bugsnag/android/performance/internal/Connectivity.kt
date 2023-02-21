@@ -12,6 +12,7 @@ import android.net.NetworkCapabilities
 import android.net.NetworkCapabilities.NET_CAPABILITY_INTERNET
 import android.net.NetworkCapabilities.NET_CAPABILITY_NOT_METERED
 import android.net.NetworkCapabilities.NET_CAPABILITY_TEMPORARILY_NOT_METERED
+import android.net.NetworkCapabilities.NET_CAPABILITY_VALIDATED
 import android.net.NetworkCapabilities.TRANSPORT_CELLULAR
 import android.net.NetworkCapabilities.TRANSPORT_ETHERNET
 import android.net.NetworkCapabilities.TRANSPORT_USB
@@ -96,13 +97,21 @@ internal class ConnectivityLegacy(
 ) : BroadcastReceiver(), Connectivity {
 
     override val hasConnection: Boolean
-        get() { return activeNetworkInfo?.isConnectedOrConnecting ?: UnknownNetwork.HAS_CONNECTION }
+        get() {
+            return activeNetworkInfo?.isConnectedOrConnecting ?: UnknownNetwork.HAS_CONNECTION
+        }
     override val metering: ConnectionMetering
-        get() { return activeNetworkInfo?.metering ?: UnknownNetwork.METERING }
+        get() {
+            return activeNetworkInfo?.metering ?: UnknownNetwork.METERING
+        }
     override val networkType: NetworkType
-        get() { return activeNetworkInfo?.networkType ?: UnknownNetwork.NETWORK_TYPE }
+        get() {
+            return activeNetworkInfo?.networkType ?: UnknownNetwork.NETWORK_TYPE
+        }
     override val networkSubType: String?
-        get() { return activeNetworkInfo?.subtypeName }
+        get() {
+            return activeNetworkInfo?.subtypeName
+        }
 
     private val receivedFirstCallback = AtomicBoolean(false)
 
@@ -161,15 +170,24 @@ internal open class ConnectivityApi24(
 ) : ConnectivityManager.NetworkCallback(), Connectivity {
 
     override val hasConnection: Boolean
-        get() { return connectedFor(capabilities) }
+        get() {
+            return connectedFor(capabilities)
+        }
     override val metering: ConnectionMetering
-        get() { return meteringFor(capabilities) }
+        get() {
+            return meteringFor(capabilities)
+        }
     override val networkType: NetworkType
-        get() { return networkTypeFor(capabilities) }
+        get() {
+            return networkTypeFor(capabilities)
+        }
     override val networkSubType: String?
-        get() { return networkSubTypeFor(capabilities) }
+        get() {
+            return networkSubTypeFor(capabilities)
+        }
 
-    private var capabilities: NetworkCapabilities? = cm.getNetworkCapabilities(cm.boundNetworkForProcess)
+    private var capabilities: NetworkCapabilities? =
+        cm.getNetworkCapabilities(cm.boundNetworkForProcess)
     private val receivedFirstCallback = AtomicBoolean(false)
     private val tm: TelephonyManager? = context.getTelephonyManager()
 
@@ -229,8 +247,11 @@ internal open class ConnectivityApi24(
     }
 
     protected open fun connectedFor(capabilities: NetworkCapabilities?): Boolean {
-        return capabilities?.hasCapability(NET_CAPABILITY_INTERNET) == true &&
-                receivedFirstCallback.get();
+        if (capabilities == null) return false
+
+        return capabilities.hasCapability(NET_CAPABILITY_INTERNET) &&
+            capabilities.hasCapability(NET_CAPABILITY_VALIDATED) &&
+            receivedFirstCallback.get()
     }
 
     override fun registerForNetworkChanges() = cm.registerDefaultNetworkCallback(this)
