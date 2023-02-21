@@ -7,7 +7,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.mockito.kotlin.any
-import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 
@@ -39,9 +38,11 @@ class Api24NetworkTypeTest {
         }
 
         val networkCapabilities = mock<NetworkCapabilities>()
-        whenever(networkCapabilities.hasTransport(eq(transportType)))
+        whenever(networkCapabilities.hasTransport(transportType))
             .thenReturn(true)
-        whenever(networkCapabilities.hasCapability(eq(NetworkCapabilities.NET_CAPABILITY_INTERNET)))
+        whenever(networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET))
+            .thenReturn(true)
+        whenever(networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED))
             .thenReturn(true)
 
         whenever(connectivityManager.getNetworkCapabilities(any()))

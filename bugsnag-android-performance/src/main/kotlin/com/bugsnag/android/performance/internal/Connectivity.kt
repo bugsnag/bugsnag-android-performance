@@ -170,21 +170,13 @@ internal open class ConnectivityApi24(
 ) : ConnectivityManager.NetworkCallback(), Connectivity {
 
     override val hasConnection: Boolean
-        get() {
-            return connectedFor(capabilities)
-        }
+        get() = connectedFor(capabilities)
     override val metering: ConnectionMetering
-        get() {
-            return meteringFor(capabilities)
-        }
+        get() = meteringFor(capabilities)
     override val networkType: NetworkType
-        get() {
-            return networkTypeFor(capabilities)
-        }
+        get() = networkTypeFor(capabilities)
     override val networkSubType: String?
-        get() {
-            return networkSubTypeFor(capabilities)
-        }
+        get() = networkSubTypeFor(capabilities)
 
     private var capabilities: NetworkCapabilities? =
         cm.getNetworkCapabilities(cm.boundNetworkForProcess)
@@ -271,6 +263,7 @@ internal open class ConnectivityApi24(
     override fun onAvailable(network: Network) {
         capabilities = cm.getNetworkCapabilities(network)
         if (capabilities?.hasCapability(NET_CAPABILITY_INTERNET) == true &&
+            capabilities?.hasCapability(NET_CAPABILITY_VALIDATED) == true &&
             receivedFirstCallback.getAndSet(true)
         ) {
             callback?.invoke(

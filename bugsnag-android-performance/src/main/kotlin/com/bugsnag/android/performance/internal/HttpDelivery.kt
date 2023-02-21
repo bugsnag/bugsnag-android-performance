@@ -1,6 +1,7 @@
 package com.bugsnag.android.performance.internal
 
 import com.bugsnag.android.performance.Attributes
+import com.bugsnag.android.performance.Logger
 import java.net.HttpURLConnection
 import java.net.URL
 
@@ -20,6 +21,7 @@ internal class HttpDelivery(
 
     override fun deliver(tracePayload: TracePayload): DeliveryResult {
         if (!connectivity.hasConnection) {
+            Logger.d("HttpDelivery refusing to delivery payload - no connectivity.")
             // We can't deliver now but can retry later.
             return DeliveryResult.Failed(tracePayload, true)
         }
