@@ -1,56 +1,28 @@
-# Bugsnag performance monitoring & reporting for Android
+# BugSnag performance monitoring for Android
 
-App performance monitoring by [Bugsnag](https://www.bugsnag.com).
+Monitor the start-up, screen loading and network requests of your app and see the results in your [BugSnag](https://www.bugsnag.com) dashboard.
 
 ## Features
 
-- Automatic measurement of `Activity` loading times
 - Reporting of app startup time
-- Report OkHttp request times (with [bugsnag-plugin-android-performance-okhttp])
+- Automatic measurement of `Activity` loading times
+- Report OkHttp request times
 
 ## Getting started
-1. [Create a Bugsnag account](https://www.bugsnag.com)
-2. Add `bugsnag-android-performance` to your `build.gradle` files
-```kotlin
-// settings.gradle or settings.gradle.kts
-dependencyResolutionManagement {
-    // ...
-    repositories {
-        // ...
-        maven { setUrl("https://jitpack.io") }
-    }
-}
 
-// app/build.gradle or app/build.gradle.kts
-dependencies {
-    implementation("com.bugsnag:bugsnag-android-performance:0.0.0")
-    // ...
-}
-```
-3. Add your project API-KEY to your `AndroidManifest.xml`:
-```xml
-<application>
-  <!-- ... -->
-  <meta-data
-    android:name="com.bugsnag.android.API_KEY"
-    android:value="your-api-key-here" />
-</application>
-```
-4. Configure and start `BugsnagPerformance` in your `Application` class
-```kotlin
-class MyApplication: Application() {
-    override fun onCreate() {
-        super.onCreate()
-        BugsnagPerformance.start(this)
-        // ...
-    }
-}
-```
+_This functionality is currently in its preview phase – please [contact us](mailto:support@bugsnag.com) for more information._
 
-These steps will automatically measure and report the app startup time, and the loading time of all your activities.  
+For integration instructions, see our online docs: [docs.bugsnag.com/performance](https://docs.bugsnag.com/performance)
+
+## Pre-releases
+
+We are currently publishing pre-1.0 releases. These releases may contain breaking changes, which are documented in the [CHANGELOG.md](./CHANGELOG.md).
+## Support
+
+* [Read the integration guide](https://docs.bugsnag.com/performance/android/)
+* [Search open and closed issues](https://github.com/bugsnag/bugsnag-android-performance/issues?utf8=✓&q=is%3Aissue) for similar problems
+* [Report a bug or request a feature](https://github.com/bugsnag/bugsnag-android-performance/issues/new)
 
 ## License
 
-The Bugsnag Android Performance SDK is free software released under the MIT License.
-See the [LICENSE](https://github.com/bugsnag/bugsnag-android-performance/blob/master/LICENSE)
-for details.
+The BugSnag Android Performance SDK is free software released under the MIT License. See the [LICENSE](https://github.com/bugsnag/bugsnag-android-performance/blob/master/LICENSE) for details.
