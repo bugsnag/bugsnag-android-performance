@@ -112,11 +112,9 @@ internal class SpanContextTest {
         spanFactory.createCustomSpan("parent thread").use {
             val executorService = Executors.newSingleThreadExecutor()
             executorService.submit(
-                SpanContext.current.wrap(
-                    Runnable {
-                        spanFactory.createCustomSpan("worker thread").end(1L)
-                    }
-                )
+                SpanContext.current.wrap {
+                    spanFactory.createCustomSpan("worker thread").end(1L)
+                }
             ).get()
         }
 
