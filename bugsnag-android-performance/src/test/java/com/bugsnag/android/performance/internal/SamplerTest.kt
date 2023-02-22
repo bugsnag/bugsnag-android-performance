@@ -26,17 +26,17 @@ class SamplerTest {
         assertTrue(sampler.shouldKeepSpan(span))
         span = spanFactory.newSpan(
             processor = spanProcessor,
-            traceId = uuidWithUpper(Long.MAX_VALUE shl 1)
+            traceId = uuidWithUpper(Long.MAX_VALUE shl 1),
         )
         assertTrue(sampler.shouldKeepSpan(span))
         span = spanFactory.newSpan(
             processor = spanProcessor,
-            traceId = uuidWithUpper(Long.MAX_VALUE)
+            traceId = uuidWithUpper(Long.MAX_VALUE),
         )
         assertTrue(sampler.shouldKeepSpan(span))
         span = spanFactory.newSpan(
             processor = spanProcessor,
-            traceId = uuidWithUpper(1000000000)
+            traceId = uuidWithUpper(1000000000),
         )
         assertTrue(sampler.shouldKeepSpan(span))
     }
@@ -46,22 +46,22 @@ class SamplerTest {
         val sampler = Sampler(0.0)
         var span = spanFactory.newSpan(
             processor = spanProcessor,
-            traceId = uuidWithUpper(0)
+            traceId = uuidWithUpper(0),
         )
         assertTrue(!sampler.shouldKeepSpan(span))
         span = spanFactory.newSpan(
             processor = spanProcessor,
-            traceId = uuidWithUpper(Long.MAX_VALUE shl 1)
+            traceId = uuidWithUpper(Long.MAX_VALUE shl 1),
         )
         assertTrue(!sampler.shouldKeepSpan(span))
         span = spanFactory.newSpan(
             processor = spanProcessor,
-            traceId = uuidWithUpper(Long.MAX_VALUE)
+            traceId = uuidWithUpper(Long.MAX_VALUE),
         )
         assertTrue(!sampler.shouldKeepSpan(span))
         span = spanFactory.newSpan(
             processor = spanProcessor,
-            traceId = uuidWithUpper(1000000000)
+            traceId = uuidWithUpper(1000000000),
         )
         assertTrue(!sampler.shouldKeepSpan(span))
     }
@@ -71,17 +71,17 @@ class SamplerTest {
         val sampler = Sampler(0.5)
         var span = spanFactory.newSpan(
             processor = spanProcessor,
-            traceId = uuidWithUpper(0)
+            traceId = uuidWithUpper(0),
         )
         assertTrue(sampler.shouldKeepSpan(span))
         span = spanFactory.newSpan(
             processor = spanProcessor,
-            traceId = uuidWithUpper(Long.MAX_VALUE shl 1)
+            traceId = uuidWithUpper(Long.MAX_VALUE shl 1),
         )
         assertTrue(!sampler.shouldKeepSpan(span))
         span = spanFactory.newSpan(
             processor = spanProcessor,
-            traceId = uuidWithUpper(Long.MAX_VALUE - 10000)
+            traceId = uuidWithUpper(Long.MAX_VALUE - 10000),
         )
         assertTrue(sampler.shouldKeepSpan(span))
     }
@@ -93,16 +93,16 @@ class SamplerTest {
             spanFactory.newSpan(processor = spanProcessor, traceId = uuidWithUpper(0)),
             spanFactory.newSpan(
                 processor = spanProcessor,
-                traceId = uuidWithUpper(Long.MAX_VALUE shl 1)
+                traceId = uuidWithUpper(Long.MAX_VALUE shl 1),
             ),
             spanFactory.newSpan(
                 processor = spanProcessor,
-                traceId = uuidWithUpper(Long.MAX_VALUE)
+                traceId = uuidWithUpper(Long.MAX_VALUE),
             ),
             spanFactory.newSpan(
                 processor = spanProcessor,
-                traceId = uuidWithUpper(1000000000)
-            )
+                traceId = uuidWithUpper(1000000000),
+            ),
         )
         val sampled = sampler.sampled(batch)
         assertTrue(sampled.size == 4)
@@ -115,13 +115,13 @@ class SamplerTest {
             spanFactory.newSpan(processor = spanProcessor, traceId = uuidWithUpper(0)),
             spanFactory.newSpan(
                 processor = spanProcessor,
-                traceId = uuidWithUpper(Long.MAX_VALUE shl 1)
+                traceId = uuidWithUpper(Long.MAX_VALUE shl 1),
             ),
             spanFactory.newSpan(processor = spanProcessor, traceId = uuidWithUpper(Long.MAX_VALUE)),
             spanFactory.newSpan(
                 processor = spanProcessor,
-                traceId = uuidWithUpper(1000000000)
-            )
+                traceId = uuidWithUpper(1000000000),
+            ),
         )
         val sampled = sampler.sampled(batch)
         assertEquals("expected all spans to be sampled", 0, sampled.size)
@@ -134,13 +134,13 @@ class SamplerTest {
             spanFactory.newSpan(processor = spanProcessor, traceId = uuidWithUpper(0)),
             spanFactory.newSpan(
                 processor = spanProcessor,
-                traceId = uuidWithUpper(Long.MAX_VALUE shl 1)
+                traceId = uuidWithUpper(Long.MAX_VALUE shl 1),
             ),
             spanFactory.newSpan(
                 processor = spanProcessor,
-                traceId = uuidWithUpper(Long.MAX_VALUE - 10000)
+                traceId = uuidWithUpper(Long.MAX_VALUE - 10000),
             ),
-            spanFactory.newSpan(processor = spanProcessor, traceId = uuidWithUpper(1000000000))
+            spanFactory.newSpan(processor = spanProcessor, traceId = uuidWithUpper(1000000000)),
         )
         val sampled = sampler.sampled(batch)
         assertEquals(3, sampled.size)

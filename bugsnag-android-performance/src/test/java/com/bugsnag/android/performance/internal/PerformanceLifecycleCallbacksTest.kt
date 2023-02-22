@@ -46,7 +46,7 @@ class PerformanceLifecycleCallbacksTest {
         val callbacks = PerformanceLifecycleCallbacks(
             activityLoadSpans = spanTracker,
             spanFactory = spanFactory,
-            inForegroundCallback = {}
+            inForegroundCallback = {},
         ).apply {
             openLoadSpans = true
             closeLoadSpans = true
@@ -80,7 +80,7 @@ class PerformanceLifecycleCallbacksTest {
         val callbacks = PerformanceLifecycleCallbacks(
             activityLoadSpans = spanTracker,
             spanFactory = spanFactory,
-            inForegroundCallback = {}
+            inForegroundCallback = {},
         ).apply {
             openLoadSpans = true
             closeLoadSpans = false
@@ -120,7 +120,7 @@ class PerformanceLifecycleCallbacksTest {
         val callbacks = PerformanceLifecycleCallbacks(
             activityLoadSpans = spanTracker,
             spanFactory = spanFactory,
-            inForegroundCallback = {}
+            inForegroundCallback = {},
         ).apply {
             openLoadSpans = false
             closeLoadSpans = false

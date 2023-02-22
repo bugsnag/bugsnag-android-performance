@@ -25,7 +25,7 @@ class SpanJsonTest {
             0xdecafbad,
             123L,
             testSpanProcessor,
-            false
+            false,
         )
 
         span.setAttribute("fps.average", 61.9)
@@ -69,7 +69,7 @@ class SpanJsonTest {
                     ]
                 }
             """.trimIndent(),
-            json
+            json,
         )
     }
 }

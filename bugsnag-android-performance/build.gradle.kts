@@ -76,3 +76,7 @@ detekt {
     source.from(files("src/main/kotlin"))
     baseline = file("detekt-baseline.xml")
 }
+
+configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
+    enableExperimentalRules.set(true)
+}

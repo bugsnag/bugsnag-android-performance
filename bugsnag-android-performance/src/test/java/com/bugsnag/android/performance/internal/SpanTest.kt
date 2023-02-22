@@ -41,7 +41,7 @@ class SpanTest {
             0xdecafbad,
             0L,
             mockSpanProcessor,
-            false
+            false,
         )
 
         span.end()
@@ -71,6 +71,6 @@ class SpanTest {
         0xdecafbad,
         0L,
         testSpanProcessor,
-        false
+        false,
     )
 }

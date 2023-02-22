@@ -32,7 +32,7 @@ internal class TracePayloadTest {
         val tracePayload = TracePayload.createTracePayload("abc123", spans, Attributes())
         assertEquals(
             "0.1:1;0.3:3;0.5:2",
-            tracePayload.headers["Bugsnag-Span-Sampling"]
+            tracePayload.headers["Bugsnag-Span-Sampling"],
         )
     }
 

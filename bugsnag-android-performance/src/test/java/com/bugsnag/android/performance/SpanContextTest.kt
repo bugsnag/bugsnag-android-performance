@@ -114,7 +114,7 @@ internal class SpanContextTest {
             executorService.submit(
                 SpanContext.current.wrap {
                     spanFactory.createCustomSpan("worker thread").end(1L)
-                }
+                },
             ).get()
         }
 
@@ -131,8 +131,8 @@ internal class SpanContextTest {
                 SpanContext.current.wrap(
                     Callable {
                         spanFactory.createCustomSpan("child").end()
-                    }
-                )
+                    },
+                ),
             ).get()
         }
 
@@ -147,7 +147,7 @@ internal class SpanContextTest {
     private data class TestSpanContext(
         override val spanId: Long,
         override val traceId: UUID,
-        val threadId: Long
+        val threadId: Long,
     ) : SpanContext {
         override fun wrap(runnable: Runnable) = runnable
         override fun <T> wrap(callable: Callable<T>) = callable

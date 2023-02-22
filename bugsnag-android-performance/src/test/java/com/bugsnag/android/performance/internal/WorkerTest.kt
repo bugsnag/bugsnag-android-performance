@@ -94,7 +94,7 @@ class WorkerTest {
     }
 
     private class CountingTask(
-        private val maximum: Int
+        private val maximum: Int,
     ) : Task {
         private var latch = CountDownLatch(maximum)
 

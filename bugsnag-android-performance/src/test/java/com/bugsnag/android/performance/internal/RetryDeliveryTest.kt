@@ -37,8 +37,8 @@ class RetryDeliveryTest {
                     0xdecafbad,
                     0L,
                     testSpanProcessor,
-                    false
-                )
+                    false,
+                ),
             ),
             attributes,
         )
@@ -56,8 +56,8 @@ class RetryDeliveryTest {
                     0xdecafbad,
                     0L,
                     testSpanProcessor,
-                    false
-                )
+                    false,
+                ),
             ),
             attributes,
         )
@@ -75,8 +75,8 @@ class RetryDeliveryTest {
                     0xdecafbad,
                     0L,
                     testSpanProcessor,
-                    false
-                )
+                    false,
+                ),
             ),
             attributes,
         )
@@ -104,8 +104,8 @@ class RetryDeliveryTest {
                     0xdecafbad,
                     0L,
                     testSpanProcessor,
-                    false
-                )
+                    false,
+                ),
             ),
             attributes,
         )
@@ -134,8 +134,8 @@ class RetryDeliveryTest {
                     0xdecafbad,
                     0L,
                     testSpanProcessor,
-                    false
-                )
+                    false,
+                ),
             ),
             attributes,
         )

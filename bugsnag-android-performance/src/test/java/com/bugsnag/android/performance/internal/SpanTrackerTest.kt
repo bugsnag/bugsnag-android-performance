@@ -26,7 +26,7 @@ class SpanTrackerTest {
         val span = tracker.track("TestActivity") {
             spanFactory.newSpan(
                 processor = testSpanProcessor,
-                endTime = null
+                endTime = null,
             )
         }
 
