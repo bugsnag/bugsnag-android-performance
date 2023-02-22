@@ -22,7 +22,7 @@ class SpanImpl internal constructor(
     internal val parentSpanId: Long,
     private val processor: SpanProcessor,
     private val makeContext: Boolean
-) : Span(), HasAttributes {
+) : Span, HasAttributes {
 
     override val attributes: Attributes = Attributes()
 
@@ -31,7 +31,7 @@ class SpanImpl internal constructor(
      */
     internal var name: String = name
         set(value) {
-            if (isOpen()) {
+            if (!isEnded()) {
                 field = value
             }
         }
@@ -74,7 +74,7 @@ class SpanImpl internal constructor(
 
     override fun end() = end(SystemClock.elapsedRealtimeNanos())
 
-    override fun isOpen() = endTime == NO_END_TIME
+    override fun isEnded() = endTime != NO_END_TIME
 
     internal fun toJson(json: JsonWriter) {
         json.beginObject()
