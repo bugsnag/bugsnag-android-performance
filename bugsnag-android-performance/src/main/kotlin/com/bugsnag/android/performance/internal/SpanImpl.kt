@@ -22,7 +22,7 @@ class SpanImpl internal constructor(
     internal val parentSpanId: Long,
     private val processor: SpanProcessor,
     private val makeContext: Boolean
-) : Span(), HasAttributes {
+) : Span, HasAttributes {
 
     override val attributes: Attributes = Attributes()
 

@@ -10,19 +10,21 @@ import java.io.Closeable
  *
  * Spans may not be changed once they have been closed.
  *
+ * The [Span] interface is for internal use and is not intended for third-party implementation.
+ *
  * @see BugsnagPerformance.startSpan
  */
-abstract class Span internal constructor() : SpanContext, Closeable {
+interface Span : SpanContext, Closeable {
     /**
      * End this with a specified timestamp relative to [SystemClock.elapsedRealtimeNanos]. If this
      * span has already been closed this will have no effect.
      */
-    abstract fun end(endTime: Long)
+    fun end(endTime: Long)
 
     /**
      * End this span now. This is the same as `end(SystemClock.elapsedRealtimeNanos())`.
      */
-    abstract fun end()
+    fun end()
 
     /**
      * Convenience function to call [end], implementing the [Closeable] interface and allowing
@@ -34,5 +36,5 @@ abstract class Span internal constructor() : SpanContext, Closeable {
      * Returns `true` if this span has been closed / ended. If this returns `true` the
      * span cannot be modified further.
      */
-    abstract fun isEnded(): Boolean
+    fun isEnded(): Boolean
 }
