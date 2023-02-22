@@ -50,6 +50,6 @@ class ContextAwareThreadPoolExecutor : ThreadPoolExecutor {
     ) : super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, threadFactory, handler)
 
     override fun execute(command: Runnable?) {
-        super.execute(if (command != null) SpanContext.current.wrap(command) else command)
+        super.execute(command?.let { SpanContext.current.wrap(it) })
     }
 }

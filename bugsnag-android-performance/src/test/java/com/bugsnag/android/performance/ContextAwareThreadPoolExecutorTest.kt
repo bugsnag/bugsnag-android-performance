@@ -27,22 +27,18 @@ class ContextAwareThreadPoolExecutorTest {
         spanFactory.createCustomSpan("root").use { rootSpan ->
             val executor = ContextAwareThreadPoolExecutor(1, 1, 1L, TimeUnit.MILLISECONDS, LinkedBlockingQueue())
             // submit a task while the root span is active
-            executor.submit(
-                Runnable {
-                    spanFactory.createCustomSpan("task 1").use { taskSpan ->
-                        assertEquals(rootSpan.spanId, taskSpan.parentSpanId)
-                    }
+            executor.submit {
+                spanFactory.createCustomSpan("task 1").use { taskSpan ->
+                    assertEquals(rootSpan.spanId, taskSpan.parentSpanId)
                 }
-            ).get()
+            }.get()
             // submit a task while the child span is active
             spanFactory.createCustomSpan("child").use { childSpan ->
-                executor.submit(
-                    Runnable {
-                        spanFactory.createCustomSpan("task 2").use { taskSpan ->
-                            assertEquals(childSpan.spanId, taskSpan.parentSpanId)
-                        }
+                executor.submit {
+                    spanFactory.createCustomSpan("task 2").use { taskSpan ->
+                        assertEquals(childSpan.spanId, taskSpan.parentSpanId)
                     }
-                ).get()
+                }.get()
             }
         }
     }
@@ -51,13 +47,11 @@ class ContextAwareThreadPoolExecutorTest {
     fun closedContext() {
         val executor = ContextAwareThreadPoolExecutor(1, 1, 1L, TimeUnit.MILLISECONDS, LinkedBlockingQueue())
         spanFactory.createCustomSpan("parent").use {
-            executor.submit(
-                Runnable {
-                    // allow the parent span to close before starting a span within the task
-                    sleep(10L)
-                    spanFactory.createCustomSpan("child").end(10L)
-                }
-            )
+            executor.submit {
+                // allow the parent span to close before starting a span within the task
+                sleep(10L)
+                spanFactory.createCustomSpan("child").end(10L)
+            }
         }
 
         // wait for the task to complete
