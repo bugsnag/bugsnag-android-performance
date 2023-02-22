@@ -23,7 +23,7 @@ class SpanPayloadEncodingTest {
             0xdecafbad,
             0L,
             testSpanProcessor,
-            false
+            false,
         )
         span1.end(1L)
         val span2 = SpanImpl(
@@ -34,7 +34,7 @@ class SpanPayloadEncodingTest {
             0xbaddecaf,
             0L,
             testSpanProcessor,
-            false
+            false,
         )
         span2.end(11L)
         val spans = listOf(span1, span2)
@@ -45,7 +45,7 @@ class SpanPayloadEncodingTest {
                 attrs["service.name"] = "Test app"
                 attrs["telemetry.sdk.name"] = "bugsnag.performance.android"
                 attrs["telemetry.sdk.version"] = "0.0.0"
-            }
+            },
         )
 
         assertTraceDataValid(content)
@@ -102,7 +102,7 @@ class SpanPayloadEncodingTest {
                   ]
                 }
             """.trimIndent(),
-            content.toString(Charsets.UTF_8)
+            content.toString(Charsets.UTF_8),
         )
     }
 }

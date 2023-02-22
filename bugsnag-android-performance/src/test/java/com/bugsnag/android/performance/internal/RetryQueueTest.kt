@@ -16,7 +16,7 @@ class RetryQueueTest {
     fun createQueueDir() {
         dir = File(
             System.getProperty("java.io.tmpdir"),
-            "retry-queue-test-${System.currentTimeMillis()}"
+            "retry-queue-test-${System.currentTimeMillis()}",
         )
 
         retryQueue = RetryQueue(dir)
@@ -37,8 +37,8 @@ class RetryQueueTest {
             byteArrayOf(1, 2, 3),
             mapOf(
                 "Header1" to "one",
-                "Header2" to "two"
-            )
+                "Header2" to "two",
+            ),
         )
 
         val tracePayload2 = TracePayload(
@@ -47,8 +47,8 @@ class RetryQueueTest {
             mapOf(
                 "One" to "1",
                 "Two" to "2",
-                "Three" to "3"
-            )
+                "Three" to "3",
+            ),
         )
 
         retryQueue.add(tracePayload2)

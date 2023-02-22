@@ -54,7 +54,7 @@ class ContextAwareScheduledThreadPoolExecutorTest {
                     }
                 },
                 0L,
-                TimeUnit.MILLISECONDS
+                TimeUnit.MILLISECONDS,
             ).get()
         }
     }
@@ -70,7 +70,7 @@ class ContextAwareScheduledThreadPoolExecutorTest {
                     }
                 },
                 0L,
-                TimeUnit.MILLISECONDS
+                TimeUnit.MILLISECONDS,
             ).get()
         }
     }
@@ -88,7 +88,7 @@ class ContextAwareScheduledThreadPoolExecutorTest {
                 },
                 0L,
                 100L,
-                TimeUnit.MILLISECONDS
+                TimeUnit.MILLISECONDS,
             )
 
             // end the parent span after one task execution
@@ -118,7 +118,7 @@ class ContextAwareScheduledThreadPoolExecutorTest {
                 },
                 0L,
                 100L,
-                TimeUnit.MILLISECONDS
+                TimeUnit.MILLISECONDS,
             )
 
             // end the parent span after one task execution

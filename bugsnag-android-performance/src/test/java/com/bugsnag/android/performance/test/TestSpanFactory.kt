@@ -20,7 +20,7 @@ class TestSpanFactory {
         traceId: UUID = UUID(0L, spanCount),
         spanId: Long = spanCount,
         parentSpanId: Long = 0L,
-        processor: SpanProcessor
+        processor: SpanProcessor,
     ): SpanImpl {
         spanCount++
         return SpanImpl(name, kind, startTime, traceId, spanId, parentSpanId, processor, true)
@@ -29,7 +29,7 @@ class TestSpanFactory {
 
     fun newSpans(
         count: Int,
-        processor: SpanProcessor
+        processor: SpanProcessor,
     ): MutableList<SpanImpl> {
         val spans = mutableListOf<SpanImpl>()
         repeat(count) { spans.add(newSpan(processor = processor)) }

@@ -28,47 +28,47 @@ class SpanOptionsTest {
         assertEquals(
             // doesn't actually change the output
             SpanOptions.defaults.makeCurrentContext(SpanOptions.defaults.makeContext),
-            SpanOptions.defaults
+            SpanOptions.defaults,
         )
 
         assertEquals(
             SpanOptions.defaults.makeCurrentContext(true),
-            SpanOptions.defaults
+            SpanOptions.defaults,
         )
 
         assertNotEquals(
             SpanOptions.defaults.makeCurrentContext(false),
-            SpanOptions.defaults
+            SpanOptions.defaults,
         )
 
         assertEquals(
             SpanOptions.defaults.setFirstClass(true),
-            SpanOptions.defaults
+            SpanOptions.defaults,
         )
 
         assertNotEquals(
             SpanOptions.defaults.setFirstClass(false),
-            SpanOptions.defaults
+            SpanOptions.defaults,
         )
 
         assertEquals(
             SpanOptions.defaults.startTime(12345L),
-            SpanOptions.defaults.startTime(12345L)
+            SpanOptions.defaults.startTime(12345L),
         )
 
         assertNotEquals(
             SpanOptions.defaults.startTime(12345L),
-            SpanOptions.defaults
+            SpanOptions.defaults,
         )
 
         assertNotEquals(
             SpanOptions.defaults.startTime(12345L),
-            SpanOptions.defaults.startTime(54321L)
+            SpanOptions.defaults.startTime(54321L),
         )
 
         assertEquals(
             SpanOptions.defaults.within(SpanContext.invalid),
-            SpanOptions.defaults.within(SpanContext.invalid)
+            SpanOptions.defaults.within(SpanContext.invalid),
         )
 
         assertEquals(
@@ -78,12 +78,12 @@ class SpanOptionsTest {
 
         assertEquals(
             SpanOptions.defaults.within(SpanContext.current),
-            SpanOptions.defaults
+            SpanOptions.defaults,
         )
 
         assertEquals(
             SpanOptions.defaults.within(SpanOptions.defaults.parentContext),
-            SpanOptions.defaults
+            SpanOptions.defaults,
         )
     }
 

@@ -17,29 +17,29 @@ class LegacyNetworkTypeTest {
         testTransportTye(
             ConnectivityManager.TYPE_WIFI,
             NetworkType.WIFI,
-            ConnectionMetering.UNMETERED
+            ConnectionMetering.UNMETERED,
         )
         testTransportTye(
             ConnectivityManager.TYPE_MOBILE,
             NetworkType.CELL,
-            ConnectionMetering.POTENTIALLY_METERED
+            ConnectionMetering.POTENTIALLY_METERED,
         )
         testTransportTye(
             ConnectivityManager.TYPE_ETHERNET,
             NetworkType.WIRED,
-            ConnectionMetering.UNMETERED
+            ConnectionMetering.UNMETERED,
         )
         testTransportTye(
             ConnectivityManager.TYPE_BLUETOOTH,
             NetworkType.UNKNOWN,
-            ConnectionMetering.POTENTIALLY_METERED
+            ConnectionMetering.POTENTIALLY_METERED,
         )
     }
 
     private fun testTransportTye(
         transportType: Int,
         expectedNetworkType: NetworkType,
-        expectedMetering: ConnectionMetering
+        expectedMetering: ConnectionMetering,
     ) {
         val context = mock<Context>()
         var callbackInvoked = false
