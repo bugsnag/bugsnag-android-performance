@@ -31,8 +31,8 @@ abstract class Span internal constructor() : SpanContext, Closeable {
     override fun close() = end()
 
     /**
-     * Returns `true` if this span has not yet been closed / ended. If this returns `false` the
+     * Returns `true` if this span has been closed / ended. If this returns `true` the
      * span cannot be modified further.
      */
-    abstract fun isOpen(): Boolean
+    abstract fun isEnded(): Boolean
 }

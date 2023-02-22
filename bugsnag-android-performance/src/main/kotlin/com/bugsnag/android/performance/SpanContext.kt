@@ -95,7 +95,7 @@ interface SpanContext {
         }
 
         private fun removeClosedContexts() {
-            while((contextStack.peekFirst() as? Span)?.isOpen() == false) {
+            while((contextStack.peekFirst() as? Span)?.isEnded() == true) {
                 contextStack.pollFirst()
             }
         }
