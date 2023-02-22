@@ -15,8 +15,9 @@ import java.util.concurrent.ConcurrentMap
  * time is used to close it.
  */
 @JvmInline
-internal value class SpanTracker<T>(
-    private val backingStore: ConcurrentMap<T, TrackedSpan> = ConcurrentHashMap()
+value class SpanTracker<T>(
+    @PublishedApi
+    internal val backingStore: ConcurrentMap<T, SpanBinding> = ConcurrentHashMap()
 ) {
     operator fun get(token: T): SpanImpl? {
         return backingStore[token]?.span
@@ -27,21 +28,21 @@ internal value class SpanTracker<T>(
      * if required (by calling [createSpan]). If the `token` already has an associated `Span`
      * then that is returned, otherwise [createSpan] is used.
      *
-     * Note: in racey scenarios the [createSpan] may be invoked and the resulting `Span` discarded,
+     * Note: in race scenarios the [createSpan] may be invoked and the resulting `Span` discarded,
      * the currently tracked `Span` will however always be returned.
      */
     inline fun track(token: T, createSpan: () -> SpanImpl): SpanImpl {
-        var trackedSpan: TrackedSpan? = backingStore[token]
-        if (trackedSpan == null) {
-            trackedSpan = TrackedSpan(createSpan())
-            val racedSpan = backingStore.putIfAbsent(token, trackedSpan)
+        var spanBinding: SpanBinding? = backingStore[token]
+        if (spanBinding == null) {
+            spanBinding = SpanBinding(createSpan())
+            val racedSpan = backingStore.putIfAbsent(token, spanBinding)
 
             if (racedSpan != null) {
-                trackedSpan = racedSpan
+                spanBinding = racedSpan
             }
         }
 
-        return trackedSpan.span
+        return spanBinding.span
     }
 
     /**
@@ -70,7 +71,7 @@ internal value class SpanTracker<T>(
         backingStore.remove(token)?.span?.end(endTime)
     }
 
-    internal class TrackedSpan(val span: SpanImpl) {
+    class SpanBinding(val span: SpanImpl) {
         var autoEndTime: Long = NO_END_TIME
 
         fun markLeaked(): Boolean {

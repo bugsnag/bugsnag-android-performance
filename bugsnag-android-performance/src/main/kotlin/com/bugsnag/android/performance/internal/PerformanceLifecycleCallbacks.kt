@@ -7,7 +7,6 @@ import android.os.Handler
 import android.os.Looper
 import android.os.Message
 import com.bugsnag.android.performance.Logger
-import com.bugsnag.android.performance.SpanOptions
 import kotlin.math.max
 
 typealias InForegroundCallback = (inForeground: Boolean) -> Unit
@@ -21,7 +20,7 @@ private const val MSG_SEND_BACKGROUND = 1
  */
 private const val BACKGROUND_TIMEOUT_MS = 700L
 
-internal class PerformanceLifecycleCallbacks(
+class PerformanceLifecycleCallbacks internal constructor(
     private val activityLoadSpans: SpanTracker<Activity>,
     private val spanFactory: SpanFactory,
     private val inForegroundCallback: InForegroundCallback
