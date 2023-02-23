@@ -1,7 +1,7 @@
 package com.bugsnag.android.performance
 
 import android.os.SystemClock
-import com.bugsnag.android.performance.SpanOptions.Companion.defaults
+import com.bugsnag.android.performance.SpanOptions.Companion.DEFAULTS
 
 /**
  * Optional configuration used when starting a new `Span`. `SpanOptions` are immutable and
@@ -9,14 +9,20 @@ import com.bugsnag.android.performance.SpanOptions.Companion.defaults
  * will cause its default to be used (example: not setting [startTime] will cause
  * `SystemClock.elapsedRealtimeNanos` to be used).
  *
- * @see defaults
+ * New `SpanOptions` are typically based on the [DEFAULTS]:
+ * ```kotlin
+ * BugsnagPerformance.startSpan("LoadSuggestions", SpanOptions.DEFAULTS.startTime(actualStartTime))
+ * ```
+ *
+ * @see DEFAULTS
+ * @see BugsnagPerformance.startSpan
  */
 class SpanOptions private constructor(
     private val optionsSet: Int,
     startTime: Long,
     parentContext: SpanContext?,
     val makeContext: Boolean,
-    isFirstClass: Boolean
+    isFirstClass: Boolean,
 ) {
     private val _startTime: Long = startTime
 
@@ -24,6 +30,11 @@ class SpanOptions private constructor(
 
     private val _parentContext: SpanContext? = parentContext
 
+    /**
+     * Return the time (relative to [SystemClock.elapsedRealtimeNanos]) that new `Span`s will
+     * be reported with. Defaults to returning [SystemClock.elapsedRealtimeNanos] if no specific
+     * start time is specified.
+     */
     val startTime: Long
         get() =
             if (isOptionSet(OPT_START_TIME)) _startTime
@@ -39,12 +50,18 @@ class SpanOptions private constructor(
             if (isOptionSet(OPT_PARENT_CONTEXT)) _parentContext
             else SpanContext.current
 
+    /**
+     * Override the start time of new `Span`s created with these `SpanOptions`. This is useful when
+     * the start time is reported from an external system.
+     *
+     * @param startTime the start time to report relative to [SystemClock.elapsedRealtimeNanos]
+     */
     fun startTime(startTime: Long) = SpanOptions(
         optionsSet or OPT_START_TIME,
         startTime,
         _parentContext,
         makeContext,
-        _isFirstClass
+        _isFirstClass,
     )
 
     fun within(parentContext: SpanContext?) = SpanOptions(
@@ -52,7 +69,7 @@ class SpanOptions private constructor(
         _startTime,
         parentContext,
         makeContext,
-        _isFirstClass
+        _isFirstClass,
     )
 
     fun makeCurrentContext(makeContext: Boolean) = SpanOptions(
@@ -60,7 +77,7 @@ class SpanOptions private constructor(
         _startTime,
         _parentContext,
         makeContext,
-        _isFirstClass
+        _isFirstClass,
     )
 
     fun setFirstClass(isFirstClass: Boolean) = SpanOptions(
@@ -68,7 +85,7 @@ class SpanOptions private constructor(
         _startTime,
         _parentContext,
         makeContext,
-        isFirstClass
+        isFirstClass,
     )
 
     override fun equals(other: Any?): Boolean {
@@ -142,9 +159,10 @@ class SpanOptions private constructor(
         private const val OPT_IS_FIRST_CLASS = 8
 
         /**
-         * The default set of `SpanOptions` with no overrides set.
+         * The default set of `SpanOptions` with no overrides set. Use this as a starting-point to
+         * create new `SpanOptions`
          */
         @JvmField
-        val defaults = SpanOptions(OPT_NONE, 0, null, true, false)
+        val DEFAULTS = SpanOptions(OPT_NONE, 0, null, makeContext = true, isFirstClass = false)
     }
 }

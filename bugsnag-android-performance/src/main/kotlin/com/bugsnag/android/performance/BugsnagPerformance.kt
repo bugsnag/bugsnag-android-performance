@@ -176,7 +176,7 @@ object BugsnagPerformance {
      */
     @JvmStatic
     @JvmOverloads
-    fun startSpan(name: String, options: SpanOptions = SpanOptions.defaults): Span =
+    fun startSpan(name: String, options: SpanOptions = SpanOptions.DEFAULTS): Span =
         spanFactory.createCustomSpan(name, options)
 
     /**
@@ -191,7 +191,7 @@ object BugsnagPerformance {
     fun startNetworkRequestSpan(
         url: URL,
         verb: String,
-        options: SpanOptions = SpanOptions.defaults
+        options: SpanOptions = SpanOptions.DEFAULTS
     ): Span = spanFactory.createNetworkSpan(url, verb, options)
 
     /**
@@ -208,7 +208,7 @@ object BugsnagPerformance {
     @JvmOverloads
     fun startViewLoadSpan(
         activity: Activity,
-        options: SpanOptions = SpanOptions.defaults
+        options: SpanOptions = SpanOptions.DEFAULTS
     ): Span {
         // create & track Activity referenced ViewLoad spans
         return activitySpanTracker.track(activity) {
@@ -242,7 +242,7 @@ object BugsnagPerformance {
     fun startViewLoadSpan(
         viewType: ViewType,
         viewName: String,
-        options: SpanOptions = SpanOptions.defaults
+        options: SpanOptions = SpanOptions.DEFAULTS
     ): Span = spanFactory.createViewLoadSpan(viewType, viewName, options)
 
     /**
