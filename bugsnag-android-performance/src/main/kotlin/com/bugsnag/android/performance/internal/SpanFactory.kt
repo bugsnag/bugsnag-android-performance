@@ -2,7 +2,6 @@ package com.bugsnag.android.performance.internal
 
 import android.app.Activity
 import com.bugsnag.android.performance.HasAttributes
-import com.bugsnag.android.performance.SpanContext
 import com.bugsnag.android.performance.SpanKind
 import com.bugsnag.android.performance.SpanOptions
 import com.bugsnag.android.performance.ViewType
@@ -15,7 +14,7 @@ class SpanFactory(
     private val spanProcessor: SpanProcessor,
     val spanAttributeSource: AttributeSource = {},
 ) {
-    fun createCustomSpan(name: String, options: SpanOptions = SpanOptions.defaults): SpanImpl {
+    fun createCustomSpan(name: String, options: SpanOptions = SpanOptions.DEFAULTS): SpanImpl {
         val isFirstClass = options.isFirstClass
         val span = createSpan("Custom/$name", SpanKind.INTERNAL, options)
         span.setAttribute("bugsnag.span.first_class", isFirstClass)
@@ -23,7 +22,7 @@ class SpanFactory(
     }
 
 
-    fun createNetworkSpan(url: URL, verb: String, options: SpanOptions = SpanOptions.defaults): SpanImpl {
+    fun createNetworkSpan(url: URL, verb: String, options: SpanOptions = SpanOptions.DEFAULTS): SpanImpl {
         val verbUpper = verb.uppercase()
         val span = createSpan("HTTP/$verbUpper", SpanKind.CLIENT, options)
         span.setAttribute("bugsnag.span.category", "network")
@@ -32,13 +31,13 @@ class SpanFactory(
         return span
     }
 
-    fun createViewLoadSpan(activity: Activity, options: SpanOptions = SpanOptions.defaults): SpanImpl {
+    fun createViewLoadSpan(activity: Activity, options: SpanOptions = SpanOptions.DEFAULTS): SpanImpl {
         val activityName = activity::class.java.simpleName
         return createViewLoadSpan(ViewType.ACTIVITY, activityName, options)
     }
 
     fun createViewLoadSpan(viewType: ViewType, viewName: String,
-                           options: SpanOptions = SpanOptions.defaults
+                           options: SpanOptions = SpanOptions.DEFAULTS
     ): SpanImpl {
         val isFirstClass = options.isFirstClass
         val span = createSpan(
@@ -66,7 +65,7 @@ class SpanFactory(
     private fun createSpan(
         name: String,
         kind: SpanKind,
-        options: SpanOptions = SpanOptions.defaults
+        options: SpanOptions = SpanOptions.DEFAULTS
     ): SpanImpl {
         val span = SpanImpl(
             name = name,

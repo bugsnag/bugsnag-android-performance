@@ -141,7 +141,7 @@ internal class SpanContextTest {
         assertEquals(collectedSpans[1].spanId, collectedSpans[0].parentSpanId)
     }
 
-    private fun createTestSpan(name: String = "Test/test span", options: SpanOptions = SpanOptions.defaults) =
+    private fun createTestSpan(name: String = "Test/test span", options: SpanOptions = SpanOptions.DEFAULTS) =
         spanFactory.createCustomSpan(name, options)
 
     private data class TestSpanContext(
