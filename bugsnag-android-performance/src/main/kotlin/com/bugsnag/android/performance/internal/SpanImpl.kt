@@ -8,6 +8,7 @@ import com.bugsnag.android.performance.HasAttributes
 import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.SpanContext
 import com.bugsnag.android.performance.SpanKind
+import java.security.SecureRandom
 import java.util.Random
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicLongFieldUpdater
@@ -151,7 +152,7 @@ class SpanImpl internal constructor(
 
         const val NO_END_TIME = -1L
 
-        private val spanIdRandom = Random()
+        private val spanIdRandom = Random(SecureRandom().nextLong())
 
         private fun nextSpanId(): Long {
             var id: Long
