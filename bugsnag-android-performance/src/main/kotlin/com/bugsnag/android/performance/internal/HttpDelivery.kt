@@ -6,13 +6,13 @@ import java.net.URL
 
 internal class HttpDelivery(
     private val endpoint: String,
-    private val apiKey: String
+    private val apiKey: String,
 ) : Delivery {
     override var newProbabilityCallback: NewProbabilityCallback? = null
 
     override fun deliver(
         spans: Collection<SpanImpl>,
-        resourceAttributes: Attributes
+        resourceAttributes: Attributes,
     ): DeliveryResult {
         return deliver(TracePayload.createTracePayload(apiKey, spans, resourceAttributes))
     }
@@ -38,7 +38,15 @@ internal class HttpDelivery(
 
     override fun fetchCurrentProbability() {
         // Server expects a call to /traces with an empty set of resource spans
-        deliver(TracePayload.createTracePayload(apiKey, "{\"resourceSpans\": []}".toByteArray()))
+        deliver(
+            TracePayload.createTracePayload(
+                apiKey,
+                "{\"resourceSpans\": []}".toByteArray(),
+                mapOf(
+                    "Bugsnag-Sampling-Probability" to "1:0",
+                ),
+            ),
+        )
     }
 
     private fun getDeliveryResult(statusCode: Int, payload: TracePayload): DeliveryResult {
