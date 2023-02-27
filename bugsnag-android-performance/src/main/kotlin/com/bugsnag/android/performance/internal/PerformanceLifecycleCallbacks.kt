@@ -21,7 +21,7 @@ private const val MSG_SEND_BACKGROUND = 1
 private const val BACKGROUND_TIMEOUT_MS = 700L
 
 class PerformanceLifecycleCallbacks internal constructor(
-    private val activityLoadSpans: SpanTracker<Activity>,
+    private val spanTracker: SpanTracker,
     private val spanFactory: SpanFactory,
     private val inForegroundCallback: InForegroundCallback
 ) : ActivityLifecycleCallbacks, Handler.Callback {
@@ -59,7 +59,7 @@ class PerformanceLifecycleCallbacks internal constructor(
             maybeStartAppLoad(savedInstanceState)
 
             if (openLoadSpans) {
-                activityLoadSpans.track(activity) {
+                spanTracker.associate(activity) {
                     spanFactory.createViewLoadSpan(activity)
                 }
             }
@@ -85,9 +85,9 @@ class PerformanceLifecycleCallbacks internal constructor(
         appStartupSpan = null
 
         if (closeLoadSpans) {
-            activityLoadSpans.endSpan(activity)
+            spanTracker.endSpan(activity)
         } else {
-            activityLoadSpans.markSpanAutomaticEnd(activity)
+            spanTracker.markSpanAutomaticEnd(activity)
         }
     }
 
@@ -102,7 +102,7 @@ class PerformanceLifecycleCallbacks internal constructor(
 
     override fun onActivityDestroyed(activity: Activity) {
         try {
-            if (activityLoadSpans.markSpanLeaked(activity)) {
+            if (spanTracker.markSpanLeaked(activity)) {
                 Logger.w(
                     "${activity::class.java.name} appears to have leaked a ViewLoad Span. " +
                         "This is probably because BugsnagPerformance.endViewLoad was not called."
@@ -120,6 +120,7 @@ class PerformanceLifecycleCallbacks internal constructor(
             MSG_SEND_BACKGROUND -> {
                 inForegroundCallback(false)
                 backgroundSent = true
+                appStartupSpan = null
             }
 
             else -> return false

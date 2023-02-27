@@ -34,7 +34,7 @@ object BugsnagPerformance {
 
     private val tracer = Tracer()
 
-    private val activitySpanTracker = SpanTracker<Activity>()
+    private val spanTracker = SpanTracker()
 
     private val defaultAttributeSource = DefaultAttributeSource()
     private val spanFactory = SpanFactory(tracer, defaultAttributeSource)
@@ -152,7 +152,7 @@ object BugsnagPerformance {
     }
 
     private fun createLifecycleCallbacks(): PerformanceLifecycleCallbacks {
-        return PerformanceLifecycleCallbacks(activitySpanTracker, spanFactory) { inForeground ->
+        return PerformanceLifecycleCallbacks(spanTracker, spanFactory) { inForeground ->
             defaultAttributeSource.update {
                 it.copy(isInForeground = inForeground)
             }
@@ -211,7 +211,7 @@ object BugsnagPerformance {
         options: SpanOptions = SpanOptions.DEFAULTS
     ): Span {
         // create & track Activity referenced ViewLoad spans
-        return activitySpanTracker.track(activity) {
+        return spanTracker.associate(activity) {
             spanFactory.createViewLoadSpan(activity, options)
         }
     }
@@ -227,7 +227,7 @@ object BugsnagPerformance {
     @JvmStatic
     @JvmOverloads
     fun endViewLoadSpan(activity: Activity, endTime: Long = SystemClock.elapsedRealtimeNanos()) {
-        activitySpanTracker.endSpan(activity, endTime)
+        spanTracker.endSpan(activity, endTime)
     }
 
     /**
