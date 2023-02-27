@@ -1,6 +1,6 @@
 package com.bugsnag.android.performance.internal
 
 interface Module {
-    fun load()
+    fun load(tracer: Tracer)
     fun unload()
 }
