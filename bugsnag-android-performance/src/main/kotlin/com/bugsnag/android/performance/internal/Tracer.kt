@@ -1,38 +1,61 @@
 package com.bugsnag.android.performance.internal
 
+import android.os.SystemClock
 import com.bugsnag.android.performance.Span
-import com.bugsnag.android.performance.SpanProcessor
-import java.util.concurrent.atomic.AtomicReference
 
-internal class Tracer(private val delivery: Delivery) : Runnable, SpanProcessor {
-    /*
-     * The "head" of the linked-list of `Span`s current queued for delivery. The `Span`s are
-     * actually stored in reverse order to keep the list logic simple. The last `Span` queued
-     * for delivery is stored here (or `null` if the list is empty). Combined with the time
-     * it takes to deliver a a payload this has a natural batching effect, while we avoid locks
-     * when enqueuing new `Span`s for delivery.
-     */
-    private var tail = AtomicReference<Span?>()
+internal class Tracer : SpanProcessor {
 
-    @Volatile
-    private var running = true
+    @Suppress("DoubleMutabilityForCollection") // we swap out this ArrayList when we flush batches
+    private var batch = ArrayList<SpanImpl>()
 
-    fun stop() {
-        running = false
+    private var lastBatchSendTime = SystemClock.elapsedRealtime()
+
+    internal var sampler = Sampler(1.0)
+
+    internal var worker: Worker? = null
+
+    internal fun collectNextBatch(): Collection<SpanImpl>? = synchronized(this) {
+        val batchSize = batch.size
+        val currentBatchAge = SystemClock.elapsedRealtime() - lastBatchSendTime
+        // only wait for a batch if the current batch is too small
+        if (batchSize < InternalDebug.spanBatchSizeSendTriggerPoint &&
+            currentBatchAge < InternalDebug.workerSleepMs
+        ) {
+            return null
+        }
+
+        val nextBatch = batch
+        batch = ArrayList()
+        lastBatchSendTime = SystemClock.elapsedRealtime()
+
+        return sampler.sampled(nextBatch)
     }
 
-    override fun run() {
-        while (running) {
-            val listHead = tail.getAndSet(null) ?: continue
-            delivery.deliverSpanChain(listHead)
+    private fun addToBatch(span: SpanImpl) {
+        val batchSize = synchronized(this) {
+            batch.add(span)
+            batch.size
+        }
+
+        if (batchSize >= InternalDebug.spanBatchSizeSendTriggerPoint) {
+            worker?.wake()
         }
     }
 
+    fun forceCurrentBatch() {
+        val localWorker = worker ?: return
+        // simply age the "last" batch to ensure that `collectNextBatch` will return whatever is
+        // in the current batch, regardless of actual age or size
+
+        lastBatchSendTime = 0
+        localWorker.wake()
+    }
+
     override fun onEnd(span: Span) {
-        while (true) {
-            val oldHead = tail.get()
-            span.previous = oldHead
-            if (tail.compareAndSet(oldHead, span)) break
+        if (span !is SpanImpl) return
+
+        if (sampler.shouldKeepSpan(span)) {
+            addToBatch(span)
         }
     }
 }

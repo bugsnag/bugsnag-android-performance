@@ -1,12 +1,9 @@
 package com.bugsnag.android.performance.internal
 
-import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.SpanKind
-import com.bugsnag.android.performance.SpanProcessor
 import com.bugsnag.android.performance.test.testSpanProcessor
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
-import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -26,23 +23,25 @@ class SpanTest {
         span.name = newSpanName
         span.end()
 
-        assertThrows(IllegalStateException::class.java) {
-            span.name = "cannot be renamed"
-        }
+        // this should be silently ignored
+        span.name = "cannot be renamed"
 
+        // the name should not have changed
         assertEquals(newSpanName, span.name)
     }
 
     @Test
     fun idempotentEnd() {
         val mockSpanProcessor = mock<SpanProcessor>()
-        val span = Span(
+        val span = SpanImpl(
             "test span",
             SpanKind.INTERNAL,
             0L,
             UUID.fromString("4ee26661-4650-4c7f-a35f-00f007cd24e7"),
             0xdecafbad,
+            0L,
             mockSpanProcessor,
+            false,
         )
 
         span.end()
@@ -60,16 +59,18 @@ class SpanTest {
     @Test
     fun spanAsClosable() {
         val span = createTestSpan().apply { use { sleep(1L) } }
-        assertNotEquals(Span.NO_END_TIME, span.endTime)
+        assertNotEquals(SpanImpl.NO_END_TIME, span.endTime)
         assertTrue(span.startTime < span.endTime)
     }
 
-    private fun createTestSpan() = Span(
-        "test span",
+    private fun createTestSpan() = SpanImpl(
+        "Test/test span",
         SpanKind.INTERNAL,
         0L,
         UUID.fromString("4ee26661-4650-4c7f-a35f-00f007cd24e7"),
         0xdecafbad,
+        0L,
         testSpanProcessor,
+        false,
     )
 }

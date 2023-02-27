@@ -1,51 +1,28 @@
 package com.bugsnag.android.performance.internal
 
-import android.util.JsonWriter
-import androidx.annotation.VisibleForTesting
-import com.bugsnag.android.performance.Span
-import java.io.ByteArrayOutputStream
-import java.net.HttpURLConnection
-import java.net.URL
+import com.bugsnag.android.performance.Attributes
 
-internal class Delivery(private val endpoint: String) {
-    fun deliverSpanChain(head: Span) {
-        val payload = encodeSpanPayload(head)
-
-        val connection = URL(endpoint).openConnection() as HttpURLConnection
-        connection.setFixedLengthStreamingMode(payload.size)
-        connection.setRequestProperty("Content-Encoding", "application/json")
-        connection.doOutput = true
-        connection.doInput = true
-        connection.outputStream.use { out -> out.write(payload) }
-
-        connection.inputStream.reader().readText()
+internal sealed class DeliveryResult {
+    object Success : DeliveryResult() {
+        override fun toString(): String = "Success"
     }
 
-    @VisibleForTesting
-    fun encodeSpanPayload(head: Span): ByteArray {
-        val buffer = ByteArrayOutputStream()
-        JsonWriter(buffer.writer()).use { json ->
-            json.beginObject()
-                .name("resourceSpans").beginArray()
-                .beginObject()
-                .name("scopeSpans").beginArray()
-                .beginObject()
-                .name("spans").beginArray()
-
-            var currentSpan: Span? = head
-            while (currentSpan != null) {
-                currentSpan.toJson(json)
-                currentSpan = currentSpan.previous
-            }
-
-            json.endArray() // spans
-                .endObject()
-                .endArray() // scopeSpans
-                .endObject()
-                .endArray() // resourceSpans
-                .endObject()
-        }
-
-        return buffer.toByteArray()
+    data class Failed(
+        val payload: TracePayload,
+        val canRetry: Boolean
+    ) : DeliveryResult() {
+        override fun toString(): String = "Failed[canRetry=${canRetry}]"
     }
+}
+
+internal fun interface NewProbabilityCallback {
+    fun onNewProbability(newP: Double)
+}
+
+internal interface Delivery {
+    var newProbabilityCallback: NewProbabilityCallback?
+
+    fun deliver(spans: Collection<SpanImpl>, resourceAttributes: Attributes): DeliveryResult
+    fun deliver(tracePayload: TracePayload): DeliveryResult
+    fun fetchCurrentProbability()
 }

@@ -2,10 +2,9 @@ package com.bugsnag.android.performance
 
 import android.util.JsonWriter
 import com.bugsnag.android.performance.internal.BugsnagClock
-import com.bugsnag.android.performance.internal.toJson
+import com.bugsnag.android.performance.internal.SpanImpl
+import com.bugsnag.android.performance.test.assertJsonEquals
 import com.bugsnag.android.performance.test.testSpanProcessor
-import org.json.JSONObject
-import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -18,14 +17,21 @@ class SpanJsonTest {
     fun testJsonEncoding() {
         val currentTime = System.currentTimeMillis()
 
-        val span = Span(
+        val span = SpanImpl(
             "test span",
             SpanKind.INTERNAL,
             0L,
             UUID.fromString("4ee26661-4650-4c7f-a35f-00f007cd24e7"),
             0xdecafbad,
+            123L,
             testSpanProcessor,
+            false,
         )
+
+        span.setAttribute("fps.average", 61.9)
+        span.setAttribute("frameTime.minimum", 1)
+        span.setAttribute("release", true)
+        span.setAttribute("my.custom.attribute", "Computer, belay that order.")
 
         span.end(currentTime)
 
@@ -41,29 +47,29 @@ class SpanJsonTest {
                     "spanId": "00000000decafbad",
                     "traceId": "4ee2666146504c7fa35f00f007cd24e7",
                     "startTimeUnixNano": "${BugsnagClock.elapsedNanosToUnixTime(0)}",
-                    "endTimeUnixNano": "${BugsnagClock.elapsedNanosToUnixTime(currentTime)}"
+                    "endTimeUnixNano": "${BugsnagClock.elapsedNanosToUnixTime(currentTime)}",
+                    "parentSpanId": "000000000000007b",
+                    "attributes": [
+                        {
+                            "key": "fps.average",
+                            "value": { "doubleValue": 61.9 }
+                        },
+                        {
+                            "key": "frameTime.minimum",
+                            "value": { "intValue": "1" }
+                        },
+                        {
+                            "key": "release",
+                            "value": { "boolValue": true }
+                        },
+                        {
+                            "key": "my.custom.attribute",
+                            "value": { "stringValue": "Computer, belay that order." }
+                        }
+                    ]
                 }
             """.trimIndent(),
-            json
+            json,
         )
     }
-
-    private fun assertJsonEquals(expected: String, actual: String) {
-        val expectedObject = JSONObject(expected).toMap()
-        val actualObject = JSONObject(actual).toMap()
-
-        assertEquals(expectedObject, actualObject)
-    }
-}
-
-private fun JSONObject.toMap(): Map<String, Any> {
-    val keys = names()!!
-    val content = HashMap<String, Any>(keys.length())
-
-    for (i in 0 until keys.length()) {
-        val key = keys.getString(i)
-        content[key] = get(key)
-    }
-
-    return content
 }

@@ -11,7 +11,6 @@ internal object BugsnagClock {
      * [SystemClock.elapsedRealtimeNanos]. This is not a perfect offset, but will be accurate
      * to around a millisecond.
      */
-    @JvmSynthetic
     @VisibleForTesting
     internal val bootTimeNano =
         (System.currentTimeMillis() * NANOS_IN_MILLIS) - SystemClock.elapsedRealtimeNanos()
@@ -21,4 +20,9 @@ internal object BugsnagClock {
      * precision.
      */
     fun elapsedNanosToUnixTime(elapsedRealtimeNanos: Long) = elapsedRealtimeNanos + bootTimeNano
+
+    /**
+     * `System.currentTimeMillis` but as nanosecond precision time.
+     */
+    fun currentUnixNanoTime(): Long = elapsedNanosToUnixTime(SystemClock.elapsedRealtimeNanos())
 }

@@ -1,30 +1,283 @@
 package com.bugsnag.android.performance
 
+import android.app.Activity
+import android.app.Application
+import android.content.Context
 import android.os.SystemClock
-import com.bugsnag.android.performance.internal.Delivery
+import com.bugsnag.android.performance.BugsnagPerformance.start
+import com.bugsnag.android.performance.internal.ConnectivityCompat
+import com.bugsnag.android.performance.internal.DefaultAttributeSource
+import com.bugsnag.android.performance.internal.HttpDelivery
+import com.bugsnag.android.performance.internal.PerformanceComponentCallbacks
+import com.bugsnag.android.performance.internal.PerformanceLifecycleCallbacks
+import com.bugsnag.android.performance.internal.Persistence
+import com.bugsnag.android.performance.internal.RetryDelivery
+import com.bugsnag.android.performance.internal.RetryDeliveryTask
+import com.bugsnag.android.performance.internal.Sampler
+import com.bugsnag.android.performance.internal.SamplerTask
+import com.bugsnag.android.performance.internal.SendBatchTask
+import com.bugsnag.android.performance.internal.SpanFactory
+import com.bugsnag.android.performance.internal.SpanTracker
 import com.bugsnag.android.performance.internal.Tracer
-import java.util.UUID
+import com.bugsnag.android.performance.internal.Worker
+import com.bugsnag.android.performance.internal.createResourceAttributes
+import com.bugsnag.android.performance.internal.isInForeground
+import java.net.URL
 
+/**
+ * Primary access to the Bugsnag Performance SDK.
+ *
+ * @see [start]
+ */
 object BugsnagPerformance {
-    private lateinit var tracer: Tracer
+    const val VERSION: String = "0.0.0"
 
+    private val tracer = Tracer()
+
+    private val activitySpanTracker = SpanTracker<Activity>()
+
+    private val defaultAttributeSource = DefaultAttributeSource()
+    private val spanFactory = SpanFactory(tracer, defaultAttributeSource)
+    private val platformCallbacks = createLifecycleCallbacks()
+
+    private var isStarted = false
+
+    private var worker: Worker? = null
+
+    /**
+     * Initialise the Bugsnag Performance SDK. This should be called within your
+     * [Application.onCreate] to ensure that all measurements are accurately reported.
+     *
+     * @param context an Android `Context`, typically your `Application` instance
+     */
     @JvmStatic
-    @JvmOverloads
-    fun start(configuration: BugsnagPerformanceConfiguration = BugsnagPerformanceConfiguration()) {
-        tracer = Tracer(Delivery(configuration.endpoint.toString()))
-
-        Thread(tracer, "Bugsnag Tracer").apply {
-            isDaemon = true
-            start()
-        }
+    fun start(context: Context) {
+        start(PerformanceConfiguration.load(context))
     }
 
     @JvmStatic
+    fun start(context: Context, apiKey: String) {
+        start(PerformanceConfiguration.load(context, apiKey))
+    }
+
+    /**
+     * Initialise the Bugsnag Performance SDK. This should be called within your
+     * [Application.onCreate] to ensure that all measurements are accurately reported.
+     *
+     * @param configuration the configuration for the SDK
+     */
+    @JvmStatic
+    fun start(configuration: PerformanceConfiguration) {
+        if (!isStarted) {
+            synchronized(this) {
+                if (!isStarted) {
+                    startUnderLock(configuration.validated())
+                    isStarted = true
+                }
+            }
+        } else {
+            logAlreadyStarted()
+        }
+    }
+
+    private fun logAlreadyStarted() {
+        Logger.w("BugsnagPerformance.start has already been called")
+    }
+
+    private fun startUnderLock(configuration: PerformanceConfiguration) {
+        val application = configuration.context.applicationContext as Application
+        configureLifecycleCallbacks(configuration)
+
+        if (configuration.autoInstrumentAppStarts) {
+            // mark the app as "starting" (if it isn't already)
+            platformCallbacks.startAppLoadSpan("Cold")
+        }
+
+        // update isInForeground to a more accurate value (if accessible)
+        defaultAttributeSource.update {
+            it.copy(isInForeground = isInForeground(application))
+        }
+
+        val connectivity =
+            ConnectivityCompat(application) { hasConnection, _, networkType, networkSubType ->
+                if (hasConnection) {
+                    worker?.wake()
+                }
+
+                defaultAttributeSource.update {
+                    it.copy(
+                        networkType = networkType,
+                        networkSubType = networkSubType
+                    )
+                }
+            }
+
+        connectivity.registerForNetworkChanges()
+
+        application.registerActivityLifecycleCallbacks(platformCallbacks)
+        application.registerComponentCallbacks(PerformanceComponentCallbacks(tracer))
+
+        val httpDelivery = HttpDelivery(
+            configuration.endpoint,
+            requireNotNull(configuration.apiKey) {
+                "PerformanceConfiguration.apiKey may not be null"
+            }
+        )
+
+        val persistence = Persistence(application)
+        val delivery = RetryDelivery(persistence.retryQueue, httpDelivery)
+
+        val sampler = Sampler(configuration.samplingProbability)
+        val samplerTask = SamplerTask(
+            delivery,
+            sampler,
+            persistence.persistentState
+        )
+
+        val bsgWorker = Worker(
+            samplerTask,
+            SendBatchTask(delivery, tracer, createResourceAttributes(configuration)),
+            RetryDeliveryTask(persistence.retryQueue, httpDelivery),
+        )
+
+        delivery.newProbabilityCallback = samplerTask
+
+        // register the Worker with the components that depend on it
+        tracer.worker = bsgWorker
+        tracer.sampler = sampler
+
+        bsgWorker.start()
+
+        worker = bsgWorker
+    }
+
+    private fun createLifecycleCallbacks(): PerformanceLifecycleCallbacks {
+        return PerformanceLifecycleCallbacks(activitySpanTracker, spanFactory) { inForeground ->
+            defaultAttributeSource.update {
+                it.copy(isInForeground = inForeground)
+            }
+        }
+    }
+
+    private fun configureLifecycleCallbacks(configuration: PerformanceConfiguration) {
+        platformCallbacks.apply {
+            openLoadSpans = configuration.autoInstrumentActivities != AutoInstrument.OFF
+            closeLoadSpans = configuration.autoInstrumentActivities == AutoInstrument.FULL
+            instrumentAppStart = configuration.autoInstrumentAppStarts
+        }
+    }
+
+    /**
+     * Open a custom span with a given name and options. The reported
+     * name of these spans is `"Custom/$name"`.
+     *
+     * @param name the name of the custom span to open
+     * @param options the optional configuration for the span
+     */
+    @JvmStatic
     @JvmOverloads
-    fun startSpan(name: String, startTime: Long = SystemClock.elapsedRealtimeNanos()): Span =
-        Span(name, SpanKind.INTERNAL, startTime, UUID.randomUUID(), processor = tracer)
+    fun startSpan(name: String, options: SpanOptions = SpanOptions.DEFAULTS): Span =
+        spanFactory.createCustomSpan(name, options)
+
+    /**
+     * Open a network span for a given url and HTTP [verb] to measure the time taken for an HTTP request.
+     *
+     * @param url the URL the returned span is measuring
+     * @param verb the HTTP verb / method (GET, POST, PUT, etc.)
+     * @param options the optional configuration for the span
+     */
+    @JvmStatic
+    @JvmOverloads
+    fun startNetworkRequestSpan(
+        url: URL,
+        verb: String,
+        options: SpanOptions = SpanOptions.DEFAULTS
+    ): Span = spanFactory.createNetworkSpan(url, verb, options)
+
+    /**
+     * Open a ViewLoad span to measure the time taken to load and render a UI element (typically a screen).
+     * These spans are created and measured [automatically for
+     * activities](PerformanceConfiguration.autoInstrumentActivities). This function can be used
+     * when the automated instrumentation is not well suited to your app.
+     *
+     * @param activity the activity load being measured
+     * @param options the optional configuration for the span
+     * @see [endViewLoadSpan]
+     */
+    @JvmStatic
+    @JvmOverloads
+    fun startViewLoadSpan(
+        activity: Activity,
+        options: SpanOptions = SpanOptions.DEFAULTS
+    ): Span {
+        // create & track Activity referenced ViewLoad spans
+        return activitySpanTracker.track(activity) {
+            spanFactory.createViewLoadSpan(activity, options)
+        }
+    }
+
+    /**
+     * End a ViewLoad span opened with `startViewLoadSpan`, useful when you don't want to manually
+     * retain a reference to the [Span] returned. If no span is being tracked for the given [Activity]
+     * or the measurement has already been ended this method does nothing.
+     *
+     * @param activity the activity load being measured
+     * @param endTime the time that the load should be considered "ended" relative to [SystemClock.elapsedRealtimeNanos]
+     */
+    @JvmStatic
+    @JvmOverloads
+    fun endViewLoadSpan(activity: Activity, endTime: Long = SystemClock.elapsedRealtimeNanos()) {
+        activitySpanTracker.endSpan(activity, endTime)
+    }
+
+    /**
+     * Open a ViewLoad span to measure the time taken to load a specific UI element.
+     *
+     * @param viewType the type of UI element being measured
+     * @param viewName the name (typically class name) of the UI element being measured
+     * @param options the optional configuration for the span
+     */
+    @JvmStatic
+    @JvmOverloads
+    fun startViewLoadSpan(
+        viewType: ViewType,
+        viewName: String,
+        options: SpanOptions = SpanOptions.DEFAULTS
+    ): Span = spanFactory.createViewLoadSpan(viewType, viewName, options)
+
+    /**
+     * Report that your apps `Application` class has been loaded. This can be manually called from
+     * a static initializer to improve the app start time measurements:
+     *
+     * ```java
+     * public class MyApplication extends Application {
+     *     static {
+     *         BugsnagPerformance.reportApplicationClassLoaded()
+     * ```
+     *
+     * Kotlin apps can use the `init` block of the `companion object` to achieve the same effect.
+     *
+     * This method is safe to call before [start].
+     */
+    @JvmStatic
+    fun reportApplicationClassLoaded() {
+        synchronized(this) {
+            platformCallbacks.startAppLoadSpan("Cold")
+        }
+    }
 }
 
+/**
+ * A utility method for Kotlin apps which compliments the standard Kotlin `measureTime`,
+ * `measureTimeMillis`, and `measureNanoTime` methods. This method has the same behaviour as:
+ * ```kotlin
+ * BugsnagPerformance.startSpan(name).use { block() }
+ * ```
+ *
+ * @param name the name of the block to measure
+ * @param block the block of code to measure the execution time
+ * @see [BugsnagPerformance.startSpan]
+ */
 inline fun <R> measureSpan(name: String, block: () -> R): R {
     return BugsnagPerformance.startSpan(name).use { block() }
 }
