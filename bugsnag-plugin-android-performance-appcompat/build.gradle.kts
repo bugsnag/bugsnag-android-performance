@@ -53,7 +53,7 @@ dependencies {
 
     implementation(project(":bugsnag-android-performance"))
 
-    implementation("androidx.appcompat:appcompat:1.5.0")
+    implementation("androidx.appcompat:appcompat:1.4.2")
 
     testImplementation("junit:junit:4.13.2")
 

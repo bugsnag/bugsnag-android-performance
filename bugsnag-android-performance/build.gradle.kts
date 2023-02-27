@@ -10,7 +10,7 @@ plugins {
 
 apply(from = "../gradle/release.gradle")
 
-val kotlinVersion = "1.5.0"
+val kotlinVersion = "1.5.20"
 
 version = "${project.properties["VERSION_NAME"]}"
 group = "${project.properties["GROUP"]}"
