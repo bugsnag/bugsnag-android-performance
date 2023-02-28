@@ -22,7 +22,7 @@ class SpanImpl internal constructor(
     override val spanId: Long = nextSpanId(),
     internal val parentSpanId: Long,
     private val processor: SpanProcessor,
-    private val makeContext: Boolean
+    private val makeContext: Boolean,
 ) : Span, HasAttributes {
 
     override val attributes: Attributes = Attributes()
@@ -133,8 +133,16 @@ class SpanImpl internal constructor(
                 .append(' ')
                 .append(name)
 
-            append(", id=").append(spanId)
-            append(", traceId=").append(traceId)
+            append(", id=").appendHexLong(spanId)
+
+            if (parentSpanId != 0L) {
+                append(", parentId=").appendHexLong(parentSpanId)
+            }
+
+            append(", traceId=")
+                .appendHexLong(traceId.mostSignificantBits)
+                .appendHexLong(traceId.leastSignificantBits)
+
             append(", startTime=").append(startTime)
 
             if (endTime == NO_END_TIME) append(", no endTime")

@@ -7,14 +7,13 @@ import java.util.UUID
 private const val UUID_ID_STRING_LENGTH = 32
 private const val LONG_ID_STRING_LENGTH = 16
 
-@Suppress("NOTHING_TO_INLINE")
-private inline fun StringBuilder.appendHexPair(b: Int): StringBuilder {
+internal fun StringBuilder.appendHexPair(b: Int): StringBuilder {
     if (b < 16) append('0')
     return append(b.toString(16))
 }
 
-@Suppress("NOTHING_TO_INLINE")
-private inline fun StringBuilder.appendHexLong(value: Long): StringBuilder {
+internal fun StringBuilder.appendHexLong(value: Long): StringBuilder {
+    ensureCapacity(length + LONG_ID_STRING_LENGTH)
     return appendHexPair(((value ushr 56) and 0xff).toInt())
         .appendHexPair(((value ushr 48) and 0xff).toInt())
         .appendHexPair(((value ushr 40) and 0xff).toInt())
