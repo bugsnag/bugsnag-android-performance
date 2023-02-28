@@ -98,33 +98,6 @@ class SpanImpl internal constructor(
         json.endObject()
     }
 
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as SpanImpl
-
-        if (kind != other.kind) return false
-        if (startTime != other.startTime) return false
-        if (traceId != other.traceId) return false
-        if (spanId != other.spanId) return false
-        if (attributes != other.attributes) return false
-        if (name != other.name) return false
-        if (endTime != other.endTime) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = kind.hashCode()
-        result = 31 * result + startTime.hashCode()
-        result = 31 * result + traceId.hashCode()
-        result = 31 * result + spanId.hashCode()
-        result = 31 * result + attributes.hashCode()
-        result = 31 * result + name.hashCode()
-        result = 31 * result + endTime.hashCode()
-        return result
-    }
 
     override fun toString(): String {
         return buildString {
@@ -150,6 +123,26 @@ class SpanImpl internal constructor(
 
             append(')')
         }
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as SpanImpl
+
+        if (traceId != other.traceId) return false
+        if (spanId != other.spanId) return false
+        if (parentSpanId != other.parentSpanId) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = traceId.hashCode()
+        result = 31 * result + spanId.hashCode()
+        result = 31 * result + parentSpanId.hashCode()
+        return result
     }
 
     companion object {
