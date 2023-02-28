@@ -6,18 +6,15 @@ import android.content.Context
 import android.os.SystemClock
 import com.bugsnag.android.performance.BugsnagPerformance.start
 import com.bugsnag.android.performance.internal.ConnectivityCompat
-import com.bugsnag.android.performance.internal.DefaultAttributeSource
 import com.bugsnag.android.performance.internal.HttpDelivery
-import com.bugsnag.android.performance.internal.PerformanceComponentCallbacks
-import com.bugsnag.android.performance.internal.PerformanceLifecycleCallbacks
+import com.bugsnag.android.performance.internal.InstrumentedAppState
+import com.bugsnag.android.performance.internal.Module
 import com.bugsnag.android.performance.internal.Persistence
 import com.bugsnag.android.performance.internal.RetryDelivery
 import com.bugsnag.android.performance.internal.RetryDeliveryTask
 import com.bugsnag.android.performance.internal.Sampler
 import com.bugsnag.android.performance.internal.SamplerTask
 import com.bugsnag.android.performance.internal.SendBatchTask
-import com.bugsnag.android.performance.internal.SpanFactory
-import com.bugsnag.android.performance.internal.SpanTracker
 import com.bugsnag.android.performance.internal.Tracer
 import com.bugsnag.android.performance.internal.Worker
 import com.bugsnag.android.performance.internal.createResourceAttributes
@@ -32,17 +29,15 @@ import java.net.URL
 object BugsnagPerformance {
     const val VERSION: String = "0.0.0"
 
-    private val tracer = Tracer()
+    internal val tracer = Tracer()
 
-    private val spanTracker = SpanTracker()
-
-    private val defaultAttributeSource = DefaultAttributeSource()
-    private val spanFactory = SpanFactory(tracer, defaultAttributeSource)
-    private val platformCallbacks = createLifecycleCallbacks()
+    internal val instrumentedAppState = InstrumentedAppState()
 
     private var isStarted = false
 
-    private var worker: Worker? = null
+    private lateinit var worker: Worker
+
+    private val spanFactory get() = instrumentedAppState.spanFactory
 
     /**
      * Initialise the Bugsnag Performance SDK. This should be called within your
@@ -86,42 +81,39 @@ object BugsnagPerformance {
 
     private fun startUnderLock(configuration: PerformanceConfiguration) {
         val application = configuration.context.applicationContext as Application
-        configureLifecycleCallbacks(configuration)
+        instrumentedAppState.configure(application, configuration)
 
         if (configuration.autoInstrumentAppStarts) {
             // mark the app as "starting" (if it isn't already)
-            platformCallbacks.startAppLoadSpan("Cold")
+            reportApplicationClassLoaded()
         }
 
         // update isInForeground to a more accurate value (if accessible)
-        defaultAttributeSource.update {
+        instrumentedAppState.defaultAttributeSource.update {
             it.copy(isInForeground = isInForeground(application))
         }
 
         val connectivity =
             ConnectivityCompat(application) { hasConnection, _, networkType, networkSubType ->
-                if (hasConnection) {
-                    worker?.wake()
+                if (hasConnection && this::worker.isInitialized) {
+                    worker.wake()
                 }
 
-                defaultAttributeSource.update {
+                instrumentedAppState.defaultAttributeSource.update {
                     it.copy(
                         networkType = networkType,
-                        networkSubType = networkSubType
+                        networkSubType = networkSubType,
                     )
                 }
             }
 
         connectivity.registerForNetworkChanges()
 
-        application.registerActivityLifecycleCallbacks(platformCallbacks)
-        application.registerComponentCallbacks(PerformanceComponentCallbacks(tracer))
-
         val httpDelivery = HttpDelivery(
             configuration.endpoint,
             requireNotNull(configuration.apiKey) {
                 "PerformanceConfiguration.apiKey may not be null"
-            }
+            },
         )
 
         val persistence = Persistence(application)
@@ -131,7 +123,7 @@ object BugsnagPerformance {
         val samplerTask = SamplerTask(
             delivery,
             sampler,
-            persistence.persistentState
+            persistence.persistentState,
         )
 
         val bsgWorker = Worker(
@@ -146,25 +138,16 @@ object BugsnagPerformance {
         tracer.worker = bsgWorker
         tracer.sampler = sampler
 
+        loadModules()
+
         bsgWorker.start()
 
         worker = bsgWorker
     }
 
-    private fun createLifecycleCallbacks(): PerformanceLifecycleCallbacks {
-        return PerformanceLifecycleCallbacks(spanTracker, spanFactory) { inForeground ->
-            defaultAttributeSource.update {
-                it.copy(isInForeground = inForeground)
-            }
-        }
-    }
-
-    private fun configureLifecycleCallbacks(configuration: PerformanceConfiguration) {
-        platformCallbacks.apply {
-            openLoadSpans = configuration.autoInstrumentActivities != AutoInstrument.OFF
-            closeLoadSpans = configuration.autoInstrumentActivities == AutoInstrument.FULL
-            instrumentAppStart = configuration.autoInstrumentAppStarts
-        }
+    private fun loadModules() {
+        val moduleLoader = Module.Loader(instrumentedAppState)
+        moduleLoader.loadModule("com.bugsnag.android.performance.AppCompatModule")
     }
 
     /**
@@ -191,7 +174,7 @@ object BugsnagPerformance {
     fun startNetworkRequestSpan(
         url: URL,
         verb: String,
-        options: SpanOptions = SpanOptions.DEFAULTS
+        options: SpanOptions = SpanOptions.DEFAULTS,
     ): Span = spanFactory.createNetworkSpan(url, verb, options)
 
     /**
@@ -208,10 +191,10 @@ object BugsnagPerformance {
     @JvmOverloads
     fun startViewLoadSpan(
         activity: Activity,
-        options: SpanOptions = SpanOptions.DEFAULTS
+        options: SpanOptions = SpanOptions.DEFAULTS,
     ): Span {
         // create & track Activity referenced ViewLoad spans
-        return spanTracker.associate(activity) {
+        return instrumentedAppState.spanTracker.associate(activity) {
             spanFactory.createViewLoadSpan(activity, options)
         }
     }
@@ -227,7 +210,7 @@ object BugsnagPerformance {
     @JvmStatic
     @JvmOverloads
     fun endViewLoadSpan(activity: Activity, endTime: Long = SystemClock.elapsedRealtimeNanos()) {
-        spanTracker.endSpan(activity, endTime)
+        instrumentedAppState.spanTracker.endSpan(activity, endTime)
     }
 
     /**
@@ -242,7 +225,7 @@ object BugsnagPerformance {
     fun startViewLoadSpan(
         viewType: ViewType,
         viewName: String,
-        options: SpanOptions = SpanOptions.DEFAULTS
+        options: SpanOptions = SpanOptions.DEFAULTS,
     ): Span = spanFactory.createViewLoadSpan(viewType, viewName, options)
 
     /**
@@ -262,7 +245,7 @@ object BugsnagPerformance {
     @JvmStatic
     fun reportApplicationClassLoaded() {
         synchronized(this) {
-            platformCallbacks.startAppLoadSpan("Cold")
+            instrumentedAppState.platformCallbacks.startAppLoadSpan("Cold")
         }
     }
 }

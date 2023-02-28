@@ -1,2 +1,2 @@
 -keepattributes LineNumberTable,SourceFile
--keep class com.bugsnag.android.performance.AppCompatPlugin
+-keep class com.bugsnag.android.performance.AppCompatModule

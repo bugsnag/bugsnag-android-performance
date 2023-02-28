@@ -50,12 +50,16 @@ class SpanTracker {
      * the currently tracked `Span` will however always be returned.
      */
     inline fun associate(token: Any, createSpan: () -> SpanImpl): SpanImpl {
-        var existingSpan = this[token]
-        if (existingSpan == null) {
-            existingSpan = associate(token, createSpan())
+        var associatedSpan = this[token]
+        if (associatedSpan == null) {
+            associatedSpan = associate(token, createSpan())
         }
 
-        return existingSpan
+        return associatedSpan
+    }
+
+    fun removeAssociation(tag: Any?): SpanImpl? {
+        return lock.write { backingStore.remove(tag)?.span }
     }
 
     /**
