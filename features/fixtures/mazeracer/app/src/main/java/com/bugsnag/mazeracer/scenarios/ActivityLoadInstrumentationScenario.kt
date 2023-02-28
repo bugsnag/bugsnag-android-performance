@@ -12,7 +12,7 @@ class ActivityLoadInstrumentationScenario(
     scenarioMetadata: String
 ) : Scenario(config, scenarioMetadata) {
     init {
-        InternalDebug.spanBatchSizeSendTriggerPoint = 1
+        InternalDebug.spanBatchSizeSendTriggerPoint = 2
         config.autoInstrumentActivities =
             scenarioMetadata.takeIf { it.isNotBlank() }
             ?.let { AutoInstrument.valueOf(it) }
