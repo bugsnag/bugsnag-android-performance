@@ -50,6 +50,11 @@ interface SpanContext {
         internal val contextStack: Deque<SpanContext>
             get() = threadLocalStorage.get() as Deque<SpanContext>
 
+        @JvmSynthetic
+        internal fun setContextStackUnsafe(stack: Deque<SpanContext>)  {
+            threadLocalStorage.set(stack)
+        }
+
         /**
          * Retrieve the current [SpanContext] for this thread (or [invalid] if not available).
          */
