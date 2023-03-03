@@ -20,5 +20,6 @@ rootProject.name = "bugsnag-android-performance"
 include(
     ":bugsnag-android-performance",
     ":bugsnag-plugin-android-performance-okhttp",
-    ":bugsnag-plugin-android-performance-appcompat"
+    ":bugsnag-plugin-android-performance-appcompat",
+    ":bugsnag-plugin-android-performance-coroutines"
 )
