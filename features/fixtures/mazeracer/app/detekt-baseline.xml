@@ -10,6 +10,8 @@
     <ID>MagicNumber:BatchTimeoutScenario.kt$BatchTimeoutScenario$250</ID>
     <ID>MagicNumber:BatchTimeoutScenario.kt$BatchTimeoutScenario$30</ID>
     <ID>MagicNumber:BatchTimeoutScenario.kt$BatchTimeoutScenario$50</ID>
+    <ID>MagicNumber:DisabledReleaseStageScenario.kt$DisabledReleaseStageScenario$100L</ID>
+    <ID>MagicNumber:DisabledReleaseStageScenario.kt$DisabledReleaseStageScenario$500L</ID>
     <ID>MagicNumber:MainActivity.kt$MainActivity$1000</ID>
     <ID>MagicNumber:ManualSpanScenario.kt$ManualSpanScenario$100L</ID>
     <ID>MagicNumber:MazeRacerApplication.kt$MazeRacerApplication$1000L</ID>
