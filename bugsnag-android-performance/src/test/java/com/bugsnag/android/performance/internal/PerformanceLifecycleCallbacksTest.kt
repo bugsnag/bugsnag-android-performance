@@ -21,7 +21,7 @@ class PerformanceLifecycleCallbacksTest {
     private val activity = Activity()
 
     private var spanFactory = SpanFactory(testSpanProcessor)
-    private var spanTracker = SpanTracker<Activity>()
+    private var spanTracker = SpanTracker()
 
     private lateinit var spanProcessor: CollectingSpanProcessor
 
@@ -44,7 +44,7 @@ class PerformanceLifecycleCallbacksTest {
         SystemClock.setCurrentTimeMillis(100L)
 
         val callbacks = PerformanceLifecycleCallbacks(
-            activityLoadSpans = spanTracker,
+            spanTracker = spanTracker,
             spanFactory = spanFactory,
             inForegroundCallback = {},
         ).apply {
@@ -78,7 +78,7 @@ class PerformanceLifecycleCallbacksTest {
         SystemClock.setCurrentTimeMillis(100L)
 
         val callbacks = PerformanceLifecycleCallbacks(
-            activityLoadSpans = spanTracker,
+            spanTracker = spanTracker,
             spanFactory = spanFactory,
             inForegroundCallback = {},
         ).apply {
@@ -118,7 +118,7 @@ class PerformanceLifecycleCallbacksTest {
         SystemClock.setCurrentTimeMillis(100L)
 
         val callbacks = PerformanceLifecycleCallbacks(
-            activityLoadSpans = spanTracker,
+            spanTracker = spanTracker,
             spanFactory = spanFactory,
             inForegroundCallback = {},
         ).apply {

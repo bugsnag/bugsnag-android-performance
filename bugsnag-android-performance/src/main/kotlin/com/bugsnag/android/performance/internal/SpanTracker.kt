@@ -3,8 +3,10 @@ package com.bugsnag.android.performance.internal
 import android.os.SystemClock
 import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.internal.SpanImpl.Companion.NO_END_TIME
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.ConcurrentMap
+import java.util.WeakHashMap
+import java.util.concurrent.locks.ReentrantReadWriteLock
+import kotlin.concurrent.read
+import kotlin.concurrent.write
 
 /**
  * Container for [Span]s that are associated with other objects, which have their own
@@ -14,12 +16,29 @@ import java.util.concurrent.ConcurrentMap
  * the `endTime`. If the `Span` is then [marked as leaked](markSpanLeaked) then its "auto end"
  * time is used to close it.
  */
-@JvmInline
-internal value class SpanTracker<T>(
-    private val backingStore: ConcurrentMap<T, TrackedSpan> = ConcurrentHashMap()
-) {
-    operator fun get(token: T): SpanImpl? {
-        return backingStore[token]?.span
+class SpanTracker {
+    private val backingStore: MutableMap<Any, SpanBinding> = WeakHashMap()
+    private val lock = ReentrantReadWriteLock()
+
+    operator fun get(token: Any): SpanImpl? {
+        return lock.read { backingStore[token]?.span }
+    }
+
+    /**
+     * Track a `SpanImpl` against a specified [token] object, returning the actual `Span` being
+     * tracked. This function may discard [span] if the given [token] is already being tracked,
+     * if this is the case the tracked span will be returned.
+     */
+    fun associate(token: Any, span: SpanImpl): SpanImpl {
+        lock.write {
+            val existingSpan = backingStore[token]
+            if (existingSpan != null) {
+                return existingSpan.span
+            } else {
+                backingStore[token] = SpanBinding(span)
+                return span
+            }
+        }
     }
 
     /**
@@ -27,21 +46,20 @@ internal value class SpanTracker<T>(
      * if required (by calling [createSpan]). If the `token` already has an associated `Span`
      * then that is returned, otherwise [createSpan] is used.
      *
-     * Note: in racey scenarios the [createSpan] may be invoked and the resulting `Span` discarded,
+     * Note: in race scenarios the [createSpan] may be invoked and the resulting `Span` discarded,
      * the currently tracked `Span` will however always be returned.
      */
-    inline fun track(token: T, createSpan: () -> SpanImpl): SpanImpl {
-        var trackedSpan: TrackedSpan? = backingStore[token]
-        if (trackedSpan == null) {
-            trackedSpan = TrackedSpan(createSpan())
-            val racedSpan = backingStore.putIfAbsent(token, trackedSpan)
-
-            if (racedSpan != null) {
-                trackedSpan = racedSpan
-            }
+    inline fun associate(token: Any, createSpan: () -> SpanImpl): SpanImpl {
+        var associatedSpan = this[token]
+        if (associatedSpan == null) {
+            associatedSpan = associate(token, createSpan())
         }
 
-        return trackedSpan.span
+        return associatedSpan
+    }
+
+    fun removeAssociation(tag: Any?): SpanImpl? {
+        return lock.write { backingStore.remove(tag)?.span }
     }
 
     /**
@@ -49,7 +67,7 @@ internal value class SpanTracker<T>(
      * marked as [leaked](markSpanLeaked) then its `endTime` will be set to [autoEndTime]. Otherwise
      * this value will be discarded.
      */
-    fun markSpanAutomaticEnd(token: T) {
+    fun markSpanAutomaticEnd(token: Any) {
         backingStore[token]?.autoEndTime = SystemClock.elapsedRealtimeNanos()
     }
 
@@ -58,19 +76,19 @@ internal value class SpanTracker<T>(
      * Returns `true` if the `Span` was marked as leaked, or `false` if the `Span` was already
      * considered to be closed (or was not tracked).
      */
-    fun markSpanLeaked(token: T): Boolean {
-        return backingStore.remove(token)?.markLeaked() == true
+    fun markSpanLeaked(token: Any): Boolean {
+        return lock.write { backingStore.remove(token)?.markLeaked() == true }
     }
 
     /**
      * End the tracking of a `Span` marking its `endTime` if it has not already been closed.
      * This *must* be called in order to ensure tokens can be garbage-collected.
      */
-    fun endSpan(token: T, endTime: Long = SystemClock.elapsedRealtimeNanos()) {
-        backingStore.remove(token)?.span?.end(endTime)
+    fun endSpan(token: Any, endTime: Long = SystemClock.elapsedRealtimeNanos()) {
+        lock.write { backingStore.remove(token)?.span?.end(endTime) }
     }
 
-    internal class TrackedSpan(val span: SpanImpl) {
+    private class SpanBinding(val span: SpanImpl) {
         var autoEndTime: Long = NO_END_TIME
 
         fun markLeaked(): Boolean {

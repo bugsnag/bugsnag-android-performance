@@ -7,7 +7,6 @@ import android.os.Handler
 import android.os.Looper
 import android.os.Message
 import com.bugsnag.android.performance.Logger
-import com.bugsnag.android.performance.SpanOptions
 import kotlin.math.max
 
 typealias InForegroundCallback = (inForeground: Boolean) -> Unit
@@ -21,8 +20,8 @@ private const val MSG_SEND_BACKGROUND = 1
  */
 private const val BACKGROUND_TIMEOUT_MS = 700L
 
-internal class PerformanceLifecycleCallbacks(
-    private val activityLoadSpans: SpanTracker<Activity>,
+class PerformanceLifecycleCallbacks internal constructor(
+    private val spanTracker: SpanTracker,
     private val spanFactory: SpanFactory,
     private val inForegroundCallback: InForegroundCallback
 ) : ActivityLifecycleCallbacks, Handler.Callback {
@@ -60,7 +59,7 @@ internal class PerformanceLifecycleCallbacks(
             maybeStartAppLoad(savedInstanceState)
 
             if (openLoadSpans) {
-                activityLoadSpans.track(activity) {
+                spanTracker.associate(activity) {
                     spanFactory.createViewLoadSpan(activity)
                 }
             }
@@ -86,9 +85,9 @@ internal class PerformanceLifecycleCallbacks(
         appStartupSpan = null
 
         if (closeLoadSpans) {
-            activityLoadSpans.endSpan(activity)
+            spanTracker.endSpan(activity)
         } else {
-            activityLoadSpans.markSpanAutomaticEnd(activity)
+            spanTracker.markSpanAutomaticEnd(activity)
         }
     }
 
@@ -103,7 +102,7 @@ internal class PerformanceLifecycleCallbacks(
 
     override fun onActivityDestroyed(activity: Activity) {
         try {
-            if (activityLoadSpans.markSpanLeaked(activity)) {
+            if (spanTracker.markSpanLeaked(activity)) {
                 Logger.w(
                     "${activity::class.java.name} appears to have leaked a ViewLoad Span. " +
                         "This is probably because BugsnagPerformance.endViewLoad was not called."
@@ -121,6 +120,7 @@ internal class PerformanceLifecycleCallbacks(
             MSG_SEND_BACKGROUND -> {
                 inForegroundCallback(false)
                 backgroundSent = true
+                appStartupSpan = null
             }
 
             else -> return false

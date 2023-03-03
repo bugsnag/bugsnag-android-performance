@@ -22,8 +22,8 @@ class SpanTrackerTest {
         val autoEndTime = 100L
         mockedClock.`when`<Long>(SystemClock::elapsedRealtimeNanos).thenReturn(autoEndTime)
 
-        val tracker = SpanTracker<String>()
-        val span = tracker.track("TestActivity") {
+        val tracker = SpanTracker()
+        val span = tracker.associate("TestActivity") {
             spanFactory.newSpan(
                 processor = testSpanProcessor,
                 endTime = null,
@@ -44,8 +44,8 @@ class SpanTrackerTest {
 
         mockedClock.`when`<Long>(SystemClock::elapsedRealtimeNanos).thenReturn(autoEndTime)
 
-        val tracker = SpanTracker<String>()
-        val span = tracker.track("TestActivity") {
+        val tracker = SpanTracker()
+        val span = tracker.associate("TestActivity") {
             spanFactory.newSpan(processor = testSpanProcessor, endTime = null)
         }
 
@@ -66,8 +66,8 @@ class SpanTrackerTest {
     fun testNormalEnd() {
         val endTime = 150L
 
-        val tracker = SpanTracker<String>()
-        val span = tracker.track("TestActivity") {
+        val tracker = SpanTracker()
+        val span = tracker.associate("TestActivity") {
             spanFactory.newSpan(processor = testSpanProcessor, endTime = null)
         }
 

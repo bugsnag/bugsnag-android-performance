@@ -1,1 +1,2 @@
 -keep class com.bugsnag.mazeracer.scenarios.** {*;}
+-keep class com.bugsnag.mazeracer.ActivityViewLoadActivity$LoaderFragment

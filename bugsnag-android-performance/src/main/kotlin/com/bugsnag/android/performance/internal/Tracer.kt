@@ -3,7 +3,7 @@ package com.bugsnag.android.performance.internal
 import android.os.SystemClock
 import com.bugsnag.android.performance.Span
 
-internal class Tracer : SpanProcessor {
+class Tracer : SpanProcessor {
 
     @Suppress("DoubleMutabilityForCollection") // we swap out this ArrayList when we flush batches
     private var batch = ArrayList<SpanImpl>()
