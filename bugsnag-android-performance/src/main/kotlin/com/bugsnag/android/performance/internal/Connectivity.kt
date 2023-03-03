@@ -29,7 +29,7 @@ internal typealias NetworkChangeCallback = (
     hasConnection: Boolean,
     metering: ConnectionMetering,
     networkType: NetworkType,
-    networkSubType: String?
+    networkSubType: String?,
 ) -> Unit
 
 internal enum class ConnectionMetering {
@@ -56,7 +56,7 @@ private object UnknownNetwork {
 
 internal class ConnectivityCompat(
     context: Context,
-    callback: NetworkChangeCallback?
+    callback: NetworkChangeCallback?,
 ) : Connectivity {
 
     private val cm = context.getConnectivityManager()
@@ -93,7 +93,7 @@ internal class ConnectivityCompat(
 internal class ConnectivityLegacy(
     private val context: Context,
     private val cm: ConnectivityManager,
-    private val callback: NetworkChangeCallback?
+    private val callback: NetworkChangeCallback?,
 ) : BroadcastReceiver(), Connectivity {
 
     override val hasConnection: Boolean
@@ -156,7 +156,7 @@ internal class ConnectivityLegacy(
                 newNetworkInfo?.isConnectedOrConnecting ?: UnknownNetwork.HAS_CONNECTION,
                 newNetworkInfo?.metering ?: UnknownNetwork.METERING,
                 newNetworkInfo?.networkType ?: UnknownNetwork.NETWORK_TYPE,
-                newNetworkInfo?.subtypeName
+                newNetworkInfo?.subtypeName,
             )
         }
     }
@@ -166,7 +166,7 @@ internal class ConnectivityLegacy(
 internal open class ConnectivityApi24(
     private val context: Context,
     internal val cm: ConnectivityManager,
-    private val callback: NetworkChangeCallback?
+    private val callback: NetworkChangeCallback?,
 ) : ConnectivityManager.NetworkCallback(), Connectivity {
 
     override val hasConnection: Boolean
@@ -255,7 +255,7 @@ internal open class ConnectivityApi24(
                 UnknownNetwork.HAS_CONNECTION,
                 UnknownNetwork.METERING,
                 UnknownNetwork.NETWORK_TYPE,
-                UnknownNetwork.NETWORK_SUBTYPE
+                UnknownNetwork.NETWORK_SUBTYPE,
             )
         }
     }
@@ -270,7 +270,7 @@ internal open class ConnectivityApi24(
                 true,
                 meteringFor(capabilities),
                 networkTypeFor(capabilities),
-                networkSubTypeFor(capabilities)
+                networkSubTypeFor(capabilities),
             )
         }
     }
@@ -280,7 +280,7 @@ internal open class ConnectivityApi24(
 internal class ConnectivityApi31(
     context: Context,
     cm: ConnectivityManager,
-    callback: NetworkChangeCallback?
+    callback: NetworkChangeCallback?,
 ) : ConnectivityApi24(context, cm, callback) {
 
     override fun meteringFor(capabilities: NetworkCapabilities?): ConnectionMetering {
@@ -307,5 +307,10 @@ internal object UnknownConnectivity : Connectivity {
     override val networkSubType = null
 }
 
+/**
+ * Should we attempt to deliver a payload based on the current status of the `Connectivity`. Returns
+ * `true` if the `Connectivity` [hasConnection] *or* is an unknown network (handling edge cases
+ * where the network status has not been set yet, or the app might not have appropriate permissions).
+ */
 internal fun Connectivity.shouldAttemptDelivery(): Boolean =
     networkType == NetworkType.UNKNOWN || hasConnection
