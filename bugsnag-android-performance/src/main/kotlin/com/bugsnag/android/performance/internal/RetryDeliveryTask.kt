@@ -1,10 +1,18 @@
 package com.bugsnag.android.performance.internal
 
+import com.bugsnag.android.performance.Logger
+
 internal class RetryDeliveryTask(
     private val retryQueue: RetryQueue,
-    private val delivery: Delivery
+    private val delivery: Delivery,
+    private val connectivity: Connectivity
 ) : AbstractTask() {
     override fun execute(): Boolean {
+        if (!connectivity.shouldAttemptDelivery()) {
+            Logger.d("Skipping RetryDeliveryTask - no connectivity.")
+            return false;
+        }
+
         val nextPayload = retryQueue.next() ?: return false
         val result = delivery.deliver(nextPayload)
 

@@ -1,6 +1,7 @@
 package com.bugsnag.android.performance.internal
 
 import com.bugsnag.android.performance.Attributes
+import com.bugsnag.android.performance.Logger
 
 internal class RetryDelivery(
     private val retryQueue: RetryQueue,
@@ -16,6 +17,7 @@ internal class RetryDelivery(
 
         val result = delivery.deliver(spans, resourceAttributes)
         if (result is DeliveryResult.Failed && result.canRetry) {
+            Logger.d("Delivery failed - will schedule for retry")
             retryQueue.add(result.payload)
         }
         return result

@@ -3,7 +3,7 @@
   <ManuallySuppressedIssues></ManuallySuppressedIssues>
   <CurrentIssues>
     <ID>MagicNumber:AppBackgroundedScenario.kt$AppBackgroundedScenario$100</ID>
-    <ID>MagicNumber:AppBackgroundedScenario.kt$AppBackgroundedScenario$90_000L</ID>
+    <ID>MagicNumber:AppBackgroundedScenario.kt$AppBackgroundedScenario$120_000L</ID>
     <ID>MagicNumber:AppStartScenario.kt$AppStartScenario$1000L</ID>
     <ID>MagicNumber:AppStartScenario.kt$AppStartScenario$500L</ID>
     <ID>MagicNumber:BatchTimeoutScenario.kt$BatchTimeoutScenario$100</ID>
@@ -20,8 +20,10 @@
     <ID>MagicNumber:PreStartSpansScenario.kt$PreStartSpansScenario$4</ID>
     <ID>MagicNumber:PreStartSpansScenario.kt$PreStartSpansScenario$50</ID>
     <ID>MagicNumber:RetryScenario.kt$RetryScenario$100</ID>
+    <ID>MagicNumber:RetryScenario.kt$RetryScenario$50L</ID>
     <ID>MagicNumber:RetryTimeoutScenario.kt$RetryTimeoutScenario$100</ID>
     <ID>MagicNumber:RetryTimeoutScenario.kt$RetryTimeoutScenario$105</ID>
+    <ID>MagicNumber:RetryTimeoutScenario.kt$RetryTimeoutScenario$50L</ID>
     <ID>MagicNumber:SamplingProbabilityZeroScenario.kt$SamplingProbabilityZeroScenario$100</ID>
     <ID>MagicNumber:ThreeSpansScenario.kt$ThreeSpansScenario$300</ID>
     <ID>TooGenericExceptionCaught:MainActivity.kt$MainActivity$e: Exception</ID>
