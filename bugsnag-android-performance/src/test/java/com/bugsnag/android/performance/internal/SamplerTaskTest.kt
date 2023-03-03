@@ -20,7 +20,7 @@ internal class SamplerTaskTest {
     @Test
     fun fetchWithoutResponse() {
         val delivery = mock<Delivery>()
-        val sampler = Sampler(0.23)
+        val sampler = ProbabilitySampler(0.23)
         val samplerTask = SamplerTask(delivery, sampler, mock())
 
         samplerTask.onAttach(mock())
@@ -39,7 +39,7 @@ internal class SamplerTaskTest {
         InternalDebug.pValueExpireAfterMs = 200
 
         val delivery = mock<Delivery>()
-        val sampler = Sampler(1.0)
+        val sampler = ProbabilitySampler(1.0)
         val persistentState = mock<PersistentState> {
             whenever(it.pValue) doReturn 0.5
             whenever(it.pValueExpiryTime) doAnswer {
@@ -63,7 +63,7 @@ internal class SamplerTaskTest {
         InternalDebug.pValueExpireAfterMs = 200
 
         val delivery = mock<Delivery>()
-        val sampler = Sampler(1.0)
+        val sampler = ProbabilitySampler(1.0)
         val persistentState = mock<PersistentState>()
 
         val samplerTask = SamplerTask(delivery, sampler, persistentState)
