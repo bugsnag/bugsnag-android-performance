@@ -39,12 +39,12 @@ internal enum class ConnectionMetering {
 }
 
 internal interface Connectivity {
-    fun registerForNetworkChanges()
-    fun unregisterForNetworkChanges()
     val hasConnection: Boolean
     val metering: ConnectionMetering
     val networkType: NetworkType
     val networkSubType: String?
+    fun registerForNetworkChanges()
+    fun unregisterForNetworkChanges()
 }
 
 private object UnknownNetwork {
@@ -306,3 +306,6 @@ internal object UnknownConnectivity : Connectivity {
     override val networkType = NetworkType.UNKNOWN
     override val networkSubType = null
 }
+
+internal fun Connectivity.shouldAttemptDelivery(): Boolean =
+    networkType == NetworkType.UNKNOWN || hasConnection

@@ -8,7 +8,7 @@ internal class RetryDeliveryTask(
     private val connectivity: Connectivity
 ) : AbstractTask() {
     override fun execute(): Boolean {
-        if (!connectivity.hasConnection) {
+        if (!connectivity.shouldAttemptDelivery()) {
             Logger.d("Skipping RetryDeliveryTask - no connectivity.")
             return false;
         }

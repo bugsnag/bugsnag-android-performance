@@ -20,7 +20,7 @@ internal class HttpDelivery(
     }
 
     override fun deliver(tracePayload: TracePayload): DeliveryResult {
-        if (!connectivity.hasConnection) {
+        if (!connectivity.shouldAttemptDelivery()) {
             Logger.d("HttpDelivery refusing to delivery payload - no connectivity.")
             // We can't deliver now but can retry later.
             return DeliveryResult.Failed(tracePayload, true)
