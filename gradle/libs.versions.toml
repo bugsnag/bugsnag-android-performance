@@ -1,0 +1,42 @@
+[versions]
+agp = "7.3.0"
+appcompat = "1.4.2"
+detekt = "1.21.0"
+dokka = "1.7.20"
+kotlin = "1.5.20"
+kotlinCoroutines = "1.6.4"
+ktlint = "11.2.0"
+licenseCheck = "0.16.1"
+
+[plugins]
+agp-library = { id = "com.android.library", version.ref = "agp" }
+detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
+dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }
+licenseCheck = { id = "com.github.hierynomus.license", version.ref = "licenseCheck" }
+
+[libraries]
+androidx-annotation = "androidx.annotation:annotation:1.3.0"
+androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
+androidx-test-junit = "androidx.test.ext:junit:1.1.3"
+
+jsonSchemaFriend = "net.jimblackler.jsonschemafriend:core:0.11.4"
+
+junit = "junit:junit:4.13.2"
+
+kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
+kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
+kotlinx-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinCoroutines" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinCoroutines" }
+
+mockito-inline = "org.mockito:mockito-inline:4.8.1"
+mockito-kotlin = "org.mockito.kotlin:mockito-kotlin:4.0.0"
+
+okhttp = "com.squareup.okhttp3:okhttp:4.9.1"
+okhttp-mockServer = "com.squareup.okhttp3:mockwebserver:4.9.1"
+
+robolectric = "org.robolectric:robolectric:4.8"
+
+[bundles]
+test-jvm = ["androidx-test-junit", "junit", "mockito-inline", "mockito-kotlin", "robolectric"]
