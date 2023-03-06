@@ -7,6 +7,7 @@ import android.os.SystemClock
 import com.bugsnag.android.performance.BugsnagPerformance.start
 import com.bugsnag.android.performance.internal.ConnectivityCompat
 import com.bugsnag.android.performance.internal.HttpDelivery
+import com.bugsnag.android.performance.internal.ImmutableConfig
 import com.bugsnag.android.performance.internal.InstrumentedAppState
 import com.bugsnag.android.performance.internal.Module
 import com.bugsnag.android.performance.internal.Persistence
@@ -66,7 +67,7 @@ object BugsnagPerformance {
         if (!isStarted) {
             synchronized(this) {
                 if (!isStarted) {
-                    startUnderLock(configuration.validated())
+                    startUnderLock(ImmutableConfig(configuration))
                     isStarted = true
                 }
             }
@@ -79,14 +80,15 @@ object BugsnagPerformance {
         Logger.w("BugsnagPerformance.start has already been called")
     }
 
-    private fun startUnderLock(configuration: PerformanceConfiguration) {
-        val application = configuration.context.applicationContext as Application
-        instrumentedAppState.configure(application, configuration)
+    private fun startUnderLock(configuration: ImmutableConfig) {
+        instrumentedAppState.configure(configuration)
 
         if (configuration.autoInstrumentAppStarts) {
             // mark the app as "starting" (if it isn't already)
             reportApplicationClassLoaded()
         }
+
+        val application = configuration.application
 
         // update isInForeground to a more accurate value (if accessible)
         instrumentedAppState.defaultAttributeSource.update {

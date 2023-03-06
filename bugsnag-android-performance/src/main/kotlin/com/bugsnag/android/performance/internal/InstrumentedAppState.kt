@@ -1,10 +1,8 @@
 package com.bugsnag.android.performance.internal
 
 import android.app.Application
-
 import com.bugsnag.android.performance.AutoInstrument
 import com.bugsnag.android.performance.BugsnagPerformance
-import com.bugsnag.android.performance.PerformanceConfiguration
 
 class InstrumentedAppState {
     internal val defaultAttributeSource = DefaultAttributeSource()
@@ -17,8 +15,8 @@ class InstrumentedAppState {
     lateinit var app: Application
         private set
 
-    internal fun configure(application: Application, configuration: PerformanceConfiguration) {
-        this.app = application
+    internal fun configure(configuration: ImmutableConfig) {
+        this.app = configuration.application
 
         configureLifecycleCallbacks(configuration)
 
@@ -34,7 +32,7 @@ class InstrumentedAppState {
         }
     }
 
-    private fun configureLifecycleCallbacks(configuration: PerformanceConfiguration) {
+    private fun configureLifecycleCallbacks(configuration: ImmutableConfig) {
         platformCallbacks.apply {
             openLoadSpans = configuration.autoInstrumentActivities != AutoInstrument.OFF
             closeLoadSpans = configuration.autoInstrumentActivities == AutoInstrument.FULL

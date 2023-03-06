@@ -1,6 +1,7 @@
 package com.bugsnag.android.performance
 
 import android.content.Context
+import com.bugsnag.android.performance.internal.ImmutableConfig
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
 import org.junit.Test
@@ -16,24 +17,26 @@ class ApiKeyValidationTest {
     @Test
     fun invalidApiKey() {
         assertThrows(IllegalArgumentException::class.java) {
-            PerformanceConfiguration.load(context, "not a valid key")
-                .validated()
+            ImmutableConfig(PerformanceConfiguration.load(context, "not a valid key"))
         }
     }
 
     @Test
     fun uppercaseApiKeyInvalid() {
         assertThrows(IllegalArgumentException::class.java) {
-            PerformanceConfiguration.load(context, "DECAFBADDECAFBADDECAFBADDECAFBAD")
-                .validated()
+            ImmutableConfig(
+                PerformanceConfiguration.load(
+                    context,
+                    "DECAFBADDECAFBADDECAFBADDECAFBAD",
+                ),
+            )
         }
     }
 
     @Test
     fun validApiKey() {
         val apiKey = "decafbaddecafbaddecafbaddecafbad"
-        val config = PerformanceConfiguration.load(context, apiKey)
-            .validated()
+        val config = ImmutableConfig(PerformanceConfiguration.load(context, apiKey))
 
         assertEquals(apiKey, config.apiKey)
     }
