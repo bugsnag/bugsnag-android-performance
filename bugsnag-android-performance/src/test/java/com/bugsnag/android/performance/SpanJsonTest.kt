@@ -43,7 +43,7 @@ class SpanJsonTest {
             """
                 {
                     "name": "test span",
-                    "kind": "SPAN_KIND_INTERNAL",
+                    "kind": 1,
                     "spanId": "00000000decafbad",
                     "traceId": "4ee2666146504c7fa35f00f007cd24e7",
                     "startTimeUnixNano": "${BugsnagClock.elapsedNanosToUnixTime(0)}",

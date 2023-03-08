@@ -80,7 +80,7 @@ class SpanImpl internal constructor(
     internal fun toJson(json: JsonWriter) {
         json.beginObject()
             .name("name").value(name)
-            .name("kind").value(kind.otelName)
+            .name("kind").value(kind.otelOrdinal)
             .name("spanId").value(spanId.toHexString())
             .name("traceId").value(traceId.toHexString())
             .name("startTimeUnixNano")

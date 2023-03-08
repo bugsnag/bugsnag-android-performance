@@ -22,6 +22,9 @@
     <ID>MagicNumber:InternalDebug.kt$InternalDebug$60</ID>
     <ID>MagicNumber:Persistence.kt$RetryQueue$19</ID>
     <ID>MagicNumber:Persistence.kt$TraceFileDecoder$1024</ID>
+    <ID>MagicNumber:SpanKind.kt$SpanKind.CLIENT$3</ID>
+    <ID>MagicNumber:SpanKind.kt$SpanKind.CONSUMER$5</ID>
+    <ID>MagicNumber:SpanKind.kt$SpanKind.PRODUCER$4</ID>
     <ID>ReturnCount:RetryDeliveryTask.kt$RetryDeliveryTask$override fun execute(): Boolean</ID>
     <ID>SwallowedException:Connectivity.kt$ConnectivityLegacy$e: NullPointerException</ID>
     <ID>SwallowedException:ContextExtensions.kt$exc: RuntimeException</ID>
