@@ -21,10 +21,7 @@ class MainActivity : AppCompatActivity() {
 
         findViewById<Button>(R.id.custom_span).setOnClickListener {
             val span = BugsnagPerformance.startSpan("I am custom!")
-            Handler(Looper.getMainLooper()).postDelayed({
-                span.end()
-            }, Random.nextInt(10, 2000).toLong()
-            )
+            Handler(Looper.getMainLooper()).postDelayed(span::end, (10L..2000L).random())
         }
     }
 }
