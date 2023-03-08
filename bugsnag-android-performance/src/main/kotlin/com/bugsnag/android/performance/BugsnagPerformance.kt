@@ -6,16 +6,18 @@ import android.content.Context
 import android.os.SystemClock
 import com.bugsnag.android.performance.BugsnagPerformance.start
 import com.bugsnag.android.performance.internal.ConnectivityCompat
+import com.bugsnag.android.performance.internal.DiscardingSampler
 import com.bugsnag.android.performance.internal.HttpDelivery
 import com.bugsnag.android.performance.internal.ImmutableConfig
 import com.bugsnag.android.performance.internal.InstrumentedAppState
 import com.bugsnag.android.performance.internal.Module
 import com.bugsnag.android.performance.internal.Persistence
+import com.bugsnag.android.performance.internal.ProbabilitySampler
 import com.bugsnag.android.performance.internal.RetryDelivery
 import com.bugsnag.android.performance.internal.RetryDeliveryTask
-import com.bugsnag.android.performance.internal.Sampler
 import com.bugsnag.android.performance.internal.SamplerTask
 import com.bugsnag.android.performance.internal.SendBatchTask
+import com.bugsnag.android.performance.internal.Task
 import com.bugsnag.android.performance.internal.Tracer
 import com.bugsnag.android.performance.internal.Worker
 import com.bugsnag.android.performance.internal.createResourceAttributes
@@ -122,24 +124,32 @@ object BugsnagPerformance {
         val persistence = Persistence(application)
         val delivery = RetryDelivery(persistence.retryQueue, httpDelivery)
 
-        val sampler = Sampler(configuration.samplingProbability)
-        val samplerTask = SamplerTask(
-            delivery,
-            sampler,
-            persistence.persistentState,
-        )
+        val workerTasks = ArrayList<Task>()
 
-        val bsgWorker = Worker(
-            samplerTask,
-            SendBatchTask(delivery, tracer, createResourceAttributes(configuration)),
-            RetryDeliveryTask(persistence.retryQueue, httpDelivery, connectivity),
-        )
+        if (configuration.isReleaseStageEnabled) {
+            val sampler = ProbabilitySampler(configuration.samplingProbability)
 
-        delivery.newProbabilityCallback = samplerTask
+            val samplerTask = SamplerTask(
+                delivery,
+                sampler,
+                persistence.persistentState,
+            )
+
+            delivery.newProbabilityCallback = samplerTask
+            workerTasks.add(samplerTask)
+            
+            tracer.sampler = sampler
+        } else {
+            tracer.sampler = DiscardingSampler
+        }
+
+        workerTasks.add(SendBatchTask(delivery, tracer, createResourceAttributes(configuration)))
+        workerTasks.add(RetryDeliveryTask(persistence.retryQueue, httpDelivery, connectivity))
+
+        val bsgWorker = Worker(workerTasks)
 
         // register the Worker with the components that depend on it
         tracer.worker = bsgWorker
-        tracer.sampler = sampler
 
         loadModules()
 
