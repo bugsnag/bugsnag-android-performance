@@ -16,11 +16,10 @@ class SpanFactory(
 ) {
     fun createCustomSpan(name: String, options: SpanOptions = SpanOptions.DEFAULTS): SpanImpl {
         val isFirstClass = options.isFirstClass
-        val span = createSpan("Custom/$name", SpanKind.INTERNAL, options)
+        val span = createSpan(name, SpanKind.INTERNAL, options)
         span.setAttribute("bugsnag.span.first_class", isFirstClass)
         return span
     }
-
 
     fun createNetworkSpan(url: URL, verb: String, options: SpanOptions = SpanOptions.DEFAULTS): SpanImpl {
         val verbUpper = verb.uppercase()
