@@ -164,8 +164,7 @@ object BugsnagPerformance {
     }
 
     /**
-     * Open a custom span with a given name and options. The reported
-     * name of these spans is `"Custom/$name"`.
+     * Open a custom span with a given name and options.
      *
      * @param name the name of the custom span to open
      * @param options the optional configuration for the span
