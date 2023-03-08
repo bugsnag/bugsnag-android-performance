@@ -10,9 +10,6 @@ plugins {
 
 apply(from = "../gradle/release.gradle")
 
-val kotlinVersion = "1.5.0"
-val coroutinesVersion = "1.6.4"
-
 version = "${project.properties["VERSION_NAME"]}"
 group = "${project.properties["GROUP"]}"
 
@@ -51,19 +48,17 @@ android {
 }
 
 dependencies {
-    api("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
+    api(libs.kotlin.stdlib)
 
     implementation(project(":bugsnag-android-performance"))
-    implementation("androidx.annotation:annotation:1.3.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion")
 
-    testImplementation("junit:junit:4.13.2")
-    testImplementation("androidx.test.ext:junit:1.1.3")
-    testImplementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
-    testImplementation("org.robolectric:robolectric:4.8")
-    testImplementation("org.mockito:mockito-inline:4.8.1")
-    testImplementation("org.mockito.kotlin:mockito-kotlin:4.0.0")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion")
+    implementation(libs.androidx.annotation)
+    implementation(libs.kotlinx.coroutines)
+
+    testImplementation(libs.bundles.test.jvm)
+
+    testImplementation(libs.kotlin.reflect)
+    testImplementation(libs.kotlinx.coroutines.test)
 }
 
 license {
