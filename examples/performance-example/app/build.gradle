@@ -33,8 +33,7 @@ android {
 }
 
 dependencies {
-    implementation 'com.bugsnag:bugsnag-android-performance:0.0.0'
-    implementation 'com.bugsnag:bugsnag-plugin-android-performance-okhttp:0.0.0'
+    implementation "com.github.bugsnag:bugsnag-android-performance:v0.1.0"
 
     implementation 'androidx.core:core-ktx:1.7.0'
     implementation 'androidx.appcompat:appcompat:1.5.1'
