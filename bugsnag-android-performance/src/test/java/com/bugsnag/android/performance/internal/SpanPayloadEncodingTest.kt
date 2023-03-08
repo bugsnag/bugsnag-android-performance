@@ -81,7 +81,7 @@ class SpanPayloadEncodingTest {
                           "spans": [
                             {
                               "name": "test span",
-                              "kind": "SPAN_KIND_INTERNAL",
+                              "kind": 1,
                               "spanId": "00000000decafbad",
                               "traceId": "4ee2666146504c7fa35f00f007cd24e7",
                               "startTimeUnixNano": "${BugsnagClock.elapsedNanosToUnixTime(span1.startTime)}",
@@ -89,7 +89,7 @@ class SpanPayloadEncodingTest {
                             },
                             {
                               "name": "second span",
-                              "kind": "SPAN_KIND_INTERNAL",
+                              "kind": 1,
                               "spanId": "00000000baddecaf",
                               "traceId": "4ee2666146504c7fa35f00f007cd24e7",
                               "startTimeUnixNano": "${BugsnagClock.elapsedNanosToUnixTime(span2.startTime)}",
