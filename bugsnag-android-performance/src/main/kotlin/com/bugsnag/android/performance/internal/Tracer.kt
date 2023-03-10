@@ -2,11 +2,21 @@ package com.bugsnag.android.performance.internal
 
 import android.os.SystemClock
 import com.bugsnag.android.performance.Span
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicReference
 
 class Tracer : SpanProcessor {
 
-    @Suppress("DoubleMutabilityForCollection") // we swap out this ArrayList when we flush batches
-    private var batch = ArrayList<SpanImpl>()
+    private val batch = AtomicReference<SpanChain>(null)
+
+    /**
+     * The estimated number of spans in [batch]. This is not expected to be exact but will
+     * consistently track the number of spans. Specifically: the batchSize may trail the actual
+     * number of items in the [batch] as the batch is mutated *before* the `batchSize`. This
+     * may cause spurious [Worker.wake] calls when the batch is currently being collected and
+     * added to at the same time, but this is safe and handled by [Worker.wake].
+     */
+    private val batchSize = AtomicInteger(0)
 
     private var lastBatchSendTime = SystemClock.elapsedRealtime()
 
@@ -14,30 +24,37 @@ class Tracer : SpanProcessor {
 
     internal var worker: Worker? = null
 
-    internal fun collectNextBatch(): Collection<SpanImpl>? = synchronized(this) {
-        val batchSize = batch.size
+    internal fun collectNextBatch(): Collection<SpanImpl>? {
+        val expectedSize = batchSize.get()
         val currentBatchAge = SystemClock.elapsedRealtime() - lastBatchSendTime
         // only wait for a batch if the current batch is too small
-        if (batchSize < InternalDebug.spanBatchSizeSendTriggerPoint &&
+        if (expectedSize < InternalDebug.spanBatchSizeSendTriggerPoint &&
             currentBatchAge < InternalDebug.workerSleepMs
         ) {
             return null
         }
 
-        val nextBatch = batch
-        batch = ArrayList()
+        val nextBatchChain = batch.getAndSet(null)
+        // unlinkTo separates the chain, allowing any free-floating Spans eligible for GC
+        val nextBatch = nextBatchChain.unlinkTo(ArrayList())
+        // reduce the tracked batchSize by the number of Spans in this batch
+        batchSize.addAndGet(-nextBatch.size)
+        nextBatch.reverse()
         lastBatchSendTime = SystemClock.elapsedRealtime()
 
         return sampler.sampled(nextBatch)
     }
 
     private fun addToBatch(span: SpanImpl) {
-        val batchSize = synchronized(this) {
-            batch.add(span)
-            batch.size
+        while (true) {
+            val localBatch = batch.get()
+            span.next = localBatch
+            if (batch.compareAndSet(localBatch, span)) {
+                break
+            }
         }
 
-        if (batchSize >= InternalDebug.spanBatchSizeSendTriggerPoint) {
+        if (batchSize.incrementAndGet() >= InternalDebug.spanBatchSizeSendTriggerPoint) {
             worker?.wake()
         }
     }
