@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.Context
 import android.os.Build
 import com.bugsnag.android.performance.AutoInstrument
+import com.bugsnag.android.performance.Logger
 import com.bugsnag.android.performance.PerformanceConfiguration
 
 internal data class ImmutableConfig(
@@ -37,12 +38,10 @@ internal data class ImmutableConfig(
         private const val VALID_API_KEY_LENGTH = 32
 
         private fun validateApiKey(apiKey: String) {
-            require(
-                apiKey.length == VALID_API_KEY_LENGTH
-                    && apiKey.all { it.isDigit() || it in 'a'..'f' },
+            if (apiKey.length != VALID_API_KEY_LENGTH
+                || !apiKey.all { it.isDigit() || it in 'a'..'f' }
             ) {
-
-                "Invalid configuration. apiKey should be a 32-character hexademical string, got '$apiKey' "
+                Logger.w("Invalid configuration. apiKey should be a 32-character hexademical string, got '$apiKey'")
             }
         }
 

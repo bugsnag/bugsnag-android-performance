@@ -5,17 +5,26 @@ import android.content.Context
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import com.bugsnag.android.performance.AutoInstrument
+import com.bugsnag.android.performance.Logger
 import com.bugsnag.android.performance.PerformanceConfiguration
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotSame
+import org.junit.Before
 import org.junit.Test
+import org.mockito.ArgumentMatchers.startsWith
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
 
 class ImmutableConfigTest {
+    @Before
+    fun setupLogger() {
+        Logger.delegate = NoopLogger
+    }
+
     @Test
     fun copyFromPerformanceConfiguration() {
         val perfConfig = PerformanceConfiguration(mockedContext(), TEST_API_KEY).apply {
@@ -61,6 +70,50 @@ class ImmutableConfigTest {
         val immutableConfig = ImmutableConfig(perfConfig)
 
         assertEquals(TEST_VERSION_CODE.toLong(), immutableConfig.versionCode)
+    }
+
+    @Test
+    fun invalidApiKeyLogged() {
+        val logger = mock<Logger>()
+        Logger.delegate = logger
+
+        val perfConfig = PerformanceConfiguration(mockedContext(), "bad-api-key")
+        ImmutableConfig(perfConfig)
+
+        verify(logger).w(startsWith("Invalid configuration"))
+    }
+
+    @Test
+    fun upperCaseApiKeyLogged() {
+        val logger = mock<Logger>()
+        Logger.delegate = logger
+
+        val perfConfig = PerformanceConfiguration(mockedContext(), TEST_API_KEY.uppercase())
+        ImmutableConfig(perfConfig)
+
+        verify(logger).w(startsWith("Invalid configuration"))
+    }
+
+    @Test
+    fun shortApiKeyLogged() {
+        val logger = mock<Logger>()
+        Logger.delegate = logger
+
+        val perfConfig = PerformanceConfiguration(mockedContext(), TEST_API_KEY.substring(0, 30))
+        ImmutableConfig(perfConfig)
+
+        verify(logger).w(startsWith("Invalid configuration"))
+    }
+
+    @Test
+    fun longApiKeyLogged() {
+        val logger = mock<Logger>()
+        Logger.delegate = logger
+
+        val perfConfig = PerformanceConfiguration(mockedContext(), TEST_API_KEY + "bad")
+        ImmutableConfig(perfConfig)
+
+        verify(logger).w(startsWith("Invalid configuration"))
     }
 
     private fun mockedContext(): Context {
