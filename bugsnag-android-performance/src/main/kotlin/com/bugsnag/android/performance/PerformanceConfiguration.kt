@@ -67,6 +67,7 @@ class PerformanceConfiguration private constructor(val context: Context) {
         private const val BSG_VERSION_CODE_KEY = "$BUGSNAG_NS.VERSION_CODE"
 
         @JvmStatic
+        @JvmOverloads
         fun load(ctx: Context, apiKey: String? = null): PerformanceConfiguration {
             try {
                 val packageManager = ctx.packageManager
