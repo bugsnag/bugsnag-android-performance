@@ -1,18 +1,21 @@
 package com.bugsnag.mazeracer
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
 import com.bugsnag.android.performance.AutoInstrument
 import com.bugsnag.android.performance.BugsnagPerformance
-import com.bugsnag.android.performance.internal.SpanImpl
 
-private const val ON_SCREEN_TIME_MS = 150L
+private const val ON_SCREEN_TIME_MS = 300L
 
-class ActivityViewLoadActivity : Activity() {
+class ActivityViewLoadActivity : AppCompatActivity() {
     private val handler = Handler(Looper.getMainLooper())
 
     private val autoInstrument: AutoInstrument
@@ -22,13 +25,16 @@ class ActivityViewLoadActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         if (autoInstrument == AutoInstrument.OFF) {
-            BugsnagPerformance.startViewLoadSpan(this).also {
-                (it as SpanImpl).attributes["manual_start"] = true
-            }
+            BugsnagPerformance.startViewLoadSpan(this)
         }
 
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_view_load)
+
+        supportFragmentManager
+            .beginTransaction()
+            .add(R.id.fragment_container, LoaderFragment())
+            .commit()
     }
 
     override fun onResume() {
@@ -42,8 +48,18 @@ class ActivityViewLoadActivity : Activity() {
 
                 finish()
             },
-            ON_SCREEN_TIME_MS
+            ON_SCREEN_TIME_MS,
         )
+    }
+
+    class LoaderFragment : Fragment() {
+        override fun onCreateView(
+            inflater: LayoutInflater,
+            container: ViewGroup?,
+            savedInstanceState: Bundle?,
+        ): View? {
+            return inflater.inflate(R.layout.fragment_view_load, container, false)
+        }
     }
 
     companion object {

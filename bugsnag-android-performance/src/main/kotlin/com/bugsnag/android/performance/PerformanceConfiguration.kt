@@ -34,19 +34,6 @@ class PerformanceConfiguration private constructor(val context: Context) {
             field = value
         }
 
-    internal fun validated(): PerformanceConfiguration {
-        validateApiKey(apiKey)
-        return this
-    }
-
-    private fun validateApiKey(apiKey: String) {
-        require(apiKey.length == VALID_API_KEY_LENGTH
-            && apiKey.all { it.isDigit() || it in 'a'..'f' }) {
-
-            "Invalid configuration. apiKey should be a 32-character hexademical string, got '$apiKey' "
-        }
-    }
-
     override fun toString(): String =
         "PerformanceConfiguration(" +
             "context=$context, " +
@@ -61,7 +48,6 @@ class PerformanceConfiguration private constructor(val context: Context) {
             ")"
 
     companion object Loader {
-        private const val VALID_API_KEY_LENGTH = 32
 
         // mandatory
         private const val BUGSNAG_NS = "com.bugsnag.android"
@@ -81,6 +67,7 @@ class PerformanceConfiguration private constructor(val context: Context) {
         private const val BSG_VERSION_CODE_KEY = "$BUGSNAG_NS.VERSION_CODE"
 
         @JvmStatic
+        @JvmOverloads
         fun load(ctx: Context, apiKey: String? = null): PerformanceConfiguration {
             try {
                 val packageManager = ctx.packageManager

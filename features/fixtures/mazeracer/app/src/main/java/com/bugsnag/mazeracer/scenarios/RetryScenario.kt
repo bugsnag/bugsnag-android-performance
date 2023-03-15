@@ -4,7 +4,6 @@ import com.bugsnag.android.performance.BugsnagPerformance
 import com.bugsnag.android.performance.PerformanceConfiguration
 import com.bugsnag.android.performance.internal.InternalDebug
 import com.bugsnag.mazeracer.Scenario
-import java.util.concurrent.TimeUnit
 
 class RetryScenario(
     config: PerformanceConfiguration,
@@ -12,7 +11,7 @@ class RetryScenario(
 ) : Scenario(config, scenarioMetadata) {
     init {
         InternalDebug.spanBatchSizeSendTriggerPoint = 1
-        InternalDebug.workerSleepMs = TimeUnit.SECONDS.toMillis(1)
+        InternalDebug.workerSleepMs = 50L
     }
 
     override fun startScenario() {

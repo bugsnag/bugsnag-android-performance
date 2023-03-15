@@ -10,8 +10,6 @@ plugins {
 
 apply(from = "../gradle/release.gradle")
 
-val kotlinVersion = "1.5.0"
-
 version = "${project.properties["VERSION_NAME"]}"
 group = "${project.properties["GROUP"]}"
 
@@ -50,17 +48,14 @@ android {
 }
 
 dependencies {
-    api("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
+    api(libs.kotlin.stdlib)
 
-    implementation("androidx.annotation:annotation:1.3.0")
+    implementation(libs.androidx.annotation)
 
-    testImplementation("junit:junit:4.13.2")
-    testImplementation("androidx.test.ext:junit:1.1.3")
-    testImplementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
-    testImplementation("org.robolectric:robolectric:4.8")
-    testImplementation("org.mockito:mockito-inline:4.8.1")
-    testImplementation("org.mockito.kotlin:mockito-kotlin:4.0.0")
-    testImplementation("net.jimblackler.jsonschemafriend:core:0.11.4")
+    testImplementation(libs.bundles.test.jvm)
+
+    testImplementation(libs.kotlin.reflect)
+    testImplementation(libs.jsonSchemaFriend)
 }
 
 license {

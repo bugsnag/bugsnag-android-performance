@@ -10,7 +10,7 @@ import org.robolectric.RobolectricTestRunner
 import java.util.UUID
 
 @RunWith(RobolectricTestRunner::class)
-class SamplerTest {
+class ProbabilitySamplerTest {
     val spanFactory = TestSpanFactory()
     val spanProcessor = CollectingSpanProcessor()
 
@@ -21,7 +21,7 @@ class SamplerTest {
 
     @Test
     fun testSampleSpanProbability1() {
-        val sampler = Sampler(1.0)
+        val sampler = ProbabilitySampler(1.0)
         var span = spanFactory.newSpan(processor = spanProcessor, traceId = uuidWithUpper(0))
         assertTrue(sampler.shouldKeepSpan(span))
         span = spanFactory.newSpan(
@@ -43,7 +43,7 @@ class SamplerTest {
 
     @Test
     fun testSampleSpanProbability0() {
-        val sampler = Sampler(0.0)
+        val sampler = ProbabilitySampler(0.0)
         var span = spanFactory.newSpan(
             processor = spanProcessor,
             traceId = uuidWithUpper(0),
@@ -68,7 +68,7 @@ class SamplerTest {
 
     @Test
     fun testSampleSpanProbability0_5() {
-        val sampler = Sampler(0.5)
+        val sampler = ProbabilitySampler(0.5)
         var span = spanFactory.newSpan(
             processor = spanProcessor,
             traceId = uuidWithUpper(0),
@@ -88,7 +88,7 @@ class SamplerTest {
 
     @Test
     fun testSampleSpanBatchProbability1() {
-        val sampler = Sampler(1.0)
+        val sampler = ProbabilitySampler(1.0)
         val batch = listOf(
             spanFactory.newSpan(processor = spanProcessor, traceId = uuidWithUpper(0)),
             spanFactory.newSpan(
@@ -110,7 +110,7 @@ class SamplerTest {
 
     @Test
     fun testSampleSpanBatchProbability0() {
-        val sampler = Sampler(0.0)
+        val sampler = ProbabilitySampler(0.0)
         val batch = listOf(
             spanFactory.newSpan(processor = spanProcessor, traceId = uuidWithUpper(0)),
             spanFactory.newSpan(
@@ -129,7 +129,7 @@ class SamplerTest {
 
     @Test
     fun testSampleSpanBatchProbability0_5() {
-        val sampler = Sampler(0.5)
+        val sampler = ProbabilitySampler(0.5)
         val batch = listOf(
             spanFactory.newSpan(processor = spanProcessor, traceId = uuidWithUpper(0)),
             spanFactory.newSpan(

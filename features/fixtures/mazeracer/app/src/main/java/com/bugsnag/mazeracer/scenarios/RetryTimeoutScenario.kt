@@ -11,6 +11,7 @@ class RetryTimeoutScenario(
 ) : Scenario(config, scenarioMetadata) {
     init {
         InternalDebug.spanBatchSizeSendTriggerPoint = 1
+        InternalDebug.workerSleepMs = 50L
         InternalDebug.dropSpansOlderThanMs = 100
     }
 

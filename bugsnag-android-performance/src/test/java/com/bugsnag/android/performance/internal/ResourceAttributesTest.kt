@@ -2,7 +2,7 @@ package com.bugsnag.android.performance.internal
 
 import android.app.Application
 import android.os.Build
-import com.bugsnag.android.performance.PerformanceConfiguration
+import com.bugsnag.android.performance.AutoInstrument
 import com.bugsnag.android.performance.test.setStatic
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -20,8 +20,19 @@ class ResourceAttributesTest {
     fun testAttributeDefaults() {
         val application = configureApplication()
 
-        val configuration = PerformanceConfiguration
-            .load(application, "decafbaddecafbaddecafbaddecafbad")
+        val configuration = ImmutableConfig(
+            application,
+            "decafbaddecafbaddecafbaddecafbad",
+            "",
+            true,
+            AutoInstrument.FULL,
+            "bugsnag.performance.android",
+            "development",
+            setOf("production"),
+            321L,
+            1.0,
+        )
+
         val attributes = createResourceAttributes(configuration).toList().toMap()
 
         assertEquals("amd64", attributes["host.arch"])
@@ -32,7 +43,7 @@ class ResourceAttributesTest {
         assertEquals("Bugsnag", attributes["device.manufacturer"])
         assertEquals("development", attributes["deployment.environment"])
         assertEquals("321", attributes["bugsnag.app.version_code"])
-        assertEquals(application.packageName, attributes["service.name"])
+        assertEquals("bugsnag.performance.android", attributes["service.name"])
         assertEquals("bugsnag.performance.android", attributes["telemetry.sdk.name"])
     }
 
@@ -40,12 +51,18 @@ class ResourceAttributesTest {
     fun testAttributeOverrides() {
         val application = configureApplication()
 
-        val configuration = PerformanceConfiguration
-            .load(application, "decafbaddecafbaddecafbaddecafbad")
-            .apply {
-                versionCode = 123
-                releaseStage = "production"
-            }
+        val configuration = ImmutableConfig(
+            application,
+            "decafbaddecafbaddecafbaddecafbad",
+            "",
+            true,
+            AutoInstrument.FULL,
+            "bugsnag.performance.android",
+            "production",
+            setOf("production"),
+            123L,
+            1.0,
+        )
 
         val attributes = createResourceAttributes(configuration).toList().toMap()
 
@@ -57,7 +74,7 @@ class ResourceAttributesTest {
         assertEquals("Bugsnag", attributes["device.manufacturer"])
         assertEquals("production", attributes["deployment.environment"]) // overridden
         assertEquals("123", attributes["bugsnag.app.version_code"]) // overridden
-        assertEquals(application.packageName, attributes["service.name"])
+        assertEquals("bugsnag.performance.android", attributes["service.name"])
         assertEquals("bugsnag.performance.android", attributes["telemetry.sdk.name"])
     }
 

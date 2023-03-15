@@ -10,8 +10,6 @@ plugins {
 
 apply(from = "../gradle/release.gradle")
 
-val kotlinVersion = "1.5.0"
-
 version = "${project.properties["VERSION_NAME"]}"
 group = "${project.properties["GROUP"]}"
 
@@ -50,21 +48,19 @@ android {
 }
 
 dependencies {
-    api("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
+    api(libs.kotlin.stdlib)
 
-    compileOnly("com.squareup.okhttp3:okhttp:4.9.1")
+    compileOnly(libs.okhttp)
 
     implementation(project(":bugsnag-android-performance"))
-    implementation("androidx.annotation:annotation:1.3.0")
 
-    testImplementation("junit:junit:4.13.2")
-    testImplementation("androidx.test.ext:junit:1.1.3")
-    testImplementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
-    testImplementation("org.robolectric:robolectric:4.8")
-    testImplementation("org.mockito:mockito-inline:4.8.1")
-    testImplementation("org.mockito.kotlin:mockito-kotlin:4.0.0")
-    testImplementation("net.jimblackler.jsonschemafriend:core:0.11.4")
-    testImplementation("com.squareup.okhttp3:mockwebserver:4.9.1")
+    implementation(libs.androidx.annotation)
+
+    testImplementation(libs.bundles.test.jvm)
+
+    testImplementation(libs.kotlin.reflect)
+    testImplementation(libs.jsonSchemaFriend)
+    testImplementation(libs.okhttp.mockServer)
 }
 
 license {

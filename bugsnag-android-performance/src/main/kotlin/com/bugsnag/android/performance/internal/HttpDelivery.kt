@@ -1,12 +1,14 @@
 package com.bugsnag.android.performance.internal
 
 import com.bugsnag.android.performance.Attributes
+import com.bugsnag.android.performance.Logger
 import java.net.HttpURLConnection
 import java.net.URL
 
 internal class HttpDelivery(
     private val endpoint: String,
     private val apiKey: String,
+    private val connectivity: Connectivity,
 ) : Delivery {
     override var newProbabilityCallback: NewProbabilityCallback? = null
 
@@ -18,6 +20,12 @@ internal class HttpDelivery(
     }
 
     override fun deliver(tracePayload: TracePayload): DeliveryResult {
+        if (!connectivity.shouldAttemptDelivery()) {
+            Logger.d("HttpDelivery refusing to delivery payload - no connectivity.")
+            // We can't deliver now but can retry later.
+            return DeliveryResult.Failed(tracePayload, true)
+        }
+
         val connection = URL(endpoint).openConnection() as HttpURLConnection
         with(connection) {
             requestMethod = "POST"

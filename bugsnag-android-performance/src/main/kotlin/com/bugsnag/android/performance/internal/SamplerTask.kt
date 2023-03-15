@@ -2,7 +2,7 @@ package com.bugsnag.android.performance.internal
 
 internal class SamplerTask(
     private val delivery: Delivery,
-    private val sampler: Sampler,
+    private val sampler: ProbabilitySampler,
     private val persistentState: PersistentState
 ) : Task, NewProbabilityCallback {
     override fun onAttach(worker: Worker) {
