@@ -30,7 +30,7 @@ import java.net.URL
  * @see [start]
  */
 object BugsnagPerformance {
-    const val VERSION: String = "0.0.0"
+    const val VERSION: String = "0.1.1"
 
     internal val tracer = Tracer()
 
