@@ -10,6 +10,7 @@ import com.bugsnag.android.performance.PerformanceConfiguration
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotSame
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.mockito.ArgumentMatchers.startsWith
@@ -62,6 +63,16 @@ class ImmutableConfigTest {
 
         releaseStages.add("production")
         assertNotEquals(releaseStages, immutableConfig.enabledReleaseStages)
+    }
+
+    @Test
+    fun enableAllReleaseStages() {
+        val perfConfig = PerformanceConfiguration(mockedContext(), TEST_API_KEY)
+        perfConfig.releaseStage = "this is a very interesting releaseStage"
+        perfConfig.enabledReleaseStages = null
+
+        val immutableConfig = ImmutableConfig(perfConfig)
+        assertTrue(immutableConfig.isReleaseStageEnabled)
     }
 
     @Test

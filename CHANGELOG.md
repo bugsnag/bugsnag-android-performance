@@ -1,3 +1,10 @@
+## TBD
+
+### Bug fixes
+
+* PerformanceConfiguration.enabledReleaseStages now defaults to `null` effectively enabling all release stages (and follows the logic in `bugsnag-android`)
+  []()
+
 ## 0.1.1 (2023-03-15)
 
 * Invalid api-keys are logged as warnings instead of failing startup

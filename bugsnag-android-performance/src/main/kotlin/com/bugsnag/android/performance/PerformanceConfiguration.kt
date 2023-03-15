@@ -5,7 +5,6 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import androidx.annotation.FloatRange
 import androidx.annotation.VisibleForTesting
-import com.bugsnag.android.performance.internal.RELEASE_STAGE_PRODUCTION
 
 class PerformanceConfiguration private constructor(val context: Context) {
 
@@ -23,7 +22,7 @@ class PerformanceConfiguration private constructor(val context: Context) {
 
     var releaseStage: String? = null
 
-    var enabledReleaseStages: Set<String> = mutableSetOf(RELEASE_STAGE_PRODUCTION)
+    var enabledReleaseStages: Set<String>? = null
 
     var versionCode: Long? = null
 

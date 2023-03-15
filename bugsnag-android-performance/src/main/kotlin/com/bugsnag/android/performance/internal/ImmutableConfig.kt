@@ -15,11 +15,12 @@ internal data class ImmutableConfig(
     val autoInstrumentActivities: AutoInstrument,
     val packageName: String,
     val releaseStage: String,
-    val enabledReleaseStages: Set<String>,
+    val enabledReleaseStages: Set<String>?,
     val versionCode: Long?,
     val samplingProbability: Double,
 ) {
-    val isReleaseStageEnabled = enabledReleaseStages.contains(releaseStage)
+    val isReleaseStageEnabled =
+        enabledReleaseStages == null || enabledReleaseStages.contains(releaseStage)
 
     constructor(configuration: PerformanceConfiguration) : this(
         configuration.context.applicationContext as Application,
@@ -29,7 +30,7 @@ internal data class ImmutableConfig(
         configuration.autoInstrumentActivities,
         configuration.context.packageName,
         configuration.releaseStage ?: configuration.context.releaseStage,
-        configuration.enabledReleaseStages.toSet(),
+        configuration.enabledReleaseStages?.toSet(),
         configuration.versionCode ?: versionCodeFor(configuration.context),
         configuration.samplingProbability,
     )
