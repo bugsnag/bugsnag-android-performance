@@ -28,6 +28,16 @@ class SpanImpl internal constructor(
     override val attributes: Attributes = Attributes()
 
     /**
+     * Internally SpanImpl objects can be chained together as a fast linked-list structure
+     * (nicknamed [SpanChain]) allowing us a lock-free / allocation-free batching structure.
+     *
+     * See [Tracer] for more information on how this is used.
+     */
+    @JvmField
+    @JvmSynthetic
+    internal var next: SpanImpl? = null
+
+    /**
      * The name of this `Span`
      */
     internal var name: String = name
