@@ -200,11 +200,12 @@ class PerformanceLifecycleCallbacks internal constructor(
     }
 
     private fun startViewLoadPhase(activity: Activity, phase: String) {
-        if (openLoadSpans) {
-            val spanName = "ViewLoadPhase/Activity${phase}/${activity::class.java.simpleName}"
+        val viewLoadSpan = spanTracker[activity]
+        if (openLoadSpans && viewLoadSpan != null) {
+            val spanName = spanNameForPhase(activity,phase)
             spanTracker.associate(spanName) {
                 spanFactory.createCustomSpan(spanName,
-                    SpanOptions.DEFAULTS.within(spanTracker[activity])).apply {
+                    SpanOptions.DEFAULTS.within(viewLoadSpan)).apply {
                     setAttribute("bugsnag.span.category", "view_load_phase")
                 }
             }
@@ -212,7 +213,11 @@ class PerformanceLifecycleCallbacks internal constructor(
     }
 
     private fun endViewLoadPhase(activity: Activity, phase: String) {
-        spanTracker.endSpan("ViewLoadPhase/Activity${phase}/${activity::class.java.simpleName}")
+        spanTracker.endSpan(spanNameForPhase(activity,phase))
+    }
+
+    private fun spanNameForPhase(activity: Activity, phase: String): String {
+        return "ViewLoadPhase/Activity${phase}/${activity::class.java.simpleName}"
     }
 
     override fun onActivityPaused(activity: Activity) = Unit

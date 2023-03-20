@@ -296,8 +296,20 @@ class PerformanceLifecycleCallbacksTest {
         cycleActivityLoad(activity, callbacks)
         callbacks.onActivityDestroyed(activity)
 
-        val spans = spanProcessor.toList()
-        assertEquals(0, spans.size)
+        assertEquals(0, spanProcessor.toList().size)
+
+        callbacks.openLoadSpans = true
+        callbacks.closeLoadSpans = true
+
+        callbacks.onActivityPreStarted(activity)
+        callbacks.onActivityStarted(activity)
+        callbacks.onActivityPostStarted(activity)
+        callbacks.onActivityPreResumed(activity)
+        callbacks.onActivityResumed(activity)
+        callbacks.onActivityPostResumed(activity)
+
+        // there is no parent view load span so we expect no spans for the view load phases
+        assertEquals(0, spanProcessor.toList().size)
     }
 
     private fun cycleActivity(activity: Activity, callbacks: PerformanceLifecycleCallbacks) {
