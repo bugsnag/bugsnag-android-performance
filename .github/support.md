@@ -10,7 +10,7 @@ When contacting support, please include as much information as necessary, includ
 - expected/actual behaviour 
 
 * Android version:
-* Bugsnag Android Performance version:
+* BugSnag Android Performance version:
 * Emulator or physical device:
 
 ## Bug or Feature Requests
