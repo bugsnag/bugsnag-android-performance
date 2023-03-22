@@ -151,7 +151,7 @@ class PerformanceLifecycleCallbacks internal constructor(
                 if (activity != null) {
                     val activityName = activity::class.java.simpleName
                     setAttribute("bugsnag.view.type", "Activity")
-                    setAttribute("bugsnag.first_view", activityName)
+                    setAttribute("bugsnag.app_start.first_view_name", activityName)
                 }
             }
 

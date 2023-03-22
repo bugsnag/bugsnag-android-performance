@@ -43,3 +43,4 @@ Feature: Automatic creation of spans
     * a span name equals "AppStart/Cold"
     * a span string attribute "bugsnag.span.category" equals "app_start"
     * a span string attribute "bugsnag.app_start.type" equals "cold"
+    * a span string attribute "bugsnag.app_start.first_view_name" equals "MainActivity"
