@@ -1,6 +1,7 @@
 package com.bugsnag.android.performance.internal
 
 import android.app.Activity
+import android.os.Build
 import android.os.SystemClock
 import com.bugsnag.android.performance.Logger
 import com.bugsnag.android.performance.SpanKind
@@ -14,6 +15,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.robolectric.shadows.ShadowPausedSystemClock
+import org.robolectric.util.ReflectionHelpers
 
 @RunWith(RobolectricTestRunner::class)
 @Config(shadows = [ShadowPausedSystemClock::class])
@@ -163,10 +165,13 @@ class PerformanceLifecycleCallbacksTest {
         assertEquals(400_000_000L, span2.endTime)
     }
 
-    @Test fun fullViewLoadPhaseTracking() {
+    @Test
+    fun fullViewLoadPhaseTracking() {
         // this is actually the default initial value for Robolectric, but we set it manually
         // just as a form of documentation
         SystemClock.setCurrentTimeMillis(100L)
+
+        ReflectionHelpers.setStaticField(Build.VERSION::class.java, "SDK_INT", Build.VERSION_CODES.Q)
 
         val callbacks = PerformanceLifecycleCallbacks(
             spanTracker = spanTracker,
@@ -221,6 +226,8 @@ class PerformanceLifecycleCallbacksTest {
         // this is actually the default initial value for Robolectric, but we set it manually
         // just as a form of documentation
         SystemClock.setCurrentTimeMillis(100L)
+
+        ReflectionHelpers.setStaticField(Build.VERSION::class.java, "SDK_INT", Build.VERSION_CODES.Q)
 
         val callbacks = PerformanceLifecycleCallbacks(
             spanTracker = spanTracker,
