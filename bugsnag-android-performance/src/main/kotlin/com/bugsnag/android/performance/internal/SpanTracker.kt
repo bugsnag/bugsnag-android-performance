@@ -3,7 +3,7 @@ package com.bugsnag.android.performance.internal
 import android.os.SystemClock
 import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.internal.SpanImpl.Companion.NO_END_TIME
-import java.util.EnumMap
+import java.util.IdentityHashMap
 import java.util.WeakHashMap
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.concurrent.read
@@ -18,21 +18,21 @@ import kotlin.concurrent.write
  * time is used to close it.
  */
 class SpanTracker {
-    private val backingStore: MutableMap<Any, EnumMap<ViewLifecyclePhase, SpanBinding>> = WeakHashMap()
+    private val backingStore: MutableMap<Any, MutableMap<Enum<*>?, SpanBinding>> = WeakHashMap()
     private val lock = ReentrantReadWriteLock()
 
-    operator fun get(token: Any, subToken: ViewLifecyclePhase = ViewLifecyclePhase.NONE): SpanImpl? {
+    operator fun get(token: Any, subToken: Enum<*>? = null): SpanImpl? {
         return lock.read { backingStore[token]?.get(subToken)?.span }
     }
 
     /**
-     * Track a `SpanImpl` against a specified [token] object, and an optional [subToken], returning
+     * Track a `SpanImpl` against a specified [token] object, and an optional [subToken] Enum, returning
      * the actual `Span` being tracked. This function may discard [span] if the given [token] is
      * already being tracked, if this is the case the tracked span will be returned.
      */
-    fun associate(token: Any, subToken: ViewLifecyclePhase = ViewLifecyclePhase.NONE, span: SpanImpl): SpanImpl {
+    fun associate(token: Any, subToken: Enum<*>? = null, span: SpanImpl): SpanImpl {
         lock.write {
-            val trackedSpans = backingStore[token] ?: EnumMap(ViewLifecyclePhase::class.java)
+            val trackedSpans = backingStore[token] ?: IdentityHashMap()
             val existingSpan = trackedSpans[subToken]
             if (existingSpan != null) {
                 return existingSpan.span
@@ -52,11 +52,7 @@ class SpanTracker {
      * Note: in race scenarios the [createSpan] may be invoked and the resulting `Span` discarded,
      * the currently tracked `Span` will however always be returned.
      */
-    inline fun associate(
-        token: Any,
-        subToken: ViewLifecyclePhase = ViewLifecyclePhase.NONE,
-        createSpan: () -> SpanImpl
-    ): SpanImpl {
+    inline fun associate(token: Any, subToken: Enum<*>? = null, createSpan: () -> SpanImpl): SpanImpl {
         var associatedSpan = this[token, subToken]
         if (associatedSpan == null) {
             associatedSpan = associate(token, subToken, createSpan())
@@ -65,7 +61,7 @@ class SpanTracker {
         return associatedSpan
     }
 
-    fun removeAssociation(tag: Any?, subToken: ViewLifecyclePhase = ViewLifecyclePhase.NONE): SpanImpl? {
+    fun removeAssociation(tag: Any?, subToken: Enum<*>? = null): SpanImpl? {
         return lock.write { backingStore.remove(tag)?.get(subToken)?.span }
     }
 
@@ -74,7 +70,7 @@ class SpanTracker {
      * marked as [leaked](markSpanLeaked) then its `endTime` will be set to [autoEndTime]. Otherwise
      * this value will be discarded.
      */
-    fun markSpanAutomaticEnd(token: Any, subToken: ViewLifecyclePhase = ViewLifecyclePhase.NONE) {
+    fun markSpanAutomaticEnd(token: Any, subToken: Enum<*>? = null) {
         backingStore[token]?.get(subToken)?.autoEndTime = SystemClock.elapsedRealtimeNanos()
     }
 
@@ -83,7 +79,7 @@ class SpanTracker {
      * Returns `true` if the `Span` was marked as leaked, or `false` if the `Span` was already
      * considered to be closed (or was not tracked).
      */
-    fun markSpanLeaked(token: Any, subToken: ViewLifecyclePhase = ViewLifecyclePhase.NONE): Boolean {
+    fun markSpanLeaked(token: Any, subToken: Enum<*>? = null): Boolean {
         return lock.write {
             if (subToken == ViewLifecyclePhase.NONE) {
                 backingStore.remove(token)?.get(subToken)?.markLeaked() == true
@@ -99,7 +95,7 @@ class SpanTracker {
      */
     fun endSpan(
         token: Any,
-        subToken: ViewLifecyclePhase = ViewLifecyclePhase.NONE,
+        subToken: Enum<*>? = null,
         endTime: Long = SystemClock.elapsedRealtimeNanos()
     ) {
         lock.write {
