@@ -62,7 +62,16 @@ class SpanTracker {
     }
 
     fun removeAssociation(tag: Any?, subToken: Enum<*>? = null): SpanImpl? {
-        return lock.write { backingStore.remove(tag)?.get(subToken)?.span }
+        return lock.write {
+            val associatedSpans = backingStore[tag]
+            val span = associatedSpans?.remove(subToken)?.span
+
+            if (associatedSpans?.isEmpty() == true) {
+                backingStore.remove(tag)
+            }
+
+            return span
+        }
     }
 
     /**
@@ -81,11 +90,14 @@ class SpanTracker {
      */
     fun markSpanLeaked(token: Any, subToken: Enum<*>? = null): Boolean {
         return lock.write {
-            if (subToken == ViewLifecyclePhase.NONE) {
-                backingStore.remove(token)?.get(subToken)?.markLeaked() == true
-            } else {
-                backingStore[token]?.remove(subToken)?.markLeaked() == true
+            val associatedSpans = backingStore[token]
+            val leaked = associatedSpans?.remove(subToken)?.markLeaked() == true
+
+            if (associatedSpans?.isEmpty() == true) {
+                backingStore.remove(token)
             }
+
+            return leaked
         }
     }
 
@@ -99,10 +111,11 @@ class SpanTracker {
         endTime: Long = SystemClock.elapsedRealtimeNanos()
     ) {
         lock.write {
-            if (subToken == ViewLifecyclePhase.NONE) {
-                backingStore.remove(token)?.get(subToken)?.span?.end(endTime)
-            } else {
-                backingStore[token]?.remove(subToken)?.span?.end(endTime)
+            val associatedSpans = backingStore[token]
+            associatedSpans?.remove(subToken)?.span?.end(endTime)
+
+            if (associatedSpans?.isEmpty() == true) {
+                backingStore.remove(token)
             }
         }
     }
