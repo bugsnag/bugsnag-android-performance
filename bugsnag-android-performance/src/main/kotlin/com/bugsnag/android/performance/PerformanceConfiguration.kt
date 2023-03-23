@@ -33,6 +33,8 @@ class PerformanceConfiguration private constructor(val context: Context) {
             field = value
         }
 
+    var logger: Logger? = null
+
     override fun toString(): String =
         "PerformanceConfiguration(" +
             "context=$context, " +

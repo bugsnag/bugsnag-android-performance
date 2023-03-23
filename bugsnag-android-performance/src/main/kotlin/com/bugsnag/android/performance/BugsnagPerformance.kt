@@ -83,6 +83,7 @@ object BugsnagPerformance {
     }
 
     private fun startUnderLock(configuration: ImmutableConfig) {
+        Logger.delegate = configuration.logger
         instrumentedAppState.configure(configuration)
 
         if (configuration.autoInstrumentAppStarts) {

@@ -31,6 +31,7 @@ class ResourceAttributesTest {
             setOf("production"),
             321L,
             1.0,
+            NoopLogger,
         )
 
         val attributes = createResourceAttributes(configuration).toList().toMap()
@@ -62,6 +63,7 @@ class ResourceAttributesTest {
             setOf("production"),
             123L,
             1.0,
+            NoopLogger,
         )
 
         val attributes = createResourceAttributes(configuration).toList().toMap()
