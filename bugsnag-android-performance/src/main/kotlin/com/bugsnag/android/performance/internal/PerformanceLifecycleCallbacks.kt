@@ -80,27 +80,27 @@ class PerformanceLifecycleCallbacks internal constructor(
 
     override fun onActivityPreCreated(activity: Activity, savedInstanceState: Bundle?) {
         startViewLoad(activity, savedInstanceState)
-        startViewLoadPhase(activity, ViewLifecyclePhase.CREATE)
+        startViewLoadPhase(activity, ViewLoadPhase.CREATE)
     }
 
     override fun onActivityPreStarted(activity: Activity) {
-        startViewLoadPhase(activity, ViewLifecyclePhase.START)
+        startViewLoadPhase(activity, ViewLoadPhase.START)
     }
 
     override fun onActivityPreResumed(activity: Activity) {
-        startViewLoadPhase(activity, ViewLifecyclePhase.RESUME)
+        startViewLoadPhase(activity, ViewLoadPhase.RESUME)
     }
 
     override fun onActivityPostCreated(activity: Activity, savedInstanceState: Bundle?) {
-        endViewLoadPhase(activity, ViewLifecyclePhase.CREATE)
+        endViewLoadPhase(activity, ViewLoadPhase.CREATE)
     }
 
     override fun onActivityPostStarted(activity: Activity) {
-        endViewLoadPhase(activity, ViewLifecyclePhase.START)
+        endViewLoadPhase(activity, ViewLoadPhase.START)
     }
 
     override fun onActivityPostResumed(activity: Activity) {
-        endViewLoadPhase(activity, ViewLifecyclePhase.RESUME)
+        endViewLoadPhase(activity, ViewLoadPhase.RESUME)
         endViewLoad(activity)
     }
 
@@ -199,7 +199,7 @@ class PerformanceLifecycleCallbacks internal constructor(
         }
     }
 
-    private fun startViewLoadPhase(activity: Activity, phase: ViewLifecyclePhase) {
+    private fun startViewLoadPhase(activity: Activity, phase: ViewLoadPhase) {
         val viewLoadSpan = spanTracker[activity]
         if (openLoadSpans && viewLoadSpan != null) {
             spanTracker.associate(activity, phase) {
@@ -211,11 +211,11 @@ class PerformanceLifecycleCallbacks internal constructor(
         }
     }
 
-    private fun endViewLoadPhase(activity: Activity, phase: ViewLifecyclePhase) {
+    private fun endViewLoadPhase(activity: Activity, phase: ViewLoadPhase) {
         spanTracker.endSpan(activity, phase)
     }
 
-    private fun spanNameForPhase(activity: Activity, phase: ViewLifecyclePhase): String {
+    private fun spanNameForPhase(activity: Activity, phase: ViewLoadPhase): String {
         return "ViewLoadPhase/Activity${phase.spanName}/${activity::class.java.simpleName}"
     }
 

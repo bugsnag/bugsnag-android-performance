@@ -30,15 +30,15 @@ class SpanTrackerTest {
             createSpan()
         }
 
-        val onCreateSpan = tracker.associate("TestActivity", ViewLifecyclePhase.CREATE) {
+        val onCreateSpan = tracker.associate("TestActivity", ViewLoadPhase.CREATE) {
             createSpan()
         }
 
-        tracker.markSpanAutomaticEnd("TestActivity", ViewLifecyclePhase.CREATE)
-        tracker.markSpanLeaked("TestActivity", ViewLifecyclePhase.CREATE)
+        tracker.markSpanAutomaticEnd("TestActivity", ViewLoadPhase.CREATE)
+        tracker.markSpanLeaked("TestActivity", ViewLoadPhase.CREATE)
 
         assertEquals(autoEndTime, onCreateSpan.endTime)
-        assertNull(tracker["TestActivity", ViewLifecyclePhase.CREATE])
+        assertNull(tracker["TestActivity", ViewLoadPhase.CREATE])
 
         assertNotNull(tracker["TestActivity"])
         assertNotEquals(autoEndTime, loadSpan.endTime)
@@ -62,17 +62,17 @@ class SpanTrackerTest {
             createSpan()
         }
 
-        val onCreateSpan = tracker.associate("TestActivity", ViewLifecyclePhase.CREATE) {
+        val onCreateSpan = tracker.associate("TestActivity", ViewLoadPhase.CREATE) {
             createSpan()
         }
 
         // Check that subtoken spans can also be ended manually
-        tracker.markSpanAutomaticEnd("TestActivity", ViewLifecyclePhase.CREATE)
+        tracker.markSpanAutomaticEnd("TestActivity", ViewLoadPhase.CREATE)
         onCreateSpan.end(realEndTime)
-        tracker.markSpanLeaked("TestActivity", ViewLifecyclePhase.CREATE)
+        tracker.markSpanLeaked("TestActivity", ViewLoadPhase.CREATE)
 
         assertEquals(realEndTime, onCreateSpan.endTime)
-        assertNull(tracker["TestActivity", ViewLifecyclePhase.CREATE])
+        assertNull(tracker["TestActivity", ViewLoadPhase.CREATE])
 
         // Activity.onResume
         tracker.markSpanAutomaticEnd("TestActivity")
@@ -96,18 +96,18 @@ class SpanTrackerTest {
             createSpan()
         }
 
-        val onCreateSpan = tracker.associate("TestActivity", ViewLifecyclePhase.CREATE) {
+        val onCreateSpan = tracker.associate("TestActivity", ViewLoadPhase.CREATE) {
             createSpan()
         }
 
         assertSame(loadSpan, tracker["TestActivity"])
-        assertSame(onCreateSpan, tracker["TestActivity", ViewLifecyclePhase.CREATE])
+        assertSame(onCreateSpan, tracker["TestActivity", ViewLoadPhase.CREATE])
 
         // end the onCreate span
-        tracker.endSpan("TestActivity", ViewLifecyclePhase.CREATE, endTime = endTime)
+        tracker.endSpan("TestActivity", ViewLoadPhase.CREATE, endTime = endTime)
 
         assertEquals(endTime, onCreateSpan.endTime)
-        assertNull(tracker["TestActivity", ViewLifecyclePhase.CREATE])
+        assertNull(tracker["TestActivity", ViewLoadPhase.CREATE])
         assertSame(loadSpan, tracker["TestActivity"])
 
         // end the view load span
