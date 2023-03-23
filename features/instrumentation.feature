@@ -48,9 +48,10 @@ Feature: Automatic creation of spans
     * I wait to receive 2 traces
     * I discard the oldest trace
     * a span named "AppStart/Cold" contains the attributes:
-                | attribute               | type        | value                    |
-                | bugsnag.span.category   | stringValue | app_start                |
-                | bugsnag.app_start.type  | stringValue | cold                     |
+                | attribute                         | type        | value          |
+                | bugsnag.span.category             | stringValue | app_start      |
+                | bugsnag.app_start.type            | stringValue | cold           |
+                | bugsnag.app_start.first_view_name | stringValue | MainActivity   |
 
   @skip_below_android_10
   Scenario: Activity load breakdown with full ViewLoad instrumentation
@@ -63,22 +64,22 @@ Feature: Automatic creation of spans
                 | bugsnag.view.name       | stringValue | ActivityViewLoadActivity |
 
     * a span named "ViewLoadPhase/ActivityCreate/ActivityViewLoadActivity" contains the attributes:
-               | attribute               | type        | value                    |
-               | bugsnag.span.category   | stringValue | view_load_phase          |
+               | attribute               | type        | value                     |
+               | bugsnag.span.category   | stringValue | view_load_phase           |
 
     * a span named "ViewLoadPhase/ActivityStart/ActivityViewLoadActivity" contains the attributes:
-               | attribute               | type        | value                    |
-               | bugsnag.span.category   | stringValue | view_load_phase          |
+               | attribute               | type        | value                     |
+               | bugsnag.span.category   | stringValue | view_load_phase           |
 
     * a span named "ViewLoadPhase/ActivityResume/ActivityViewLoadActivity" contains the attributes:
-               | attribute               | type        | value                    |
-               | bugsnag.span.category   | stringValue | view_load_phase          |
+               | attribute               | type        | value                     |
+               | bugsnag.span.category   | stringValue | view_load_phase           |
 
     * a span named "ViewLoad/Fragment/LoaderFragment" contains the attributes:
-               | attribute               | type        | value                    |
-               | bugsnag.span.category   | stringValue | view_load                |
-               | bugsnag.view.type       | stringValue | fragment                 |
-               | bugsnag.view.name       | stringValue | LoaderFragment           |
+               | attribute               | type        | value                     |
+               | bugsnag.span.category   | stringValue | view_load                 |
+               | bugsnag.view.type       | stringValue | fragment                  |
+               | bugsnag.view.name       | stringValue | LoaderFragment            |
 
   @skip_below_android_10
   Scenario: Activity load breakdown with start-only ViewLoad instrumentation
@@ -91,19 +92,19 @@ Feature: Automatic creation of spans
                 | bugsnag.view.name       | stringValue | ActivityViewLoadActivity |
 
     * a span named "ViewLoadPhase/ActivityCreate/ActivityViewLoadActivity" contains the attributes:
-               | attribute               | type        | value                    |
-               | bugsnag.span.category   | stringValue | view_load_phase          |
+               | attribute               | type        | value                     |
+               | bugsnag.span.category   | stringValue | view_load_phase           |
 
     * a span named "ViewLoadPhase/ActivityStart/ActivityViewLoadActivity" contains the attributes:
-               | attribute               | type        | value                    |
-               | bugsnag.span.category   | stringValue | view_load_phase          |
+               | attribute               | type        | value                     |
+               | bugsnag.span.category   | stringValue | view_load_phase           |
 
     * a span named "ViewLoadPhase/ActivityResume/ActivityViewLoadActivity" contains the attributes:
-               | attribute               | type        | value                    |
-               | bugsnag.span.category   | stringValue | view_load_phase          |
+               | attribute               | type        | value                     |
+               | bugsnag.span.category   | stringValue | view_load_phase           |
 
     * a span named "ViewLoad/Fragment/LoaderFragment" contains the attributes:
-               | attribute               | type        | value                    |
-               | bugsnag.span.category   | stringValue | view_load                |
-               | bugsnag.view.type       | stringValue | fragment                 |
-               | bugsnag.view.name       | stringValue | LoaderFragment           |
+               | attribute               | type        | value                     |
+               | bugsnag.span.category   | stringValue | view_load                 |
+               | bugsnag.view.type       | stringValue | fragment                  |
+               | bugsnag.view.name       | stringValue | LoaderFragment            |
