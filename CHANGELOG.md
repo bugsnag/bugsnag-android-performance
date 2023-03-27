@@ -1,3 +1,10 @@
+## TBD
+
+### Bug fixes
+
+* Initial probability request now correctly sends the `Bugsnag-Span-Sampling` header
+  [#103](https://github.com/bugsnag/bugsnag-android-performance/pull/103)
+
 ## 0.1.2 (2023-03-15)
 
 ### Bug fixes

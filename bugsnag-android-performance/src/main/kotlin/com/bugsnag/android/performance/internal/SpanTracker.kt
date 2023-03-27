@@ -52,7 +52,11 @@ class SpanTracker {
      * Note: in race scenarios the [createSpan] may be invoked and the resulting `Span` discarded,
      * the currently tracked `Span` will however always be returned.
      */
-    inline fun associate(token: Any, subToken: Enum<*>? = null, createSpan: () -> SpanImpl): SpanImpl {
+    inline fun associate(
+        token: Any,
+        subToken: Enum<*>? = null,
+        createSpan: () -> SpanImpl,
+    ): SpanImpl {
         var associatedSpan = this[token, subToken]
         if (associatedSpan == null) {
             associatedSpan = associate(token, subToken, createSpan())
@@ -70,7 +74,7 @@ class SpanTracker {
                 backingStore.remove(tag)
             }
 
-            return span
+            span
         }
     }
 
@@ -97,7 +101,7 @@ class SpanTracker {
                 backingStore.remove(token)
             }
 
-            return leaked
+            leaked
         }
     }
 
@@ -108,7 +112,7 @@ class SpanTracker {
     fun endSpan(
         token: Any,
         subToken: Enum<*>? = null,
-        endTime: Long = SystemClock.elapsedRealtimeNanos()
+        endTime: Long = SystemClock.elapsedRealtimeNanos(),
     ) {
         lock.write {
             val associatedSpans = backingStore[token]

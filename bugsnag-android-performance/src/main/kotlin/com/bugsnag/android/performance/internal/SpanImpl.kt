@@ -88,24 +88,24 @@ class SpanImpl internal constructor(
     override fun isEnded() = endTime != NO_END_TIME
 
     internal fun toJson(json: JsonWriter) {
-        json.beginObject()
-            .name("name").value(name)
-            .name("kind").value(kind.otelOrdinal)
-            .name("spanId").value(spanId.toHexString())
-            .name("traceId").value(traceId.toHexString())
-            .name("startTimeUnixNano")
-            .value(BugsnagClock.elapsedNanosToUnixTime(startTime).toString())
-            .name("endTimeUnixNano").value(BugsnagClock.elapsedNanosToUnixTime(endTime).toString())
+        json.obj {
+            name("name").value(name)
+            name("kind").value(kind.otelOrdinal)
+            name("spanId").value(spanId.toHexString())
+            name("traceId").value(traceId.toHexString())
+            name("startTimeUnixNano")
+                .value(BugsnagClock.elapsedNanosToUnixTime(startTime).toString())
+            name("endTimeUnixNano")
+                .value(BugsnagClock.elapsedNanosToUnixTime(endTime).toString())
 
-        if (parentSpanId != 0L) {
-            json.name("parentSpanId").value(parentSpanId.toHexString())
+            if (parentSpanId != 0L) {
+                name("parentSpanId").value(parentSpanId.toHexString())
+            }
+
+            if (attributes.isNotEmpty()) {
+                name("attributes").value(attributes)
+            }
         }
-
-        if (attributes.isNotEmpty()) {
-            json.name("attributes").value(attributes)
-        }
-
-        json.endObject()
     }
 
 
