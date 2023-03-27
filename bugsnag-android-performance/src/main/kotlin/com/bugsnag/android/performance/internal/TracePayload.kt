@@ -12,7 +12,7 @@ import java.util.zip.GZIPOutputStream
 internal data class TracePayload(
     val timestamp: Long,
     val body: ByteArray,
-    val headers: Map<String, String>
+    val headers: Map<String, String>,
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -46,19 +46,24 @@ internal data class TracePayload(
         fun createTracePayload(
             apiKey: String,
             spans: Collection<SpanImpl>,
-            resourceAttributes: Attributes
+            resourceAttributes: Attributes,
         ): TracePayload {
             val payloadBytes = encodeSpanPayload(spans, resourceAttributes)
-            val timestamp = spans.maxOf { it.endTime }
+            val timestamp =
+                if (spans.isNotEmpty()) spans.maxOf { it.endTime }
+                else SystemClock.elapsedRealtimeNanos()
 
             val headers = mapOf("Bugsnag-Span-Sampling" to calculateSpanSamplingHeader(spans))
             return createTracePayload(apiKey, payloadBytes, headers, timestamp)
         }
 
-        private fun calculateSpanSamplingHeader(spans: Collection<SpanImpl>): String =
-            calculateProbabilityCounts(spans).entries.joinToString(";") { (pValue, count) ->
+        private fun calculateSpanSamplingHeader(spans: Collection<SpanImpl>): String {
+            if (spans.isEmpty()) return "1:0"
+
+            return calculateProbabilityCounts(spans).entries.joinToString(";") { (pValue, count) ->
                 "$pValue:$count"
             }
+        }
 
         private fun calculateProbabilityCounts(spans: Collection<SpanImpl>): Map<Double, Int> {
             // using a TreeMap gives us a natural ascending order here
@@ -76,7 +81,7 @@ internal data class TracePayload(
             apiKey: String,
             payloadBytes: ByteArray,
             baseHeaders: Map<String, String> = emptyMap(),
-            timestamp: Long = SystemClock.elapsedRealtimeNanos()
+            timestamp: Long = SystemClock.elapsedRealtimeNanos(),
         ): TracePayload {
             val headers = mutableMapOf<String, String>()
             headers.putAll(baseHeaders)
@@ -102,33 +107,43 @@ internal data class TracePayload(
         @VisibleForTesting
         internal fun encodeSpanPayload(
             spans: Collection<SpanImpl>,
-            resourceAttributes: Attributes
+            resourceAttributes: Attributes,
         ): ByteArray {
             val buffer = ByteArrayOutputStream()
             JsonWriter(buffer.writer()).use { json ->
-                json.beginObject()
-                    .name("resourceSpans").beginArray()
-                    .beginObject()
-
-                json.name("resource").beginObject()
-                    .name("attributes").value(resourceAttributes)
-                    .endObject()
-
-                json.name("scopeSpans").beginArray()
-                    .beginObject()
-                    .name("spans").beginArray()
-
-                spans.forEach { it.toJson(json) }
-
-                json.endArray() // spans
-                    .endObject()
-                    .endArray() // scopeSpans
-                    .endObject()
-                    .endArray() // resourceSpans
-                    .endObject()
+                json.obj {
+                    name("resourceSpans").array {
+                        encodeResourceSpans(resourceAttributes, spans)
+                    }
+                }
             }
 
             return buffer.toByteArray()
+        }
+
+        private fun JsonWriter.encodeResourceSpans(
+            resourceAttributes: Attributes,
+            spans: Collection<SpanImpl>,
+        ) {
+            if (resourceAttributes.isEmpty() && spans.isEmpty()) return
+
+            obj {
+                if (resourceAttributes.isNotEmpty()) {
+                    name("resource").obj {
+                        name("attributes").value(resourceAttributes)
+                    }
+                }
+
+                if (spans.isNotEmpty()) {
+                    name("scopeSpans").array {
+                        obj {
+                            name("spans").array {
+                                spans.forEach { it.toJson(this) }
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         private fun computeSha1Digest(payload: ByteArray): String? {

@@ -1,8 +1,12 @@
 Feature: Manual creation of spans
 
   Scenario: Manual spans can be logged
-    Given I run "ManualSpanScenario" and discard the initial p-value request
-    And I wait to receive at least 1 traces
+    Given I run "ManualSpanScenario"
+    And I wait to receive at least 2 traces
+    # Check the initial probability request
+    Then the trace "Bugsnag-Span-Sampling" header equals "1:0"
+    And the trace "Bugsnag-Api-Key" header equals "a35a2a72bd230ac0aa0f52715bbdc6aa"
+    Then I discard the oldest trace
     Then the trace Bugsnag-Integrity header is valid
     And the trace "Bugsnag-Span-Sampling" header equals "1.0:1"
     And the trace "Bugsnag-Api-Key" header equals "a35a2a72bd230ac0aa0f52715bbdc6aa"
