@@ -223,7 +223,7 @@ object BugsnagPerformance {
     @JvmStatic
     @JvmOverloads
     fun endViewLoadSpan(activity: Activity, endTime: Long = SystemClock.elapsedRealtimeNanos()) {
-        instrumentedAppState.spanTracker.endSpan(activity, endTime)
+        instrumentedAppState.spanTracker.endSpan(activity, endTime = endTime)
     }
 
     /**
