@@ -10,6 +10,7 @@ import com.bugsnag.android.performance.PerformanceConfiguration
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotSame
+import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -73,6 +74,44 @@ class ImmutableConfigTest {
 
         val immutableConfig = ImmutableConfig(perfConfig)
         assertTrue(immutableConfig.isReleaseStageEnabled)
+    }
+
+    @Test
+    fun noopLoggerInProduction() {
+        val perfConfig = PerformanceConfiguration(mockedContext(), TEST_API_KEY)
+        perfConfig.releaseStage = RELEASE_STAGE_PRODUCTION
+
+        val immutableConfig = ImmutableConfig(perfConfig)
+        assertSame(NoopLogger, immutableConfig.logger)
+    }
+
+    @Test
+    fun debugLoggerDefault() {
+        val perfConfig = PerformanceConfiguration(mockedContext(), TEST_API_KEY)
+        perfConfig.releaseStage = RELEASE_STAGE_DEVELOPMENT
+
+        val immutableConfig = ImmutableConfig(perfConfig)
+        assertSame(DebugLogger, immutableConfig.logger)
+    }
+
+    @Test
+    fun overrideLogger() {
+        val testLogger = object : Logger {
+            override fun e(msg: String) = Unit
+            override fun e(msg: String, throwable: Throwable) = Unit
+            override fun w(msg: String) = Unit
+            override fun w(msg: String, throwable: Throwable) = Unit
+            override fun i(msg: String) = Unit
+            override fun i(msg: String, throwable: Throwable) = Unit
+            override fun d(msg: String) = Unit
+            override fun d(msg: String, throwable: Throwable) = Unit
+        }
+
+        val perfConfig = PerformanceConfiguration(mockedContext(), TEST_API_KEY)
+        perfConfig.logger = testLogger
+
+        val immutableConfig = ImmutableConfig(perfConfig)
+        assertSame(testLogger, immutableConfig.logger)
     }
 
     @Test

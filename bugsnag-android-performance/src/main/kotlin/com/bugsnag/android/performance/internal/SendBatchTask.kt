@@ -8,11 +8,13 @@ internal class SendBatchTask(
     @get:VisibleForTesting
     val delivery: Delivery,
     private val tracer: Tracer,
-    private val resourceAttributes: Attributes
+    private val resourceAttributes: Attributes,
 ) : AbstractTask() {
     override fun execute(): Boolean {
         val nextBatch = tracer.collectNextBatch() ?: return false
-        Logger.d("Sending a batch of ${nextBatch.size} spans to $delivery")
+        if (nextBatch.isNotEmpty()) {
+            Logger.d("Sending a batch of ${nextBatch.size} spans to $delivery")
+        }
         delivery.deliver(nextBatch, resourceAttributes)
         return nextBatch.isNotEmpty()
     }
