@@ -11,8 +11,11 @@ import com.bugsnag.android.performance.coroutines.BugsnagPerformanceScope
 import com.bugsnag.android.performance.measureSpan
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+
+const val DELAY_TIME = 50L
 
 class NestedSpansActivity : AppCompatActivity(), CoroutineScope by BugsnagPerformanceScope() {
 
@@ -41,11 +44,12 @@ class NestedSpansActivity : AppCompatActivity(), CoroutineScope by BugsnagPerfor
         // launch a coroutine
         launch {
             measureSpan("DoStuff") {
-                "Do stuff"
+                delay(DELAY_TIME)
             }
 
             // move to an IO thread
             withContext(Dispatchers.IO) {
+                delay(DELAY_TIME)
                 measureSpan("LoadData") {
                     "Load some data"
                 }
