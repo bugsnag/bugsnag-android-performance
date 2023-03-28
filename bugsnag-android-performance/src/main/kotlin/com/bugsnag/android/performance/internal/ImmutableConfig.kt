@@ -18,6 +18,7 @@ internal data class ImmutableConfig(
     val enabledReleaseStages: Set<String>?,
     val versionCode: Long?,
     val samplingProbability: Double,
+    val logger: Logger,
 ) {
     val isReleaseStageEnabled =
         enabledReleaseStages == null || enabledReleaseStages.contains(releaseStage)
@@ -29,10 +30,13 @@ internal data class ImmutableConfig(
         configuration.autoInstrumentAppStarts,
         configuration.autoInstrumentActivities,
         configuration.context.packageName,
-        configuration.releaseStage ?: configuration.context.releaseStage,
+        getReleaseStage(configuration),
         configuration.enabledReleaseStages?.toSet(),
         configuration.versionCode ?: versionCodeFor(configuration.context),
         configuration.samplingProbability,
+        configuration.logger
+            ?: if (getReleaseStage(configuration) == RELEASE_STAGE_PRODUCTION) NoopLogger
+            else DebugLogger,
     )
 
     companion object {
@@ -45,6 +49,9 @@ internal data class ImmutableConfig(
                 Logger.w("Invalid configuration. apiKey should be a 32-character hexademical string, got '$apiKey'")
             }
         }
+
+        private fun getReleaseStage(configuration: PerformanceConfiguration) =
+            configuration.releaseStage ?: configuration.context.releaseStage
 
         private fun versionCodeFor(context: Context): Long? {
             return try {

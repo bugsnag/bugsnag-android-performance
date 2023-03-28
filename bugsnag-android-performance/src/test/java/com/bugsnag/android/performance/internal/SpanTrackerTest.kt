@@ -5,7 +5,10 @@ import com.bugsnag.android.performance.test.TestSpanFactory
 import com.bugsnag.android.performance.test.testSpanProcessor
 import com.bugsnag.android.performance.test.withStaticMock
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertSame
 import org.junit.Before
 import org.junit.Test
 
@@ -23,17 +26,27 @@ class SpanTrackerTest {
         mockedClock.`when`<Long>(SystemClock::elapsedRealtimeNanos).thenReturn(autoEndTime)
 
         val tracker = SpanTracker()
-        val span = tracker.associate("TestActivity") {
-            spanFactory.newSpan(
-                processor = testSpanProcessor,
-                endTime = null,
-            )
+        val loadSpan = tracker.associate("TestActivity") {
+            createSpan()
         }
+
+        val onCreateSpan = tracker.associate("TestActivity", ViewLoadPhase.CREATE) {
+            createSpan()
+        }
+
+        tracker.markSpanAutomaticEnd("TestActivity", ViewLoadPhase.CREATE)
+        tracker.markSpanLeaked("TestActivity", ViewLoadPhase.CREATE)
+
+        assertEquals(autoEndTime, onCreateSpan.endTime)
+        assertNull(tracker["TestActivity", ViewLoadPhase.CREATE])
+
+        assertNotNull(tracker["TestActivity"])
+        assertNotEquals(autoEndTime, loadSpan.endTime)
 
         tracker.markSpanAutomaticEnd("TestActivity")
         tracker.markSpanLeaked("TestActivity")
 
-        assertEquals(autoEndTime, span.endTime)
+        assertEquals(autoEndTime, loadSpan.endTime)
         assertNull(tracker["TestActivity"])
     }
 
@@ -45,20 +58,32 @@ class SpanTrackerTest {
         mockedClock.`when`<Long>(SystemClock::elapsedRealtimeNanos).thenReturn(autoEndTime)
 
         val tracker = SpanTracker()
-        val span = tracker.associate("TestActivity") {
-            spanFactory.newSpan(processor = testSpanProcessor, endTime = null)
+        val loadSpan = tracker.associate("TestActivity") {
+            createSpan()
         }
+
+        val onCreateSpan = tracker.associate("TestActivity", ViewLoadPhase.CREATE) {
+            createSpan()
+        }
+
+        // Check that subtoken spans can also be ended manually
+        tracker.markSpanAutomaticEnd("TestActivity", ViewLoadPhase.CREATE)
+        onCreateSpan.end(realEndTime)
+        tracker.markSpanLeaked("TestActivity", ViewLoadPhase.CREATE)
+
+        assertEquals(realEndTime, onCreateSpan.endTime)
+        assertNull(tracker["TestActivity", ViewLoadPhase.CREATE])
 
         // Activity.onResume
         tracker.markSpanAutomaticEnd("TestActivity")
 
         // manually end the returned Span
-        span.end(realEndTime)
+        loadSpan.end(realEndTime)
 
         // Activity.onDestroy
         tracker.markSpanLeaked("TestActivity")
 
-        assertEquals(realEndTime, span.endTime)
+        assertEquals(realEndTime, loadSpan.endTime)
         assertNull(tracker["TestActivity"])
     }
 
@@ -67,13 +92,32 @@ class SpanTrackerTest {
         val endTime = 150L
 
         val tracker = SpanTracker()
-        val span = tracker.associate("TestActivity") {
-            spanFactory.newSpan(processor = testSpanProcessor, endTime = null)
+        val loadSpan = tracker.associate("TestActivity") {
+            createSpan()
         }
 
-        tracker.endSpan("TestActivity", endTime)
+        val onCreateSpan = tracker.associate("TestActivity", ViewLoadPhase.CREATE) {
+            createSpan()
+        }
 
-        assertEquals(endTime, span.endTime)
+        assertSame(loadSpan, tracker["TestActivity"])
+        assertSame(onCreateSpan, tracker["TestActivity", ViewLoadPhase.CREATE])
+
+        // end the onCreate span
+        tracker.endSpan("TestActivity", ViewLoadPhase.CREATE, endTime = endTime)
+
+        assertEquals(endTime, onCreateSpan.endTime)
+        assertNull(tracker["TestActivity", ViewLoadPhase.CREATE])
+        assertSame(loadSpan, tracker["TestActivity"])
+
+        // end the view load span
+        tracker.endSpan("TestActivity", endTime = endTime)
+
+        assertEquals(endTime, loadSpan.endTime)
         assertNull(tracker["TestActivity"])
+    }
+
+    private fun createSpan(): SpanImpl {
+        return spanFactory.newSpan(processor = testSpanProcessor, endTime = null)
     }
 }

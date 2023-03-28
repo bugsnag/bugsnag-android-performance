@@ -10,6 +10,9 @@ internal class HttpDelivery(
     private val apiKey: String,
     private val connectivity: Connectivity,
 ) : Delivery {
+    private val initialProbabilityRequest =
+        TracePayload.createTracePayload(apiKey, emptyList(), Attributes())
+
     override var newProbabilityCallback: NewProbabilityCallback? = null
 
     override fun deliver(
@@ -46,15 +49,7 @@ internal class HttpDelivery(
 
     override fun fetchCurrentProbability() {
         // Server expects a call to /traces with an empty set of resource spans
-        deliver(
-            TracePayload.createTracePayload(
-                apiKey,
-                "{\"resourceSpans\": []}".toByteArray(),
-                mapOf(
-                    "Bugsnag-Sampling-Probability" to "1:0",
-                ),
-            ),
-        )
+        deliver(initialProbabilityRequest)
     }
 
     private fun getDeliveryResult(statusCode: Int, payload: TracePayload): DeliveryResult {

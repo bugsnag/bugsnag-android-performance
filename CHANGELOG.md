@@ -1,3 +1,17 @@
+## 0.1.3 (2023-03-28)
+
+### Enhancements
+
+* Reduced the amount of noise in the default logging, and use the NoopLogger by default in "production" releaseStage
+  [#101](https://github.com/bugsnag/bugsnag-android-performance/pull/101)
+
+### Bug fixes
+
+* Corrected the `first_view_name` attribute in `AppStart` spans
+  [#99](https://github.com/bugsnag/bugsnag-android-performance/pull/99)
+* Initial probability request now correctly sends the `Bugsnag-Span-Sampling` header
+  [#103](https://github.com/bugsnag/bugsnag-android-performance/pull/103)
+
 ## 0.1.2 (2023-03-15)
 
 ### Bug fixes

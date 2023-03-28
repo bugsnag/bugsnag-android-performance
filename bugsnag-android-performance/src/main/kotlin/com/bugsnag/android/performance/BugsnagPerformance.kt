@@ -30,7 +30,7 @@ import java.net.URL
  * @see [start]
  */
 object BugsnagPerformance {
-    const val VERSION: String = "0.1.2"
+    const val VERSION: String = "0.1.3"
 
     internal val tracer = Tracer()
 
@@ -83,6 +83,7 @@ object BugsnagPerformance {
     }
 
     private fun startUnderLock(configuration: ImmutableConfig) {
+        Logger.delegate = configuration.logger
         instrumentedAppState.configure(configuration)
 
         if (configuration.autoInstrumentAppStarts) {
@@ -222,7 +223,7 @@ object BugsnagPerformance {
     @JvmStatic
     @JvmOverloads
     fun endViewLoadSpan(activity: Activity, endTime: Long = SystemClock.elapsedRealtimeNanos()) {
-        instrumentedAppState.spanTracker.endSpan(activity, endTime)
+        instrumentedAppState.spanTracker.endSpan(activity, endTime = endTime)
     }
 
     /**
