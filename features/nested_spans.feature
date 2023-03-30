@@ -5,42 +5,48 @@ Feature: Nested spans
     Given I run "NestedSpansScenario" and discard the initial p-value request
     And I wait to receive 1 traces
     # Check we have received all the spans we are expecting
-    * a span named "ViewLoadPhase/ActivityCreate/NestedSpansActivity" contains the attributes:
+    * a span named "[ViewLoadPhase/ActivityCreate]NestedSpansActivity" contains the attributes:
                 | attribute                         | type        | value               |
                 | bugsnag.span.category             | stringValue | view_load_phase     |
                 | bugsnag.span.first_class          | boolValue   | false               |
+                | bugsnag.phase                     | stringValue | ActivityCreate      |
+                | bugsnag.view.name                 | stringValue | NestedSpansActivity |
 
-    * a span named "ViewLoadPhase/ActivityStart/NestedSpansActivity" contains the attributes:
+    * a span named "[ViewLoadPhase/ActivityStart]NestedSpansActivity" contains the attributes:
                 | attribute                         | type        | value               |
                 | bugsnag.span.category             | stringValue | view_load_phase     |
                 | bugsnag.span.first_class          | boolValue   | false               |
+                | bugsnag.phase                     | stringValue | ActivityStart       |
+                | bugsnag.view.name                 | stringValue | NestedSpansActivity |
 
-    * a span named "ViewLoad/Fragment/FirstFragment" contains the attributes:
+    * a span named "[ViewLoad/Fragment]FirstFragment" contains the attributes:
                 | attribute                         | type        | value               |
                 | bugsnag.span.category             | stringValue | view_load           |
                 | bugsnag.view.type                 | stringValue | fragment            |
                 | bugsnag.view.name                 | stringValue | FirstFragment       |
                 | bugsnag.span.first_class          | boolValue   | false               |
 
-    * a span named "ViewLoad/Fragment/SecondFragment" contains the attributes:
+    * a span named "[ViewLoad/Fragment]SecondFragment" contains the attributes:
                 | attribute                         | type        | value               |
                 | bugsnag.span.category             | stringValue | view_load           |
                 | bugsnag.view.type                 | stringValue | fragment            |
                 | bugsnag.view.name                 | stringValue | SecondFragment      |
                 | bugsnag.span.first_class          | boolValue   | false               |
 
-    * a span named "ViewLoadPhase/ActivityResume/NestedSpansActivity" contains the attributes:
+    * a span named "[ViewLoadPhase/ActivityResume]NestedSpansActivity" contains the attributes:
                 | attribute                         | type        | value               |
                 | bugsnag.span.category             | stringValue | view_load_phase     |
                 | bugsnag.span.first_class          | boolValue   | false               |
+                | bugsnag.phase                     | stringValue | ActivityResume      |
+                | bugsnag.view.name                 | stringValue | NestedSpansActivity |
 
-    * a span named "AppStart/Cold" contains the attributes:
+    * a span named "[AppStart/Cold]" contains the attributes:
                 | attribute                         | type        | value               |
                 | bugsnag.span.category             | stringValue | app_start           |
                 | bugsnag.app_start.first_view_name | stringValue | NestedSpansActivity |
                 | bugsnag.app_start.type            | stringValue | cold                |
 
-    * a span named "ViewLoad/Activity/NestedSpansActivity" contains the attributes:
+    * a span named "[ViewLoad/Activity]NestedSpansActivity" contains the attributes:
                 | attribute                         | type        | value               |
                 | bugsnag.span.category             | stringValue | view_load           |
                 | bugsnag.view.type                 | stringValue | activity            |

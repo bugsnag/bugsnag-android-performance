@@ -23,7 +23,7 @@ class SpanFactory(
 
     fun createNetworkSpan(url: URL, verb: String, options: SpanOptions = SpanOptions.DEFAULTS): SpanImpl {
         val verbUpper = verb.uppercase()
-        val span = createSpan("HTTP/$verbUpper", SpanKind.CLIENT, options)
+        val span = createSpan("[HTTP/$verbUpper]", SpanKind.CLIENT, options)
         span.setAttribute("bugsnag.span.category", "network")
         span.setAttribute("http.url", url.toString())
         span.setAttribute("http.method", verbUpper)
@@ -40,7 +40,7 @@ class SpanFactory(
     ): SpanImpl {
         val isFirstClass = options.isFirstClass
         val span = createSpan(
-            "ViewLoad/${viewType.spanName}/$viewName",
+            "[ViewLoad/${viewType.spanName}]$viewName",
             SpanKind.INTERNAL,
             options
         )
@@ -54,7 +54,7 @@ class SpanFactory(
 
     fun createAppStartSpan(startType: String): SpanImpl =
         createSpan(
-            "AppStart/$startType",
+            "[AppStart/$startType]",
             SpanKind.INTERNAL
         ).apply {
             setAttribute("bugsnag.span.category", "app_start")
