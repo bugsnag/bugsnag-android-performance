@@ -206,7 +206,7 @@ class PerformanceLifecycleCallbacks internal constructor(
                 spanFactory.createCustomSpan(spanNameForPhase(activity,phase),
                     SpanOptions.DEFAULTS.within(viewLoadSpan)).apply {
                     setAttribute("bugsnag.span.category", "view_load_phase")
-                    setAttribute("bugsnag.view.name", "${activity::class.java.simpleName}")
+                    setAttribute("bugsnag.view.name", activity::class.java.simpleName)
                     setAttribute("bugsnag.phase", phase.phaseName)
                 }
             }
