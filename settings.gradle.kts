@@ -21,5 +21,7 @@ include(
     ":bugsnag-android-performance",
     ":bugsnag-plugin-android-performance-okhttp",
     ":bugsnag-plugin-android-performance-appcompat",
-    ":bugsnag-plugin-android-performance-coroutines"
+    ":bugsnag-plugin-android-performance-coroutines",
+
+    ":benchmarks",
 )

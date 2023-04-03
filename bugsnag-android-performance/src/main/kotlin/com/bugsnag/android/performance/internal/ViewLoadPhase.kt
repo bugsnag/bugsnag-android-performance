@@ -5,6 +5,3 @@ enum class ViewLoadPhase(internal val spanName: String) {
     START("Start"),
     RESUME("Resume"),
 }
-
-
-

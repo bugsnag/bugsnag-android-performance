@@ -3,6 +3,7 @@ package com.bugsnag.android.performance
 import android.app.Activity
 import android.app.Application
 import android.content.Context
+import android.net.Uri
 import android.os.SystemClock
 import com.bugsnag.android.performance.BugsnagPerformance.start
 import com.bugsnag.android.performance.internal.ConnectivityCompat
@@ -188,7 +189,22 @@ object BugsnagPerformance {
         url: URL,
         verb: String,
         options: SpanOptions = SpanOptions.DEFAULTS,
-    ): Span = spanFactory.createNetworkSpan(url, verb, options)
+    ): Span = spanFactory.createNetworkSpan(url.toString(), verb, options)
+
+    /**
+     * Open a network span for a given url and HTTP [verb] to measure the time taken for an HTTP request.
+     *
+     * @param uri the URI/URL the returned span is measuring
+     * @param verb the HTTP verb / method (GET, POST, PUT, etc.)
+     * @param options the optional configuration for the span
+     */
+    @JvmStatic
+    @JvmOverloads
+    fun startNetworkRequestSpan(
+        uri: Uri,
+        verb: String,
+        options: SpanOptions = SpanOptions.DEFAULTS,
+    ): Span = spanFactory.createNetworkSpan(uri.toString(), verb, options)
 
     /**
      * Open a ViewLoad span to measure the time taken to load and render a UI element (typically a screen).
