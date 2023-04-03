@@ -58,4 +58,15 @@ class TracerTest {
         // ensure that 2 spans woke the worker up exactly once
         verify(worker, times(1)).wake()
     }
+
+    @Test
+    fun emptyBatch() = InternalDebug.withDebugValues {
+        InternalDebug.workerSleepMs = 0L
+
+        val worker = mock<Worker>()
+        tracer.worker = worker
+
+        val batch = tracer.collectNextBatch()
+        assertEquals(0, batch?.size) // we expect an empty batch, not null
+    }
 }
