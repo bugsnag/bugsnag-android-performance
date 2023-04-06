@@ -6,7 +6,7 @@ import android.os.SystemClock
 import com.bugsnag.android.performance.Logger
 import com.bugsnag.android.performance.SpanKind
 import com.bugsnag.android.performance.test.CollectingSpanProcessor
-import com.bugsnag.android.performance.test.testSpanProcessor
+import com.bugsnag.android.performance.test.NoopSpanProcessor
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -22,7 +22,7 @@ import org.robolectric.util.ReflectionHelpers
 class PerformanceLifecycleCallbacksTest {
     private val activity = Activity()
 
-    private var spanFactory = SpanFactory(testSpanProcessor)
+    private var spanFactory = SpanFactory(NoopSpanProcessor)
     private var spanTracker = SpanTracker()
 
     private lateinit var spanProcessor: CollectingSpanProcessor

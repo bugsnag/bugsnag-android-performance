@@ -1,7 +1,7 @@
 package com.bugsnag.android.performance.internal
 
+import com.bugsnag.android.performance.test.NoopSpanProcessor
 import com.bugsnag.android.performance.test.TestSpanFactory
-import com.bugsnag.android.performance.test.testSpanProcessor
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
@@ -18,7 +18,7 @@ class SpanChainTest {
 
     @Test
     fun unlinkTo() {
-        val spans = spanFactory.newSpans(10, testSpanProcessor)
+        val spans = spanFactory.newSpans(10, NoopSpanProcessor)
         val root = spans.toSpanChain()
 
         // check that all the spans (except the last) have a `next` link
