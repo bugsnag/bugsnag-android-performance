@@ -15,7 +15,7 @@ object NetworkRequestAttributes {
      */
     @JvmStatic
     fun setResponseCode(span: Span, statusCode: Int) {
-        (span as SpanImpl).setAttribute("http.response_code", statusCode)
+        (span as? SpanImpl)?.setAttribute("http.response_code", statusCode)
     }
 
     /**
@@ -26,7 +26,7 @@ object NetworkRequestAttributes {
      */
     @JvmStatic
     fun setRequestContentLength(span: Span, contentLength: Long) {
-        (span as SpanImpl).setAttribute("http.request_content_length", contentLength)
+        (span as? SpanImpl)?.setAttribute("http.request_content_length", contentLength)
     }
 
     /**
@@ -37,7 +37,7 @@ object NetworkRequestAttributes {
      */
     @JvmStatic
     fun setResponseContentLength(span: Span, contentLength: Long) {
-        (span as SpanImpl).setAttribute("http.response_content_length", contentLength)
+        (span as? SpanImpl)?.setAttribute("http.response_content_length", contentLength)
     }
 
     /**
@@ -51,6 +51,6 @@ object NetworkRequestAttributes {
      */
     @JvmStatic
     fun setHttpFlavor(span: Span, httpFlavor: String) {
-        (span as SpanImpl).setAttribute("http.flavor", httpFlavor)
+        (span as? SpanImpl)?.setAttribute("http.flavor", httpFlavor)
     }
 }
