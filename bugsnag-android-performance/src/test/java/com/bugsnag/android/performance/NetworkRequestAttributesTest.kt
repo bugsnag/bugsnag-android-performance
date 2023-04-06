@@ -24,7 +24,7 @@ class NetworkRequestAttributesTest {
 
             // Integer attributes are stored as Long, not Int
             val statusCodeAttr =
-                span.attributes.find { it.first == "http.response_code" }!!.second as Long
+                span.attributes.find { it.first == "http.status_code" }!!.second as Long
 
             assertEquals(code, statusCodeAttr.toInt())
         }

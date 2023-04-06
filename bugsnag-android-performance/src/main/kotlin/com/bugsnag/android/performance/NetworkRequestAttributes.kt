@@ -8,14 +8,14 @@ import com.bugsnag.android.performance.internal.SpanImpl
  */
 object NetworkRequestAttributes {
     /**
-     * Set the `"http.response_code"` attribute on the given [Span].
+     * Set the `"http.status_code"` attribute on the given [Span].
      *
      * @param span the `Span` measuring the HTTP request
      * @param statusCode the HTTP response code to record on the `Span`
      */
     @JvmStatic
     fun setResponseCode(span: Span, statusCode: Int) {
-        (span as? SpanImpl)?.setAttribute("http.response_code", statusCode)
+        (span as? SpanImpl)?.setAttribute("http.status_code", statusCode)
     }
 
     /**
