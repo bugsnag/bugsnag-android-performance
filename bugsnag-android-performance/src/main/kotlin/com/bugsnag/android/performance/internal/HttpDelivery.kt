@@ -52,10 +52,11 @@ internal class HttpDelivery(
         deliver(initialProbabilityRequest)
     }
 
+    @Suppress("MagicNumber")
     private fun getDeliveryResult(statusCode: Int, payload: TracePayload): DeliveryResult {
         return when {
-            statusCode / 100 == 2 -> DeliveryResult.Success
-            statusCode / 100 == 4 && statusCode !in httpRetryCodes ->
+            statusCode in 200..299 -> DeliveryResult.Success
+            statusCode in 400..499 && statusCode !in httpRetryCodes ->
                 DeliveryResult.Failed(payload, false)
             else -> DeliveryResult.Failed(payload, true)
         }
