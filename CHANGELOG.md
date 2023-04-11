@@ -1,3 +1,17 @@
+## 0.1.4 (2023-04-11)
+
+### Enhancements
+
+* Added HTTP attribute support for manual NetworkRequest spans
+  [#110](https://github.com/bugsnag/bugsnag-android-performance/pull/110)
+
+### Bug fixes
+
+* Fixed the null-pointer warning in Tracer when dealing with empty batches of spans
+  [#107](https://github.com/bugsnag/bugsnag-android-performance/pull/107)
+* Observed non-OpenTelemetry network subtypes are mapped to known values
+  [#108](https://github.com/bugsnag/bugsnag-android-performance/pull/108)
+
 ## 0.1.3 (2023-03-28)
 
 ### Enhancements

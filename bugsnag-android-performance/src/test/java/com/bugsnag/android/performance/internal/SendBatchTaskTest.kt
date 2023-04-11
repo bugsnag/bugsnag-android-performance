@@ -2,8 +2,8 @@ package com.bugsnag.android.performance.internal
 
 import com.bugsnag.android.performance.Attributes
 import com.bugsnag.android.performance.Logger
+import com.bugsnag.android.performance.test.NoopSpanProcessor
 import com.bugsnag.android.performance.test.TestSpanFactory
-import com.bugsnag.android.performance.test.testSpanProcessor
 import org.junit.After
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -33,7 +33,7 @@ class SendBatchTaskTest {
     fun sendBatch() {
         val spanFactory = TestSpanFactory()
         val tracer = mock<Tracer> {
-            on { collectNextBatch() } doReturn spanFactory.newSpans(10, testSpanProcessor)
+            on { collectNextBatch() } doReturn spanFactory.newSpans(10, NoopSpanProcessor)
         }
 
         val delivery = mock<Delivery>()

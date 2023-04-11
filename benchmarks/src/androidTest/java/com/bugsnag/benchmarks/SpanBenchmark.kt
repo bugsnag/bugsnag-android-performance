@@ -1,0 +1,79 @@
+package com.bugsnag.benchmarks
+
+import androidx.benchmark.junit4.BenchmarkRule
+import androidx.benchmark.junit4.measureRepeated
+import androidx.test.core.app.ApplicationProvider
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.bugsnag.android.performance.BugsnagPerformance
+import com.bugsnag.android.performance.PerformanceConfiguration
+import com.bugsnag.android.performance.ViewType
+import com.bugsnag.android.performance.internal.NoopLogger
+import org.junit.BeforeClass
+import org.junit.Rule
+import org.junit.Test
+import org.junit.runner.RunWith
+import java.net.URL
+
+@RunWith(AndroidJUnit4::class)
+class SpanBenchmark {
+
+    @get:Rule
+    val benchmarkRule = BenchmarkRule()
+
+    companion object {
+        @JvmStatic
+        @BeforeClass
+        fun configure() {
+            BugsnagPerformance.start(
+                PerformanceConfiguration(
+                    ApplicationProvider.getApplicationContext(),
+                    "not-valid-api-key",
+                ).apply {
+                    // we set the endpoint to localhost so that no payloads can actually be delivered
+                    endpoint = "http://localhost"
+                    // we run out of memory pretty quickly since the benchmarks produce spans faster
+                    // than delivery can reasonably handle them (even without network)
+                    // as such we set the sampling rate to discard some of the spans, while
+                    // still collecting enough to affect the benchmark
+                    samplingProbability = 0.5
+                    logger = NoopLogger
+                },
+            )
+        }
+    }
+
+    @Test
+    fun logCustomSpans() {
+        benchmarkRule.measureRepeated {
+            BugsnagPerformance.startSpan("Test span").end()
+        }
+    }
+
+    @Test
+    fun logViewLoadSpans() {
+        benchmarkRule.measureRepeated {
+            BugsnagPerformance.startViewLoadSpan(ViewType.ACTIVITY, "MainActivity").end()
+        }
+    }
+
+    @Test
+    fun logNetworkRequestSpans() {
+        val url = URL("http://localhost")
+        benchmarkRule.measureRepeated {
+            BugsnagPerformance.startNetworkRequestSpan(url, "POST")
+        }
+    }
+
+    @Test
+    fun nestedViewSpans() {
+        benchmarkRule.measureRepeated {
+            BugsnagPerformance.startViewLoadSpan(ViewType.ACTIVITY, "MainActivity").use {
+                BugsnagPerformance.startViewLoadSpan(ViewType.FRAGMENT, "InboxFragment").use {
+                    BugsnagPerformance.startSpan("LoadInbox").end()
+                }
+
+                BugsnagPerformance.startViewLoadSpan(ViewType.FRAGMENT, "ReadMessageFragment").end()
+            }
+        }
+    }
+}

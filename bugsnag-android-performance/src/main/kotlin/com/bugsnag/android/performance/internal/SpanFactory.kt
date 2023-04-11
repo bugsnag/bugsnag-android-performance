@@ -5,7 +5,6 @@ import com.bugsnag.android.performance.HasAttributes
 import com.bugsnag.android.performance.SpanKind
 import com.bugsnag.android.performance.SpanOptions
 import com.bugsnag.android.performance.ViewType
-import java.net.URL
 import java.util.UUID
 
 internal typealias AttributeSource = (target: HasAttributes) -> Unit
@@ -21,11 +20,11 @@ class SpanFactory(
         return span
     }
 
-    fun createNetworkSpan(url: URL, verb: String, options: SpanOptions = SpanOptions.DEFAULTS): SpanImpl {
+    fun createNetworkSpan(url: String, verb: String, options: SpanOptions = SpanOptions.DEFAULTS): SpanImpl {
         val verbUpper = verb.uppercase()
-        val span = createSpan("HTTP/$verbUpper", SpanKind.CLIENT, options)
+        val span = createSpan("[HTTP/$verbUpper]", SpanKind.CLIENT, options)
         span.setAttribute("bugsnag.span.category", "network")
-        span.setAttribute("http.url", url.toString())
+        span.setAttribute("http.url", url)
         span.setAttribute("http.method", verbUpper)
         return span
     }
@@ -40,7 +39,7 @@ class SpanFactory(
     ): SpanImpl {
         val isFirstClass = options.isFirstClass
         val span = createSpan(
-            "ViewLoad/${viewType.spanName}/$viewName",
+            "[ViewLoad/${viewType.spanName}]$viewName",
             SpanKind.INTERNAL,
             options
         )
@@ -54,7 +53,7 @@ class SpanFactory(
 
     fun createAppStartSpan(startType: String): SpanImpl =
         createSpan(
-            "AppStart/$startType",
+            "[AppStart/$startType]",
             SpanKind.INTERNAL
         ).apply {
             setAttribute("bugsnag.span.category", "app_start")

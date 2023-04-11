@@ -1,8 +1,8 @@
 package com.bugsnag.android.performance.internal
 
 import com.bugsnag.android.performance.Attributes
+import com.bugsnag.android.performance.test.NoopSpanProcessor
 import com.bugsnag.android.performance.test.TestSpanFactory
-import com.bugsnag.android.performance.test.testSpanProcessor
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
@@ -37,7 +37,7 @@ internal class TracePayloadTest {
     }
 
     private fun createSpan(pValue: Double): SpanImpl =
-        spanFactory.newSpan(processor = testSpanProcessor).apply {
+        spanFactory.newSpan(processor = NoopSpanProcessor).apply {
             samplingProbability = pValue
         }
 }

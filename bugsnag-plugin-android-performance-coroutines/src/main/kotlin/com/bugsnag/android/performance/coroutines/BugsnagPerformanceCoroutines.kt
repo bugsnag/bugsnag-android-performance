@@ -72,5 +72,6 @@ operator fun CoroutineContext.plus(context: SpanContext) : CoroutineContext {
 class BugsnagPerformanceScope(dispatcher: CoroutineDispatcher = Dispatchers.Main) : CoroutineScope {
     private val baseContext = SupervisorJob() + dispatcher
 
-    override val coroutineContext: CoroutineContext = baseContext + SpanContext.current.asCoroutineElement()
+    override val coroutineContext: CoroutineContext
+        get() = baseContext + SpanContext.current.asCoroutineElement()
 }

@@ -24,6 +24,7 @@
         </activity>
 
         <activity android:name=".ActivityViewLoadActivity"/>
+        <activity android:name=".NestedSpansActivity"/>
     </application>
 
 </manifest>

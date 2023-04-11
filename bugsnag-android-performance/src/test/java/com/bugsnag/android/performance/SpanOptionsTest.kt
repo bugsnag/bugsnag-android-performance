@@ -2,7 +2,7 @@ package com.bugsnag.android.performance
 
 import android.os.SystemClock
 import com.bugsnag.android.performance.internal.SpanFactory
-import com.bugsnag.android.performance.test.testSpanProcessor
+import com.bugsnag.android.performance.test.NoopSpanProcessor
 import com.bugsnag.android.performance.test.withStaticMock
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -20,7 +20,7 @@ class SpanOptionsTest {
 
     @Before
     fun newSpanFactory() {
-        spanFactory = SpanFactory(testSpanProcessor)
+        spanFactory = SpanFactory(NoopSpanProcessor)
     }
 
     @Test

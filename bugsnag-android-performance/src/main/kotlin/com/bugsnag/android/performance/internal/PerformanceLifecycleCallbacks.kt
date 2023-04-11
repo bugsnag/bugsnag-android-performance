@@ -206,6 +206,8 @@ class PerformanceLifecycleCallbacks internal constructor(
                 spanFactory.createCustomSpan(spanNameForPhase(activity,phase),
                     SpanOptions.DEFAULTS.within(viewLoadSpan)).apply {
                     setAttribute("bugsnag.span.category", "view_load_phase")
+                    setAttribute("bugsnag.view.name", activity::class.java.simpleName)
+                    setAttribute("bugsnag.phase", phase.phaseName)
                 }
             }
         }
@@ -216,7 +218,7 @@ class PerformanceLifecycleCallbacks internal constructor(
     }
 
     private fun spanNameForPhase(activity: Activity, phase: ViewLoadPhase): String {
-        return "ViewLoadPhase/Activity${phase.spanName}/${activity::class.java.simpleName}"
+        return "[ViewLoadPhase/${phase.phaseName}]${activity::class.java.simpleName}"
     }
 
     override fun onActivityPaused(activity: Activity) = Unit

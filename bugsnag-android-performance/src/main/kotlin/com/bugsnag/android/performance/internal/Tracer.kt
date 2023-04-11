@@ -7,7 +7,7 @@ import java.util.concurrent.atomic.AtomicReference
 
 class Tracer : SpanProcessor {
 
-    private val batch = AtomicReference<SpanChain>(null)
+    private val batch = AtomicReference<SpanChain?>(null)
 
     /**
      * The estimated number of spans in [batch]. This is not expected to be exact but will
@@ -24,6 +24,12 @@ class Tracer : SpanProcessor {
 
     internal var worker: Worker? = null
 
+    /**
+     * Returns the next batch of spans to be sent, or `null` if the batch is not "ready" to be sent.
+     * When a batch is empty, an empty collection is returned (instead of `null`). When a batch is
+     * not considered "ready" (for example because it does not have enough spans) `null` will
+     * be returned instead.
+     */
     internal fun collectNextBatch(): Collection<SpanImpl>? {
         val expectedSize = batchSize.get()
         val currentBatchAge = SystemClock.elapsedRealtime() - lastBatchSendTime
@@ -34,15 +40,17 @@ class Tracer : SpanProcessor {
             return null
         }
 
-        val nextBatchChain = batch.getAndSet(null)
-        // unlinkTo separates the chain, allowing any free-floating Spans eligible for GC
-        val nextBatch = nextBatchChain.unlinkTo(ArrayList())
-        // reduce the tracked batchSize by the number of Spans in this batch
-        batchSize.addAndGet(-nextBatch.size)
-        nextBatch.reverse()
         lastBatchSendTime = SystemClock.elapsedRealtime()
+        val nextBatchChain = batch.getAndSet(null)
+        return if (nextBatchChain != null) {
+            // unlinkTo separates the chain, allowing any free-floating Spans eligible for GC
+            val nextBatch = nextBatchChain.unlinkTo(ArrayList())
+            // reduce the tracked batchSize by the number of Spans in this batch
+            batchSize.addAndGet(-nextBatch.size)
+            nextBatch.reverse()
 
-        return sampler.sampled(nextBatch)
+            sampler.sampled(nextBatch)
+        } else emptyList()
     }
 
     private fun addToBatch(span: SpanImpl) {

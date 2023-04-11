@@ -2,9 +2,9 @@ package com.bugsnag.android.performance.internal
 
 import com.bugsnag.android.performance.Attributes
 import com.bugsnag.android.performance.SpanKind
+import com.bugsnag.android.performance.test.NoopSpanProcessor
 import com.bugsnag.android.performance.test.OtelValidator.assertTraceDataValid
 import com.bugsnag.android.performance.test.assertJsonEquals
-import com.bugsnag.android.performance.test.testSpanProcessor
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -22,7 +22,7 @@ class SpanPayloadEncodingTest {
             UUID.fromString("4ee26661-4650-4c7f-a35f-00f007cd24e7"),
             0xdecafbad,
             0L,
-            testSpanProcessor,
+            NoopSpanProcessor,
             false,
         )
         span1.end(1L)
@@ -33,7 +33,7 @@ class SpanPayloadEncodingTest {
             UUID.fromString("4ee26661-4650-4c7f-a35f-00f007cd24e7"),
             0xbaddecaf,
             0L,
-            testSpanProcessor,
+            NoopSpanProcessor,
             false,
         )
         span2.end(11L)

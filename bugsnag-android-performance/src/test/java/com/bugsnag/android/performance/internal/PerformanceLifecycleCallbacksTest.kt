@@ -6,7 +6,7 @@ import android.os.SystemClock
 import com.bugsnag.android.performance.Logger
 import com.bugsnag.android.performance.SpanKind
 import com.bugsnag.android.performance.test.CollectingSpanProcessor
-import com.bugsnag.android.performance.test.testSpanProcessor
+import com.bugsnag.android.performance.test.NoopSpanProcessor
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -22,7 +22,7 @@ import org.robolectric.util.ReflectionHelpers
 class PerformanceLifecycleCallbacksTest {
     private val activity = Activity()
 
-    private var spanFactory = SpanFactory(testSpanProcessor)
+    private var spanFactory = SpanFactory(NoopSpanProcessor)
     private var spanTracker = SpanTracker()
 
     private lateinit var spanProcessor: CollectingSpanProcessor
@@ -65,7 +65,7 @@ class PerformanceLifecycleCallbacksTest {
         assertEquals(1, spans.size)
 
         val span = spans.first()
-        assertEquals("ViewLoad/Activity/Activity", span.name)
+        assertEquals("[ViewLoad/Activity]Activity", span.name)
         // start and end time are in nanoseconds, not milliseconds
         assertEquals(100_000_000L, span.startTime)
         assertEquals(200_000_000L, span.endTime)
@@ -106,7 +106,7 @@ class PerformanceLifecycleCallbacksTest {
         assertEquals(1, spans.size)
 
         val span = spans.first()
-        assertEquals("ViewLoad/Activity/Activity", span.name)
+        assertEquals("[ViewLoad/Activity]Activity", span.name)
         assertEquals(100_000_000L, span.startTime)
         assertEquals(200_000_000L, span.endTime)
         assertEquals(SpanKind.INTERNAL, span.kind)
@@ -156,11 +156,11 @@ class PerformanceLifecycleCallbacksTest {
         assertEquals(2, spans.size)
 
         val (span1, span2) = spans
-        assertEquals("AppStart/Warm", span1.name)
+        assertEquals("[AppStart/Warm]", span1.name)
         assertEquals(100_000_000L, span1.startTime)
         assertEquals(200_000_000L, span1.endTime)
 
-        assertEquals("AppStart/Warm", span2.name)
+        assertEquals("[AppStart/Warm]", span2.name)
         assertEquals(300_000_000L, span2.startTime)
         assertEquals(400_000_000L, span2.endTime)
     }
@@ -190,14 +190,14 @@ class PerformanceLifecycleCallbacksTest {
 
         // we expect the view load span to be second as it was ended after the onCreate span
         val viewLoadSpan = spans[1]
-        assertEquals("ViewLoad/Activity/Activity", viewLoadSpan.name)
+        assertEquals("[ViewLoad/Activity]Activity", viewLoadSpan.name)
         assertEquals(100_000_000L, viewLoadSpan.startTime)
         assertEquals(200_000_000L, viewLoadSpan.endTime)
         assertEquals(SpanKind.INTERNAL, viewLoadSpan.kind)
         assertTrue(viewLoadSpan.isEnded())
 
         val onCreateSpan = spans.first()
-        assertEquals("ViewLoadPhase/ActivityCreate/Activity", onCreateSpan.name)
+        assertEquals("[ViewLoadPhase/ActivityCreate]Activity", onCreateSpan.name)
         assertEquals(viewLoadSpan.spanId, onCreateSpan.parentSpanId)
         assertEquals(100_000_000L, onCreateSpan.startTime)
         assertEquals(100_000_000L, onCreateSpan.endTime)
@@ -205,7 +205,7 @@ class PerformanceLifecycleCallbacksTest {
         assertTrue(onCreateSpan.isEnded())
 
         val onStartSpan = spans[2]
-        assertEquals("ViewLoadPhase/ActivityStart/Activity", onStartSpan.name)
+        assertEquals("[ViewLoadPhase/ActivityStart]Activity", onStartSpan.name)
         assertEquals(viewLoadSpan.spanId, onStartSpan.parentSpanId)
         assertEquals(150_000_000L, onStartSpan.startTime)
         assertEquals(150_000_000L, onStartSpan.endTime)
@@ -213,7 +213,7 @@ class PerformanceLifecycleCallbacksTest {
         assertTrue(onStartSpan.isEnded())
 
         val onResumeSpan = spans[3]
-        assertEquals("ViewLoadPhase/ActivityResume/Activity", onResumeSpan.name)
+        assertEquals("[ViewLoadPhase/ActivityResume]Activity", onResumeSpan.name)
         assertEquals(viewLoadSpan.spanId, onResumeSpan.parentSpanId)
         assertEquals(200_000_000L, onResumeSpan.startTime)
         assertEquals(200_000_000L, onResumeSpan.endTime)
@@ -253,14 +253,14 @@ class PerformanceLifecycleCallbacksTest {
 
         // we expect the view load span to be second as it was ended after the onCreate span
         val viewLoadSpan = spans[1]
-        assertEquals("ViewLoad/Activity/Activity", viewLoadSpan.name)
+        assertEquals("[ViewLoad/Activity]Activity", viewLoadSpan.name)
         assertEquals(100_000_000L, viewLoadSpan.startTime)
         assertEquals(200_000_000L, viewLoadSpan.endTime)
         assertEquals(SpanKind.INTERNAL, viewLoadSpan.kind)
         assertTrue(viewLoadSpan.isEnded())
 
         val onCreateSpan = spans.first()
-        assertEquals("ViewLoadPhase/ActivityCreate/Activity", onCreateSpan.name)
+        assertEquals("[ViewLoadPhase/ActivityCreate]Activity", onCreateSpan.name)
         assertEquals(viewLoadSpan.spanId, onCreateSpan.parentSpanId)
         assertEquals(100_000_000L, onCreateSpan.startTime)
         assertEquals(100_000_000L, onCreateSpan.endTime)
@@ -268,7 +268,7 @@ class PerformanceLifecycleCallbacksTest {
         assertTrue(onCreateSpan.isEnded())
 
         val onStartSpan = spans[2]
-        assertEquals("ViewLoadPhase/ActivityStart/Activity", onStartSpan.name)
+        assertEquals("[ViewLoadPhase/ActivityStart]Activity", onStartSpan.name)
         assertEquals(viewLoadSpan.spanId, onStartSpan.parentSpanId)
         assertEquals(150_000_000L, onStartSpan.startTime)
         assertEquals(150_000_000L, onStartSpan.endTime)
@@ -276,7 +276,7 @@ class PerformanceLifecycleCallbacksTest {
         assertTrue(onStartSpan.isEnded())
 
         val onResumeSpan = spans[3]
-        assertEquals("ViewLoadPhase/ActivityResume/Activity", onResumeSpan.name)
+        assertEquals("[ViewLoadPhase/ActivityResume]Activity", onResumeSpan.name)
         assertEquals(viewLoadSpan.spanId, onResumeSpan.parentSpanId)
         assertEquals(200_000_000L, onResumeSpan.startTime)
         assertEquals(200_000_000L, onResumeSpan.endTime)

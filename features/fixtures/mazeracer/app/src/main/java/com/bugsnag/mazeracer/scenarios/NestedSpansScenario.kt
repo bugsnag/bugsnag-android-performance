@@ -1,24 +1,27 @@
 package com.bugsnag.mazeracer.scenarios
 
+import android.content.Intent
+import com.bugsnag.android.performance.AutoInstrument
 import com.bugsnag.android.performance.BugsnagPerformance
 import com.bugsnag.android.performance.PerformanceConfiguration
 import com.bugsnag.android.performance.internal.InternalDebug
+import com.bugsnag.mazeracer.NestedSpansActivity
 import com.bugsnag.mazeracer.Scenario
 
-class RetryScenario(
+const val BATCH_SIZE = 10
+
+class NestedSpansScenario(
     config: PerformanceConfiguration,
     scenarioMetadata: String
 ) : Scenario(config, scenarioMetadata) {
     init {
-        InternalDebug.spanBatchSizeSendTriggerPoint = 1
-        InternalDebug.workerSleepMs = 50L
+        InternalDebug.spanBatchSizeSendTriggerPoint = BATCH_SIZE
+        config.autoInstrumentAppStarts = true
+        config.autoInstrumentActivities = AutoInstrument.FULL
     }
 
     override fun startScenario() {
         BugsnagPerformance.start(config)
-        Thread.sleep(100)
-        BugsnagPerformance.startSpan("span 1").end()
-        Thread.sleep(200)
-        BugsnagPerformance.startSpan("span 2").end()
+        context.startActivity(Intent(context, NestedSpansActivity::class.java))
     }
 }
