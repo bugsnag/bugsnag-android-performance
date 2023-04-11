@@ -43,12 +43,35 @@ class NetworkRequestAttributesTest {
     }
 
     @Test
+    fun setUncompressedRequestContentLength() {
+        val requestBodySize = 1024L
+        val span = spanFactory.newSpan(processor = NoopSpanProcessor)
+        NetworkRequestAttributes.setUncompressedRequestContentLength(span, requestBodySize)
+
+        val requestLength = span.attributes
+            .find { it.first == "http.request_content_length_uncompressed" }!!.second as Long
+
+        assertEquals(requestBodySize, requestLength)
+    }
+
+    @Test
     fun setResponseContentLength() {
         val span = spanFactory.newSpan(processor = NoopSpanProcessor)
         NetworkRequestAttributes.setResponseContentLength(span, Long.MAX_VALUE)
 
         val responseLength = span.attributes
             .find { it.first == "http.response_content_length" }!!.second as Long
+
+        assertEquals(Long.MAX_VALUE, responseLength)
+    }
+
+    @Test
+    fun setUncompressedResponseContentLength() {
+        val span = spanFactory.newSpan(processor = NoopSpanProcessor)
+        NetworkRequestAttributes.setUncompressedResponseContentLength(span, Long.MAX_VALUE)
+
+        val responseLength = span.attributes
+            .find { it.first == "http.response_content_length_uncompressed" }!!.second as Long
 
         assertEquals(Long.MAX_VALUE, responseLength)
     }

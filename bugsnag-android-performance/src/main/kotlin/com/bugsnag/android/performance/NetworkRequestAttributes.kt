@@ -30,6 +30,17 @@ object NetworkRequestAttributes {
     }
 
     /**
+     * Set the `"http.request_content_length_uncompressed"` attribute on the given [Span].
+     *
+     * @param span the `Span` measuring the HTTP request
+     * @param contentLength the number of bytes in the uncompressed request body
+     */
+    @JvmStatic
+    fun setUncompressedRequestContentLength(span: Span, contentLength: Long) {
+        (span as? SpanImpl)?.setAttribute("http.request_content_length_uncompressed", contentLength)
+    }
+
+    /**
      * Set the `"http.response_content_length"` attribute on the given [Span].
      *
      * @param span the `Span` measuring the HTTP request
@@ -38,6 +49,20 @@ object NetworkRequestAttributes {
     @JvmStatic
     fun setResponseContentLength(span: Span, contentLength: Long) {
         (span as? SpanImpl)?.setAttribute("http.response_content_length", contentLength)
+    }
+
+    /**
+     * Set the `"http.response_content_length_uncompressed"` attribute on the given [Span].
+     *
+     * @param span the `Span` measuring the HTTP request
+     * @param contentLength the number of bytes in the uncompressed response body
+     */
+    @JvmStatic
+    fun setUncompressedResponseContentLength(span: Span, contentLength: Long) {
+        (span as? SpanImpl)?.setAttribute(
+            "http.response_content_length_uncompressed",
+            contentLength,
+        )
     }
 
     /**
