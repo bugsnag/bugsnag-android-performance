@@ -1,4 +1,9 @@
-## TBD
+## 0.1.4 (2023-04-11)
+
+### Enhancements
+
+* Added HTTP attribute support for manual NetworkRequest spans
+  [#110](https://github.com/bugsnag/bugsnag-android-performance/pull/110)
 
 ### Bug fixes
 
