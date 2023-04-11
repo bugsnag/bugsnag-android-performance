@@ -5,6 +5,3 @@ enum class ViewLoadPhase(internal val phaseName: String) {
     START("ActivityStart"),
     RESUME("ActivityResume"),
 }
-
-
-
