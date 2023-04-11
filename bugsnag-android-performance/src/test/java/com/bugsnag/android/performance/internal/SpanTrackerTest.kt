@@ -1,8 +1,8 @@
 package com.bugsnag.android.performance.internal
 
 import android.os.SystemClock
+import com.bugsnag.android.performance.test.NoopSpanProcessor
 import com.bugsnag.android.performance.test.TestSpanFactory
-import com.bugsnag.android.performance.test.testSpanProcessor
 import com.bugsnag.android.performance.test.withStaticMock
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
@@ -118,6 +118,6 @@ class SpanTrackerTest {
     }
 
     private fun createSpan(): SpanImpl {
-        return spanFactory.newSpan(processor = testSpanProcessor, endTime = null)
+        return spanFactory.newSpan(processor = NoopSpanProcessor, endTime = null)
     }
 }

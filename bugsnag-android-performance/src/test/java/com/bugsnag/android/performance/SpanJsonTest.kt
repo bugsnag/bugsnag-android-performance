@@ -3,8 +3,8 @@ package com.bugsnag.android.performance
 import android.util.JsonWriter
 import com.bugsnag.android.performance.internal.BugsnagClock
 import com.bugsnag.android.performance.internal.SpanImpl
+import com.bugsnag.android.performance.test.NoopSpanProcessor
 import com.bugsnag.android.performance.test.assertJsonEquals
-import com.bugsnag.android.performance.test.testSpanProcessor
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -24,7 +24,7 @@ class SpanJsonTest {
             UUID.fromString("4ee26661-4650-4c7f-a35f-00f007cd24e7"),
             0xdecafbad,
             123L,
-            testSpanProcessor,
+            NoopSpanProcessor,
             false,
         )
 

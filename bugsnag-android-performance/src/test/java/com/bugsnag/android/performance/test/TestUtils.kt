@@ -1,15 +1,12 @@
 package com.bugsnag.android.performance.test
 
 import com.bugsnag.android.performance.internal.SpanImpl
-import com.bugsnag.android.performance.internal.SpanProcessor
 import org.json.JSONObject
 import org.junit.Assert.assertEquals
 import org.mockito.MockedStatic
 import org.mockito.Mockito
 import java.util.concurrent.Future
 import java.util.concurrent.FutureTask
-
-val testSpanProcessor = SpanProcessor { }
 
 fun assertJsonEquals(expected: String, actual: String) {
     val expectedObject = JSONObject(expected).toString()
