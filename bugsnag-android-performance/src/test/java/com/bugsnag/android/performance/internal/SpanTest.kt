@@ -35,6 +35,7 @@ class SpanTest {
         val mockSpanProcessor = mock<SpanProcessor>()
         val span = SpanImpl(
             "test span",
+            SpanCategory.CUSTOM,
             SpanKind.INTERNAL,
             0L,
             UUID.fromString("4ee26661-4650-4c7f-a35f-00f007cd24e7"),
@@ -65,6 +66,7 @@ class SpanTest {
 
     private fun createTestSpan() = SpanImpl(
         "Test/test span",
+        SpanCategory.CUSTOM,
         SpanKind.INTERNAL,
         0L,
         UUID.fromString("4ee26661-4650-4c7f-a35f-00f007cd24e7"),

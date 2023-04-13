@@ -1,6 +1,7 @@
 package com.bugsnag.android.performance.test
 
 import com.bugsnag.android.performance.SpanKind
+import com.bugsnag.android.performance.internal.SpanCategory
 import com.bugsnag.android.performance.internal.SpanImpl
 import com.bugsnag.android.performance.internal.SpanProcessor
 import java.util.UUID
@@ -23,7 +24,17 @@ class TestSpanFactory {
         processor: SpanProcessor,
     ): SpanImpl {
         spanCount++
-        return SpanImpl(name, kind, startTime, traceId, spanId, parentSpanId, processor, true)
+        return SpanImpl(
+            name,
+            SpanCategory.CUSTOM,
+            kind,
+            startTime,
+            traceId,
+            spanId,
+            parentSpanId,
+            processor,
+            true,
+        )
             .apply { if (endTime != null) end(endTime(startTime)) }
     }
 
