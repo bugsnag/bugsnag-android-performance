@@ -2,6 +2,7 @@ package com.bugsnag.android.performance.internal
 
 import android.app.Activity
 import com.bugsnag.android.performance.HasAttributes
+import com.bugsnag.android.performance.SpanContext
 import com.bugsnag.android.performance.SpanKind
 import com.bugsnag.android.performance.SpanOptions
 import com.bugsnag.android.performance.ViewType
@@ -14,7 +15,7 @@ class SpanFactory(
     val spanAttributeSource: AttributeSource = {},
 ) {
     fun createCustomSpan(name: String, options: SpanOptions = SpanOptions.DEFAULTS): SpanImpl {
-        val isFirstClass = options.isFirstClass
+        val isFirstClass = options.isFirstClass != false
         val span = createSpan(name, SpanKind.INTERNAL, SpanCategory.CUSTOM, options)
         span.setAttribute("bugsnag.span.first_class", isFirstClass)
         return span
@@ -45,6 +46,8 @@ class SpanFactory(
         options: SpanOptions = SpanOptions.DEFAULTS,
     ): SpanImpl {
         val isFirstClass = options.isFirstClass
+            ?: SpanContext.noSpansMatch { it.category == SpanCategory.VIEW_LOAD }
+
         val span = createSpan(
             "[ViewLoad/${viewType.spanName}]$viewName",
             SpanKind.INTERNAL,

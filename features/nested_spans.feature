@@ -8,14 +8,12 @@ Feature: Nested spans
     * a span named "[ViewLoadPhase/ActivityCreate]NestedSpansActivity" contains the attributes:
                 | attribute                         | type        | value               |
                 | bugsnag.span.category             | stringValue | view_load_phase     |
-                | bugsnag.span.first_class          | boolValue   | false               |
                 | bugsnag.phase                     | stringValue | ActivityCreate      |
                 | bugsnag.view.name                 | stringValue | NestedSpansActivity |
 
     * a span named "[ViewLoadPhase/ActivityStart]NestedSpansActivity" contains the attributes:
                 | attribute                         | type        | value               |
                 | bugsnag.span.category             | stringValue | view_load_phase     |
-                | bugsnag.span.first_class          | boolValue   | false               |
                 | bugsnag.phase                     | stringValue | ActivityStart       |
                 | bugsnag.view.name                 | stringValue | NestedSpansActivity |
 
@@ -24,19 +22,16 @@ Feature: Nested spans
                 | bugsnag.span.category             | stringValue | view_load           |
                 | bugsnag.view.type                 | stringValue | fragment            |
                 | bugsnag.view.name                 | stringValue | FirstFragment       |
-                | bugsnag.span.first_class          | boolValue   | false               |
 
     * a span named "[ViewLoad/Fragment]SecondFragment" contains the attributes:
                 | attribute                         | type        | value               |
                 | bugsnag.span.category             | stringValue | view_load           |
                 | bugsnag.view.type                 | stringValue | fragment            |
                 | bugsnag.view.name                 | stringValue | SecondFragment      |
-                | bugsnag.span.first_class          | boolValue   | false               |
 
     * a span named "[ViewLoadPhase/ActivityResume]NestedSpansActivity" contains the attributes:
                 | attribute                         | type        | value               |
                 | bugsnag.span.category             | stringValue | view_load_phase     |
-                | bugsnag.span.first_class          | boolValue   | false               |
                 | bugsnag.phase                     | stringValue | ActivityResume      |
                 | bugsnag.view.name                 | stringValue | NestedSpansActivity |
 
@@ -51,19 +46,19 @@ Feature: Nested spans
                 | bugsnag.span.category             | stringValue | view_load           |
                 | bugsnag.view.type                 | stringValue | activity            |
                 | bugsnag.view.name                 | stringValue | NestedSpansActivity |
-                | bugsnag.span.first_class          | boolValue   | false               |
+                | bugsnag.span.first_class          | boolValue   | true                |
 
     * a span named "DoStuff" contains the attributes:
                 | attribute                         | type        | value               |
-                | bugsnag.span.first_class          | boolValue   | false               |
+                | bugsnag.span.first_class          | boolValue   | true                |
 
     * a span named "LoadData" contains the attributes:
                 | attribute                         | type        | value               |
-                | bugsnag.span.first_class          | boolValue   | false               |
+                | bugsnag.span.first_class          | boolValue   | true                |
 
     * a span named "CustomRoot" contains the attributes:
                 | attribute                         | type        | value               |
-                | bugsnag.span.first_class          | boolValue   | false               |
+                | bugsnag.span.first_class          | boolValue   | true                |
 
     # Check span parentage
     * the trace payload field "resourceSpans.0.scopeSpans.0.spans.5.spanId" is stored as the value "app_start_span_id"

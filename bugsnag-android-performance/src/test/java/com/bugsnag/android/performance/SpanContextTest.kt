@@ -141,8 +141,31 @@ internal class SpanContextTest {
         assertEquals(collectedSpans[1].spanId, collectedSpans[0].parentSpanId)
     }
 
-    private fun createTestSpan(name: String = "Test/test span", options: SpanOptions = SpanOptions.DEFAULTS) =
-        spanFactory.createCustomSpan(name, options)
+    @Test
+    fun stackedViewLoads() {
+        spanFactory.createViewLoadSpan(ViewType.ACTIVITY, "MainActivity").use { activitySpan ->
+            assertEquals(
+                true,
+                activitySpan.attributes.find { (key) -> key == "bugsnag.span.first_class" }!!.second,
+            )
+
+            // create a nested span between "MainActivity" and "IndexFragment"
+            measureSpan("CustomSpan") {
+                spanFactory.createViewLoadSpan(ViewType.FRAGMENT, "IndexFragment")
+                    .use { fragmentSpan ->
+                        assertEquals(
+                            false,
+                            fragmentSpan.attributes.find { (key) -> key == "bugsnag.span.first_class" }!!.second,
+                        )
+                    }
+            }
+        }
+    }
+
+    private fun createTestSpan(
+        name: String = "Test/test span",
+        options: SpanOptions = SpanOptions.DEFAULTS,
+    ) = spanFactory.createCustomSpan(name, options)
 
     private data class TestSpanContext(
         override val spanId: Long,

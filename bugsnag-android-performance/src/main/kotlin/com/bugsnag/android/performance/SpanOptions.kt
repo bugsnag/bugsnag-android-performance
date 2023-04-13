@@ -40,10 +40,8 @@ class SpanOptions private constructor(
             if (isOptionSet(OPT_START_TIME)) _startTime
             else SystemClock.elapsedRealtimeNanos()
 
-    val isFirstClass: Boolean
-        get() =
-            if (isOptionSet(OPT_IS_FIRST_CLASS)) _isFirstClass
-            else SpanContext.current.spanId == 0L
+    val isFirstClass: Boolean?
+        get() = _isFirstClass.takeIf { isOptionSet(OPT_IS_FIRST_CLASS) }
 
     val parentContext: SpanContext?
         get() =

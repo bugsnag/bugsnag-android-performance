@@ -4,6 +4,8 @@
 
 * `service.version` is now correctly reported as the app versionName
   [#113](https://github.com/bugsnag/bugsnag-android-performance/pull/113)
+* ViewLoad spans should only be marked "first class" when there are no other ViewLoad spans in the SpanContext
+  [#115](https://github.com/bugsnag/bugsnag-android-performance/pull/115)
 
 ## 0.1.4 (2023-04-11)
 
