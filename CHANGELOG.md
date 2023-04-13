@@ -1,3 +1,10 @@
+## TDB
+
+### Bug fixes
+
+* `service.version` is now correctly reported as the app versionName
+  [#113](https://github.com/bugsnag/bugsnag-android-performance/pull/113)
+
 ## 0.1.4 (2023-04-11)
 
 ### Enhancements

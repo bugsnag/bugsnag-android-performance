@@ -36,6 +36,7 @@ class ImmutableConfigTest {
             autoInstrumentAppStarts = false
             autoInstrumentActivities = AutoInstrument.START_ONLY
             versionCode = 543L
+            appVersion = "9.8.1"
             samplingProbability = 0.25
         }
 
@@ -49,6 +50,7 @@ class ImmutableConfigTest {
         assertEquals(perfConfig.releaseStage, immutableConfig.releaseStage)
         assertEquals(perfConfig.enabledReleaseStages, immutableConfig.enabledReleaseStages)
         assertEquals(perfConfig.versionCode, immutableConfig.versionCode)
+        assertEquals(perfConfig.appVersion, immutableConfig.appVersion)
         assertEquals(perfConfig.samplingProbability, immutableConfig.samplingProbability, 0.001)
     }
 
@@ -123,6 +125,14 @@ class ImmutableConfigTest {
     }
 
     @Test
+    fun appVersionFromContext() {
+        val perfConfig = PerformanceConfiguration(mockedContext(), TEST_API_KEY)
+        val immutableConfig = ImmutableConfig(perfConfig)
+
+        assertEquals(TEST_VERSION_NAME, immutableConfig.appVersion)
+    }
+
+    @Test
     fun invalidApiKeyLogged() {
         val logger = mock<Logger>()
         Logger.delegate = logger
@@ -171,6 +181,7 @@ class ImmutableConfigTest {
             // versionCode is a Java field, not a getter
             @Suppress("DEPRECATION")
             info.versionCode = TEST_VERSION_CODE
+            info.versionName = TEST_VERSION_NAME
 
             on { info.longVersionCode } doReturn TEST_VERSION_CODE.toLong()
         }
@@ -190,5 +201,6 @@ class ImmutableConfigTest {
         const val TEST_PACKAGE_NAME = "com.test.pckname"
         const val TEST_API_KEY = "decafbaddecafbaddecafbaddecafbad"
         const val TEST_VERSION_CODE = 987654321
+        const val TEST_VERSION_NAME = "7.6.5"
     }
 }

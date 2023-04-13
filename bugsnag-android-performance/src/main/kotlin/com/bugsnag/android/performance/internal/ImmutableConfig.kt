@@ -17,6 +17,7 @@ internal data class ImmutableConfig(
     val releaseStage: String,
     val enabledReleaseStages: Set<String>?,
     val versionCode: Long?,
+    val appVersion: String?,
     val samplingProbability: Double,
     val logger: Logger,
 ) {
@@ -33,6 +34,7 @@ internal data class ImmutableConfig(
         getReleaseStage(configuration),
         configuration.enabledReleaseStages?.toSet(),
         configuration.versionCode ?: versionCodeFor(configuration.context),
+        configuration.appVersion ?: versionNameFor(configuration.context),
         configuration.samplingProbability,
         configuration.logger
             ?: if (getReleaseStage(configuration) == RELEASE_STAGE_PRODUCTION) NoopLogger
@@ -62,6 +64,16 @@ internal data class ImmutableConfig(
                     @Suppress("DEPRECATION")
                     packageInfo?.versionCode?.toLong()
                 }
+            } catch (ex: RuntimeException) {
+                // swallow any exceptions to avoid any possible crash during startup
+                null
+            }
+        }
+
+        private fun versionNameFor(context: Context): String? {
+            return try {
+                val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+                packageInfo?.versionName
             } catch (ex: RuntimeException) {
                 // swallow any exceptions to avoid any possible crash during startup
                 null
