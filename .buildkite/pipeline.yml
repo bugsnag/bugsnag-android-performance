@@ -30,7 +30,7 @@ steps:
     commands:
       - make test-fixture
 
-  - label: ':android: Android 9 tests'
+  - label: ':browserstack: Android 9 tests'
     depends_on: 'fixture'
     timeout_in_minutes: 60
     plugins:
@@ -50,7 +50,7 @@ steps:
     concurrency_group: 'browserstack-app'
     concurrency_method: eager
 
-  - label: ':android: Android 10 tests'
+  - label: ':browserstack: Android 10 tests'
     depends_on: 'fixture'
     timeout_in_minutes: 60
     plugins:
@@ -70,7 +70,7 @@ steps:
     concurrency_group: 'browserstack-app'
     concurrency_method: eager
 
-  - label: ':android: Android 11 tests'
+  - label: ':browserstack: Android 11 tests'
     depends_on: 'fixture'
     timeout_in_minutes: 60
     plugins:
@@ -90,7 +90,7 @@ steps:
     concurrency_group: 'browserstack-app'
     concurrency_method: eager
 
-  - label: ':android: Android 12 tests'
+  - label: ':browserstack: Android 12 tests'
     depends_on: 'fixture'
     timeout_in_minutes: 60
     plugins:
