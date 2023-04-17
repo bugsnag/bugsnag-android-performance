@@ -32,8 +32,8 @@ class Api24NetworkTypeTest {
         val connectivityManager = mock<ConnectivityManager>()
         var callbackInvoked = false
 
-        val connectivity = ConnectivityApi24(context, connectivityManager) { _, _, networkType, _ ->
-            assertEquals(expectedNetworkType, networkType)
+        val connectivity = ConnectivityApi24(context, connectivityManager) { status ->
+            assertEquals(expectedNetworkType, status.networkType)
             callbackInvoked = true
         }
 

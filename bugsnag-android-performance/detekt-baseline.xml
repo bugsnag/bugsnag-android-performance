@@ -24,12 +24,12 @@
     <ID>MagicNumber:SpanKind.kt$SpanKind.CONSUMER$5</ID>
     <ID>MagicNumber:SpanKind.kt$SpanKind.PRODUCER$4</ID>
     <ID>ReturnCount:RetryDeliveryTask.kt$RetryDeliveryTask$override fun execute(): Boolean</ID>
-    <ID>SwallowedException:Connectivity.kt$ConnectivityLegacy$e: NullPointerException</ID>
+    <ID>SwallowedException:Connectivity.kt$ConnectivityApi24$e: Exception</ID>
     <ID>SwallowedException:ContextExtensions.kt$exc: RuntimeException</ID>
     <ID>SwallowedException:ForegroundTracker.kt$exc: RuntimeException</ID>
     <ID>SwallowedException:ImmutableConfig.kt$ImmutableConfig.Companion$ex: RuntimeException</ID>
     <ID>SwallowedException:Module.kt$Module.Loader$ex: Exception</ID>
-    <ID>TooGenericExceptionCaught:Connectivity.kt$ConnectivityLegacy$e: NullPointerException</ID>
+    <ID>TooGenericExceptionCaught:Connectivity.kt$ConnectivityApi24$e: Exception</ID>
     <ID>TooGenericExceptionCaught:ContextExtensions.kt$exc: RuntimeException</ID>
     <ID>TooGenericExceptionCaught:ForegroundTracker.kt$exc: RuntimeException</ID>
     <ID>TooGenericExceptionCaught:ImmutableConfig.kt$ImmutableConfig.Companion$ex: RuntimeException</ID>

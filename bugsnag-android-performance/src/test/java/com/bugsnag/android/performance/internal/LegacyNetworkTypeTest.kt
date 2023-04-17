@@ -43,9 +43,9 @@ class LegacyNetworkTypeTest {
     ) {
         val context = mock<Context>()
         var callbackInvoked = false
-        val connectivity = ConnectivityLegacy(context, mock()) { _, metering, networkType, _ ->
-            assertEquals(expectedNetworkType, networkType)
-            assertEquals(expectedMetering, metering)
+        val connectivity = ConnectivityLegacy(context, mock()) { status ->
+            assertEquals(expectedNetworkType, status.networkType)
+            assertEquals(expectedMetering, status.metering)
             callbackInvoked = true
         }
 
