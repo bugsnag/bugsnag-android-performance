@@ -1,11 +1,22 @@
 # frozen_string_literal: true
 
 def execute_command(action, scenario_name = '', scenario_metadata = '')
+
+  address = if Maze.config.farm == :bb
+              if Maze.config.aws_public_ip
+                Maze.public_address
+              else
+                'local:9339'
+              end
+            else
+              'bs-local.com:9339'
+            end
+
   command = {
     action: action,
     scenario_name: scenario_name,
     scenario_metadata: scenario_metadata,
-    endpoint: 'http://bs-local.com:9339/traces',
+    endpoint: "http://#{address}/traces",
   }
   Maze::Server.commands.add command
 
