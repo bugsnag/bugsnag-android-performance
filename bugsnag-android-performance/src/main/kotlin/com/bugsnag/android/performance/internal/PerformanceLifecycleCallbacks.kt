@@ -2,11 +2,11 @@ package com.bugsnag.android.performance.internal
 
 import android.app.Activity
 import android.app.Application.ActivityLifecycleCallbacks
-import android.os.Build
-import android.os.Bundle
+import android.os.Message
 import android.os.Handler
 import android.os.Looper
-import android.os.Message
+import android.os.Bundle
+import android.os.Build
 import com.bugsnag.android.performance.Logger
 import com.bugsnag.android.performance.SpanOptions
 import kotlin.math.max
@@ -158,16 +158,8 @@ class PerformanceLifecycleCallbacks internal constructor(
         }
     }
 
-    private fun maybeEndAppLoad(activity: Activity?) {
+    private fun maybeEndAppLoad() {
         if (instrumentAppStart) {
-            appStartupSpan?.apply {
-                if (activity != null) {
-                    val activityName = activity::class.java.simpleName
-                    setAttribute("bugsnag.view.type", "Activity")
-                    setAttribute("bugsnag.app_start.first_view_name", activityName)
-                }
-            }
-
             appStartupSpan?.end()
         }
     }
@@ -187,7 +179,7 @@ class PerformanceLifecycleCallbacks internal constructor(
     }
 
     private fun endViewLoad(activity: Activity) {
-        maybeEndAppLoad(activity)
+        maybeEndAppLoad()
 
         // we may have an appStartupSpan from before the configuration was in-place
         appStartupSpan = null

@@ -58,6 +58,13 @@ class SpanFactory(
         span.setAttribute("bugsnag.view.type", viewType.typeName)
         span.setAttribute("bugsnag.view.name", viewName)
         span.setAttribute("bugsnag.span.first_class", isFirstClass)
+
+        val appStart = SpanContext.findSpan { it.category == SpanCategory.APP_START }
+        if (appStart != null && appStart.attributes["bugsnag.app_start.first_view_name"] == null) {
+            appStart.setAttribute("bugsnag.view.type", viewType.typeName)
+            appStart.setAttribute("bugsnag.app_start.first_view_name", viewName)
+        }
+
         return span
     }
 
