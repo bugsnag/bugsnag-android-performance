@@ -7,6 +7,7 @@ import com.bugsnag.android.performance.internal.InternalDebug
 
 class MazeRacerApplication : Application() {
     init {
+        instance = this
         BugsnagPerformance.reportApplicationClassLoaded()
     }
 
