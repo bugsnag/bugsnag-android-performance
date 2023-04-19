@@ -27,6 +27,7 @@ steps:
       queue: macos-12-arm
     artifact_paths:
       - "build/fixture_url.txt"
+      - "build/test-fixture.apk"
     commands:
       - make test-fixture
       - bundle install
@@ -37,14 +38,14 @@ steps:
     timeout_in_minutes: 60
     plugins:
       artifacts#v1.9.0:
-        download: "build/fixture_url.txt"
+        download: "build/test-fixture.apk"
         upload: "maze_output/failed/**/*"
       docker-compose#v4.8.0:
         pull: android-maze-runner-bitbar
         run: android-maze-runner-bitbar
         service-ports: true
         command:
-          - "--app=@build/fixture_url.txt"
+          - "--app=build/test-fixture.apk"
           - "--farm=bb"
           - "--device=ANDROID_9"
           - "--no-tunnel"
@@ -59,14 +60,14 @@ steps:
     timeout_in_minutes: 60
     plugins:
       artifacts#v1.9.0:
-        download: "build/fixture_url.txt"
+        download: "build/test-fixture.apk"
         upload: "maze_output/failed/**/*"
       docker-compose#v4.8.0:
         pull: android-maze-runner-bitbar
         run: android-maze-runner-bitbar
         service-ports: true
         command:
-          - "--app=@build/fixture_url.txt"
+          - "--app=build/test-fixture.apk"
           - "--farm=bb"
           - "--device=ANDROID_10"
           - "--no-tunnel"
@@ -81,14 +82,14 @@ steps:
     timeout_in_minutes: 60
     plugins:
       artifacts#v1.9.0:
-        download: "build/fixture_url.txt"
+        download: "build/test-fixture.apk"
         upload: "maze_output/failed/**/*"
       docker-compose#v4.8.0:
         pull: android-maze-runner-bitbar
         run: android-maze-runner-bitbar
         service-ports: true
         command:
-          - "--app=@build/fixture_url.txt"
+          - "--app=build/test-fixture.apk"
           - "--farm=bb"
           - "--device=ANDROID_11"
           - "--no-tunnel"
@@ -103,14 +104,14 @@ steps:
     timeout_in_minutes: 60
     plugins:
       artifacts#v1.9.0:
-        download: "build/fixture_url.txt"
+        download: "build/test-fixture.apk"
         upload: "maze_output/failed/**/*"
       docker-compose#v4.8.0:
         pull: android-maze-runner-bitbar
         run: android-maze-runner-bitbar
         service-ports: true
         command:
-          - "--app=@build/fixture_url.txt"
+          - "--app=build/test-fixture.apk"
           - "--farm=bb"
           - "--device=ANDROID_12"
           - "--no-tunnel"
@@ -125,14 +126,14 @@ steps:
     timeout_in_minutes: 60
     plugins:
       artifacts#v1.9.0:
-        download: "build/fixture_url.txt"
+        download: "build/test-fixture.apk"
         upload: "maze_output/failed/**/*"
       docker-compose#v4.8.0:
         pull: android-maze-runner-bitbar
         run: android-maze-runner-bitbar
         service-ports: true
         command:
-          - "--app=@build/fixture_url.txt"
+          - "--app=build/test-fixture.apk"
           - "--farm=bb"
           - "--device=ANDROID_13"
           - "--no-tunnel"
