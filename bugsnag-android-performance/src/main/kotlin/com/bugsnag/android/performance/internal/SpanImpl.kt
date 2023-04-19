@@ -16,6 +16,7 @@ import java.util.concurrent.atomic.AtomicLongFieldUpdater
 @Suppress("LongParameterList")
 class SpanImpl internal constructor(
     name: String,
+    internal val category: SpanCategory,
     internal val kind: SpanKind,
     internal val startTime: Long,
     override val traceId: UUID,
@@ -61,10 +62,12 @@ class SpanImpl internal constructor(
         internal set(value) {
             require(field in 0.0..1.0) { "samplingProbability out of range (0..1): $value" }
             field = value
-            attributes.set("bugsnag.sampling.p", value)
+            attributes["bugsnag.sampling.p"] = value
         }
 
     init {
+        category.category?.let { attributes["bugsnag.span.category"] = it }
+
         // Our "random" sampling value is actually derived from the traceId
         val msw = traceId.mostSignificantBits ushr 1
         samplingValue = when (msw) {

@@ -144,7 +144,11 @@ internal class Worker(
     private fun waitForWorkOrWakeup() {
         lock.withLock {
             if (!wakeIsPending) {
-                wakeWorker.await(InternalDebug.workerSleepMs, TimeUnit.MILLISECONDS)
+                try {
+                    wakeWorker.await(InternalDebug.workerSleepMs, TimeUnit.MILLISECONDS)
+                } catch(ie: InterruptedException) {
+                    // ignore these, we treat interrupts as wake-ups
+                }
             }
 
             wakeIsPending = false

@@ -10,3 +10,11 @@ import com.bugsnag.android.performance.SpanContext
 var SpanContext.Storage.currentStack
     get() = contextStack
     set(value) = setContextStackUnsafe(value)
+
+/**
+ * Test that no [SpanImpl] objects within the current [SpanContext] match the given [predicate].
+ * Returns `true` if [predicate] only returned `false`, otherwise `false`.
+ */
+internal inline fun SpanContext.Storage.noSpansMatch(predicate: (SpanImpl) -> Boolean): Boolean {
+    return contextStack.none { it is SpanImpl && predicate(it) }
+}
