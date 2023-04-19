@@ -18,7 +18,7 @@ class RetryScenario(
         BugsnagPerformance.start(config)
         Thread.sleep(100)
         BugsnagPerformance.startSpan("span 1").end()
-        Thread.sleep(100)
+        Thread.sleep(200)
         BugsnagPerformance.startSpan("span 2").end()
     }
 }

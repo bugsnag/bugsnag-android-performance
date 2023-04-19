@@ -25,6 +25,7 @@ internal fun createResourceAttributes(configuration: ImmutableConfig): Attribute
     resourceAttributes["bugsnag.app.version_code"] = configuration.versionCode.toString()
 
     resourceAttributes["service.name"] = configuration.packageName
+    resourceAttributes["service.version"] = configuration.appVersion
     resourceAttributes["telemetry.sdk.name"] = "bugsnag.performance.android"
     resourceAttributes["telemetry.sdk.version"] = BugsnagPerformance.VERSION
 

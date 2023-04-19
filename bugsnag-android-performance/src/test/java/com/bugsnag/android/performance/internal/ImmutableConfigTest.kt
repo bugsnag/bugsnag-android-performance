@@ -5,17 +5,28 @@ import android.content.Context
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import com.bugsnag.android.performance.AutoInstrument
+import com.bugsnag.android.performance.Logger
 import com.bugsnag.android.performance.PerformanceConfiguration
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotSame
+import org.junit.Assert.assertSame
+import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Test
+import org.mockito.ArgumentMatchers.startsWith
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
 
 class ImmutableConfigTest {
+    @Before
+    fun setupLogger() {
+        Logger.delegate = NoopLogger
+    }
+
     @Test
     fun copyFromPerformanceConfiguration() {
         val perfConfig = PerformanceConfiguration(mockedContext(), TEST_API_KEY).apply {
@@ -25,6 +36,7 @@ class ImmutableConfigTest {
             autoInstrumentAppStarts = false
             autoInstrumentActivities = AutoInstrument.START_ONLY
             versionCode = 543L
+            appVersion = "9.8.1"
             samplingProbability = 0.25
         }
 
@@ -38,6 +50,7 @@ class ImmutableConfigTest {
         assertEquals(perfConfig.releaseStage, immutableConfig.releaseStage)
         assertEquals(perfConfig.enabledReleaseStages, immutableConfig.enabledReleaseStages)
         assertEquals(perfConfig.versionCode, immutableConfig.versionCode)
+        assertEquals(perfConfig.appVersion, immutableConfig.appVersion)
         assertEquals(perfConfig.samplingProbability, immutableConfig.samplingProbability, 0.001)
     }
 
@@ -56,6 +69,54 @@ class ImmutableConfigTest {
     }
 
     @Test
+    fun enableAllReleaseStages() {
+        val perfConfig = PerformanceConfiguration(mockedContext(), TEST_API_KEY)
+        perfConfig.releaseStage = "this is a very interesting releaseStage"
+        perfConfig.enabledReleaseStages = null
+
+        val immutableConfig = ImmutableConfig(perfConfig)
+        assertTrue(immutableConfig.isReleaseStageEnabled)
+    }
+
+    @Test
+    fun noopLoggerInProduction() {
+        val perfConfig = PerformanceConfiguration(mockedContext(), TEST_API_KEY)
+        perfConfig.releaseStage = RELEASE_STAGE_PRODUCTION
+
+        val immutableConfig = ImmutableConfig(perfConfig)
+        assertSame(NoopLogger, immutableConfig.logger)
+    }
+
+    @Test
+    fun debugLoggerDefault() {
+        val perfConfig = PerformanceConfiguration(mockedContext(), TEST_API_KEY)
+        perfConfig.releaseStage = RELEASE_STAGE_DEVELOPMENT
+
+        val immutableConfig = ImmutableConfig(perfConfig)
+        assertSame(DebugLogger, immutableConfig.logger)
+    }
+
+    @Test
+    fun overrideLogger() {
+        val testLogger = object : Logger {
+            override fun e(msg: String) = Unit
+            override fun e(msg: String, throwable: Throwable) = Unit
+            override fun w(msg: String) = Unit
+            override fun w(msg: String, throwable: Throwable) = Unit
+            override fun i(msg: String) = Unit
+            override fun i(msg: String, throwable: Throwable) = Unit
+            override fun d(msg: String) = Unit
+            override fun d(msg: String, throwable: Throwable) = Unit
+        }
+
+        val perfConfig = PerformanceConfiguration(mockedContext(), TEST_API_KEY)
+        perfConfig.logger = testLogger
+
+        val immutableConfig = ImmutableConfig(perfConfig)
+        assertSame(testLogger, immutableConfig.logger)
+    }
+
+    @Test
     fun versionCodeFromContext() {
         val perfConfig = PerformanceConfiguration(mockedContext(), TEST_API_KEY)
         val immutableConfig = ImmutableConfig(perfConfig)
@@ -63,11 +124,64 @@ class ImmutableConfigTest {
         assertEquals(TEST_VERSION_CODE.toLong(), immutableConfig.versionCode)
     }
 
+    @Test
+    fun appVersionFromContext() {
+        val perfConfig = PerformanceConfiguration(mockedContext(), TEST_API_KEY)
+        val immutableConfig = ImmutableConfig(perfConfig)
+
+        assertEquals(TEST_VERSION_NAME, immutableConfig.appVersion)
+    }
+
+    @Test
+    fun invalidApiKeyLogged() {
+        val logger = mock<Logger>()
+        Logger.delegate = logger
+
+        val perfConfig = PerformanceConfiguration(mockedContext(), "bad-api-key")
+        ImmutableConfig(perfConfig)
+
+        verify(logger).w(startsWith("Invalid configuration"))
+    }
+
+    @Test
+    fun upperCaseApiKeyLogged() {
+        val logger = mock<Logger>()
+        Logger.delegate = logger
+
+        val perfConfig = PerformanceConfiguration(mockedContext(), TEST_API_KEY.uppercase())
+        ImmutableConfig(perfConfig)
+
+        verify(logger).w(startsWith("Invalid configuration"))
+    }
+
+    @Test
+    fun shortApiKeyLogged() {
+        val logger = mock<Logger>()
+        Logger.delegate = logger
+
+        val perfConfig = PerformanceConfiguration(mockedContext(), TEST_API_KEY.substring(0, 30))
+        ImmutableConfig(perfConfig)
+
+        verify(logger).w(startsWith("Invalid configuration"))
+    }
+
+    @Test
+    fun longApiKeyLogged() {
+        val logger = mock<Logger>()
+        Logger.delegate = logger
+
+        val perfConfig = PerformanceConfiguration(mockedContext(), TEST_API_KEY + "bad")
+        ImmutableConfig(perfConfig)
+
+        verify(logger).w(startsWith("Invalid configuration"))
+    }
+
     private fun mockedContext(): Context {
         val packageInfo = mock<PackageInfo> { info ->
             // versionCode is a Java field, not a getter
             @Suppress("DEPRECATION")
             info.versionCode = TEST_VERSION_CODE
+            info.versionName = TEST_VERSION_NAME
 
             on { info.longVersionCode } doReturn TEST_VERSION_CODE.toLong()
         }
@@ -87,5 +201,6 @@ class ImmutableConfigTest {
         const val TEST_PACKAGE_NAME = "com.test.pckname"
         const val TEST_API_KEY = "decafbaddecafbaddecafbaddecafbad"
         const val TEST_VERSION_CODE = 987654321
+        const val TEST_VERSION_NAME = "7.6.5"
     }
 }

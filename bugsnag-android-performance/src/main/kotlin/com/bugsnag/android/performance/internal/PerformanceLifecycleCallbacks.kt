@@ -2,11 +2,13 @@ package com.bugsnag.android.performance.internal
 
 import android.app.Activity
 import android.app.Application.ActivityLifecycleCallbacks
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
 import com.bugsnag.android.performance.Logger
+import com.bugsnag.android.performance.SpanOptions
 import kotlin.math.max
 
 typealias InForegroundCallback = (inForeground: Boolean) -> Unit
@@ -55,16 +57,8 @@ class PerformanceLifecycleCallbacks internal constructor(
     internal var instrumentAppStart: Boolean = true
 
     override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
-        try {
-            maybeStartAppLoad(savedInstanceState)
-
-            if (openLoadSpans) {
-                spanTracker.associate(activity) {
-                    spanFactory.createViewLoadSpan(activity)
-                }
-            }
-        } finally {
-            activityInstanceCount++
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            startViewLoad(activity, savedInstanceState)
         }
     }
 
@@ -79,16 +73,35 @@ class PerformanceLifecycleCallbacks internal constructor(
     }
 
     override fun onActivityResumed(activity: Activity) {
-        maybeEndAppLoad(activity)
-
-        // we may have an appStartupSpan from before the configuration was in-place
-        appStartupSpan = null
-
-        if (closeLoadSpans) {
-            spanTracker.endSpan(activity)
-        } else {
-            spanTracker.markSpanAutomaticEnd(activity)
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            endViewLoad(activity)
         }
+    }
+
+    override fun onActivityPreCreated(activity: Activity, savedInstanceState: Bundle?) {
+        startViewLoad(activity, savedInstanceState)
+        startViewLoadPhase(activity, ViewLoadPhase.CREATE)
+    }
+
+    override fun onActivityPreStarted(activity: Activity) {
+        startViewLoadPhase(activity, ViewLoadPhase.START)
+    }
+
+    override fun onActivityPreResumed(activity: Activity) {
+        startViewLoadPhase(activity, ViewLoadPhase.RESUME)
+    }
+
+    override fun onActivityPostCreated(activity: Activity, savedInstanceState: Bundle?) {
+        endViewLoadPhase(activity, ViewLoadPhase.CREATE)
+    }
+
+    override fun onActivityPostStarted(activity: Activity) {
+        endViewLoadPhase(activity, ViewLoadPhase.START)
+    }
+
+    override fun onActivityPostResumed(activity: Activity) {
+        endViewLoadPhase(activity, ViewLoadPhase.RESUME)
+        endViewLoad(activity)
     }
 
     override fun onActivityStopped(activity: Activity) {
@@ -151,12 +164,61 @@ class PerformanceLifecycleCallbacks internal constructor(
                 if (activity != null) {
                     val activityName = activity::class.java.simpleName
                     setAttribute("bugsnag.view.type", "Activity")
-                    setAttribute("bugsnag.first_view", activityName)
+                    setAttribute("bugsnag.app_start.first_view_name", activityName)
                 }
             }
 
             appStartupSpan?.end()
         }
+    }
+
+    private fun startViewLoad(activity: Activity, savedInstanceState: Bundle?) {
+        try {
+            maybeStartAppLoad(savedInstanceState)
+
+            if (openLoadSpans) {
+                spanTracker.associate(activity) {
+                    spanFactory.createViewLoadSpan(activity)
+                }
+            }
+        } finally {
+            activityInstanceCount++
+        }
+    }
+
+    private fun endViewLoad(activity: Activity) {
+        maybeEndAppLoad(activity)
+
+        // we may have an appStartupSpan from before the configuration was in-place
+        appStartupSpan = null
+
+        if (closeLoadSpans) {
+            spanTracker.endSpan(activity)
+        } else {
+            spanTracker.markSpanAutomaticEnd(activity)
+        }
+    }
+
+    private fun startViewLoadPhase(activity: Activity, phase: ViewLoadPhase) {
+        val viewLoadSpan = spanTracker[activity]
+        if (openLoadSpans && viewLoadSpan != null) {
+            spanTracker.associate(activity, phase) {
+                spanFactory.createCustomSpan(spanNameForPhase(activity,phase),
+                    SpanOptions.DEFAULTS.within(viewLoadSpan)).apply {
+                    setAttribute("bugsnag.span.category", "view_load_phase")
+                    setAttribute("bugsnag.view.name", activity::class.java.simpleName)
+                    setAttribute("bugsnag.phase", phase.phaseName)
+                }
+            }
+        }
+    }
+
+    private fun endViewLoadPhase(activity: Activity, phase: ViewLoadPhase) {
+        spanTracker.endSpan(activity, phase)
+    }
+
+    private fun spanNameForPhase(activity: Activity, phase: ViewLoadPhase): String {
+        return "[ViewLoadPhase/${phase.phaseName}]${activity::class.java.simpleName}"
     }
 
     override fun onActivityPaused(activity: Activity) = Unit

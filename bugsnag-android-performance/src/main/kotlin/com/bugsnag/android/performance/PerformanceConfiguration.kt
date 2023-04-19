@@ -5,7 +5,6 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import androidx.annotation.FloatRange
 import androidx.annotation.VisibleForTesting
-import com.bugsnag.android.performance.internal.RELEASE_STAGE_PRODUCTION
 
 class PerformanceConfiguration private constructor(val context: Context) {
 
@@ -23,9 +22,11 @@ class PerformanceConfiguration private constructor(val context: Context) {
 
     var releaseStage: String? = null
 
-    var enabledReleaseStages: Set<String> = mutableSetOf(RELEASE_STAGE_PRODUCTION)
+    var enabledReleaseStages: Set<String>? = null
 
     var versionCode: Long? = null
+
+    var appVersion: String? = null
 
     @FloatRange(from = 0.0, to = 1.0)
     var samplingProbability: Double = 1.0
@@ -33,6 +34,8 @@ class PerformanceConfiguration private constructor(val context: Context) {
             require(value in 0.0..1.0) { "samplingProbability out of range (0..1): $value" }
             field = value
         }
+
+    var logger: Logger? = null
 
     override fun toString(): String =
         "PerformanceConfiguration(" +
@@ -43,6 +46,7 @@ class PerformanceConfiguration private constructor(val context: Context) {
             "autoInstrumentActivities=$autoInstrumentActivities, " +
             "releaseStage=$releaseStage, " +
             "versionCode=$versionCode, " +
+            "appVersion=$appVersion, " +
             "enabledReleaseStages=$enabledReleaseStages, " +
             "samplingProbability=$samplingProbability" +
             ")"
@@ -61,18 +65,21 @@ class PerformanceConfiguration private constructor(val context: Context) {
             "$BUGSNAG_PERF_NS.AUTO_INSTRUMENT_ACTIVITIES"
         private const val RELEASE_STAGE_KEY = "$BUGSNAG_PERF_NS.RELEASE_STAGE"
         private const val VERSION_CODE_KEY = "$BUGSNAG_PERF_NS.VERSION_CODE"
+        private const val APP_VERSION_KEY = "$BUGSNAG_PERF_NS.APP_VERSION"
 
         // Bugsnag Notifier keys that we can read
         private const val BSG_RELEASE_STAGE_KEY = "$BUGSNAG_NS.RELEASE_STAGE"
         private const val BSG_VERSION_CODE_KEY = "$BUGSNAG_NS.VERSION_CODE"
+        private const val BSG_APP_VERSION_KEY = "$BUGSNAG_NS.APP_VERSION"
 
         @JvmStatic
+        @JvmOverloads
         fun load(ctx: Context, apiKey: String? = null): PerformanceConfiguration {
             try {
                 val packageManager = ctx.packageManager
                 val packageName = ctx.packageName
                 val ai = packageManager.getApplicationInfo(
-                    packageName, PackageManager.GET_META_DATA
+                    packageName, PackageManager.GET_META_DATA,
                 )
                 val data = ai.metaData
                 return loadFromMetaData(ctx, data, apiKey)
@@ -86,7 +93,7 @@ class PerformanceConfiguration private constructor(val context: Context) {
         internal fun loadFromMetaData(
             ctx: Context,
             data: Bundle?,
-            apiKeyOverride: String?
+            apiKeyOverride: String?,
         ): PerformanceConfiguration {
             return PerformanceConfiguration(ctx).apply {
                 (apiKeyOverride ?: data?.getString(API_KEY))
@@ -106,6 +113,12 @@ class PerformanceConfiguration private constructor(val context: Context) {
                     versionCode = data.getInt(VERSION_CODE_KEY).toLong()
                 } else if (data?.containsKey(BSG_VERSION_CODE_KEY) == true) {
                     versionCode = data.getInt(BSG_VERSION_CODE_KEY).toLong()
+                }
+
+                if (data?.containsKey(APP_VERSION_KEY) == true) {
+                    appVersion = data.getString(APP_VERSION_KEY)
+                } else if (data?.containsKey(BSG_APP_VERSION_KEY) == true) {
+                    appVersion = data.getString(BSG_APP_VERSION_KEY)
                 }
             }
         }

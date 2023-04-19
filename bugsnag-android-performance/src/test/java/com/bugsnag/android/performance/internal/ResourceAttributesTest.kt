@@ -30,7 +30,9 @@ class ResourceAttributesTest {
             "development",
             setOf("production"),
             321L,
+            "6.5.4",
             1.0,
+            NoopLogger,
         )
 
         val attributes = createResourceAttributes(configuration).toList().toMap()
@@ -43,6 +45,7 @@ class ResourceAttributesTest {
         assertEquals("Bugsnag", attributes["device.manufacturer"])
         assertEquals("development", attributes["deployment.environment"])
         assertEquals("321", attributes["bugsnag.app.version_code"])
+        assertEquals("6.5.4", attributes["service.version"])
         assertEquals("bugsnag.performance.android", attributes["service.name"])
         assertEquals("bugsnag.performance.android", attributes["telemetry.sdk.name"])
     }
@@ -61,7 +64,9 @@ class ResourceAttributesTest {
             "production",
             setOf("production"),
             123L,
+            "5.4.3",
             1.0,
+            NoopLogger,
         )
 
         val attributes = createResourceAttributes(configuration).toList().toMap()
@@ -74,6 +79,7 @@ class ResourceAttributesTest {
         assertEquals("Bugsnag", attributes["device.manufacturer"])
         assertEquals("production", attributes["deployment.environment"]) // overridden
         assertEquals("123", attributes["bugsnag.app.version_code"]) // overridden
+        assertEquals("5.4.3", attributes["service.version"])
         assertEquals("bugsnag.performance.android", attributes["service.name"])
         assertEquals("bugsnag.performance.android", attributes["telemetry.sdk.name"])
     }

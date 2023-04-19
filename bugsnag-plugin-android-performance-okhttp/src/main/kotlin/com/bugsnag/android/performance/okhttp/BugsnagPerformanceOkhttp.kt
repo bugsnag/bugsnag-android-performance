@@ -1,7 +1,8 @@
 package com.bugsnag.android.performance.okhttp
 
 import com.bugsnag.android.performance.BugsnagPerformance
-import com.bugsnag.android.performance.internal.SpanImpl
+import com.bugsnag.android.performance.NetworkRequestAttributes
+import com.bugsnag.android.performance.Span
 import okhttp3.Call
 import okhttp3.EventListener
 import okhttp3.Protocol
@@ -16,16 +17,15 @@ class BugsnagPerformanceOkhttp : EventListener() {
         }
     }
 
-    private val spans = ConcurrentHashMap<Call, SpanImpl>()
+    private val spans = ConcurrentHashMap<Call, Span>()
 
     override fun callStart(call: Call) {
         val url = call.request().url.toUrl()
         val span = BugsnagPerformance.startNetworkRequestSpan(url, call.request().method)
-            as SpanImpl
 
         val contentLength = call.request().body?.contentLength()
         if (contentLength != null) {
-            span.setAttribute("http.request_content_length", contentLength)
+            NetworkRequestAttributes.setRequestContentLength(span, contentLength)
         }
 
         spans[call] = span
@@ -33,13 +33,13 @@ class BugsnagPerformanceOkhttp : EventListener() {
 
     override fun responseHeadersEnd(call: Call, response: Response) {
         val span = spans[call] ?: return
-        span.setAttribute("http.status_code", response.code.toLong())
+        NetworkRequestAttributes.setResponseCode(span, response.code)
         val contentLength = response.body?.contentLength()
         if (contentLength != null) {
-            span.setAttribute("http.response_content_length", contentLength)
+            NetworkRequestAttributes.setResponseContentLength(span, contentLength)
         }
-        span.setAttribute(
-            "http.flavor",
+        NetworkRequestAttributes.setHttpFlavor(
+            span,
             when (response.protocol) {
                 Protocol.HTTP_1_0 -> "1.0"
                 Protocol.HTTP_1_1 -> "1.1"

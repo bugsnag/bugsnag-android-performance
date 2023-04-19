@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.Context
 import android.os.Build
 import com.bugsnag.android.performance.AutoInstrument
+import com.bugsnag.android.performance.Logger
 import com.bugsnag.android.performance.PerformanceConfiguration
 
 internal data class ImmutableConfig(
@@ -14,11 +15,14 @@ internal data class ImmutableConfig(
     val autoInstrumentActivities: AutoInstrument,
     val packageName: String,
     val releaseStage: String,
-    val enabledReleaseStages: Set<String>,
+    val enabledReleaseStages: Set<String>?,
     val versionCode: Long?,
+    val appVersion: String?,
     val samplingProbability: Double,
+    val logger: Logger,
 ) {
-    val isReleaseStageEnabled = enabledReleaseStages.contains(releaseStage)
+    val isReleaseStageEnabled =
+        enabledReleaseStages == null || enabledReleaseStages.contains(releaseStage)
 
     constructor(configuration: PerformanceConfiguration) : this(
         configuration.context.applicationContext as Application,
@@ -27,24 +31,29 @@ internal data class ImmutableConfig(
         configuration.autoInstrumentAppStarts,
         configuration.autoInstrumentActivities,
         configuration.context.packageName,
-        configuration.releaseStage ?: configuration.context.releaseStage,
-        configuration.enabledReleaseStages.toSet(),
+        getReleaseStage(configuration),
+        configuration.enabledReleaseStages?.toSet(),
         configuration.versionCode ?: versionCodeFor(configuration.context),
+        configuration.appVersion ?: versionNameFor(configuration.context),
         configuration.samplingProbability,
+        configuration.logger
+            ?: if (getReleaseStage(configuration) == RELEASE_STAGE_PRODUCTION) NoopLogger
+            else DebugLogger,
     )
 
     companion object {
         private const val VALID_API_KEY_LENGTH = 32
 
         private fun validateApiKey(apiKey: String) {
-            require(
-                apiKey.length == VALID_API_KEY_LENGTH
-                    && apiKey.all { it.isDigit() || it in 'a'..'f' },
+            if (apiKey.length != VALID_API_KEY_LENGTH
+                || !apiKey.all { it.isDigit() || it in 'a'..'f' }
             ) {
-
-                "Invalid configuration. apiKey should be a 32-character hexademical string, got '$apiKey' "
+                Logger.w("Invalid configuration. apiKey should be a 32-character hexademical string, got '$apiKey'")
             }
         }
+
+        private fun getReleaseStage(configuration: PerformanceConfiguration) =
+            configuration.releaseStage ?: configuration.context.releaseStage
 
         private fun versionCodeFor(context: Context): Long? {
             return try {
@@ -55,6 +64,16 @@ internal data class ImmutableConfig(
                     @Suppress("DEPRECATION")
                     packageInfo?.versionCode?.toLong()
                 }
+            } catch (ex: RuntimeException) {
+                // swallow any exceptions to avoid any possible crash during startup
+                null
+            }
+        }
+
+        private fun versionNameFor(context: Context): String? {
+            return try {
+                val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+                packageInfo?.versionName
             } catch (ex: RuntimeException) {
                 // swallow any exceptions to avoid any possible crash during startup
                 null

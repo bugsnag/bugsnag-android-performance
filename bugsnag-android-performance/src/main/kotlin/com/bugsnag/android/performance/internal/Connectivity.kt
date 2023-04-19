@@ -97,20 +97,20 @@ internal class ConnectivityLegacy(
 ) : BroadcastReceiver(), Connectivity {
 
     override val hasConnection: Boolean
-        get() {
-            return activeNetworkInfo?.isConnectedOrConnecting ?: UnknownNetwork.HAS_CONNECTION
-        }
+        get() = activeNetworkInfo?.isConnectedOrConnecting ?: UnknownNetwork.HAS_CONNECTION
     override val metering: ConnectionMetering
-        get() {
-            return activeNetworkInfo?.metering ?: UnknownNetwork.METERING
-        }
+        get() = activeNetworkInfo?.metering ?: UnknownNetwork.METERING
     override val networkType: NetworkType
-        get() {
-            return activeNetworkInfo?.networkType ?: UnknownNetwork.NETWORK_TYPE
-        }
+        get() = activeNetworkInfo?.networkType ?: UnknownNetwork.NETWORK_TYPE
     override val networkSubType: String?
         get() {
-            return activeNetworkInfo?.subtypeName
+            val subtype = activeNetworkInfo?.subtypeName
+            return when (subtype?.lowercase()) {
+                "hsdpa+" -> "hsdpa"
+                "cdma - evdo rev. 0" -> "evdo_0"
+                "cdma - evdo rev. a" -> "evdo_a"
+                else -> subtype
+            }
         }
 
     private val receivedFirstCallback = AtomicBoolean(false)
