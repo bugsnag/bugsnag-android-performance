@@ -44,7 +44,7 @@ steps:
         run: android-maze-runner-bitbar
         service-ports: true
         command:
-          - "--app=@/app/build/test-fixture.apk"
+          - "--app=@/app/build/fixture_url.txt"
           - "--farm=bb"
           - "--device=ANDROID_13"
           - "--no-tunnel"
