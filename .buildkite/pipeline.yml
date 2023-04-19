@@ -29,6 +29,7 @@ steps:
       - "build/fixture_url.txt"
     commands:
       - make test-fixture
+      - bundle install
       - bundle exec upload-app --farm=bb --app=./build/test-fixture.apk --app-id-file=build/fixture_url.txt
 
   - label: ':bitbar: Android 13 tests'
