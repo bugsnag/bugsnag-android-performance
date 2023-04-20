@@ -26,9 +26,6 @@
     <ID>MagicNumber:RetryScenario.kt$RetryScenario$100</ID>
     <ID>MagicNumber:RetryScenario.kt$RetryScenario$200</ID>
     <ID>MagicNumber:RetryScenario.kt$RetryScenario$50L</ID>
-    <ID>MagicNumber:RetryTimeoutScenario.kt$RetryTimeoutScenario$100</ID>
-    <ID>MagicNumber:RetryTimeoutScenario.kt$RetryTimeoutScenario$105</ID>
-    <ID>MagicNumber:RetryTimeoutScenario.kt$RetryTimeoutScenario$50L</ID>
     <ID>MagicNumber:SamplingProbabilityZeroScenario.kt$SamplingProbabilityZeroScenario$100</ID>
     <ID>MagicNumber:ThreeSpansScenario.kt$ThreeSpansScenario$300</ID>
     <ID>TooGenericExceptionCaught:MainActivity.kt$MainActivity$e: Exception</ID>
