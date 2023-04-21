@@ -22,7 +22,7 @@ x-common-environment: &common-environment
 services:
 
   android-maze-runner:
-    image: 855461928731.dkr.ecr.us-west-1.amazonaws.com/maze-runner-releases:latest-v7-cli
+    image: 855461928731.dkr.ecr.us-west-1.amazonaws.com/maze-runner:validation-span-step-cli
     environment:
       <<: *common-environment
       BROWSER_STACK_USERNAME:
@@ -33,7 +33,7 @@ services:
       - ./maze_output:/app/maze_output
 
   android-maze-runner-bitbar:
-    image: 855461928731.dkr.ecr.us-west-1.amazonaws.com/maze-runner-releases:latest-v7-cli
+    image: 855461928731.dkr.ecr.us-west-1.amazonaws.com/maze-runner:validation-span-step-cli
     environment:
       <<: *common-environment
       BITBAR_USERNAME:
