@@ -90,10 +90,11 @@ class ConnectivityLegacyTest {
         }
 
         val connectivity = ConnectivityLegacy(mock(), connectivityManager, null)
+        val status = connectivity.connectivityStatus
 
-        assertEquals(expected.metering, connectivity.metering)
-        assertEquals(expected.networkType, connectivity.networkType)
-        assertEquals(expected.networkSubType, connectivity.networkSubType)
+        assertEquals(expected.metering, status.metering)
+        assertEquals(expected.networkType, status.networkType)
+        assertEquals(expected.networkSubType, status.networkSubType)
     }
 
     internal data class ExpectedInfo(

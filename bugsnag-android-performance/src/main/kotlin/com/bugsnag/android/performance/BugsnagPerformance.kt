@@ -6,7 +6,7 @@ import android.content.Context
 import android.net.Uri
 import android.os.SystemClock
 import com.bugsnag.android.performance.BugsnagPerformance.start
-import com.bugsnag.android.performance.internal.ConnectivityCompat
+import com.bugsnag.android.performance.internal.Connectivity
 import com.bugsnag.android.performance.internal.DiscardingSampler
 import com.bugsnag.android.performance.internal.HttpDelivery
 import com.bugsnag.android.performance.internal.ImmutableConfig
@@ -100,15 +100,15 @@ object BugsnagPerformance {
         }
 
         val connectivity =
-            ConnectivityCompat(application) { hasConnection, _, networkType, networkSubType ->
-                if (hasConnection && this::worker.isInitialized) {
+            Connectivity.newInstance(application) { status ->
+                if (status.hasConnection && this::worker.isInitialized) {
                     worker.wake()
                 }
 
                 instrumentedAppState.defaultAttributeSource.update {
                     it.copy(
-                        networkType = networkType,
-                        networkSubType = networkSubType,
+                        networkType = status.networkType,
+                        networkSubType = status.networkSubType,
                     )
                 }
             }
@@ -139,7 +139,7 @@ object BugsnagPerformance {
 
             delivery.newProbabilityCallback = samplerTask
             workerTasks.add(samplerTask)
-            
+
             tracer.sampler = sampler
         } else {
             tracer.sampler = DiscardingSampler

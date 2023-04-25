@@ -8,6 +8,9 @@
   [#115](https://github.com/bugsnag/bugsnag-android-performance/pull/115)
 * The "first view" reported as part of AppStart spans is based on the first ViewLoad started rather than the first Actvity resumed
   [#119](https://github.com/bugsnag/bugsnag-android-performance/pull/119)
+* Fixed the reporting of cellular network subtypes (when the app has appropriate permissions)
+  [#116](https://github.com/bugsnag/bugsnag-android-performance/pull/116)
+
 
 ## 0.1.4 (2023-04-11)
 

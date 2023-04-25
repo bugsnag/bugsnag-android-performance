@@ -30,7 +30,12 @@ class RetryDeliveryTaskTest {
             on { next() } doReturn tracePayload
         }
         val connectivity = mock<Connectivity> {
-            on { hasConnection } doReturn false
+            on { connectivityStatus } doReturn ConnectivityStatus(
+                false,
+                ConnectionMetering.DISCONNECTED,
+                NetworkType.CELL,
+                null,
+            )
         }
         val retryDeliveryTask = RetryDeliveryTask(retryQueue, delivery, connectivity)
 
@@ -49,7 +54,12 @@ class RetryDeliveryTaskTest {
             on { next() } doReturn tracePayload
         }
         val connectivity = mock<Connectivity> {
-            on { hasConnection } doReturn true
+            on { connectivityStatus } doReturn ConnectivityStatus(
+                true,
+                ConnectionMetering.UNMETERED,
+                NetworkType.WIFI,
+                null,
+            )
         }
 
         val retryDeliveryTask = RetryDeliveryTask(retryQueue, delivery, connectivity)
@@ -71,7 +81,12 @@ class RetryDeliveryTaskTest {
             on { next() } doReturn tracePayload
         }
         val connectivity = mock<Connectivity> {
-            on { hasConnection } doReturn true
+            on { connectivityStatus } doReturn ConnectivityStatus(
+                true,
+                ConnectionMetering.UNMETERED,
+                NetworkType.WIFI,
+                null,
+            )
         }
 
         val retryDeliveryTask = RetryDeliveryTask(retryQueue, delivery, connectivity)
@@ -93,7 +108,12 @@ class RetryDeliveryTaskTest {
             on { next() } doReturn tracePayload
         }
         val connectivity = mock<Connectivity> {
-            on { hasConnection } doReturn true
+            on { connectivityStatus } doReturn ConnectivityStatus(
+                true,
+                ConnectionMetering.UNMETERED,
+                NetworkType.WIFI,
+                null,
+            )
         }
 
         val retryDeliveryTask = RetryDeliveryTask(retryQueue, delivery, connectivity)

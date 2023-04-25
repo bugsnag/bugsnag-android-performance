@@ -18,9 +18,15 @@ class HttpDeliveryTest {
     @Test
     fun noConnectivity() {
         val connectivity = mock<Connectivity> {
-            on { hasConnection } doReturn false
+            on { connectivityStatus } doReturn ConnectivityStatus(
+                false,
+                ConnectionMetering.DISCONNECTED,
+                NetworkType.CELL,
+                null,
+            )
         }
-        val delivery = HttpDelivery("http://localhost", "0123456789abcdef0123456789abcdef", connectivity)
+        val delivery =
+            HttpDelivery("http://localhost", "0123456789abcdef0123456789abcdef", connectivity)
 
         val spans = spanFactory.newSpans(5, spanProcessor)
         val result = delivery.deliver(spans, Attributes())
