@@ -33,9 +33,15 @@ steps:
       - bundle install
       - bundle exec upload-app --farm=bb --app=./build/test-fixture.apk --app-id-file=build/fixture_url.txt
 
-  - label: ':bitbar: Android 9 tests'
+  - label: ':bitbar: Android {{matrix}} tests'
     depends_on: "fixture"
     timeout_in_minutes: 60
+    matrix:
+      - "ANDROID_9"
+      - "ANDROID_10"
+      - "ANDROID_11"
+      - "ANDROID_12"
+      - "ANDROID_13"
     plugins:
       artifacts#v1.9.0:
         download: "build/test-fixture.apk"
@@ -47,95 +53,7 @@ steps:
         command:
           - "--app=build/test-fixture.apk"
           - "--farm=bb"
-          - "--device=ANDROID_9"
-          - "--no-tunnel"
-          - "--aws-public-ip"
-          - "--fail-fast"
-    concurrency: 25
-    concurrency_group: 'bitbar-app'
-    concurrency_method: eager
-
-  - label: ':bitbar: Android 10 tests'
-    depends_on: "fixture"
-    timeout_in_minutes: 60
-    plugins:
-      artifacts#v1.9.0:
-        download: "build/test-fixture.apk"
-        upload: "maze_output/failed/**/*"
-      docker-compose#v4.8.0:
-        pull: android-maze-runner-bitbar
-        run: android-maze-runner-bitbar
-        service-ports: true
-        command:
-          - "--app=build/test-fixture.apk"
-          - "--farm=bb"
-          - "--device=ANDROID_10"
-          - "--no-tunnel"
-          - "--aws-public-ip"
-          - "--fail-fast"
-    concurrency: 25
-    concurrency_group: 'bitbar-app'
-    concurrency_method: eager
-
-  - label: ':bitbar: Android 11 tests'
-    depends_on: "fixture"
-    timeout_in_minutes: 60
-    plugins:
-      artifacts#v1.9.0:
-        download: "build/test-fixture.apk"
-        upload: "maze_output/failed/**/*"
-      docker-compose#v4.8.0:
-        pull: android-maze-runner-bitbar
-        run: android-maze-runner-bitbar
-        service-ports: true
-        command:
-          - "--app=build/test-fixture.apk"
-          - "--farm=bb"
-          - "--device=ANDROID_11"
-          - "--no-tunnel"
-          - "--aws-public-ip"
-          - "--fail-fast"
-    concurrency: 25
-    concurrency_group: 'bitbar-app'
-    concurrency_method: eager
-
-  - label: ':bitbar: Android 12 tests'
-    depends_on: "fixture"
-    timeout_in_minutes: 60
-    plugins:
-      artifacts#v1.9.0:
-        download: "build/test-fixture.apk"
-        upload: "maze_output/failed/**/*"
-      docker-compose#v4.8.0:
-        pull: android-maze-runner-bitbar
-        run: android-maze-runner-bitbar
-        service-ports: true
-        command:
-          - "--app=build/test-fixture.apk"
-          - "--farm=bb"
-          - "--device=ANDROID_12"
-          - "--no-tunnel"
-          - "--aws-public-ip"
-          - "--fail-fast"
-    concurrency: 25
-    concurrency_group: 'bitbar-app'
-    concurrency_method: eager
-
-  - label: ':bitbar: Android 13 tests'
-    depends_on: "fixture"
-    timeout_in_minutes: 60
-    plugins:
-      artifacts#v1.9.0:
-        download: "build/test-fixture.apk"
-        upload: "maze_output/failed/**/*"
-      docker-compose#v4.8.0:
-        pull: android-maze-runner-bitbar
-        run: android-maze-runner-bitbar
-        service-ports: true
-        command:
-          - "--app=build/test-fixture.apk"
-          - "--farm=bb"
-          - "--device=ANDROID_13"
+          - "--device={{matrix}}"
           - "--no-tunnel"
           - "--aws-public-ip"
           - "--fail-fast"
