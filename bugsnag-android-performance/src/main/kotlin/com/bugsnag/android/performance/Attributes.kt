@@ -32,6 +32,11 @@ class Attributes : Collection<Pair<String, Any>> {
         content[name] = value
     }
 
+    @JvmSynthetic
+    internal operator fun get(name: String): Any? {
+        return content[name]
+    }
+
     fun remove(name: String) {
         content.remove(name)
     }

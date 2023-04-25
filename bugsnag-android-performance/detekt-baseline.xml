@@ -12,8 +12,6 @@
     <ID>MagicNumber:Encodings.kt$48</ID>
     <ID>MagicNumber:Encodings.kt$56</ID>
     <ID>MagicNumber:Encodings.kt$8</ID>
-    <ID>MagicNumber:HttpDelivery.kt$HttpDelivery$100</ID>
-    <ID>MagicNumber:HttpDelivery.kt$HttpDelivery$4</ID>
     <ID>MagicNumber:InternalDebug.kt$InternalDebug$100</ID>
     <ID>MagicNumber:InternalDebug.kt$InternalDebug$1000</ID>
     <ID>MagicNumber:InternalDebug.kt$InternalDebug$24</ID>
@@ -26,12 +24,12 @@
     <ID>MagicNumber:SpanKind.kt$SpanKind.CONSUMER$5</ID>
     <ID>MagicNumber:SpanKind.kt$SpanKind.PRODUCER$4</ID>
     <ID>ReturnCount:RetryDeliveryTask.kt$RetryDeliveryTask$override fun execute(): Boolean</ID>
-    <ID>SwallowedException:Connectivity.kt$ConnectivityLegacy$e: NullPointerException</ID>
+    <ID>SwallowedException:Connectivity.kt$ConnectivityApi24$e: Exception</ID>
     <ID>SwallowedException:ContextExtensions.kt$exc: RuntimeException</ID>
     <ID>SwallowedException:ForegroundTracker.kt$exc: RuntimeException</ID>
     <ID>SwallowedException:ImmutableConfig.kt$ImmutableConfig.Companion$ex: RuntimeException</ID>
     <ID>SwallowedException:Module.kt$Module.Loader$ex: Exception</ID>
-    <ID>TooGenericExceptionCaught:Connectivity.kt$ConnectivityLegacy$e: NullPointerException</ID>
+    <ID>TooGenericExceptionCaught:Connectivity.kt$ConnectivityApi24$e: Exception</ID>
     <ID>TooGenericExceptionCaught:ContextExtensions.kt$exc: RuntimeException</ID>
     <ID>TooGenericExceptionCaught:ForegroundTracker.kt$exc: RuntimeException</ID>
     <ID>TooGenericExceptionCaught:ImmutableConfig.kt$ImmutableConfig.Companion$ex: RuntimeException</ID>
@@ -39,6 +37,7 @@
     <ID>TooGenericExceptionCaught:PerformanceConfiguration.kt$PerformanceConfiguration.Loader$exc: Exception</ID>
     <ID>TooGenericExceptionCaught:Worker.kt$Worker$e: Exception</ID>
     <ID>TooGenericExceptionCaught:Worker.kt$Worker$ex: Exception</ID>
+    <ID>TooManyFunctions:Attributes.kt$Attributes : Collection</ID>
     <ID>TooManyFunctions:BugsnagPerformance.kt$BugsnagPerformance$BugsnagPerformance</ID>
     <ID>TooManyFunctions:PerformanceLifecycleCallbacks.kt$PerformanceLifecycleCallbacks : ActivityLifecycleCallbacksCallback</ID>
   </CurrentIssues>

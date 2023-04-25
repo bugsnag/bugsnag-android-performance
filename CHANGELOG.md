@@ -1,4 +1,23 @@
+## 0.1.5 (2023-04-25)
+
+### Bug fixes
+
+* `service.version` is now correctly reported as the app versionName
+  [#113](https://github.com/bugsnag/bugsnag-android-performance/pull/113)
+* ViewLoad spans should only be marked "first class" when there are no other ViewLoad spans in the SpanContext
+  [#115](https://github.com/bugsnag/bugsnag-android-performance/pull/115)
+* The "first view" reported as part of AppStart spans is based on the first ViewLoad started rather than the first Actvity resumed
+  [#119](https://github.com/bugsnag/bugsnag-android-performance/pull/119)
+* Fixed the reporting of cellular network subtypes (when the app has appropriate permissions)
+  [#116](https://github.com/bugsnag/bugsnag-android-performance/pull/116)
+
 ## 0.1.4 (2023-04-11)
+
+### Breaking changes
+The following changes need attention when updating to this version of the library:
+
+- Applied updated span and attribute naming (causes duplicate aggregations in your dashboard of App Start, Screen Load and Network spans from previous versions)
+  [#106](https://github.com/bugsnag/bugsnag-android-performance/pull/106)
 
 ### Enhancements
 

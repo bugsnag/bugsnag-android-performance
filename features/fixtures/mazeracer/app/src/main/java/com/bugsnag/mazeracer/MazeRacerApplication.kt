@@ -1,12 +1,22 @@
 package com.bugsnag.mazeracer
 
 import android.app.Application
+import android.content.Context
 import com.bugsnag.android.performance.BugsnagPerformance
 import com.bugsnag.android.performance.internal.InternalDebug
 
 class MazeRacerApplication : Application() {
     init {
+        instance = this
         BugsnagPerformance.reportApplicationClassLoaded()
+    }
+
+    companion object {
+        private var instance: MazeRacerApplication? = null
+
+        fun applicationContext(): Context {
+            return instance!!.applicationContext
+        }
     }
 
     override fun onCreate() {

@@ -6,10 +6,8 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.ApplicationInfo
-import android.location.LocationManager
 import android.net.ConnectivityManager
 import android.os.RemoteException
-import android.os.storage.StorageManager
 import android.telephony.TelephonyManager
 import com.bugsnag.android.performance.Logger
 
@@ -73,14 +71,6 @@ internal fun Context.getConnectivityManager(): ConnectivityManager? =
 @JvmName("getTelephonyManagerFrom")
 internal fun Context.getTelephonyManager(): TelephonyManager? =
     safeGetSystemService(Context.TELEPHONY_SERVICE)
-
-@JvmName("getStorageManagerFrom")
-internal fun Context.getStorageManager(): StorageManager? =
-    safeGetSystemService(Context.STORAGE_SERVICE)
-
-@JvmName("getLocationManager")
-internal fun Context.getLocationManager(): LocationManager? =
-    safeGetSystemService(Context.LOCATION_SERVICE)
 
 internal val Context.releaseStage: String
     get() {
