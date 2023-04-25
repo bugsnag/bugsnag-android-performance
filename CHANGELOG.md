@@ -6,6 +6,8 @@
   [#113](https://github.com/bugsnag/bugsnag-android-performance/pull/113)
 * ViewLoad spans should only be marked "first class" when there are no other ViewLoad spans in the SpanContext
   [#115](https://github.com/bugsnag/bugsnag-android-performance/pull/115)
+* The "first view" reported as part of AppStart spans is based on the first ViewLoad started rather than the first Actvity resumed
+  [#119](https://github.com/bugsnag/bugsnag-android-performance/pull/119)
 
 ## 0.1.4 (2023-04-11)
 

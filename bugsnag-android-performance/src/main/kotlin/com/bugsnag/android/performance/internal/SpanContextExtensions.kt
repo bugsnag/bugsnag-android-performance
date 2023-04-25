@@ -18,3 +18,7 @@ var SpanContext.Storage.currentStack
 internal inline fun SpanContext.Storage.noSpansMatch(predicate: (SpanImpl) -> Boolean): Boolean {
     return contextStack.none { it is SpanImpl && predicate(it) }
 }
+
+internal inline fun SpanContext.Storage.findSpan(predicate: (SpanImpl) -> Boolean): SpanImpl? {
+    return contextStack.find { it is SpanImpl && predicate(it) } as? SpanImpl
+}

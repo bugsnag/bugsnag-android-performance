@@ -9,16 +9,16 @@ import kotlin.system.exitProcess
 
 class AppStartScenario(
     config: PerformanceConfiguration,
-    scenarioMetadata: String
+    scenarioMetadata: String,
 ) : Scenario(config, scenarioMetadata) {
     init {
-        InternalDebug.spanBatchSizeSendTriggerPoint = 1
+        InternalDebug.spanBatchSizeSendTriggerPoint = 5
         InternalDebug.workerSleepMs = 1000L
     }
 
     override fun startScenario() {
         config.autoInstrumentAppStarts = true
-        config.autoInstrumentActivities = AutoInstrument.OFF
+        config.autoInstrumentActivities = AutoInstrument.FULL
         context.saveStartupConfig(config)
 
         Thread.sleep(500L)
