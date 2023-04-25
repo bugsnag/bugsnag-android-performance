@@ -27,13 +27,12 @@ steps:
       queue: macos-12-arm
     artifact_paths:
       - "build/fixture_url.txt"
-      - "build/test-fixture.apk"
     commands:
       - make test-fixture
       - bundle install
       - bundle exec upload-app --farm=bb --app=./build/test-fixture.apk --app-id-file=build/fixture_url.txt
 
-  - label: ':bitbar: Android {{matrix}} tests'
+  - label: ':bitbar: {{matrix}} tests'
     depends_on: "fixture"
     timeout_in_minutes: 60
     matrix:
@@ -44,14 +43,14 @@ steps:
       - "ANDROID_13"
     plugins:
       artifacts#v1.9.0:
-        download: "build/test-fixture.apk"
+        download: "build/fixture_url.txt"
         upload: "maze_output/failed/**/*"
       docker-compose#v4.8.0:
         pull: android-maze-runner-bitbar
         run: android-maze-runner-bitbar
         service-ports: true
         command:
-          - "--app=build/test-fixture.apk"
+          - "--app=@build/fixture_url.txt"
           - "--farm=bb"
           - "--device={{matrix}}"
           - "--no-tunnel"
