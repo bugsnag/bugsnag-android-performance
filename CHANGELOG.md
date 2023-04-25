@@ -1,4 +1,4 @@
-## TDB
+## 0.1.5 (2023-04-25)
 
 ### Bug fixes
 
@@ -11,8 +11,13 @@
 * Fixed the reporting of cellular network subtypes (when the app has appropriate permissions)
   [#116](https://github.com/bugsnag/bugsnag-android-performance/pull/116)
 
-
 ## 0.1.4 (2023-04-11)
+
+### Breaking changes
+The following changes need attention when updating to this version of the library:
+
+- Applied updated span and attribute naming (causes duplicate aggregations in your dashboard of App Start, Screen Load and Network spans from previous versions)
+  [#106](https://github.com/bugsnag/bugsnag-android-performance/pull/106)
 
 ### Enhancements
 
