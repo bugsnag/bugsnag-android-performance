@@ -46,7 +46,7 @@ class BugsnagPerformanceOkhttp : EventListener() {
                 Protocol.HTTP_2 -> "2.0"
                 Protocol.QUIC -> "QUIC"
                 else -> "unknown"
-            }
+            },
         )
     }
 
@@ -55,10 +55,12 @@ class BugsnagPerformanceOkhttp : EventListener() {
     }
 
     override fun callFailed(call: Call, ioe: IOException) {
-        spans.remove(call)?.end()
+        // remove the span and discard
+        spans.remove(call)
     }
 
     override fun canceled(call: Call) {
-        spans.remove(call)?.end()
+        // remove the span and discard
+        spans.remove(call)
     }
 }
