@@ -1,3 +1,10 @@
+## TBD
+
+### Bug fixes
+
+* `bugsnag-plugin-android-performance-okhttp` will now discard NetworkRequest spans when the request is cancelled or fails
+  [#123](https://github.com/bugsnag/bugsnag-android-performance/pull/123)
+
 ## 0.1.5 (2023-04-25)
 
 ### Bug fixes

@@ -1,6 +1,6 @@
-Feature: Manual creation of spans
+Feature: OkHttp EventListener
 
-  Scenario: Manual spans can be logged
+  Scenario: NetworkRequest spans are logged for requests
     Given I run "OkhttpSpanScenario" and discard the initial p-value request
     And I wait to receive 1 traces
     Then the trace payload field "resourceSpans.0.scopeSpans.0.spans.0.name" equals "[HTTP/GET]"
@@ -17,3 +17,8 @@ Feature: Manual creation of spans
     * the trace payload field "resourceSpans.0.resource" string attribute "service.name" equals "com.bugsnag.mazeracer"
     * the trace payload field "resourceSpans.0.resource" string attribute "telemetry.sdk.name" equals "bugsnag.performance.android"
     * the trace payload field "resourceSpans.0.resource" string attribute "telemetry.sdk.version" matches the regex "[0-9]+\.[0-9]+\.[0-9]+"
+
+  Scenario: Failed requests do not log spans
+    Given I run "OkhttpSpanScenario" configured as "https://localhost:9876"
+    And I receive and discard the initial p-value request
+    Then I should receive no traces
