@@ -4,6 +4,8 @@
 
 * `bugsnag-plugin-android-performance-okhttp` will now discard NetworkRequest spans when the request is cancelled or fails
   [#123](https://github.com/bugsnag/bugsnag-android-performance/pull/123)
+* Default to using the GNSS clock (if available) to attempt to avoid problems with clocks which could lead to negative timestamps on Spans
+  []()
 
 ## 0.1.5 (2023-04-25)
 
