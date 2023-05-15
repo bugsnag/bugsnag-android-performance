@@ -3,7 +3,8 @@ package com.bugsnag.android.performance.internal
 import android.os.Build
 import android.os.SystemClock
 import androidx.annotation.VisibleForTesting
-import java.lang.Long.max
+import java.util.Date
+import kotlin.math.max
 
 internal object BugsnagClock {
     private const val NANOS_IN_MILLIS = 1_000_000L
@@ -47,6 +48,8 @@ internal object BugsnagClock {
         // will at least remain positive
         return max(bootTime, 0L)
     }
+
+    fun toDate(): Date = Date(currentUnixNanoTime() / NANOS_IN_MILLIS)
 
     /**
      * Covert a given time from [SystemClock.elapsedRealtimeNanos] into Unix time with nanosecond
