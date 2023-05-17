@@ -12,6 +12,7 @@ captures/
 # IntelliJ project files
 *.iml
 .idea/
+.idea/**
 
 # Mazerunner
 maze_output
