@@ -2,7 +2,7 @@ Feature: Automatic creation of spans
 
   @skip_above_android_9
   Scenario: Activity with full ViewLoad instrumentation
-    Given I run "ActivityLoadInstrumentationScenario" configured as "FULL" and discard the initial p-value request
+    Given I run "ActivityLoadInstrumentationScenario" configured as "FULL" and discard the initial p_value
     And I wait to receive 1 traces
     Then a span named "[ViewLoad/Activity]ActivityViewLoadActivity" contains the attributes:
                 | attribute               | type        | value                    |
@@ -18,7 +18,7 @@ Feature: Automatic creation of spans
 
   @skip_above_android_9
   Scenario: Activity with start-only ViewLoad instrumentation
-    Given I run "ActivityLoadInstrumentationScenario" configured as "START_ONLY" and discard the initial p-value request
+    Given I run "ActivityLoadInstrumentationScenario" configured as "START_ONLY" and discard the initial p_value
     And I wait to receive 1 traces
     Then a span named "[ViewLoad/Activity]ActivityViewLoadActivity" contains the attributes:
                 | attribute               | type        | value                    |
@@ -33,7 +33,7 @@ Feature: Automatic creation of spans
                | bugsnag.view.name       | stringValue | LoaderFragment           |
 
   Scenario: Activity with no automatic ViewLoad instrumentation
-    Given I run "ActivityLoadInstrumentationScenario" configured as "OFF" and discard the initial p-value request
+    Given I run "ActivityLoadInstrumentationScenario" configured as "OFF" and discard the initial p_value
     And I wait to receive 1 traces
     Then a span named "[ViewLoad/Activity]ActivityViewLoadActivity" contains the attributes:
                 | attribute               | type        | value                    |
@@ -97,7 +97,7 @@ Feature: Automatic creation of spans
 
   @skip_below_android_10
   Scenario: Activity load breakdown with full ViewLoad instrumentation
-    Given I run "ActivityLoadInstrumentationScenario" configured as "FULL" and discard the initial p-value request
+    Given I run "ActivityLoadInstrumentationScenario" configured as "FULL" and discard the initial p_value
     And I wait for 5 spans
     Then a span named "[ViewLoad/Activity]ActivityViewLoadActivity" contains the attributes:
                 | attribute               | type        | value                    |
@@ -131,7 +131,7 @@ Feature: Automatic creation of spans
 
   @skip_below_android_10
   Scenario: Activity load breakdown with start-only ViewLoad instrumentation
-    Given I run "ActivityLoadInstrumentationScenario" configured as "START_ONLY" and discard the initial p-value request
+    Given I run "ActivityLoadInstrumentationScenario" configured as "START_ONLY" and discard the initial p_value
     And I wait for 5 spans
     Then a span named "[ViewLoad/Activity]ActivityViewLoadActivity" contains the attributes:
                 | attribute               | type        | value                    |

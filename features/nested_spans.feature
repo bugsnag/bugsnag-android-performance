@@ -2,7 +2,7 @@ Feature: Nested spans
 
   @skip_below_android_10
   Scenario: Nested spans
-    Given I run "NestedSpansScenario" and discard the initial p-value request
+    Given I run "NestedSpansScenario" and discard the initial p_value
     And I wait to receive 1 traces
     # Check we have received all the spans we are expecting
     * a span named "[ViewLoadPhase/ActivityCreate]NestedSpansActivity" contains the attributes:

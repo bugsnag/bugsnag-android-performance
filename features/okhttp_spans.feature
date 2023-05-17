@@ -1,7 +1,7 @@
 Feature: OkHttp EventListener
 
   Scenario: NetworkRequest spans are logged for requests
-    Given I run "OkhttpSpanScenario" and discard the initial p-value request
+    Given I run "OkhttpSpanScenario" and discard the initial p_value
     And I wait to receive 1 traces
     Then the trace payload field "resourceSpans.0.scopeSpans.0.spans.0.name" equals "[HTTP/GET]"
     * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0.spanId" matches the regex "^[A-Fa-f0-9]{16}$"
@@ -20,5 +20,5 @@ Feature: OkHttp EventListener
 
   Scenario: Failed requests do not log spans
     Given I run "OkhttpSpanScenario" configured as "https://localhost:9876"
-    And I receive and discard the initial p-value request
+    And I receive and discard the initial p_value
     Then I should receive no traces
