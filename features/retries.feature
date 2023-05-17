@@ -1,7 +1,7 @@
 Feature: Retries
 
   Scenario: Basic retry
-    # 200 - Get p_value, 500 - reject first payload
+    # 200 - Get p-value, 500 - reject first payload
     Given I set the HTTP status code for the next requests to "200,500"
     And I run "RetryScenario"
     And I wait to receive 3 traces

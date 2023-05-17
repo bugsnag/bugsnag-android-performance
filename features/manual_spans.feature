@@ -2,12 +2,12 @@ Feature: Manual creation of spans
 
   Scenario: Manual spans can be logged
     Given I run "ManualSpanScenario"
-    And I wait to receive a p_value
+    And I wait to receive a sampling request
     And I wait to receive a trace
 
     # Check the initial probability request
-    Then the p_value "Bugsnag-Span-Sampling" header equals "1:0"
-    And the p_value "Bugsnag-Api-Key" header equals "a35a2a72bd230ac0aa0f52715bbdc6aa"
+    Then the sampling request "Bugsnag-Span-Sampling" header equals "1:0"
+    And the sampling request "Bugsnag-Api-Key" header equals "a35a2a72bd230ac0aa0f52715bbdc6aa"
 
     And the trace Bugsnag-Integrity header is valid
     And the trace "Bugsnag-Sent-At" header is not null
@@ -50,12 +50,12 @@ Feature: Manual creation of spans
     * a span name equals "Thread Span 2"
 
   # TODO: Flaky - Pending PLAT-9364
-  @skip
-  Scenario: Span batch times out
-    Given I run "BatchTimeoutScenario"
-    And I wait to receive at least 2 spans
-    Then a span name equals "Span 1"
-    * a span name equals "Span 2"
+#  @skip
+#  Scenario: Span batch times out
+#    Given I run "BatchTimeoutScenario"
+#    And I wait to receive at least 2 spans
+#    Then a span name equals "Span 1"
+#    * a span name equals "Span 2"
 
   Scenario: Send on App backgrounded
     Given I run "AppBackgroundedScenario"
