@@ -42,7 +42,7 @@ Feature: Manual creation of spans
     * the trace payload field "resourceSpans.0.resource" string attribute "telemetry.sdk.version" matches the regex "[0-9]+\.[0-9]+\.[0-9]+"
 
   Scenario: Spans can be logged before start
-    Given I run "PreStartSpansScenario" and discard the initial p_value
+    Given I run "PreStartSpansScenario"
     And I wait to receive a trace
     Then a span name equals "Post Start"
     * a span name equals "Thread Span 0"
@@ -52,19 +52,19 @@ Feature: Manual creation of spans
   # TODO: Flaky - Pending PLAT-9364
   @skip
   Scenario: Span batch times out
-    Given I run "BatchTimeoutScenario" and discard the initial p_value
+    Given I run "BatchTimeoutScenario"
     And I wait to receive at least 2 spans
     Then a span name equals "Span 1"
     * a span name equals "Span 2"
 
   Scenario: Send on App backgrounded
-    Given I run "AppBackgroundedScenario" and discard the initial p_value
+    Given I run "AppBackgroundedScenario"
     And I send the app to the background for 5 seconds
     And I wait for 1 span
     Then a span name equals "Span 1"
 
   Scenario: Spans logged in the background
-    Given I run "BackgroundSpanScenario" and discard the initial p_value
+    Given I run "BackgroundSpanScenario"
     And I send the app to the background for 5 seconds
     And I wait for 1 span
     Then a span name equals "BackgroundSpan"
