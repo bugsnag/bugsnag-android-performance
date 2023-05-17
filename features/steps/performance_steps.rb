@@ -52,20 +52,6 @@ When("I relaunch the app after shutdown") do
   Maze.driver.launch_app
 end
 
-Then("I run {string} and discard the initial p_value") do |scenario|
-  steps %Q{
-    When I run "#{scenario}"
-    And I receive and discard the initial p_value
-  }
-end
-
-Then("I run {string} configured as {string} and discard the initial p_value") do |scenario, configured|
-  steps %Q{
-    When I run "#{scenario}" configured as "#{configured}"
-    And I receive and discard the initial p_value
-  }
-end
-
 Then('the {word} payload field {string} attribute {string} matches the regex {string}') do |request_type, field, key, regex_string|
   regex = Regexp.new(regex_string)
   list = Maze::Server.list_for(request_type)
