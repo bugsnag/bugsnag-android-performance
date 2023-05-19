@@ -20,6 +20,12 @@ steps:
       - cd features/fixtures/mazeracer
       - ./gradlew ktlintCheck detekt
 
+  - label: ':android: Android size reporting'
+    timeout_in_minutes: 10
+    agents:
+      queue: macos-12-arm
+    command: scripts/run-sizer.sh
+
   - label: ':android: Build and upload test fixture'
     key: 'fixture'
     timeout_in_minutes: 30
