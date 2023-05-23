@@ -5,20 +5,24 @@ import com.bugsnag.android.performance.PerformanceConfiguration
 import com.bugsnag.android.performance.internal.InternalDebug
 import com.bugsnag.mazeracer.Scenario
 
-class RetryScenario(
+class GenerateSpansScenario(
     config: PerformanceConfiguration,
     scenarioMetadata: String
 ) : Scenario(config, scenarioMetadata) {
+
+    var spanId = 1
+
     init {
         InternalDebug.spanBatchSizeSendTriggerPoint = 1
-        InternalDebug.workerSleepMs = 50L
+        BugsnagPerformance.start(config)
     }
 
     override fun startScenario() {
-        BugsnagPerformance.start(config)
-        Thread.sleep(100)
-        BugsnagPerformance.startSpan("span 1").end()
-        Thread.sleep(200)
-        BugsnagPerformance.startSpan("span 2").end()
+        // not used by this scenario, which is driven by "invoke" commands
+    }
+
+    fun sendNextSpan() {
+        BugsnagPerformance.startSpan("span $spanId").end()
+        spanId++
     }
 }

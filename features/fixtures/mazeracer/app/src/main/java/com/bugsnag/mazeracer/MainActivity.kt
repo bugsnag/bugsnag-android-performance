@@ -171,9 +171,15 @@ class MainActivity : AppCompatActivity() {
                                 polling = false
                                 runScenario(scenarioName, scenarioMetadata, endpointUrl)
                             }
+
                             "load_scenario" -> {
-                                loadScenario(scenarioName, scenarioMetadata, endpointUrl)
+                                scenario = loadScenario(scenarioName, scenarioMetadata, endpointUrl)
                             }
+
+                            "invoke" -> {
+                                scenario!!::class.java.getMethod(scenarioName).invoke(scenario)
+                            }
+
                             else -> throw IllegalArgumentException("Unknown action: $action")
                         }
                     }
@@ -188,7 +194,7 @@ class MainActivity : AppCompatActivity() {
     private fun runScenario(
         scenarioName: String,
         scenarioMetadata: String,
-        endpointUrl: String
+        endpointUrl: String,
     ) {
         if (scenario == null) {
             scenario = loadScenario(scenarioName, scenarioMetadata, endpointUrl)
@@ -217,7 +223,7 @@ class MainActivity : AppCompatActivity() {
                         "${urlConnection.responseMessage}):\n" +
                         "${"-".repeat(errorMessage.width)}\n" +
                         "$errorMessage\n" +
-                        "-".repeat(errorMessage.width)
+                        "-".repeat(errorMessage.width),
                 )
             } catch (e: Exception) {
                 log("Failed to retrieve error message from connection", e)
@@ -238,7 +244,7 @@ class MainActivity : AppCompatActivity() {
     private fun loadScenario(
         scenarioName: String,
         scenarioMetadata: String,
-        endpoint: String
+        endpoint: String,
     ): Scenario {
         log("loadScenario($scenarioName, $scenarioMetadata, $endpoint)")
         val apiKeyField = findViewById<EditText>(R.id.manualApiKey)
