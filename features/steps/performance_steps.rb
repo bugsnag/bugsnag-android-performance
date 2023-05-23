@@ -38,6 +38,10 @@ When('I load scenario {string}') do |scenario_name|
   execute_command 'load_scenario', scenario_name
 end
 
+When('I invoke {string}') do |function|
+  execute_command 'invoke', function
+end
+
 When("I relaunch the app after shutdown") do
   max_attempts = 20
   attempts = 0
