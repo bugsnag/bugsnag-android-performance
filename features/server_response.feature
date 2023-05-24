@@ -171,13 +171,24 @@ Feature: Server responses
   # P=0 on second response
 
   Scenario: Update P to 0 on second response: success, fail-permanent, fail-retriable
-    Given I set the HTTP status code for the next requests to "200,200,400,500"
-    Given I set the sampling probability for the next traces to "1,null,0"
-    And I run "ThreeSpansScenario" and discard the initial p-value request
-    And I wait to receive at least 2 traces
+    Given I set the HTTP status code for the next requests to "200,200"
+    * I set the sampling probability for the next traces to "1"
+    * I load scenario "GenerateSpansScenario"
+    * I receive and discard the initial p-value request
+    When I invoke "sendNextSpan"
+    And I wait to receive 1 trace
     Then the trace payload field "resourceSpans.0.scopeSpans.0.spans.0.name" equals "span 1"
-    And I discard the oldest trace
+    * I discard the oldest trace
+    # 400 with p=0
+    Then I set the HTTP status code for the next requests to "400"
+    * I set the sampling probability for the next traces to "0"
+    * I invoke "sendNextSpan"
+    * I wait to receive 1 trace
     Then the trace payload field "resourceSpans.0.scopeSpans.0.spans.0.name" equals "span 2"
+    * I discard the oldest trace
+    # p=0 so no span should be delivered
+    * I invoke "sendNextSpan"
+    * I should receive no traces
 
   Scenario: Update P to 0 on second response: success, fail-retriable, fail-permanent
     Given I set the HTTP status code for the next requests to "200,200,500,400"
