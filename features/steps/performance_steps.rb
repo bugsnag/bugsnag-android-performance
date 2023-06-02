@@ -55,12 +55,3 @@ When("I relaunch the app after shutdown") do
 
   Maze.driver.launch_app
 end
-
-Then('the {word} payload field {string} attribute {string} matches the regex {string}') do |request_type, field, key, regex_string|
-  regex = Regexp.new(regex_string)
-  list = Maze::Server.list_for(request_type)
-  attributes = Maze::Helper.read_key_path(list.current[:body], "#{field}.attributes")
-  attribute = attributes.find { |a| a['key'] == key }
-  value = attribute["value"]["intValue"]
-  Maze.check.match(regex, value)
-end
