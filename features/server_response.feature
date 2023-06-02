@@ -8,6 +8,7 @@ Feature: Server responses
   Scenario: No P update: success, fail-permanent, fail-retriable
     Given I set the HTTP status code for the next requests to "200,200"
     And I load scenario "GenerateSpansScenario"
+    And I wait to receive a sampling request
     Then I invoke "sendNextSpan"
     And I wait to receive 1 trace
     Then the trace payload field "resourceSpans.0.scopeSpans.0.spans.0.name" equals "span 1"
@@ -28,6 +29,7 @@ Feature: Server responses
   Scenario: No P update: success, fail-retriable, fail-permanent
     Given I set the HTTP status code for the next requests to "200,200"
     And I load scenario "GenerateSpansScenario"
+    And I wait to receive a sampling request
     Then I invoke "sendNextSpan"
     And I wait to receive 1 trace
     # 200 - Payload accepted
@@ -45,6 +47,7 @@ Feature: Server responses
   Scenario: No P update: fail-retriable, fail-permanent, success
     Given I set the HTTP status code for the next requests to "200"
     And I load scenario "GenerateSpansScenario"
+    And I wait to receive a sampling request
     # 500 - Server error (retry) but still recorded by MazeRunner
     Given I set the HTTP status code for the next requests to "500"
     Then I invoke "sendNextSpan"
@@ -63,6 +66,7 @@ Feature: Server responses
   Scenario: No P update: fail-retriable, success, fail-permanent
     Given I set the HTTP status code for the next requests to "200"
     And I load scenario "GenerateSpansScenario"
+    And I wait to receive a sampling request
     # 500 - Server error (retry) but still recorded by MazeRunner
     Given I set the HTTP status code for the next requests to "500"
     Then I invoke "sendNextSpan"
@@ -81,6 +85,7 @@ Feature: Server responses
   Scenario: No P update: fail-permanent, fail-retriable, success
     Given I set the HTTP status code for the next requests to "200,400"
     And I load scenario "GenerateSpansScenario"
+    And I wait to receive a sampling request
     Then I invoke "sendNextSpan"
     And I wait to receive 1 trace
     # 400 - Payload rejected, no retry
@@ -98,6 +103,7 @@ Feature: Server responses
   Scenario: No P update: fail-permanent, success, fail-retriable
     Given I set the HTTP status code for the next requests to "200,400"
     And I load scenario "GenerateSpansScenario"
+    And I wait to receive a sampling request
     Then I invoke "sendNextSpan"
     And I wait to receive 1 trace
     # 400 - Payload rejected, no retry
