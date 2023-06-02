@@ -1,0 +1,46 @@
+require 'fileutils'
+
+BUGSNAG_PROP = "-P withBugsnag=true"
+MINIFIED_PROP = "-P minified=true"
+
+def buildOutputs(bugsnag: false, minified: false)
+  variant = bugsnag ? 'performance' : 'release'
+
+  bundle_dir = "app/build/outputs/bundle/#{variant}"
+
+  opts = "#{bugsnag ? BUGSNAG_PROP : ''} #{minified ? MINIFIED_PROP : ''}"
+  `./gradlew clean`
+  `./gradlew assemble#{variant.capitalize} #{opts}`
+
+  return "app/build/outputs/apk/#{variant}/app-#{variant}-unsigned.apk"
+end
+
+apk = buildOutputs(bugsnag: false, minified: false)
+apk_size = `stat -f "%z" #{apk}`.to_i
+
+apk = buildOutputs(bugsnag: false, minified: true)
+min_apk_size = `stat -f "%z" #{apk}`.to_i
+
+apk = buildOutputs(bugsnag: true, minified: false)
+apk_bugsnag_size = `stat -f "%z" #{apk}`.to_i
+
+apk = buildOutputs(bugsnag: true, minified: true)
+min_apk_bugsnag_size = `stat -f "%z" #{apk}`.to_i
+
+calculated_sizes = {
+  :apk => apk_bugsnag_size - apk_size,
+  :min_apk => min_apk_bugsnag_size - min_apk_size
+}
+
+def format_kbs(size)
+  (size/1000.0).round(2)
+end
+
+markdown(%Q{
+  ### Android notifier sizes
+
+  | Format       | Size impact of Bugsnag (kB)                   |
+  |--------------|-----------------------------------------------|
+  | APK          | #{format_kbs(calculated_sizes[:apk])}         |
+  | Minified APK | #{format_kbs(calculated_sizes[:min_apk])}     |
+})
