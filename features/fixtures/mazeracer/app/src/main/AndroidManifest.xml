@@ -13,6 +13,10 @@
         android:theme="@style/Theme.MazeRacer"
         tools:targetApi="31">
 
+        <meta-data
+            android:name="com.bugsnag.android.API_KEY"
+            android:value="31ebfd91cf28f2280a0fa66ab6b587b4" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true">

@@ -19,6 +19,9 @@ import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
 import kotlin.concurrent.thread
+import com.bugsnag.android.Bugsnag
+import com.bugsnag.android.Configuration
+import com.bugsnag.android.EndpointConfiguration
 
 const val CONFIG_FILE_TIMEOUT = 5000
 
@@ -128,6 +131,15 @@ class MainActivity : AppCompatActivity() {
         return jsonObject?.optString(key) ?: ""
     }
 
+    private fun startBugsnag() {
+        val sessionUrl = "http://$mazeAddress/session"
+        val notifyUrl = "http://$mazeAddress/notify"
+
+        val config = Configuration.load(this)
+        config.endpoints = EndpointConfiguration(sessionUrl, notifyUrl)
+        Bugsnag.start(this, config)
+    }
+
     // Starts a thread to poll for Maze Runner actions to perform
     private fun startCommandRunner() {
         // Get the next maze runner command
@@ -135,7 +147,7 @@ class MainActivity : AppCompatActivity() {
         thread(start = true) {
             if (mazeAddress == null) setMazeRunnerAddress()
             checkNetwork()
-
+            startBugsnag()
             while (polling) {
                 Thread.sleep(1000)
                 try {
@@ -220,10 +232,10 @@ class MainActivity : AppCompatActivity() {
                 val errorMessage = urlConnection.errorStream.use { it.reader().readText() }
                 log(
                     "Failed to GET $commandUrl (HTTP ${urlConnection.responseCode} " +
-                        "${urlConnection.responseMessage}):\n" +
-                        "${"-".repeat(errorMessage.width)}\n" +
-                        "$errorMessage\n" +
-                        "-".repeat(errorMessage.width),
+                            "${urlConnection.responseMessage}):\n" +
+                            "${"-".repeat(errorMessage.width)}\n" +
+                            "$errorMessage\n" +
+                            "-".repeat(errorMessage.width),
                 )
             } catch (e: Exception) {
                 log("Failed to retrieve error message from connection", e)
