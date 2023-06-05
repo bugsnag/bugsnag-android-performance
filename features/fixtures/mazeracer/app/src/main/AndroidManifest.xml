@@ -15,7 +15,7 @@
 
         <meta-data
             android:name="com.bugsnag.android.API_KEY"
-            android:value="31ebfd91cf28f2280a0fa66ab6b587b4" />
+            android:value="project_apikeyapikeyapikeyapikey" />
 
         <activity
             android:name=".MainActivity"

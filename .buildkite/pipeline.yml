@@ -52,8 +52,8 @@ steps:
         download: "build/fixture_url.txt"
         upload: "maze_output/failed/**/*"
       docker-compose#v4.8.0:
-        pull: android-maze-runner-bitbar
-        run: android-maze-runner-bitbar
+        pull: android-maze-runner
+        run: android-maze-runner
         service-ports: true
         command:
           - "--app=@build/fixture_url.txt"
