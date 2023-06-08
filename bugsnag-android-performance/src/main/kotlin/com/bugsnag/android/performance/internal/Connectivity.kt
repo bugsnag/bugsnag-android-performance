@@ -118,6 +118,7 @@ internal class ConnectivityLegacy(
                 "hsdpa+" -> "hsdpa"
                 "cdma - evdo rev. 0" -> "evdo_0"
                 "cdma - evdo rev. a" -> "evdo_a"
+                "cdma - 1xrtt" -> "cdma2000_1xrtt"
                 else -> subtype
             },
         )
