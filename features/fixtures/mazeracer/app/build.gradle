@@ -51,6 +51,7 @@ dependencies {
     implementation 'androidx.core:core-ktx:1.7.0'
     implementation 'androidx.appcompat:appcompat:1.5.1'
     implementation 'com.google.android.material:material:1.6.1'
+    implementation "com.bugsnag:bugsnag-android:5.+"
     implementation 'com.bugsnag:bugsnag-android-performance:9.9.9'
     implementation 'com.bugsnag:bugsnag-plugin-android-performance-okhttp:9.9.9'
     implementation 'com.bugsnag:bugsnag-plugin-android-performance-appcompat:9.9.9'

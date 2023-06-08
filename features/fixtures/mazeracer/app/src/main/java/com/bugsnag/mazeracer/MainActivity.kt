@@ -11,6 +11,9 @@ import android.view.Window
 import android.widget.Button
 import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
+import com.bugsnag.android.Bugsnag
+import com.bugsnag.android.Configuration
+import com.bugsnag.android.EndpointConfiguration
 import com.bugsnag.android.performance.AutoInstrument
 import com.bugsnag.android.performance.PerformanceConfiguration
 import org.json.JSONObject
@@ -128,6 +131,16 @@ class MainActivity : AppCompatActivity() {
         return jsonObject?.optString(key) ?: ""
     }
 
+    private fun startBugsnag() {
+        val config = Configuration.load(this).apply {
+            endpoints = EndpointConfiguration(
+                "http://$mazeAddress/session",
+                "http://$mazeAddress/notify",
+            )
+        }
+        Bugsnag.start(this, config)
+    }
+
     // Starts a thread to poll for Maze Runner actions to perform
     private fun startCommandRunner() {
         // Get the next maze runner command
@@ -135,7 +148,7 @@ class MainActivity : AppCompatActivity() {
         thread(start = true) {
             if (mazeAddress == null) setMazeRunnerAddress()
             checkNetwork()
-
+            startBugsnag()
             while (polling) {
                 Thread.sleep(1000)
                 try {
@@ -179,7 +192,6 @@ class MainActivity : AppCompatActivity() {
                             "invoke" -> {
                                 scenario!!::class.java.getMethod(scenarioName).invoke(scenario)
                             }
-
                             else -> throw IllegalArgumentException("Unknown action: $action")
                         }
                     }
