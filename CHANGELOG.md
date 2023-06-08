@@ -12,7 +12,7 @@
 * Default to using the GNSS clock (if available) to attempt to avoid problems with clocks which could lead to negative timestamps on Spans
   [#124](https://github.com/bugsnag/bugsnag-android-performance/pull/124)
 * Map "CDMA - 1xRTT" network subtype to the expected "cdma2000_1xrtt" value
-  []()
+  [#134](https://github.com/bugsnag/bugsnag-android-performance/pull/134)
 
 ## 0.1.5 (2023-04-25)
 
