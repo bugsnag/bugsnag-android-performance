@@ -36,4 +36,4 @@ We are currently publishing pre-1.0 releases. These releases may contain breakin
 
 ## License
 
-The BugSnag Android Performance SDK is free software released under the MIT License. See the [LICENSE](https://github.com/bugsnag/bugsnag-android-performance/blob/master/LICENSE) for details.
+The BugSnag Android Performance SDK is free software released under the MIT License. See the [LICENSE](./LICENSE) for details.
