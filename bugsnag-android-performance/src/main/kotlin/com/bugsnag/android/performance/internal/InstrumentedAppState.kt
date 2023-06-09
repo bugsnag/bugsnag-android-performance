@@ -10,7 +10,7 @@ class InstrumentedAppState {
     val spanTracker = SpanTracker()
 
     val spanFactory = SpanFactory(BugsnagPerformance.tracer, defaultAttributeSource)
-    val platformCallbacks = createLifecycleCallbacks()
+    val activityCallbacks = createLifecycleCallbacks()
 
     lateinit var app: Application
         private set
@@ -20,7 +20,7 @@ class InstrumentedAppState {
 
         configureLifecycleCallbacks(configuration)
 
-        app.registerActivityLifecycleCallbacks(platformCallbacks)
+        app.registerActivityLifecycleCallbacks(activityCallbacks)
         app.registerComponentCallbacks(PerformanceComponentCallbacks(BugsnagPerformance.tracer))
     }
 
@@ -33,7 +33,7 @@ class InstrumentedAppState {
     }
 
     private fun configureLifecycleCallbacks(configuration: ImmutableConfig) {
-        platformCallbacks.apply {
+        activityCallbacks.apply {
             openLoadSpans = configuration.autoInstrumentActivities != AutoInstrument.OFF
             closeLoadSpans = configuration.autoInstrumentActivities == AutoInstrument.FULL
             instrumentAppStart = configuration.autoInstrumentAppStarts

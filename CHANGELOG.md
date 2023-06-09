@@ -13,6 +13,8 @@
   [#124](https://github.com/bugsnag/bugsnag-android-performance/pull/124)
 * Map "CDMA - 1xRTT" network subtype to the expected "cdma2000_1xrtt" value
   [#134](https://github.com/bugsnag/bugsnag-android-performance/pull/134)
+* Background AppStart spans (for broadcasts & services) are now discarded to avoid skewing AppStart/Cold metrics
+  []()
 
 ## 0.1.5 (2023-04-25)
 
