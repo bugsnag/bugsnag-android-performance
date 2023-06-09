@@ -29,6 +29,11 @@
 
         <activity android:name=".ActivityViewLoadActivity"/>
         <activity android:name=".NestedSpansActivity"/>
+
+        <receiver
+            android:name=".MazeRacerAlarmReceiver"
+            android:exported="true"
+            />
     </application>
 
 </manifest>

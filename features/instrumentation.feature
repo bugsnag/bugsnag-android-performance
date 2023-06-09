@@ -162,3 +162,12 @@ Feature: Automatic creation of spans
                | bugsnag.span.category   | stringValue | view_load                 |
                | bugsnag.view.type       | stringValue | fragment                  |
                | bugsnag.view.name       | stringValue | LoaderFragment            |
+
+    Scenario: AppStart/Cold is discarded for background starts
+      Given I run "BackgroundAppStartScenario"
+      And I wait for 1 span
+      * a span named "AlarmReceiver" contains the attributes:
+              | attribute                 | type        | value                     |
+              | bugsnag.span.first_class  | boolValue   | true                      |
+      # this is required here to avoid interfering with other scenarios
+      * I force stop the Android app
