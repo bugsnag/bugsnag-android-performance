@@ -2,6 +2,7 @@
 <SmellBaseline>
   <ManuallySuppressedIssues></ManuallySuppressedIssues>
   <CurrentIssues>
+    <ID>MagicNumber:ActivityLoadInstrumentationScenario.kt$ActivityLoadInstrumentationScenario$5</ID>
     <ID>MagicNumber:AppBackgroundedScenario.kt$AppBackgroundedScenario$100</ID>
     <ID>MagicNumber:AppBackgroundedScenario.kt$AppBackgroundedScenario$120_000L</ID>
     <ID>MagicNumber:AppStartScenario.kt$AppStartScenario$1000L</ID>

@@ -34,12 +34,12 @@ Feature: Automatic creation of spans
 
   Scenario: Activity with no automatic ViewLoad instrumentation
     Given I run "ActivityLoadInstrumentationScenario" configured as "OFF"
-    And I wait to receive a trace
-    Then a span named "[ViewLoad/Activity]ActivityViewLoadActivity" contains the attributes:
-                | attribute               | type        | value                    |
-                | bugsnag.span.category   | stringValue | view_load                |
-                | bugsnag.view.type       | stringValue | activity                 |
-                | bugsnag.view.name       | stringValue | ActivityViewLoadActivity |
+    And I wait to receive at least 1 trace
+    Then a span named "[ViewLoad/Fragment]LoaderFragment" contains the attributes:
+              | attribute               | type        | value                    |
+              | bugsnag.span.category   | stringValue | view_load                |
+              | bugsnag.view.type       | stringValue | fragment                 |
+              | bugsnag.view.name       | stringValue | LoaderFragment           |
 
   @skip_below_android_10
   Scenario: AppStart instrumentation
