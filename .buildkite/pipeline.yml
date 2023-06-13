@@ -26,13 +26,32 @@ steps:
       queue: macos-12-arm
     command: scripts/run-sizer.sh
 
+
+  - label: ':bitbar: ANDROID_9 tests'
+    timeout_in_minutes: 60
+    plugins:
+      artifacts#v1.9.0:
+        upload:
+          - "./maze_output/failed/**/*"
+          - "./maze_output/passed/**/*"
+      docker-compose#v4.8.0:
+        pull: android-maze-runner
+        run: android-maze-runner
+        service-ports: true
+        command:
+          - "--app=189198096"
+          - "--farm=bb"
+          - "--device=ANDROID_9"
+          - "--no-tunnel"
+          - "--aws-public-ip"
+          - "--fail-fast"
+    concurrency: 25
+    concurrency_group: 'bitbar-app'
+    concurrency_method: eager
+
   - label: ':bitbar: {{matrix}} tests'
     timeout_in_minutes: 60
     matrix:
-      - "ANDROID_9"
-      - "ANDROID_10"
-      - "ANDROID_11"
-      - "ANDROID_12"
       - "ANDROID_13"
     plugins:
       artifacts#v1.9.0:
