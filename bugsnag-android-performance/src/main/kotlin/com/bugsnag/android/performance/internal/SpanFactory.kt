@@ -73,6 +73,7 @@ class SpanFactory(
             "[AppStart/$startType]",
             SpanKind.INTERNAL,
             SpanCategory.APP_START,
+            SpanOptions.DEFAULTS.within(null)
         ).apply {
             setAttribute("bugsnag.app_start.type", startType.lowercase())
         }

@@ -274,7 +274,7 @@ object BugsnagPerformance {
     @JvmStatic
     fun reportApplicationClassLoaded() {
         synchronized(this) {
-            instrumentedAppState.platformCallbacks.startAppLoadSpan("Cold")
+            instrumentedAppState.activityCallbacks.startAppLoadSpan("Cold")
         }
     }
 }
