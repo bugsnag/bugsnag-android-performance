@@ -11,7 +11,7 @@ import kotlin.concurrent.thread
 
 class OkhttpSpanScenario(
     config: PerformanceConfiguration,
-    scenarioMetadata: String
+    scenarioMetadata: String,
 ) : Scenario(config, scenarioMetadata) {
     init {
         InternalDebug.spanBatchSizeSendTriggerPoint = 1
@@ -25,7 +25,7 @@ class OkhttpSpanScenario(
                 .eventListenerFactory(BugsnagPerformanceOkhttp.EventListenerFactory)
                 .build()
             val request = Request.Builder()
-                .url("https://google.com?test=true")
+                .url(scenarioMetadata.takeUnless { it.isBlank() } ?: "https://google.com?test=true")
                 .build()
 
             client.newCall(request).execute().use { response ->

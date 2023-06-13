@@ -17,6 +17,7 @@ class ConnectivityLegacyTest {
     companion object {
         @JvmStatic
         @Parameterized.Parameters
+        @Suppress("LongMethod") // naturally long method due to the number of permutations
         internal fun createTestNetworkParameters(): Collection<Pair<ExpectedInfo, NetworkInfo>> {
             return listOf(
                 Pair(
@@ -66,6 +67,14 @@ class ConnectivityLegacyTest {
                         "evdo_0",
                     ),
                     mockNetworkInfo(ConnectivityManager.TYPE_MOBILE, "CDMA - EvDo rev. 0"),
+                ),
+                Pair(
+                    ExpectedInfo(
+                        ConnectionMetering.POTENTIALLY_METERED,
+                        NetworkType.CELL,
+                        "cdma2000_1xrtt",
+                    ),
+                    mockNetworkInfo(ConnectivityManager.TYPE_MOBILE, "CDMA - 1xRTT"),
                 ),
             )
         }

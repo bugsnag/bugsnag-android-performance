@@ -38,6 +38,10 @@ When('I load scenario {string}') do |scenario_name|
   execute_command 'load_scenario', scenario_name
 end
 
+When('I invoke {string}') do |function|
+  execute_command 'invoke', function
+end
+
 When("I relaunch the app after shutdown") do
   max_attempts = 20
   attempts = 0
@@ -50,27 +54,4 @@ When("I relaunch the app after shutdown") do
   $logger.warn "App state #{state} instead of #{expected_state} after 10s" unless state == :not_running
 
   Maze.driver.launch_app
-end
-
-Then("I run {string} and discard the initial p-value request") do |scenario|
-  steps %Q{
-    When I run "#{scenario}"
-    And I receive and discard the initial p-value request
-  }
-end
-
-Then("I run {string} configured as {string} and discard the initial p-value request") do |scenario, configured|
-  steps %Q{
-    When I run "#{scenario}" configured as "#{configured}"
-    And I receive and discard the initial p-value request
-  }
-end
-
-Then('the {word} payload field {string} attribute {string} matches the regex {string}') do |request_type, field, key, regex_string|
-  regex = Regexp.new(regex_string)
-  list = Maze::Server.list_for(request_type)
-  attributes = Maze::Helper.read_key_path(list.current[:body], "#{field}.attributes")
-  attribute = attributes.find { |a| a['key'] == key }
-  value = attribute["value"]["intValue"]
-  Maze.check.match(regex, value)
 end

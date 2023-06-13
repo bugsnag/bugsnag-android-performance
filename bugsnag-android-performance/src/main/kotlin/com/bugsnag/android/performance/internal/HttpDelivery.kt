@@ -1,11 +1,12 @@
 package com.bugsnag.android.performance.internal
 
+import androidx.annotation.VisibleForTesting
 import com.bugsnag.android.performance.Attributes
 import com.bugsnag.android.performance.Logger
 import java.net.HttpURLConnection
 import java.net.URL
 
-internal class HttpDelivery(
+internal open class HttpDelivery(
     private val endpoint: String,
     private val apiKey: String,
     private val connectivity: Connectivity,
@@ -29,7 +30,7 @@ internal class HttpDelivery(
             return DeliveryResult.Failed(tracePayload, true)
         }
 
-        val connection = URL(endpoint).openConnection() as HttpURLConnection
+        val connection = openConnection()
         with(connection) {
             requestMethod = "POST"
 
@@ -47,6 +48,9 @@ internal class HttpDelivery(
         return result
     }
 
+    @VisibleForTesting
+    internal open fun openConnection() = URL(endpoint).openConnection() as HttpURLConnection
+
     override fun fetchCurrentProbability() {
         // Server expects a call to /traces with an empty set of resource spans
         deliver(initialProbabilityRequest)
@@ -58,6 +62,7 @@ internal class HttpDelivery(
             statusCode in 200..299 -> DeliveryResult.Success
             statusCode in 400..499 && statusCode !in httpRetryCodes ->
                 DeliveryResult.Failed(payload, false)
+
             else -> DeliveryResult.Failed(payload, true)
         }
     }
@@ -77,6 +82,8 @@ internal class HttpDelivery(
                 setRequestProperty(name, value)
             }
         }
+
+        setRequestProperty("Bugsnag-Sent-At", DateUtils.toIso8601(BugsnagClock.toDate()))
     }
 
     companion object {

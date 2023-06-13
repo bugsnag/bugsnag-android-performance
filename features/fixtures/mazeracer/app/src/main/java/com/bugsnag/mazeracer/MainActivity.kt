@@ -11,6 +11,9 @@ import android.view.Window
 import android.widget.Button
 import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
+import com.bugsnag.android.Bugsnag
+import com.bugsnag.android.Configuration
+import com.bugsnag.android.EndpointConfiguration
 import com.bugsnag.android.performance.AutoInstrument
 import com.bugsnag.android.performance.PerformanceConfiguration
 import org.json.JSONObject
@@ -76,6 +79,16 @@ class MainActivity : AppCompatActivity() {
         log("MainActivity.onResume complete")
     }
 
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == REQUEST_CODE_FINISH_ON_RETURN) {
+            Handler(Looper.getMainLooper()).post {
+                finish()
+            }
+        }
+    }
+
     private fun setMazeRunnerAddress() {
         val context = MazeRacerApplication.applicationContext()
         val externalFilesDir = context.getExternalFilesDir(null)
@@ -128,6 +141,16 @@ class MainActivity : AppCompatActivity() {
         return jsonObject?.optString(key) ?: ""
     }
 
+    private fun startBugsnag() {
+        val config = Configuration.load(this).apply {
+            endpoints = EndpointConfiguration(
+                "http://$mazeAddress/session",
+                "http://$mazeAddress/notify",
+            )
+        }
+        Bugsnag.start(this, config)
+    }
+
     // Starts a thread to poll for Maze Runner actions to perform
     private fun startCommandRunner() {
         // Get the next maze runner command
@@ -135,7 +158,7 @@ class MainActivity : AppCompatActivity() {
         thread(start = true) {
             if (mazeAddress == null) setMazeRunnerAddress()
             checkNetwork()
-
+            startBugsnag()
             while (polling) {
                 Thread.sleep(1000)
                 try {
@@ -171,9 +194,15 @@ class MainActivity : AppCompatActivity() {
                                 polling = false
                                 runScenario(scenarioName, scenarioMetadata, endpointUrl)
                             }
+
                             "load_scenario" -> {
-                                loadScenario(scenarioName, scenarioMetadata, endpointUrl)
+                                scenario = loadScenario(scenarioName, scenarioMetadata, endpointUrl)
                             }
+
+                            "invoke" -> {
+                                scenario!!::class.java.getMethod(scenarioName).invoke(scenario)
+                            }
+
                             else -> throw IllegalArgumentException("Unknown action: $action")
                         }
                     }
@@ -188,7 +217,7 @@ class MainActivity : AppCompatActivity() {
     private fun runScenario(
         scenarioName: String,
         scenarioMetadata: String,
-        endpointUrl: String
+        endpointUrl: String,
     ) {
         if (scenario == null) {
             scenario = loadScenario(scenarioName, scenarioMetadata, endpointUrl)
@@ -217,7 +246,7 @@ class MainActivity : AppCompatActivity() {
                         "${urlConnection.responseMessage}):\n" +
                         "${"-".repeat(errorMessage.width)}\n" +
                         "$errorMessage\n" +
-                        "-".repeat(errorMessage.width)
+                        "-".repeat(errorMessage.width),
                 )
             } catch (e: Exception) {
                 log("Failed to retrieve error message from connection", e)
@@ -238,7 +267,7 @@ class MainActivity : AppCompatActivity() {
     private fun loadScenario(
         scenarioName: String,
         scenarioMetadata: String,
-        endpoint: String
+        endpoint: String,
     ): Scenario {
         log("loadScenario($scenarioName, $scenarioMetadata, $endpoint)")
         val apiKeyField = findViewById<EditText>(R.id.manualApiKey)
@@ -283,4 +312,8 @@ class MainActivity : AppCompatActivity() {
 
     private val String.width
         get() = lineSequence().fold(0) { maxWidth, line -> kotlin.math.max(maxWidth, line.length) }
+
+    companion object {
+        const val REQUEST_CODE_FINISH_ON_RETURN = 9090
+    }
 }

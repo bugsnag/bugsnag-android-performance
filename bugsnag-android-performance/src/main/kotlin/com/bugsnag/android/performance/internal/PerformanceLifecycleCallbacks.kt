@@ -2,30 +2,21 @@ package com.bugsnag.android.performance.internal
 
 import android.app.Activity
 import android.app.Application.ActivityLifecycleCallbacks
-import android.os.Message
+import android.os.Build
+import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.os.Bundle
-import android.os.Build
+import android.os.Message
 import com.bugsnag.android.performance.Logger
 import com.bugsnag.android.performance.SpanOptions
 import kotlin.math.max
 
 typealias InForegroundCallback = (inForeground: Boolean) -> Unit
 
-private const val MSG_SEND_BACKGROUND = 1
-
-/**
- * Same as `androidx.lifecycle.ProcessLifecycleOwner` and is used to avoid reporting
- * background / foreground changes when there is only 1 Activity being restarted for configuration
- * changes.
- */
-private const val BACKGROUND_TIMEOUT_MS = 700L
-
 class PerformanceLifecycleCallbacks internal constructor(
     private val spanTracker: SpanTracker,
     private val spanFactory: SpanFactory,
-    private val inForegroundCallback: InForegroundCallback
+    private val inForegroundCallback: InForegroundCallback,
 ) : ActivityLifecycleCallbacks, Handler.Callback {
 
     private val handler = Handler(Looper.getMainLooper(), this)
@@ -48,7 +39,7 @@ class PerformanceLifecycleCallbacks internal constructor(
      * The Span used to measure the start of the app from when the Application starts until the
      * first Activity resumes.
      */
-    private var appStartupSpan: SpanImpl? = null
+    private var appStartSpan: SpanImpl? = null
 
     internal var openLoadSpans: Boolean = false
 
@@ -58,6 +49,7 @@ class PerformanceLifecycleCallbacks internal constructor(
 
     override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            appStartIsForeground()
             startViewLoad(activity, savedInstanceState)
         }
     }
@@ -79,6 +71,7 @@ class PerformanceLifecycleCallbacks internal constructor(
     }
 
     override fun onActivityPreCreated(activity: Activity, savedInstanceState: Bundle?) {
+        appStartIsForeground()
         startViewLoad(activity, savedInstanceState)
         startViewLoadPhase(activity, ViewLoadPhase.CREATE)
     }
@@ -118,7 +111,7 @@ class PerformanceLifecycleCallbacks internal constructor(
             if (spanTracker.markSpanLeaked(activity)) {
                 Logger.w(
                     "${activity::class.java.name} appears to have leaked a ViewLoad Span. " +
-                        "This is probably because BugsnagPerformance.endViewLoad was not called."
+                        "This is probably because BugsnagPerformance.endViewLoad was not called.",
                 )
             }
         } finally {
@@ -133,7 +126,16 @@ class PerformanceLifecycleCallbacks internal constructor(
             MSG_SEND_BACKGROUND -> {
                 inForegroundCallback(false)
                 backgroundSent = true
-                appStartupSpan = null
+                appStartSpan = null
+            }
+
+            MSG_APP_CLASS_COMPLETE -> {
+                handler.sendEmptyMessageDelayed(MSG_DISCARD_APP_START, APP_START_TIMEOUT_MS)
+            }
+
+            MSG_DISCARD_APP_START -> {
+                // this means we timed out waiting for an Activity to be started
+                appStartSpan = null
             }
 
             else -> return false
@@ -143,8 +145,9 @@ class PerformanceLifecycleCallbacks internal constructor(
     }
 
     fun startAppLoadSpan(startType: String) {
-        if (appStartupSpan == null && instrumentAppStart) {
-            appStartupSpan = spanFactory.createAppStartSpan(startType)
+        if (appStartSpan == null && instrumentAppStart) {
+            appStartSpan = spanFactory.createAppStartSpan(startType)
+            handler.sendEmptyMessageDelayed(MSG_APP_CLASS_COMPLETE, 1)
         }
     }
 
@@ -158,10 +161,22 @@ class PerformanceLifecycleCallbacks internal constructor(
         }
     }
 
-    private fun maybeEndAppLoad() {
+    private fun maybeEndAppStartSpan() {
         if (instrumentAppStart) {
-            appStartupSpan?.end()
+            appStartSpan?.end()
         }
+
+        // we may have an appStartupSpan from before the configuration was in-place
+        appStartSpan = null
+    }
+
+    /**
+     * Called when it becomes clear that any pending AppStart is in the foreground, so we should
+     * avoid potentially discarding the AppStart span (and remove our background app-start detection).
+     */
+    private fun appStartIsForeground() {
+        handler.removeMessages(MSG_APP_CLASS_COMPLETE)
+        handler.removeMessages(MSG_DISCARD_APP_START)
     }
 
     private fun startViewLoad(activity: Activity, savedInstanceState: Bundle?) {
@@ -179,24 +194,23 @@ class PerformanceLifecycleCallbacks internal constructor(
     }
 
     private fun endViewLoad(activity: Activity) {
-        maybeEndAppLoad()
-
-        // we may have an appStartupSpan from before the configuration was in-place
-        appStartupSpan = null
-
         if (closeLoadSpans) {
             spanTracker.endSpan(activity)
         } else {
             spanTracker.markSpanAutomaticEnd(activity)
         }
+
+        maybeEndAppStartSpan()
     }
 
     private fun startViewLoadPhase(activity: Activity, phase: ViewLoadPhase) {
         val viewLoadSpan = spanTracker[activity]
         if (openLoadSpans && viewLoadSpan != null) {
             spanTracker.associate(activity, phase) {
-                spanFactory.createCustomSpan(spanNameForPhase(activity,phase),
-                    SpanOptions.DEFAULTS.within(viewLoadSpan)).apply {
+                spanFactory.createCustomSpan(
+                    spanNameForPhase(activity, phase),
+                    SpanOptions.DEFAULTS.within(viewLoadSpan),
+                ).apply {
                     setAttribute("bugsnag.span.category", "view_load_phase")
                     setAttribute("bugsnag.view.name", activity::class.java.simpleName)
                     setAttribute("bugsnag.phase", phase.phaseName)
@@ -215,4 +229,38 @@ class PerformanceLifecycleCallbacks internal constructor(
 
     override fun onActivityPaused(activity: Activity) = Unit
     override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) = Unit
+
+    private companion object {
+        private const val MSG_SEND_BACKGROUND = 1
+
+        /**
+         * Message ID sent directly after opening an AppStart span. This begins a second timeout
+         * tracking the time between the end of the `Application.onCreate` and the first
+         * `Activity.onCreate` (tracked by [MSG_DISCARD_APP_START]).
+         */
+        private const val MSG_APP_CLASS_COMPLETE = 2
+
+        /**
+         * Message ID sent delayed (after [APP_START_TIMEOUT_MS]) to force-discard any AppStart
+         * span still in-progress. This is used to avoid skewing metrics due to background starts
+         * triggered by things like broadcasts, service starts or content providers being accessed.
+         *
+         * This message is negated by any `Activity.onCreate` which will
+         * `removeMessages(MSG_DISCARD_APP_START)`.
+         */
+        private const val MSG_DISCARD_APP_START = 3
+
+        /**
+         * Same as `androidx.lifecycle.ProcessLifecycleOwner` and is used to avoid reporting
+         * background / foreground changes when there is only 1 Activity being restarted for configuration
+         * changes.
+         */
+        private const val BACKGROUND_TIMEOUT_MS = 700L
+
+        /**
+         * How long to wait between the Application class loading and the first Activity.onCreate before
+         * discarding the AppStart span (and assuming the app-start is for a Service or Broadcast).
+         */
+        private const val APP_START_TIMEOUT_MS = 1000L
+    }
 }

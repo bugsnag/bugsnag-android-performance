@@ -1,3 +1,21 @@
+## 1.6.0 (2023-06-13)
+
+### Enhancements
+
+* Each trace reported will include the current clock-time to allow the server-side to adjust device clocks 
+  [#126](https://github.com/bugsnag/bugsnag-android-performance/pull/126)
+
+### Bug fixes
+
+* `bugsnag-plugin-android-performance-okhttp` will now discard NetworkRequest spans when the request is cancelled or fails
+  [#123](https://github.com/bugsnag/bugsnag-android-performance/pull/123)
+* Default to using the GNSS clock (if available) to attempt to avoid problems with clocks which could lead to negative timestamps on Spans
+  [#124](https://github.com/bugsnag/bugsnag-android-performance/pull/124)
+* Map "CDMA - 1xRTT" network subtype to the expected "cdma2000_1xrtt" value
+  [#134](https://github.com/bugsnag/bugsnag-android-performance/pull/134)
+* Background AppStart spans (for broadcasts & services) are now discarded to avoid skewing AppStart/Cold metrics
+  [#135](https://github.com/bugsnag/bugsnag-android-performance/pull/135)
+
 ## 0.1.5 (2023-04-25)
 
 ### Bug fixes
@@ -6,7 +24,7 @@
   [#113](https://github.com/bugsnag/bugsnag-android-performance/pull/113)
 * ViewLoad spans should only be marked "first class" when there are no other ViewLoad spans in the SpanContext
   [#115](https://github.com/bugsnag/bugsnag-android-performance/pull/115)
-* The "first view" reported as part of AppStart spans is based on the first ViewLoad started rather than the first Actvity resumed
+* The "first view" reported as part of AppStart spans is based on the first ViewLoad started rather than the first Activity resumed
   [#119](https://github.com/bugsnag/bugsnag-android-performance/pull/119)
 * Fixed the reporting of cellular network subtypes (when the app has appropriate permissions)
   [#116](https://github.com/bugsnag/bugsnag-android-performance/pull/116)
