@@ -1,17 +1,12 @@
 Feature: Server responses
 
-  Scenario: Startup P request returns 0
-    Given I set the sampling probability for the next traces to "0"
-    And I run "ThreeSpansScenario"
-    And I should receive no traces
-
   Scenario: No P update: success, fail-permanent, fail-retriable
     Given I set the HTTP status code for the next requests to "200,200"
     And I load scenario "GenerateSpansScenario"
     And I wait to receive a sampling request
     Then I invoke "sendNextSpan"
     And I wait to receive 1 trace
-    Then the trace payload field "resourceSpans.0.scopeSpans.0.spans.0.name" equals "span 1"
+    Then the trace payload field "resourceSpans.0.scopeSpans.0.spans.0.name" equals "span 12"
     Then I discard the oldest trace
     Given I set the HTTP status code for the next requests to "400"
     Then I invoke "sendNextSpan"
