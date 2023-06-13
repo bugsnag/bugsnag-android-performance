@@ -68,15 +68,34 @@ class SpanFactory(
         return span
     }
 
-    fun createAppStartSpan(startType: String): SpanImpl =
-        createSpan(
+    fun createViewLoadPhaseSpan(
+        activity: Activity,
+        phase: ViewLoadPhase,
+        loadContext: SpanContext,
+    ): SpanImpl {
+        val span = createSpan(
+            "[ViewLoadPhase/${phase.phaseName}]${activity::class.java.simpleName}",
+            SpanKind.INTERNAL,
+            SpanCategory.VIEW_LOAD_PHASE,
+            SpanOptions.DEFAULTS.within(loadContext),
+        )
+
+        span.setAttribute("bugsnag.view.name", activity::class.java.simpleName)
+        span.setAttribute("bugsnag.phase", phase.phaseName)
+
+        return span
+    }
+
+    fun createAppStartSpan(startType: String): SpanImpl {
+        return createSpan(
             "[AppStart/$startType]",
             SpanKind.INTERNAL,
             SpanCategory.APP_START,
-            SpanOptions.DEFAULTS.within(null)
+            SpanOptions.DEFAULTS.within(null),
         ).apply {
             setAttribute("bugsnag.app_start.type", startType.lowercase())
         }
+    }
 
     private fun createSpan(
         name: String,
