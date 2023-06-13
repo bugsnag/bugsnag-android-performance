@@ -5,7 +5,7 @@ import java.util.concurrent.atomic.AtomicReference
 
 internal class DefaultAttributeSource : AttributeSource {
     internal var currentDefaultAttributes = AtomicReference(
-        DefaultAttributes(NetworkType.UNKNOWN, null, isInForeground())
+        DefaultAttributes(NetworkType.UNKNOWN, null, isInForeground()),
     )
 
     /**
@@ -46,5 +46,5 @@ internal class DefaultAttributeSource : AttributeSource {
 internal data class DefaultAttributes(
     val networkType: NetworkType,
     val networkSubType: String?,
-    val isInForeground: Boolean?
+    val isInForeground: Boolean?,
 )
