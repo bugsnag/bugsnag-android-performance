@@ -26,20 +26,7 @@ steps:
       queue: macos-12-arm
     command: scripts/run-sizer.sh
 
-  - label: ':android: Build and upload test fixture'
-    key: 'fixture'
-    timeout_in_minutes: 30
-    agents:
-      queue: macos-12-arm
-    artifact_paths:
-      - "build/fixture_url.txt"
-    commands:
-      - make test-fixture
-      - bundle install
-      - bundle exec upload-app --farm=bb --app=./build/test-fixture.apk --app-id-file=build/fixture_url.txt
-
   - label: ':bitbar: {{matrix}} tests'
-    depends_on: "fixture"
     timeout_in_minutes: 60
     matrix:
       - "ANDROID_9"
@@ -50,13 +37,15 @@ steps:
     plugins:
       artifacts#v1.9.0:
         download: "build/fixture_url.txt"
-        upload: "maze_output/failed/**/*"
+        upload:
+          - "./maze_output/failed/**/*"
+          - "./maze_output/passed/**/*"
       docker-compose#v4.8.0:
         pull: android-maze-runner
         run: android-maze-runner
         service-ports: true
         command:
-          - "--app=@build/fixture_url.txt"
+          - "--app=189198096"
           - "--farm=bb"
           - "--device={{matrix}}"
           - "--no-tunnel"
