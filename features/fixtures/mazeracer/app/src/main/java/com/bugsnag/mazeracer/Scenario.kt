@@ -1,15 +1,29 @@
 package com.bugsnag.mazeracer
 
-import android.content.Context
+import android.app.Activity
+import android.content.Intent
 import com.bugsnag.android.performance.PerformanceConfiguration
 
 abstract class Scenario(
     val config: PerformanceConfiguration,
     val scenarioMetadata: String,
 ) {
-    lateinit var context: Context
+    lateinit var context: Activity
 
     abstract fun startScenario()
+
+    /**
+     * Start the Activity specified by the given Intent, and then `finish()` the entire app
+     * once the given Activity closes (ie: wait until `intent` is "finished" before closing the
+     * MainActivity).
+     *
+     * This behaviour is useful in tests that need to flush auto-instrumented spans after the
+     * test is complete. The function causes the entire test fixture to be backgrounded which
+     * naturally triggers a batch flush (after any pending auto-instrumentation is completed).
+     */
+    fun startActivityAndFinish(intent: Intent) {
+        context.startActivityForResult(intent, MainActivity.REQUEST_CODE_FINISH_ON_RETURN)
+    }
 
     companion object Factory {
         fun load(

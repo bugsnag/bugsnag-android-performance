@@ -79,6 +79,16 @@ class MainActivity : AppCompatActivity() {
         log("MainActivity.onResume complete")
     }
 
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == REQUEST_CODE_FINISH_ON_RETURN) {
+            Handler(Looper.getMainLooper()).post {
+                finish()
+            }
+        }
+    }
+
     private fun setMazeRunnerAddress() {
         val context = MazeRacerApplication.applicationContext()
         val externalFilesDir = context.getExternalFilesDir(null)
@@ -192,6 +202,7 @@ class MainActivity : AppCompatActivity() {
                             "invoke" -> {
                                 scenario!!::class.java.getMethod(scenarioName).invoke(scenario)
                             }
+
                             else -> throw IllegalArgumentException("Unknown action: $action")
                         }
                     }
@@ -301,4 +312,8 @@ class MainActivity : AppCompatActivity() {
 
     private val String.width
         get() = lineSequence().fold(0) { maxWidth, line -> kotlin.math.max(maxWidth, line.length) }
+
+    companion object {
+        const val REQUEST_CODE_FINISH_ON_RETURN = 9090
+    }
 }
