@@ -171,3 +171,12 @@ Feature: Automatic creation of spans
               | bugsnag.span.first_class  | boolValue   | true                      |
       # this is required here to avoid interfering with other scenarios
       * I force stop the Android app
+
+    Scenario: ViewLoad spans can be safely leaked
+      Given I run "ViewLoadLeakScenario"
+      And I wait for 1 span
+      Then a span named "[ViewLoad/Activity]ActivityViewLoadActivity" contains the attributes:
+        | attribute               | type        | value                    |
+        | bugsnag.span.category   | stringValue | view_load                |
+        | bugsnag.view.type       | stringValue | activity                 |
+        | bugsnag.view.name       | stringValue | ActivityViewLoadActivity |

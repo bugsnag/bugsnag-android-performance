@@ -104,21 +104,19 @@ class PerformanceLifecycleCallbacks internal constructor(
             backgroundSent = false
             handler.sendEmptyMessageDelayed(MSG_SEND_BACKGROUND, BACKGROUND_TIMEOUT_MS)
         }
+
+        if (spanTracker.markSpanLeaked(activity)) {
+            Logger.w(
+                "${activity::class.java.name} appears to have leaked a ViewLoad Span. " +
+                        "This is probably because BugsnagPerformance.endViewLoad was not called.",
+            )
+        }
     }
 
     override fun onActivityDestroyed(activity: Activity) {
-        try {
-            if (spanTracker.markSpanLeaked(activity)) {
-                Logger.w(
-                    "${activity::class.java.name} appears to have leaked a ViewLoad Span. " +
-                        "This is probably because BugsnagPerformance.endViewLoad was not called.",
-                )
-            }
-        } finally {
-            // make sure we never drop below 0, this can happen if BugsnagPerformance.start was
-            // called *after* the first Activity was started
-            activityInstanceCount = max(0, activityInstanceCount - 1)
-        }
+        // make sure we never drop below 0, this can happen if BugsnagPerformance.start was
+        // called *after* the first Activity was started
+        activityInstanceCount = max(0, activityInstanceCount - 1)
     }
 
     override fun handleMessage(msg: Message): Boolean {

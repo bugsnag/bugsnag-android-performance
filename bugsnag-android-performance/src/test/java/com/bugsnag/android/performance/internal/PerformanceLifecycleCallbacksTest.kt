@@ -246,6 +246,7 @@ class PerformanceLifecycleCallbacksTest {
         assertEquals(3, spanProcessor.toList().size)
 
         // end view load span
+        callbacks.onActivityStopped(activity)
         callbacks.onActivityDestroyed(activity)
 
         val spans = spanProcessor.toList()

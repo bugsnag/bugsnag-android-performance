@@ -42,7 +42,7 @@ class ActivityViewLoadActivity : AppCompatActivity() {
 
         handler.postDelayed(
             {
-                if (autoInstrument != AutoInstrument.FULL) {
+                if (intent.getBooleanExtra(END_VIEW_LOAD_SPAN, false)) {
                     BugsnagPerformance.endViewLoadSpan(this)
                 }
 
@@ -64,10 +64,16 @@ class ActivityViewLoadActivity : AppCompatActivity() {
 
     companion object {
         const val AUTO_INSTRUMENT_EXTRA = "com.bugsnag.android.performance.extra.autoInstrument"
+        const val END_VIEW_LOAD_SPAN = "com.bugsnag.android.performance.extra.endViewLoadSpan"
 
-        fun intent(context: Context, autoInstrument: AutoInstrument): Intent {
+        fun intent(
+            context: Context,
+            autoInstrument: AutoInstrument,
+            endViewLoadSpan: Boolean = autoInstrument != AutoInstrument.FULL,
+        ): Intent {
             return Intent(context, ActivityViewLoadActivity::class.java)
                 .putExtra(AUTO_INSTRUMENT_EXTRA, autoInstrument.name)
+                .putExtra(END_VIEW_LOAD_SPAN, endViewLoadSpan)
         }
     }
 }
