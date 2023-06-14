@@ -23,7 +23,7 @@ x-common-environment: &common-environment
 services:
 
   android-maze-runner:
-    image: 855461928731.dkr.ecr.us-west-1.amazonaws.com/maze-runner:integration-v8-cli
+    image: 855461928731.dkr.ecr.us-west-1.amazonaws.com/maze-runner-releases:latest-v8-cli
     environment:
       <<: *common-environment
       BITBAR_USERNAME:
