@@ -174,7 +174,7 @@ Feature: Automatic creation of spans
 
     Scenario: ViewLoad spans can be safely leaked
       Given I run "ViewLoadLeakScenario"
-      And I wait for 1 span
+      And I wait to receive a trace
       Then a span named "[ViewLoad/Activity]ActivityViewLoadActivity" contains the attributes:
         | attribute               | type        | value                    |
         | bugsnag.span.category   | stringValue | view_load                |
