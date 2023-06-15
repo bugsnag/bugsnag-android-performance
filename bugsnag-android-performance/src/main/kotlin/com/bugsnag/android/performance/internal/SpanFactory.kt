@@ -123,5 +123,5 @@ class SpanFactory(
         return span
     }
 
-    private fun UUID.isValidTraceId() = mostSignificantBits != 0L && leastSignificantBits != 0L
+    private fun UUID.isValidTraceId() = mostSignificantBits != 0L || leastSignificantBits != 0L
 }
