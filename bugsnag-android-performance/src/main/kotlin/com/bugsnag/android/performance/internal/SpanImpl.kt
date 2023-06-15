@@ -67,13 +67,7 @@ class SpanImpl internal constructor(
 
     init {
         category.category?.let { attributes["bugsnag.span.category"] = it }
-
-        // Our "random" sampling value is actually derived from the traceId
-        val msw = traceId.mostSignificantBits ushr 1
-        samplingValue = when (msw) {
-            0L -> 0.0
-            else -> msw.toDouble() / Long.MAX_VALUE.toDouble()
-        }
+        samplingValue = samplingValueFor(traceId)
 
         // Starting a Span should cause it to become the current context
         if (makeContext) SpanContext.attach(this)
@@ -174,6 +168,14 @@ class SpanImpl internal constructor(
                 id = spanIdRandom.nextLong()
             } while (id == INVALID_ID)
             return id
+        }
+
+        // Our "random" sampling value is actually derived from the traceId
+        private fun samplingValueFor(traceId: UUID): Double {
+            return when (val msw = traceId.mostSignificantBits ushr 1) {
+                0L -> 0.0
+                else -> msw.toDouble() / Long.MAX_VALUE.toDouble()
+            }
         }
     }
 }
