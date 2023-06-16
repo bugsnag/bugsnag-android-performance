@@ -2,7 +2,6 @@
 <SmellBaseline>
   <ManuallySuppressedIssues></ManuallySuppressedIssues>
   <CurrentIssues>
-    <ID>MagicNumber:ActivityLoadInstrumentationScenario.kt$ActivityLoadInstrumentationScenario$5</ID>
     <ID>MagicNumber:AppBackgroundedScenario.kt$AppBackgroundedScenario$100</ID>
     <ID>MagicNumber:AppBackgroundedScenario.kt$AppBackgroundedScenario$120_000L</ID>
     <ID>MagicNumber:AppStartScenario.kt$AppStartScenario$1000L</ID>
@@ -19,6 +18,7 @@
     <ID>MagicNumber:DisabledReleaseStageScenario.kt$DisabledReleaseStageScenario$500L</ID>
     <ID>MagicNumber:MainActivity.kt$MainActivity$1000</ID>
     <ID>MagicNumber:MainActivity.kt$MainActivity$250</ID>
+    <ID>MagicNumber:MainActivity.kt$MainActivity$250L</ID>
     <ID>MagicNumber:ManualSpanScenario.kt$ManualSpanScenario$100L</ID>
     <ID>MagicNumber:MazeRacerAlarmReceiver.kt$MazeRacerAlarmReceiver$250L</ID>
     <ID>MagicNumber:MazeRacerApplication.kt$MazeRacerApplication$2000L</ID>
