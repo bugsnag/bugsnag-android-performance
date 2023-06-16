@@ -1,3 +1,10 @@
+## TBD
+
+### Enhancements
+
+* Report the `device.id` using to the same mechanism used by `bugsnag-android`
+  [#142](https://github.com/bugsnag/bugsnag-android-performance/pull/142)
+
 ## 1.6.0 (2023-06-13)
 
 ### Enhancements
