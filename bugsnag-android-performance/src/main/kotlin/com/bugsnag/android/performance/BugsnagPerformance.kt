@@ -91,6 +91,8 @@ object BugsnagPerformance {
         if (configuration.autoInstrumentAppStarts) {
             // mark the app as "starting" (if it isn't already)
             reportApplicationClassLoaded()
+        } else {
+            instrumentedAppState.activityCallbacks.discardAppStart()
         }
 
         val application = configuration.application

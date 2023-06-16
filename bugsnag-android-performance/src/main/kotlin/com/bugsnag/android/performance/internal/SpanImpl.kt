@@ -80,6 +80,16 @@ class SpanImpl internal constructor(
         }
     }
 
+    /**
+     * Deliberately discard this `SpanImpl`. This will mark the span as ended, but not record
+     * a valid end time. It will also (if required) detach the Span from the SpanContext
+     */
+    fun discard() {
+        if (END_TIME_UPDATER.compareAndSet(this, NO_END_TIME, DISCARDED)) {
+            if (makeContext) SpanContext.detach(this)
+        }
+    }
+
     override fun end() = end(SystemClock.elapsedRealtimeNanos())
 
     override fun isEnded() = endTime != NO_END_TIME
@@ -104,7 +114,6 @@ class SpanImpl internal constructor(
             }
         }
     }
-
 
     override fun toString(): String {
         return buildString {
@@ -159,6 +168,7 @@ class SpanImpl internal constructor(
         private const val INVALID_ID = 0L
 
         const val NO_END_TIME = -1L
+        const val DISCARDED = -2L
 
         private val spanIdRandom = Random(SecureRandom().nextLong())
 
