@@ -262,6 +262,7 @@ class MainActivity : AppCompatActivity() {
             config.endpoint = endpoint
             config.autoInstrumentAppStarts = false
             config.autoInstrumentActivities = AutoInstrument.OFF
+            config.logger = DebugLogger
         }
     }
 
