@@ -265,7 +265,7 @@ class PerformanceLifecycleCallbacks internal constructor(
          * Message ID used to check whether an Activity is finishing or has been finished at a
          * time we cannot otherwise detect (for example when running on <Q devices we have no
          * onActivityPostCreated hook). The [Message.obj] is expected to be the Activity to check,
-         * and if it is finished or finishing all of it's associated ViewLoad / ViewLoadPhase
+         * and if it is finished or finishing all of its associated ViewLoad / ViewLoadPhase
          * spans will be closed.
          */
         private const val MSG_CHECK_FINISHED = 4

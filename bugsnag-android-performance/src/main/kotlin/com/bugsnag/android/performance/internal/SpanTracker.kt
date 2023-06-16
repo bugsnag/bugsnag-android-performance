@@ -78,17 +78,10 @@ class SpanTracker {
         }
     }
 
-    fun removeAllAssociations(tag: Any?): Collection<SpanImpl> {
-        return lock.write {
-            val associatedSpans = backingStore.remove(tag)
-            associatedSpans?.values?.map { it.span } ?: emptyList<SpanImpl>()
-        }
-    }
-
     /**
      * Mark when a `Span` would have been ended automatically. *If* the associated `Span` is later
-     * marked as [leaked](markSpanLeaked) then its `endTime` will be set to [autoEndTime]. Otherwise
-     * this value will be discarded.
+     * marked as [leaked](markSpanLeaked) then its `endTime` will be set to the time that this
+     * function was last called. Otherwise this value will be discarded.
      */
     fun markSpanAutomaticEnd(token: Any, subToken: Enum<*>? = null) {
         backingStore[token]?.get(subToken)?.autoEndTime = SystemClock.elapsedRealtimeNanos()

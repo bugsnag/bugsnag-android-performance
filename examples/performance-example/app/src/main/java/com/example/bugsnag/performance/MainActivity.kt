@@ -7,7 +7,6 @@ import android.os.Looper
 import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
 import com.bugsnag.android.performance.BugsnagPerformance
-import kotlin.random.Random
 
 class MainActivity : AppCompatActivity() {
     private val network = ExampleNetworkCalls(this)
