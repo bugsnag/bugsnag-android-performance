@@ -83,6 +83,7 @@ class MainActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
 
         if (requestCode == REQUEST_CODE_FINISH_ON_RETURN) {
+            log("Activity requested shutdown of the test fixture - will call finish()")
             Handler(Looper.getMainLooper()).post {
                 finish()
             }
