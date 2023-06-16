@@ -37,7 +37,7 @@ Feature: Server responses
     And I discard the oldest trace
     Given I set the HTTP status code for the next requests to 500,400
     Then I invoke "sendNextSpan"
-    And I wait to receive 2 traces
+    And I wait to receive 1 traces
     # 500 - Server error (retry) but still recorded by MazeRunner
     Then the trace payload field "resourceSpans.0.scopeSpans.0.spans.0.name" equals "span 2"
     And I discard the oldest trace

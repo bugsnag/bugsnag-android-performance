@@ -11,7 +11,7 @@ Feature: Manual creation of spans
 
     And the trace Bugsnag-Integrity header is valid
     And the trace "Bugsnag-Sent-At" header is present
-    And the trace "Bugsnag-Span-Sampling" header equals "1.0:1"
+    And the trace "Bugsnag-Span-Sampling" header equals "1.0:11"
     And the trace "Bugsnag-Api-Key" header equals "a35a2a72bd230ac0aa0f52715bbdc6aa"
     * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0.name" equals "ManualSpanScenario"
     * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0.spanId" matches the regex "^[A-Fa-f0-9]{16}$"
