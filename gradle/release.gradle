@@ -1,7 +1,27 @@
+apply plugin: "maven-publish"
+apply plugin: "signing"
+
+String pomName = project.getProperties().get("pomName")
+archivesBaseName = project.getProperties().get("artefactId")
+version = "${project.VERSION_NAME}"
+group = "${project.GROUP}"
+
+task javadoc(type: Javadoc) {
+    description = "Generates javadocs, ignoring any doclint errors, and places the artefact in the root of the project"
+    source = android.sourceSets.main.java.srcDirs
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+    destinationDir = file("docs")
+    failOnError false
+}
+
+task sourceJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    classifier "sources"
+}
+
 // https://developer.android.com/studio/build/maven-publish-plugin
 project.afterEvaluate {
     publishing {
-
         repositories {
             maven {
                 if (VERSION_NAME.contains("SNAPSHOT")) {
