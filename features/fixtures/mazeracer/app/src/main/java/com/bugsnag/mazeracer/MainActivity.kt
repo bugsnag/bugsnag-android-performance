@@ -83,9 +83,8 @@ class MainActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
 
         if (requestCode == REQUEST_CODE_FINISH_ON_RETURN) {
-            Handler(Looper.getMainLooper()).post {
-                finish()
-            }
+            log("Activity requested shutdown of the test fixture - will call finish()")
+            Handler(Looper.getMainLooper()).postDelayed({ finish() }, 250L)
         }
     }
 
@@ -261,6 +260,7 @@ class MainActivity : AppCompatActivity() {
             config.endpoint = endpoint
             config.autoInstrumentAppStarts = false
             config.autoInstrumentActivities = AutoInstrument.OFF
+            config.logger = DebugLogger
         }
     }
 

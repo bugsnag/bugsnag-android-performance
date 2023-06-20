@@ -80,8 +80,8 @@ class SpanTracker {
 
     /**
      * Mark when a `Span` would have been ended automatically. *If* the associated `Span` is later
-     * marked as [leaked](markSpanLeaked) then its `endTime` will be set to [autoEndTime]. Otherwise
-     * this value will be discarded.
+     * marked as [leaked](markSpanLeaked) then its `endTime` will be set to the time that this
+     * function was last called. Otherwise this value will be discarded.
      */
     fun markSpanAutomaticEnd(token: Any, subToken: Enum<*>? = null) {
         backingStore[token]?.get(subToken)?.autoEndTime = SystemClock.elapsedRealtimeNanos()
@@ -124,10 +124,24 @@ class SpanTracker {
         }
     }
 
+    /**
+     * End all spans associated with the given `token` or any `subToken`s. This will attempt to
+     * use autoEndTimes where they are available, but will otherwise fallback to using [endTime]
+     * for each of the spans that get closed.
+     */
+    fun endAllSpans(token: Any, endTime: Long = SystemClock.elapsedRealtimeNanos()) {
+        lock.write {
+            val associatedSpans = backingStore[token]
+            associatedSpans?.values?.forEach { it.markLeaked(endTime) }
+
+            backingStore.remove(token)
+        }
+    }
+
     private class SpanBinding(val span: SpanImpl) {
         var autoEndTime: Long = NO_END_TIME
 
-        fun markLeaked(): Boolean {
+        fun markLeaked(fallbackEndTime: Long = SystemClock.elapsedRealtimeNanos()): Boolean {
             // this span has not leaked, ignore and return
             if (span.endTime != NO_END_TIME) {
                 return false
@@ -136,7 +150,7 @@ class SpanTracker {
             if (autoEndTime != NO_END_TIME) {
                 span.end(autoEndTime)
             } else {
-                span.end()
+                span.end(fallbackEndTime)
             }
 
             return true

@@ -67,13 +67,7 @@ class SpanImpl internal constructor(
 
     init {
         category.category?.let { attributes["bugsnag.span.category"] = it }
-
-        // Our "random" sampling value is actually derived from the traceId
-        val msw = traceId.mostSignificantBits ushr 1
-        samplingValue = when (msw) {
-            0L -> 0.0
-            else -> msw.toDouble() / Long.MAX_VALUE.toDouble()
-        }
+        samplingValue = samplingValueFor(traceId)
 
         // Starting a Span should cause it to become the current context
         if (makeContext) SpanContext.attach(this)
@@ -82,6 +76,16 @@ class SpanImpl internal constructor(
     override fun end(endTime: Long) {
         if (END_TIME_UPDATER.compareAndSet(this, NO_END_TIME, endTime)) {
             processor.onEnd(this)
+            if (makeContext) SpanContext.detach(this)
+        }
+    }
+
+    /**
+     * Deliberately discard this `SpanImpl`. This will mark the span as ended, but not record
+     * a valid end time. It will also (if required) detach the Span from the SpanContext
+     */
+    fun discard() {
+        if (END_TIME_UPDATER.compareAndSet(this, NO_END_TIME, DISCARDED)) {
             if (makeContext) SpanContext.detach(this)
         }
     }
@@ -110,7 +114,6 @@ class SpanImpl internal constructor(
             }
         }
     }
-
 
     override fun toString(): String {
         return buildString {
@@ -165,6 +168,7 @@ class SpanImpl internal constructor(
         private const val INVALID_ID = 0L
 
         const val NO_END_TIME = -1L
+        const val DISCARDED = -2L
 
         private val spanIdRandom = Random(SecureRandom().nextLong())
 
@@ -174,6 +178,14 @@ class SpanImpl internal constructor(
                 id = spanIdRandom.nextLong()
             } while (id == INVALID_ID)
             return id
+        }
+
+        // Our "random" sampling value is actually derived from the traceId
+        private fun samplingValueFor(traceId: UUID): Double {
+            return when (val msw = traceId.mostSignificantBits ushr 1) {
+                0L -> 0.0
+                else -> msw.toDouble() / Long.MAX_VALUE.toDouble()
+            }
         }
     }
 }
