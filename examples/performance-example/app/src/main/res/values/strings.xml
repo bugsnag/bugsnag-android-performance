@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Performance Example</string>
+    <string name="close">Close</string>
 </resources>
