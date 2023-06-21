@@ -32,6 +32,16 @@ class FragmentActivityLifecycleCallbacks(
         spanTracker.endSpan(f)
     }
 
+    override fun onFragmentStopped(fm: FragmentManager, f: Fragment) {
+        // discard any remaining Fragment span (avoiding any leaks)
+        spanTracker.removeAssociation(f)?.discard()
+    }
+
+    override fun onFragmentDestroyed(fm: FragmentManager, f: Fragment) {
+        // discard any remaining Fragment span (avoiding any leaks)
+        spanTracker.removeAssociation(f)?.discard()
+    }
+
     override fun onActivityStarted(activity: Activity) = Unit
     override fun onActivityResumed(activity: Activity) = Unit
     override fun onActivityPaused(activity: Activity) = Unit
