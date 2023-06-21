@@ -10,7 +10,7 @@ class InstrumentedAppState {
     val spanTracker = SpanTracker()
 
     val spanFactory = SpanFactory(BugsnagPerformance.tracer, defaultAttributeSource)
-    val activityCallbacks = createLifecycleCallbacks()
+    val lifecycleCallbacks = createLifecycleCallbacks()
 
     lateinit var app: Application
         private set
@@ -20,7 +20,7 @@ class InstrumentedAppState {
 
         configureLifecycleCallbacks(configuration)
 
-        app.registerActivityLifecycleCallbacks(activityCallbacks)
+        app.registerActivityLifecycleCallbacks(lifecycleCallbacks)
         app.registerComponentCallbacks(PerformanceComponentCallbacks(BugsnagPerformance.tracer))
     }
 
@@ -33,10 +33,27 @@ class InstrumentedAppState {
     }
 
     private fun configureLifecycleCallbacks(configuration: ImmutableConfig) {
-        activityCallbacks.apply {
+        lifecycleCallbacks.apply {
             openLoadSpans = configuration.autoInstrumentActivities != AutoInstrument.OFF
             closeLoadSpans = configuration.autoInstrumentActivities == AutoInstrument.FULL
             instrumentAppStart = configuration.autoInstrumentAppStarts
         }
+    }
+
+    fun startAppStartSpan(startType: String) = lifecycleCallbacks.startAppStartSpan(startType)
+
+    fun startAppStartPhase(phase: AppStartPhase) = lifecycleCallbacks.startAppStartPhase(phase)
+
+    fun markBugsnagPerformanceStart() {
+        spanTracker.endSpan(applicationToken, AppStartPhase.FRAMEWORK)
+        startAppStartSpan("Cold")
+    }
+
+    companion object {
+        /**
+         * The token used to track the spans measuring the start of the app from when the
+         * Application starts until the first Activity resumes.
+         */
+        val applicationToken = Any()
     }
 }
