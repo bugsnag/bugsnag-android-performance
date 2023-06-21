@@ -132,7 +132,7 @@ object BugsnagPerformance {
         val workerTasks = ArrayList<Task>()
 
         if (configuration.isReleaseStageEnabled) {
-            val sampler = ProbabilitySampler(configuration.samplingProbability)
+            val sampler = ProbabilitySampler(1.0)
 
             val samplerTask = SamplerTask(
                 delivery,

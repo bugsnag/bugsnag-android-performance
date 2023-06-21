@@ -31,7 +31,6 @@ class ResourceAttributesTest {
             setOf("production"),
             321L,
             "6.5.4",
-            1.0,
             NoopLogger,
         )
 
@@ -65,7 +64,6 @@ class ResourceAttributesTest {
             setOf("production"),
             123L,
             "5.4.3",
-            1.0,
             NoopLogger,
         )
 
