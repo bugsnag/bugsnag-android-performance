@@ -15,4 +15,4 @@ echo Bumping the version number to $VERSION
 sed -i '' "s/VERSION_NAME=.*/VERSION_NAME=$VERSION/" gradle.properties
 sed -i '' "s/const val VERSION: String = .*/const val VERSION: String = \"$VERSION\"/" bugsnag-android-performance/src/main/kotlin/com/bugsnag/android/performance/BugsnagPerformance.kt
 sed -i '' "s/bugsnag-android-performance:.*\"/bugsnag-android-performance:v$VERSION\"/" examples/performance-example/app/build.gradle
-sed -i '' "s/## TBD/## $VERSION ($(shell date '+%Y-%m-%d'))/" CHANGELOG.md
+sed -i '' "s/## TBD/## $VERSION ($(date '+%Y-%m-%d'))/" CHANGELOG.md
