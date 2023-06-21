@@ -1,7 +1,14 @@
+apply plugin: "maven-publish"
+apply plugin: "signing"
+
+String pomName = project.getProperties().get("pomName")
+archivesBaseName = project.getProperties().get("artefactId")
+version = "${project.VERSION_NAME}"
+group = "${project.GROUP}"
+
 // https://developer.android.com/studio/build/maven-publish-plugin
 project.afterEvaluate {
     publishing {
-
         repositories {
             maven {
                 if (VERSION_NAME.contains("SNAPSHOT")) {
@@ -34,6 +41,12 @@ project.afterEvaluate {
                             distribution = project.POM_LICENCE_DIST
                         }
                     }
+                    developers {
+                        developer {
+                            id = project.POM_DEVELOPER_ID
+                            name = project.POM_DEVELOPER_NAME
+                        }
+                    }
                     scm {
                         connection = project.POM_SCM_CONNECTION
                         developerConnection = project.POM_SCM_DEV_CONNECTION
@@ -42,5 +55,9 @@ project.afterEvaluate {
                 }
             }
         }
+    }
+
+    signing {
+        sign publishing.publications
     }
 }

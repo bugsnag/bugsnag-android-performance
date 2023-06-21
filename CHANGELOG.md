@@ -10,7 +10,7 @@
 * Activities that call finish() from onCreate() will no longer leak ViewLoad spans
   [#144](https://github.com/bugsnag/bugsnag-android-performance/pull/144)
 
-## 1.6.0 (2023-06-13)
+## 0.1.6 (2023-06-13)
 
 ### Enhancements
 
