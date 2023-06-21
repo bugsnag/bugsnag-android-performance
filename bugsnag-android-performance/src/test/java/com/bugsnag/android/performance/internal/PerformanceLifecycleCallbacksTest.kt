@@ -99,8 +99,6 @@ class PerformanceLifecycleCallbacksTest {
         SystemClock.setCurrentTimeMillis(300L)
         callbacks.onActivityPaused(activity)
         callbacks.onActivityStopped(activity)
-        SystemClock.setCurrentTimeMillis(400L)
-        callbacks.onActivityDestroyed(activity)
 
         val spans = spanProcessor.toList()
         assertEquals(1, spans.size)
@@ -109,6 +107,40 @@ class PerformanceLifecycleCallbacksTest {
         assertEquals("[ViewLoad/Activity]Activity", span.name)
         assertEquals(100_000_000L, span.startTime)
         assertEquals(200_000_000L, span.endTime)
+        assertEquals(SpanKind.INTERNAL, span.kind)
+        assertTrue(span.isEnded())
+    }
+
+    @Test
+    fun startOnlyActivityTrackingWithLeak_CreateAndDestroy() {
+        // this is actually the default initial value for Robolectric, but we set it manually
+        // just as a form of documentation
+        SystemClock.setCurrentTimeMillis(100L)
+
+        val callbacks = PerformanceLifecycleCallbacks(
+            spanTracker = spanTracker,
+            spanFactory = spanFactory,
+            inForegroundCallback = {},
+        ).apply {
+            openLoadSpans = true
+            closeLoadSpans = false
+            instrumentAppStart = false
+        }
+
+        callbacks.onActivityCreated(activity, null)
+        assertEquals(0, spanProcessor.toList().size)
+
+        // the Activity has called finish() from onCreate
+        SystemClock.setCurrentTimeMillis(300L)
+        callbacks.onActivityDestroyed(activity)
+
+        val spans = spanProcessor.toList()
+        assertEquals(1, spans.size)
+
+        val span = spans.first()
+        assertEquals("[ViewLoad/Activity]Activity", span.name)
+        assertEquals(100_000_000L, span.startTime)
+        assertEquals(300_000_000L, span.endTime)
         assertEquals(SpanKind.INTERNAL, span.kind)
         assertTrue(span.isEnded())
     }
@@ -245,8 +277,8 @@ class PerformanceLifecycleCallbacksTest {
         // the parent view load span is still open
         assertEquals(3, spanProcessor.toList().size)
 
-        // end view load span
-        callbacks.onActivityDestroyed(activity)
+        // end view load span (using the leak detection)
+        callbacks.onActivityStopped(activity)
 
         val spans = spanProcessor.toList()
         assertEquals(4, spans.size)

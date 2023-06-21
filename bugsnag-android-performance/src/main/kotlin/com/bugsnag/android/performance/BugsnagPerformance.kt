@@ -11,6 +11,7 @@ import com.bugsnag.android.performance.internal.DiscardingSampler
 import com.bugsnag.android.performance.internal.HttpDelivery
 import com.bugsnag.android.performance.internal.ImmutableConfig
 import com.bugsnag.android.performance.internal.InstrumentedAppState
+import com.bugsnag.android.performance.internal.LoadDeviceId
 import com.bugsnag.android.performance.internal.Module
 import com.bugsnag.android.performance.internal.Persistence
 import com.bugsnag.android.performance.internal.ProbabilitySampler
@@ -31,7 +32,7 @@ import java.net.URL
  * @see [start]
  */
 object BugsnagPerformance {
-    const val VERSION: String = "1.6.0"
+    const val VERSION: String = "0.1.7"
 
     internal val tracer = Tracer()
 
@@ -90,6 +91,8 @@ object BugsnagPerformance {
         if (configuration.autoInstrumentAppStarts) {
             // mark the app as "starting" (if it isn't already)
             reportApplicationClassLoaded()
+        } else {
+            instrumentedAppState.activityCallbacks.discardAppStart()
         }
 
         val application = configuration.application
@@ -145,10 +148,16 @@ object BugsnagPerformance {
             tracer.sampler = DiscardingSampler
         }
 
-        workerTasks.add(SendBatchTask(delivery, tracer, createResourceAttributes(configuration)))
+        val resourceAttributes = createResourceAttributes(configuration)
+        workerTasks.add(SendBatchTask(delivery, tracer, resourceAttributes))
         workerTasks.add(RetryDeliveryTask(persistence.retryQueue, httpDelivery, connectivity))
 
-        val bsgWorker = Worker(workerTasks)
+        val bsgWorker = Worker(
+            startupTasks = listOf(
+                LoadDeviceId(application, resourceAttributes),
+            ),
+            tasks = workerTasks,
+        )
 
         // register the Worker with the components that depend on it
         tracer.worker = bsgWorker

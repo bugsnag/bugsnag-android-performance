@@ -1,4 +1,16 @@
-## 1.6.0 (2023-06-13)
+## 0.1.7 (2023-06-21)
+
+### Enhancements
+
+* Report the `device.id` using to the same mechanism used by `bugsnag-android`
+  [#142](https://github.com/bugsnag/bugsnag-android-performance/pull/142)
+
+### Bug fixes
+
+* Activities that call finish() from onCreate() will no longer leak ViewLoad spans
+  [#144](https://github.com/bugsnag/bugsnag-android-performance/pull/144)
+
+## 0.1.6 (2023-06-13)
 
 ### Enhancements
 

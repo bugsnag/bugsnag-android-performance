@@ -31,10 +31,16 @@ internal abstract class AbstractTask : Task {
 }
 
 internal class Worker(
-    private val tasks: List<Task>
+    /**
+     * A list of `Runnable`s that need to be run (once each) before the worker tasks are run.
+     * These are typically IO related startup tasks that need to be completed before any spans
+     * are actually sent.
+     */
+    startupTasks: List<Runnable>,
+    private val tasks: List<Task>,
 ) : Runnable {
 
-    constructor(vararg tasks: Task) : this(tasks.toList())
+    private var startupTasks: List<Runnable>? = startupTasks
 
     private val lock = ReentrantLock(false)
     private val wakeWorker = lock.newCondition()
@@ -81,6 +87,8 @@ internal class Worker(
     }
 
     override fun run() {
+        runStartupTasks()
+
         attachTasks()
         try {
             while (running) {
@@ -93,6 +101,13 @@ internal class Worker(
         } finally {
             detachWorkers()
         }
+    }
+
+    private fun runStartupTasks() {
+        startupTasks?.forEach { it.run() }
+
+        // release the startup tasks so we don't hog the memory for ever
+        startupTasks = null
     }
 
     private fun attachTasks() {
@@ -146,7 +161,7 @@ internal class Worker(
             if (!wakeIsPending) {
                 try {
                     wakeWorker.await(InternalDebug.workerSleepMs, TimeUnit.MILLISECONDS)
-                } catch(ie: InterruptedException) {
+                } catch (ie: InterruptedException) {
                     // ignore these, we treat interrupts as wake-ups
                 }
             }

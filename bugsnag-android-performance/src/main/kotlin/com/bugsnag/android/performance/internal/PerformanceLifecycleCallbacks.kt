@@ -8,7 +8,6 @@ import android.os.Handler
 import android.os.Looper
 import android.os.Message
 import com.bugsnag.android.performance.Logger
-import com.bugsnag.android.performance.SpanOptions
 import kotlin.math.max
 
 typealias InForegroundCallback = (inForeground: Boolean) -> Unit
@@ -77,10 +76,12 @@ class PerformanceLifecycleCallbacks internal constructor(
     }
 
     override fun onActivityPreStarted(activity: Activity) {
+        endViewLoadPhase(activity, ViewLoadPhase.CREATE)
         startViewLoadPhase(activity, ViewLoadPhase.START)
     }
 
     override fun onActivityPreResumed(activity: Activity) {
+        endViewLoadPhase(activity, ViewLoadPhase.START)
         startViewLoadPhase(activity, ViewLoadPhase.RESUME)
     }
 
@@ -104,39 +105,36 @@ class PerformanceLifecycleCallbacks internal constructor(
             backgroundSent = false
             handler.sendEmptyMessageDelayed(MSG_SEND_BACKGROUND, BACKGROUND_TIMEOUT_MS)
         }
+
+        handleViewLoadLeak(activity)
     }
 
     override fun onActivityDestroyed(activity: Activity) {
-        try {
-            if (spanTracker.markSpanLeaked(activity)) {
-                Logger.w(
-                    "${activity::class.java.name} appears to have leaked a ViewLoad Span. " +
+        // make sure we never drop below 0, this can happen if BugsnagPerformance.start was
+        // called *after* the first Activity was started
+        activityInstanceCount = max(0, activityInstanceCount - 1)
+
+        // while leak detection usually triggers in onActivityStopped, if an Activity calls finish()
+        // from it's onCreate method then it is never started (and so never gets stopped), we handle
+        // those cases from here
+        handleViewLoadLeak(activity)
+    }
+
+    private fun handleViewLoadLeak(activity: Activity) {
+        if (spanTracker.markSpanLeaked(activity)) {
+            Logger.w(
+                "${activity::class.java.name} appears to have leaked a ViewLoad Span. " +
                         "This is probably because BugsnagPerformance.endViewLoad was not called.",
-                )
-            }
-        } finally {
-            // make sure we never drop below 0, this can happen if BugsnagPerformance.start was
-            // called *after* the first Activity was started
-            activityInstanceCount = max(0, activityInstanceCount - 1)
+            )
         }
     }
 
     override fun handleMessage(msg: Message): Boolean {
         when (msg.what) {
-            MSG_SEND_BACKGROUND -> {
-                inForegroundCallback(false)
-                backgroundSent = true
-                appStartSpan = null
-            }
-
-            MSG_APP_CLASS_COMPLETE -> {
-                handler.sendEmptyMessageDelayed(MSG_DISCARD_APP_START, APP_START_TIMEOUT_MS)
-            }
-
-            MSG_DISCARD_APP_START -> {
-                // this means we timed out waiting for an Activity to be started
-                appStartSpan = null
-            }
+            MSG_SEND_BACKGROUND -> sendBackgroundCallback()
+            MSG_APP_CLASS_COMPLETE -> onApplicationPostCreated()
+            MSG_CHECK_FINISHED -> (msg.obj as? Activity)?.let { checkActivityFinished(it) }
+            MSG_DISCARD_APP_START -> discardAppStart()
 
             else -> return false
         }
@@ -144,11 +142,32 @@ class PerformanceLifecycleCallbacks internal constructor(
         return true
     }
 
+    private fun checkActivityFinished(activity: Activity) {
+        if (activity.isFinishing) {
+            endViewLoad(activity)
+        }
+    }
+
+    private fun onApplicationPostCreated() {
+        handler.sendEmptyMessageDelayed(MSG_DISCARD_APP_START, APP_START_TIMEOUT_MS)
+    }
+
+    private fun sendBackgroundCallback() {
+        inForegroundCallback(false)
+        backgroundSent = true
+        discardAppStart()
+    }
+
     fun startAppLoadSpan(startType: String) {
         if (appStartSpan == null && instrumentAppStart) {
             appStartSpan = spanFactory.createAppStartSpan(startType)
             handler.sendEmptyMessageDelayed(MSG_APP_CLASS_COMPLETE, 1)
         }
+    }
+
+    fun discardAppStart() {
+        appStartSpan?.discard()
+        appStartSpan = null
     }
 
     private fun maybeStartAppLoad(savedInstanceState: Bundle?) {
@@ -187,6 +206,8 @@ class PerformanceLifecycleCallbacks internal constructor(
                 spanTracker.associate(activity) {
                     spanFactory.createViewLoadSpan(activity)
                 }
+
+                handler.sendMessage(handler.obtainMessage(MSG_CHECK_FINISHED, activity))
             }
         } finally {
             activityInstanceCount++
@@ -195,7 +216,8 @@ class PerformanceLifecycleCallbacks internal constructor(
 
     private fun endViewLoad(activity: Activity) {
         if (closeLoadSpans) {
-            spanTracker.endSpan(activity)
+            // close any pending spans associated with the Activity
+            spanTracker.endAllSpans(activity)
         } else {
             spanTracker.markSpanAutomaticEnd(activity)
         }
@@ -207,24 +229,13 @@ class PerformanceLifecycleCallbacks internal constructor(
         val viewLoadSpan = spanTracker[activity]
         if (openLoadSpans && viewLoadSpan != null) {
             spanTracker.associate(activity, phase) {
-                spanFactory.createCustomSpan(
-                    spanNameForPhase(activity, phase),
-                    SpanOptions.DEFAULTS.within(viewLoadSpan),
-                ).apply {
-                    setAttribute("bugsnag.span.category", "view_load_phase")
-                    setAttribute("bugsnag.view.name", activity::class.java.simpleName)
-                    setAttribute("bugsnag.phase", phase.phaseName)
-                }
+                spanFactory.createViewLoadPhaseSpan(activity, phase, viewLoadSpan)
             }
         }
     }
 
     private fun endViewLoadPhase(activity: Activity, phase: ViewLoadPhase) {
         spanTracker.endSpan(activity, phase)
-    }
-
-    private fun spanNameForPhase(activity: Activity, phase: ViewLoadPhase): String {
-        return "[ViewLoadPhase/${phase.phaseName}]${activity::class.java.simpleName}"
     }
 
     override fun onActivityPaused(activity: Activity) = Unit
@@ -249,6 +260,15 @@ class PerformanceLifecycleCallbacks internal constructor(
          * `removeMessages(MSG_DISCARD_APP_START)`.
          */
         private const val MSG_DISCARD_APP_START = 3
+
+        /**
+         * Message ID used to check whether an Activity is finishing or has been finished at a
+         * time we cannot otherwise detect (for example when running on <Q devices we have no
+         * onActivityPostCreated hook). The [Message.obj] is expected to be the Activity to check,
+         * and if it is finished or finishing all of its associated ViewLoad / ViewLoadPhase
+         * spans will be closed.
+         */
+        private const val MSG_CHECK_FINISHED = 4
 
         /**
          * Same as `androidx.lifecycle.ProcessLifecycleOwner` and is used to avoid reporting
