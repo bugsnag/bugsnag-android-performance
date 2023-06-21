@@ -5,6 +5,11 @@
 * *Breaking change*: removed the `samplingProbability` configuration option
   [#149](https://github.com/bugsnag/bugsnag-android-performance/pull/149)
 
+### Bug fixes
+
+* More reliably report the response Content-Length of HTTP requests
+  [#150](https://github.com/bugsnag/bugsnag-android-performance/pull/150)
+
 ## 0.1.7 (2023-06-21)
 
 ### Enhancements

@@ -9,6 +9,7 @@ import okhttp3.Call
 import okhttp3.EventListener
 import okhttp3.Protocol
 import okhttp3.Response
+import okhttp3.internal.headersContentLength
 import java.io.IOException
 import java.util.concurrent.ConcurrentHashMap
 
@@ -42,8 +43,8 @@ class BugsnagPerformanceOkhttp : EventListener() {
     override fun responseHeadersEnd(call: Call, response: Response) {
         val span = spans[call] ?: return
         NetworkRequestAttributes.setResponseCode(span, response.code)
-        val contentLength = response.body?.contentLength()
-        if (contentLength != null) {
+        val contentLength = response.headersContentLength()
+        if (contentLength != -1L) {
             NetworkRequestAttributes.setResponseContentLength(span, contentLength)
         }
         NetworkRequestAttributes.setHttpFlavor(
@@ -56,6 +57,16 @@ class BugsnagPerformanceOkhttp : EventListener() {
                 else -> "unknown"
             },
         )
+    }
+
+    override fun requestBodyEnd(call: Call, byteCount: Long) {
+        val span = spans[call] ?: return
+
+        // we rewrite the http.response_content_length attribute here, since this byteCount
+        // will be more reliable than the Content-Length header
+        if (byteCount != -1L) {
+            NetworkRequestAttributes.setResponseContentLength(span, byteCount)
+        }
     }
 
     override fun callEnd(call: Call) {
