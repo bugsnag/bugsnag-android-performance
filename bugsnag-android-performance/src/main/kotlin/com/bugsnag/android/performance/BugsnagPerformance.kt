@@ -6,6 +6,7 @@ import android.content.Context
 import android.net.Uri
 import android.os.SystemClock
 import com.bugsnag.android.performance.BugsnagPerformance.start
+import com.bugsnag.android.performance.internal.AppStartPhase
 import com.bugsnag.android.performance.internal.Connectivity
 import com.bugsnag.android.performance.internal.DiscardingSampler
 import com.bugsnag.android.performance.internal.HttpDelivery
@@ -90,9 +91,11 @@ object BugsnagPerformance {
 
         if (configuration.autoInstrumentAppStarts) {
             // mark the app as "starting" (if it isn't already)
-            reportApplicationClassLoaded()
+            synchronized(this) {
+                instrumentedAppState.markBugsnagPerformanceStart()
+            }
         } else {
-            instrumentedAppState.activityCallbacks.discardAppStart()
+            instrumentedAppState.lifecycleCallbacks.discardAppStart()
         }
 
         val application = configuration.application
@@ -281,7 +284,8 @@ object BugsnagPerformance {
     @JvmStatic
     fun reportApplicationClassLoaded() {
         synchronized(this) {
-            instrumentedAppState.activityCallbacks.startAppLoadSpan("Cold")
+            instrumentedAppState.startAppStartSpan("Cold")
+            instrumentedAppState.startAppStartPhase(AppStartPhase.FRAMEWORK)
         }
     }
 }

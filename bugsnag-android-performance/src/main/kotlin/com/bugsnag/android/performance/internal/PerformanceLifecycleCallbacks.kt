@@ -10,6 +10,7 @@ import android.os.Message
 import android.os.SystemClock
 import com.bugsnag.android.performance.BugsnagPerformance
 import com.bugsnag.android.performance.Logger
+import com.bugsnag.android.performance.internal.InstrumentedAppState.Companion.applicationToken
 import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.SpanOptions
 import kotlin.math.max
@@ -37,12 +38,6 @@ class PerformanceLifecycleCallbacks internal constructor(
     private var startedActivityCount = 0
 
     private var backgroundSent = true
-
-    /**
-     * The Span used to measure the start of the app from when the Application starts until the
-     * first Activity resumes.
-     */
-    private var appStartSpan: SpanImpl? = null
 
     internal var openLoadSpans: Boolean = false
 
@@ -153,6 +148,7 @@ class PerformanceLifecycleCallbacks internal constructor(
     }
 
     private fun onApplicationPostCreated() {
+        spanTracker.endSpan(applicationToken, AppStartPhase.FRAMEWORK)
         handler.sendEmptyMessageDelayed(MSG_DISCARD_APP_START, APP_START_TIMEOUT_MS)
     }
 
@@ -162,35 +158,48 @@ class PerformanceLifecycleCallbacks internal constructor(
         discardAppStart()
     }
 
-    fun startAppLoadSpan(startType: String) {
-        if (appStartSpan == null && instrumentAppStart) {
-            appStartSpan = spanFactory.createAppStartSpan(startType)
-            handler.sendEmptyMessageDelayed(MSG_APP_CLASS_COMPLETE, 1)
+    fun startAppStartSpan(startType: String) {
+        if (spanTracker[applicationToken] == null && instrumentAppStart) {
+            spanTracker.associate(applicationToken) {
+                spanFactory.createAppStartSpan(startType)
+            }
+
+            handler.sendMessageAtFrontOfQueue(handler.obtainMessage(MSG_APP_CLASS_COMPLETE))
+        }
+    }
+
+    fun startAppStartPhase(appStartPhase: AppStartPhase) {
+        val appStartSpan = spanTracker[applicationToken]
+
+        if (appStartSpan != null && instrumentAppStart) {
+            spanTracker.associate(applicationToken, appStartPhase) {
+                spanFactory.createAppStartPhaseSpan(appStartPhase, appStartSpan)
+            }
         }
     }
 
     fun discardAppStart() {
-        appStartSpan?.discard()
-        appStartSpan = null
+        // we discard all spans related to AppStart
+        spanTracker.removeAllAssociations(applicationToken).forEach { it.discard() }
     }
 
     private fun maybeStartAppLoad(savedInstanceState: Bundle?) {
         if (activityInstanceCount == 0) {
             if (savedInstanceState == null) {
-                startAppLoadSpan("Warm")
+                startAppStartSpan("Warm")
             } else {
-                startAppLoadSpan("Hot")
+                startAppStartSpan("Hot")
             }
         }
     }
 
     private fun maybeEndAppStartSpan(endTime: Long) {
         if (instrumentAppStart) {
-            appStartSpan?.end(endTime)
+            spanTracker.endAllSpans(applicationToken, endTime)
         }
 
         // we may have an appStartupSpan from before the configuration was in-place
-        appStartSpan = null
+        spanTracker.removeAssociation(applicationToken)
     }
 
     /**
