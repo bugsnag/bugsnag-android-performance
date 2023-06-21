@@ -10,9 +10,9 @@ import android.os.Message
 import android.os.SystemClock
 import com.bugsnag.android.performance.BugsnagPerformance
 import com.bugsnag.android.performance.Logger
-import com.bugsnag.android.performance.internal.InstrumentedAppState.Companion.applicationToken
 import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.SpanOptions
+import com.bugsnag.android.performance.internal.InstrumentedAppState.Companion.applicationToken
 import kotlin.math.max
 
 typealias InForegroundCallback = (inForeground: Boolean) -> Unit
@@ -227,7 +227,7 @@ class PerformanceLifecycleCallbacks internal constructor(
         val span = spanTracker.associate(activity) {
             // if this is still part of the AppStart span, then the first ViewLoad to end should
             // also end the AppStart span
-            if (appStartSpan != null) {
+            if (spanTracker[applicationToken] != null) {
                 spanFactory.createViewLoadSpan(activity, spanOptions) { span ->
                     // we end the AppStart span at the same timestamp as the ViewLoad span ended
                     maybeEndAppStartSpan(

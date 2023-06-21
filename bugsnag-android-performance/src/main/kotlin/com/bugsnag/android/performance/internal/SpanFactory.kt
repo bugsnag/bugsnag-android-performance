@@ -138,12 +138,17 @@ class SpanFactory(
         return span
     }
 
-    fun createAppStartPhaseSpan(phase: AppStartPhase, appStartContext: SpanContext): SpanImpl {
+    fun createAppStartPhaseSpan(
+        phase: AppStartPhase,
+        appStartContext: SpanContext,
+        spanProcessor: SpanProcessor = this.spanProcessor,
+    ): SpanImpl {
         val span = createSpan(
             "[AppStartPhase/${phase.phaseName}]",
             SpanKind.INTERNAL,
             SpanCategory.APP_START_PHASE,
-            SpanOptions.DEFAULTS.within(appStartContext)
+            SpanOptions.DEFAULTS.within(appStartContext),
+            spanProcessor,
         )
 
         span.setAttribute("bugsnag.phase", "FrameworkLoad")
