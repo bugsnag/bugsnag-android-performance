@@ -1,5 +1,6 @@
 package com.bugsnag.mazeracer.scenarios
 
+import android.util.Log
 import com.bugsnag.android.performance.BugsnagPerformance
 import com.bugsnag.android.performance.PerformanceConfiguration
 import com.bugsnag.android.performance.internal.InternalDebug
@@ -25,12 +26,13 @@ class OkhttpSpanScenario(
                 .eventListenerFactory(BugsnagPerformanceOkhttp.EventListenerFactory)
                 .build()
             val request = Request.Builder()
-                .url(scenarioMetadata.takeUnless { it.isBlank() } ?: "https://google.com?test=true")
+                .url(scenarioMetadata.takeUnless { it.isBlank() } ?: "https://google.com/?test=true")
                 .build()
 
             client.newCall(request).execute().use { response ->
                 // Consume and discard the response body.
-                response.body?.source()?.readByteString()
+                val size = response.body?.byteString()?.size?.toString() ?: "no"
+                Log.i("OkhttpSpanScenario", "Read $size bytes from ${request.url}")
             }
         }
         Thread.sleep(1000L)
