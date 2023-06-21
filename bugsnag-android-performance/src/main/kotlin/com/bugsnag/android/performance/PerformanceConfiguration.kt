@@ -28,13 +28,6 @@ class PerformanceConfiguration private constructor(val context: Context) {
 
     var appVersion: String? = null
 
-    @FloatRange(from = 0.0, to = 1.0)
-    var samplingProbability: Double = 1.0
-        set(value) {
-            require(value in 0.0..1.0) { "samplingProbability out of range (0..1): $value" }
-            field = value
-        }
-
     var logger: Logger? = null
 
     override fun toString(): String =
@@ -47,8 +40,7 @@ class PerformanceConfiguration private constructor(val context: Context) {
             "releaseStage=$releaseStage, " +
             "versionCode=$versionCode, " +
             "appVersion=$appVersion, " +
-            "enabledReleaseStages=$enabledReleaseStages, " +
-            "samplingProbability=$samplingProbability" +
+            "enabledReleaseStages=$enabledReleaseStages " +
             ")"
 
     companion object Loader {

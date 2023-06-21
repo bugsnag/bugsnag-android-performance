@@ -1,3 +1,10 @@
+## TBD
+
+### Changes
+
+* *Breaking change*: removed the `samplingProbability` configuration option
+  [#149](https://github.com/bugsnag/bugsnag-android-performance/pull/149)
+
 ## 0.1.7 (2023-06-21)
 
 ### Enhancements

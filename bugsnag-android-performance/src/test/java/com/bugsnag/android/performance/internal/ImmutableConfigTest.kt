@@ -37,7 +37,6 @@ class ImmutableConfigTest {
             autoInstrumentActivities = AutoInstrument.START_ONLY
             versionCode = 543L
             appVersion = "9.8.1"
-            samplingProbability = 0.25
         }
 
         val immutableConfig = ImmutableConfig(perfConfig)
@@ -51,7 +50,6 @@ class ImmutableConfigTest {
         assertEquals(perfConfig.enabledReleaseStages, immutableConfig.enabledReleaseStages)
         assertEquals(perfConfig.versionCode, immutableConfig.versionCode)
         assertEquals(perfConfig.appVersion, immutableConfig.appVersion)
-        assertEquals(perfConfig.samplingProbability, immutableConfig.samplingProbability, 0.001)
     }
 
     @Test
