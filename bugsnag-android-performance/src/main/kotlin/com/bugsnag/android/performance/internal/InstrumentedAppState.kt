@@ -15,13 +15,17 @@ class InstrumentedAppState {
     lateinit var app: Application
         private set
 
-    internal fun configure(configuration: ImmutableConfig) {
-        this.app = configuration.application
+    internal fun bind(application: Application) {
+        if (this::app.isInitialized) return
 
-        configureLifecycleCallbacks(configuration)
-
+        app = application
         app.registerActivityLifecycleCallbacks(lifecycleCallbacks)
         app.registerComponentCallbacks(PerformanceComponentCallbacks(BugsnagPerformance.tracer))
+    }
+
+    internal fun configure(configuration: ImmutableConfig) {
+        bind(configuration.application)
+        configureLifecycleCallbacks(configuration)
     }
 
     private fun createLifecycleCallbacks(): PerformanceLifecycleCallbacks {
@@ -44,10 +48,8 @@ class InstrumentedAppState {
 
     fun startAppStartPhase(phase: AppStartPhase) = lifecycleCallbacks.startAppStartPhase(phase)
 
-    fun markBugsnagPerformanceStart() {
-        spanTracker.endSpan(applicationToken, AppStartPhase.FRAMEWORK)
-        startAppStartSpan("Cold")
-    }
+    fun bugsnagPerformanceStart(instrumentAppStart: Boolean) =
+        lifecycleCallbacks.bugsnagPerformanceStart(instrumentAppStart)
 
     companion object {
         /**

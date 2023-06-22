@@ -89,13 +89,9 @@ object BugsnagPerformance {
         Logger.delegate = configuration.logger
         instrumentedAppState.configure(configuration)
 
-        if (configuration.autoInstrumentAppStarts) {
-            // mark the app as "starting" (if it isn't already)
-            synchronized(this) {
-                instrumentedAppState.markBugsnagPerformanceStart()
-            }
-        } else {
-            instrumentedAppState.lifecycleCallbacks.discardAppStart()
+        // mark the app as "starting" (if it isn't already)
+        synchronized(this) {
+            instrumentedAppState.bugsnagPerformanceStart(configuration.autoInstrumentAppStarts)
         }
 
         val application = configuration.application
@@ -285,7 +281,7 @@ object BugsnagPerformance {
     fun reportApplicationClassLoaded() {
         synchronized(this) {
             instrumentedAppState.startAppStartSpan("Cold")
-            instrumentedAppState.startAppStartPhase(AppStartPhase.FRAMEWORK)
+            instrumentedAppState.startAppStartPhase(AppStartPhase.APPLICATION_INIT)
         }
     }
 }

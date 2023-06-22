@@ -148,7 +148,7 @@ class PerformanceLifecycleCallbacks internal constructor(
     }
 
     private fun onApplicationPostCreated() {
-        spanTracker.endSpan(applicationToken, AppStartPhase.FRAMEWORK)
+        spanTracker.endSpan(applicationToken, AppStartPhase.APPLICATION_INIT)
         handler.sendEmptyMessageDelayed(MSG_DISCARD_APP_START, APP_START_TIMEOUT_MS)
     }
 
@@ -163,8 +163,6 @@ class PerformanceLifecycleCallbacks internal constructor(
             spanTracker.associate(applicationToken) {
                 spanFactory.createAppStartSpan(startType)
             }
-
-            handler.sendMessageAtFrontOfQueue(handler.obtainMessage(MSG_APP_CLASS_COMPLETE))
         }
     }
 
@@ -175,6 +173,18 @@ class PerformanceLifecycleCallbacks internal constructor(
             spanTracker.associate(applicationToken, appStartPhase) {
                 spanFactory.createAppStartPhaseSpan(appStartPhase, appStartSpan)
             }
+        }
+    }
+
+    fun bugsnagPerformanceStart(instrumentAppStart: Boolean) {
+        if (!instrumentAppStart) {
+            discardAppStart()
+        } else if (activityInstanceCount == 0) {
+            // we mark the Application.onCreate ended as the very-next message
+            // sendMessageAtFrontOfQueue is important as other transactions will already be
+            // on the queue at this point, and we don't want to measure them
+            handler.sendMessageAtFrontOfQueue(handler.obtainMessage(MSG_APP_CLASS_COMPLETE))
+            startAppStartSpan("Cold")
         }
     }
 

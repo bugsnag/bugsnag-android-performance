@@ -30,14 +30,22 @@ internal open class HttpDelivery(
             return DeliveryResult.Failed(tracePayload, true)
         }
 
-        val connection = openConnection()
-        with(connection) {
+        return try {
+            deliverImpl(tracePayload)
+        } catch (ex: Exception) {
+            DeliveryResult.Failed(tracePayload, false)
+        }
+    }
+
+    private fun deliverImpl(tracePayload: TracePayload): DeliveryResult {
+        val connection = openConnection().apply {
             requestMethod = "POST"
 
             setHeaders(tracePayload)
 
             doOutput = true
             doInput = true
+
             outputStream.use { out -> out.write(tracePayload.body) }
         }
 
@@ -45,6 +53,7 @@ internal open class HttpDelivery(
         val newP = connection.getHeaderField("Bugsnag-Sampling-Probability")?.toDoubleOrNull()
         connection.disconnect()
         newP?.let { newProbabilityCallback?.onNewProbability(it) }
+
         return result
     }
 

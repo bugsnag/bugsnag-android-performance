@@ -30,6 +30,7 @@
     <ID>SwallowedException:ContextExtensions.kt$exc: RuntimeException</ID>
     <ID>SwallowedException:DeviceIdFilePersistence.kt$DeviceIdFilePersistence$exc: OverlappingFileLockException</ID>
     <ID>SwallowedException:ForegroundTracker.kt$exc: RuntimeException</ID>
+    <ID>SwallowedException:HttpDelivery.kt$HttpDelivery$ex: Exception</ID>
     <ID>SwallowedException:ImmutableConfig.kt$ImmutableConfig.Companion$ex: RuntimeException</ID>
     <ID>SwallowedException:Module.kt$Module.Loader$ex: Exception</ID>
     <ID>TooGenericExceptionCaught:BugsnagClock.kt$BugsnagClock$ex: Exception</ID>
@@ -37,6 +38,7 @@
     <ID>TooGenericExceptionCaught:ContextExtensions.kt$exc: RuntimeException</ID>
     <ID>TooGenericExceptionCaught:DeviceIdFilePersistence.kt$DeviceIdFilePersistence$exc: Throwable</ID>
     <ID>TooGenericExceptionCaught:ForegroundTracker.kt$exc: RuntimeException</ID>
+    <ID>TooGenericExceptionCaught:HttpDelivery.kt$HttpDelivery$ex: Exception</ID>
     <ID>TooGenericExceptionCaught:ImmutableConfig.kt$ImmutableConfig.Companion$ex: RuntimeException</ID>
     <ID>TooGenericExceptionCaught:Module.kt$Module.Loader$ex: Exception</ID>
     <ID>TooGenericExceptionCaught:PerformanceConfiguration.kt$PerformanceConfiguration.Loader$exc: Exception</ID>
