@@ -5,6 +5,11 @@
 * *Breaking change*: removed the `samplingProbability` configuration option
   [#149](https://github.com/bugsnag/bugsnag-android-performance/pull/149)
 
+### Enhancements
+
+* ApiKey can be read from "com.bugsnag.performance.android.API_KEY" so that `bugsnag-android` and `bugsnag-android-performance` can have different ApiKeys in the manifest.
+  [#152](https://github.com/bugsnag/bugsnag-android-performance/pull/152)
+
 ### Bug fixes
 
 * More reliably report the response Content-Length of HTTP requests
