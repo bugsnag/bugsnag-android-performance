@@ -14,9 +14,13 @@ class SpanFactory(
     private val spanProcessor: SpanProcessor,
     val spanAttributeSource: AttributeSource = {},
 ) {
-    fun createCustomSpan(name: String, options: SpanOptions = SpanOptions.DEFAULTS): SpanImpl {
+    fun createCustomSpan(
+        name: String,
+        options: SpanOptions = SpanOptions.DEFAULTS,
+        spanProcessor: SpanProcessor = this.spanProcessor,
+    ): SpanImpl {
         val isFirstClass = options.isFirstClass != false
-        val span = createSpan(name, SpanKind.INTERNAL, SpanCategory.CUSTOM, options)
+        val span = createSpan(name, SpanKind.INTERNAL, SpanCategory.CUSTOM, options, spanProcessor)
         span.setAttribute("bugsnag.span.first_class", isFirstClass)
         return span
     }
@@ -25,9 +29,16 @@ class SpanFactory(
         url: String,
         verb: String,
         options: SpanOptions = SpanOptions.DEFAULTS,
+        spanProcessor: SpanProcessor = this.spanProcessor,
     ): SpanImpl {
         val verbUpper = verb.uppercase()
-        val span = createSpan("[HTTP/$verbUpper]", SpanKind.CLIENT, SpanCategory.NETWORK, options)
+        val span = createSpan(
+            "[HTTP/$verbUpper]",
+            SpanKind.CLIENT,
+            SpanCategory.NETWORK,
+            options,
+            spanProcessor,
+        )
         span.setAttribute("http.url", url)
         span.setAttribute("http.method", verbUpper)
         return span
@@ -36,14 +47,16 @@ class SpanFactory(
     fun createViewLoadSpan(
         activity: Activity,
         options: SpanOptions = SpanOptions.DEFAULTS,
+        spanProcessor: SpanProcessor = this.spanProcessor,
     ): SpanImpl {
         val activityName = activity::class.java.simpleName
-        return createViewLoadSpan(ViewType.ACTIVITY, activityName, options)
+        return createViewLoadSpan(ViewType.ACTIVITY, activityName, options, spanProcessor)
     }
 
     fun createViewLoadSpan(
         viewType: ViewType, viewName: String,
         options: SpanOptions = SpanOptions.DEFAULTS,
+        spanProcessor: SpanProcessor = this.spanProcessor,
     ): SpanImpl {
         val isFirstClass = options.isFirstClass
             ?: SpanContext.noSpansMatch { it.category == SpanCategory.VIEW_LOAD }
@@ -53,6 +66,7 @@ class SpanFactory(
             SpanKind.INTERNAL,
             SpanCategory.VIEW_LOAD,
             options,
+            spanProcessor,
         )
 
         span.setAttribute("bugsnag.view.type", viewType.typeName)
@@ -72,12 +86,14 @@ class SpanFactory(
         activity: Activity,
         phase: ViewLoadPhase,
         parentContext: SpanContext,
+        spanProcessor: SpanProcessor = this.spanProcessor,
     ): SpanImpl {
         val span = createSpan(
             "[ViewLoadPhase/${phase.phaseName}]${activity::class.java.simpleName}",
             SpanKind.INTERNAL,
             SpanCategory.VIEW_LOAD_PHASE,
             SpanOptions.DEFAULTS.within(parentContext),
+            spanProcessor,
         )
 
         span.setAttribute("bugsnag.view.name", activity::class.java.simpleName)
@@ -86,12 +102,16 @@ class SpanFactory(
         return span
     }
 
-    fun createAppStartSpan(startType: String): SpanImpl {
+    fun createAppStartSpan(
+        startType: String,
+        spanProcessor: SpanProcessor = this.spanProcessor,
+    ): SpanImpl {
         val span = createSpan(
             "[AppStart/$startType]",
             SpanKind.INTERNAL,
             SpanCategory.APP_START,
-            SpanOptions.DEFAULTS.within(null)
+            SpanOptions.DEFAULTS.within(null),
+            spanProcessor,
         )
 
         span.setAttribute("bugsnag.app_start.type", startType.lowercase())
@@ -103,7 +123,8 @@ class SpanFactory(
         name: String,
         kind: SpanKind,
         category: SpanCategory,
-        options: SpanOptions = SpanOptions.DEFAULTS,
+        options: SpanOptions,
+        spanProcessor: SpanProcessor,
     ): SpanImpl {
         val parentContext = options.parentContext?.takeIf { it.traceId.isValidTraceId() }
 
