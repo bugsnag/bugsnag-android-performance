@@ -9,12 +9,12 @@ import java.util.UUID
 /**
  * Creates Span objects suitable for use in testing.
  */
-class TestSpanFactory {
+class TestSpanFactory(private val spanNameFormat: String = "Test/Span%d") {
     private var spanCount = 1L
 
     @Suppress("LongParameterList")
     fun newSpan(
-        name: String = "Test/Span$spanCount",
+        name: String = spanNameFormat.format(spanCount),
         kind: SpanKind = SpanKind.INTERNAL,
         startTime: Long = spanCount,
         endTime: ((Long) -> Long)? = { it + 10L },
@@ -34,8 +34,7 @@ class TestSpanFactory {
             parentSpanId,
             processor,
             true,
-        )
-            .apply { if (endTime != null) end(endTime(startTime)) }
+        ).apply { if (endTime != null) end(endTime(startTime)) }
     }
 
     fun newSpans(
