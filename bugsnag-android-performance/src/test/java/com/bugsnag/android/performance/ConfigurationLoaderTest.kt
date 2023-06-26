@@ -3,57 +3,103 @@ package com.bugsnag.android.performance
 import android.os.Bundle
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
-import org.mockito.kotlin.any
-import org.mockito.kotlin.anyOrNull
-import org.mockito.kotlin.doReturn
-import org.mockito.kotlin.eq
+import org.junit.runner.RunWith
 import org.mockito.kotlin.mock
+import org.robolectric.RobolectricTestRunner
 
+@RunWith(RobolectricTestRunner::class)
 class ConfigurationLoaderTest {
+    private val apiKey = "cafedecafcafedecafcafedecafcafedecaf"
+    private val endpoint = "https://localhost:9876/fake-endpoint"
+    private val releaseStage = "staging"
+    private val enabledReturnStage = "staging,development,production"
+    private val versionCode = 321
+
+    private val bugsnagApiKey = "decafc0ffeedecafc0ffeedecafc0ffeeace"
+    private val bugsnagReleaseStage = "production"
+    private val bugsnagEnabledReleaseStages = "production,bugsnag"
+    private val bugnsagVersionCode = 876
+
     @Test
-    fun loadFromManifestBundle() {
-        val apiKey = "cafedecafcafedecafcafedecafcafedecaf"
-        val endpoint = "https://localhost:9876/fake-endpoint"
-        val releaseStage = "staging"
-        val versionCode = 321
-
-        val metadataBundle = mock<Bundle> {
-            on { getString("com.bugsnag.android.API_KEY") } doReturn apiKey
-            on { getString("com.bugsnag.performance.android.ENDPOINT") } doReturn endpoint
-            on { getString("com.bugsnag.performance.android.AUTO_INSTRUMENT_ACTIVITIES") } doReturn "START_ONLY"
-            on { containsKey("com.bugsnag.performance.android.VERSION_CODE") } doReturn true
-            on { getInt("com.bugsnag.performance.android.VERSION_CODE") } doReturn versionCode
-
-            on {
-                getString(eq("com.bugsnag.performance.android.RELEASE_STAGE"), anyOrNull())
-            } doReturn releaseStage
-
-            on {
-                getBoolean(eq("com.bugsnag.performance.android.AUTO_INSTRUMENT_APP_STARTS"), any())
-            } doReturn false
-        }
+    fun loadFromManifestBundle_PerformanceNS() {
+        val metadataBundle = Bundle()
+        metadataBundle.populatePerformanceNS()
 
         val config = PerformanceConfiguration.loadFromMetaData(mock(), metadataBundle, null)
 
-        assertEquals(apiKey, config.apiKey)
-        assertEquals(endpoint, config.endpoint)
-        assertFalse("expected autoInstrumentAppStarts = false", config.autoInstrumentAppStarts)
-        assertEquals(AutoInstrument.START_ONLY, config.autoInstrumentActivities)
-        assertEquals(releaseStage, config.releaseStage)
-        assertEquals(versionCode.toLong(), config.versionCode)
+        assertPerformanceNSConfig(config)
+    }
+
+    @Test
+    fun loadFromManifestBundle_BugsnagNS() {
+        val metadataBundle = Bundle()
+        metadataBundle.populateBugsnagNS()
+
+        val config = PerformanceConfiguration.loadFromMetaData(mock(), metadataBundle, null)
+
+        assertEquals(bugsnagApiKey, config.apiKey)
+        assertEquals("https://otlp.bugsnag.com/v1/traces", config.endpoint)
+        assertTrue("expected autoInstrumentAppStarts = true", config.autoInstrumentAppStarts)
+        assertEquals(AutoInstrument.FULL, config.autoInstrumentActivities)
+        assertEquals(bugsnagReleaseStage, config.releaseStage)
+        assertEquals(bugnsagVersionCode.toLong(), config.versionCode)
+        assertEquals(setOf("bugsnag", "production"), config.enabledReleaseStages)
+    }
+
+    @Test
+    fun loadFromManifestBundle_OverrideNS() {
+        val metadataBundle = Bundle()
+        metadataBundle.populateBugsnagNS()
+        metadataBundle.populatePerformanceNS()
+
+        val config = PerformanceConfiguration.loadFromMetaData(mock(), metadataBundle, null)
+        assertPerformanceNSConfig(config)
     }
 
     @Test
     fun loadFromBugsnagConfig() {
         val versionCode = 321
 
-        val metadataBundle = mock<Bundle> {
-            on { containsKey("com.bugsnag.android.VERSION_CODE") } doReturn true
-            on { getInt("com.bugsnag.android.VERSION_CODE") } doReturn versionCode
+        val metadataBundle = Bundle().apply {
+            putInt("com.bugsnag.android.VERSION_CODE", versionCode)
         }
 
         val config = PerformanceConfiguration.loadFromMetaData(mock(), metadataBundle, null)
         assertEquals(versionCode.toLong(), config.versionCode)
+    }
+
+    private fun assertPerformanceNSConfig(config: PerformanceConfiguration) {
+        assertEquals(apiKey, config.apiKey)
+        assertEquals(endpoint, config.endpoint)
+        assertFalse("expected autoInstrumentAppStarts = false", config.autoInstrumentAppStarts)
+        assertEquals(AutoInstrument.START_ONLY, config.autoInstrumentActivities)
+        assertEquals(releaseStage, config.releaseStage)
+        assertEquals(versionCode.toLong(), config.versionCode)
+        assertEquals(setOf("staging", "development", "production"), config.enabledReleaseStages)
+    }
+
+    private fun Bundle.populatePerformanceNS() {
+        putString("com.bugsnag.performance.android.API_KEY", apiKey)
+        putString("com.bugsnag.performance.android.ENDPOINT", endpoint)
+        putString("com.bugsnag.performance.android.AUTO_INSTRUMENT_ACTIVITIES", "START_ONLY")
+        putInt("com.bugsnag.performance.android.VERSION_CODE", versionCode)
+
+        putString("com.bugsnag.performance.android.RELEASE_STAGE", releaseStage)
+        putString("com.bugsnag.performance.android.ENABLED_RELEASE_STAGES", enabledReturnStage)
+
+        putBoolean("com.bugsnag.performance.android.AUTO_INSTRUMENT_APP_STARTS", false)
+    }
+
+    private fun Bundle.populateBugsnagNS() {
+        putString("com.bugsnag.android.API_KEY", bugsnagApiKey)
+        putString("com.bugsnag.android.AUTO_INSTRUMENT_ACTIVITIES", "OFF")
+        putInt("com.bugsnag.android.VERSION_CODE", bugnsagVersionCode)
+
+        putString("com.bugsnag.android.RELEASE_STAGE", bugsnagReleaseStage)
+        putString("com.bugsnag.android.ENABLED_RELEASE_STAGES", bugsnagEnabledReleaseStages)
+
+        putBoolean("com.bugsnag.android.AUTO_INSTRUMENT_APP_STARTS", true)
     }
 }

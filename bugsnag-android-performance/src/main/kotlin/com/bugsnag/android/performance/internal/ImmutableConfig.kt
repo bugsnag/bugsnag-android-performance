@@ -18,7 +18,6 @@ internal data class ImmutableConfig(
     val enabledReleaseStages: Set<String>?,
     val versionCode: Long?,
     val appVersion: String?,
-    val samplingProbability: Double,
     val logger: Logger,
 ) {
     val isReleaseStageEnabled =
@@ -35,7 +34,6 @@ internal data class ImmutableConfig(
         configuration.enabledReleaseStages?.toSet(),
         configuration.versionCode ?: versionCodeFor(configuration.context),
         configuration.appVersion ?: versionNameFor(configuration.context),
-        configuration.samplingProbability,
         configuration.logger
             ?: if (getReleaseStage(configuration) == RELEASE_STAGE_PRODUCTION) NoopLogger
             else DebugLogger,

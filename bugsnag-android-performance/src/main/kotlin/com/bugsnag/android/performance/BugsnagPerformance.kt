@@ -32,7 +32,7 @@ import java.net.URL
  * @see [start]
  */
 object BugsnagPerformance {
-    const val VERSION: String = "0.1.7"
+    const val VERSION: String = "0.1.8"
 
     internal val tracer = Tracer()
 
@@ -132,7 +132,7 @@ object BugsnagPerformance {
         val workerTasks = ArrayList<Task>()
 
         if (configuration.isReleaseStageEnabled) {
-            val sampler = ProbabilitySampler(configuration.samplingProbability)
+            val sampler = ProbabilitySampler(1.0)
 
             val samplerTask = SamplerTask(
                 delivery,
@@ -232,9 +232,7 @@ object BugsnagPerformance {
         options: SpanOptions = SpanOptions.DEFAULTS,
     ): Span {
         // create & track Activity referenced ViewLoad spans
-        return instrumentedAppState.spanTracker.associate(activity) {
-            spanFactory.createViewLoadSpan(activity, options)
-        }
+        return instrumentedAppState.activityCallbacks.startViewLoadSpan(activity, options)
     }
 
     /**

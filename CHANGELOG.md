@@ -1,3 +1,22 @@
+## 0.1.8 (2023-06-26)
+
+### Changes
+
+* *Breaking change*: removed the `samplingProbability` configuration option
+  [#149](https://github.com/bugsnag/bugsnag-android-performance/pull/149)
+
+### Enhancements
+
+* ApiKey can be read from "com.bugsnag.performance.android.API_KEY" so that `bugsnag-android` and `bugsnag-android-performance` can have different ApiKeys in the manifest.
+  [#152](https://github.com/bugsnag/bugsnag-android-performance/pull/152)
+* AppStart spans now end strictly when the first ViewLoad ends, allowing manual control of the AppStart end (when combined with `PerformanceConfiguration.autoInstrumentActivities`)
+  [#154](https://github.com/bugsnag/bugsnag-android-performance/pull/154)
+
+### Bug fixes
+
+* More reliably report the response Content-Length of HTTP requests
+  [#150](https://github.com/bugsnag/bugsnag-android-performance/pull/150)
+
 ## 0.1.7 (2023-06-21)
 
 ### Enhancements

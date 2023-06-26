@@ -31,11 +31,6 @@ class SpanBenchmark {
                 ).apply {
                     // we set the endpoint to localhost so that no payloads can actually be delivered
                     endpoint = "http://localhost"
-                    // we run out of memory pretty quickly since the benchmarks produce spans faster
-                    // than delivery can reasonably handle them (even without network)
-                    // as such we set the sampling rate to discard some of the spans, while
-                    // still collecting enough to affect the benchmark
-                    samplingProbability = 0.5
                     logger = NoopLogger
                 },
             )
