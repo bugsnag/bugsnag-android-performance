@@ -16,6 +16,7 @@ import com.bugsnag.android.performance.internal.LoadDeviceId
 import com.bugsnag.android.performance.internal.Module
 import com.bugsnag.android.performance.internal.Persistence
 import com.bugsnag.android.performance.internal.ProbabilitySampler
+import com.bugsnag.android.performance.internal.RedirectingSpanProcessor
 import com.bugsnag.android.performance.internal.RetryDelivery
 import com.bugsnag.android.performance.internal.RetryDeliveryTask
 import com.bugsnag.android.performance.internal.SamplerTask
@@ -35,13 +36,9 @@ import java.net.URL
 object BugsnagPerformance {
     const val VERSION: String = "0.1.8"
 
-    internal val tracer = Tracer()
-
     internal val instrumentedAppState = InstrumentedAppState()
 
     private var isStarted = false
-
-    private lateinit var worker: Worker
 
     private val spanFactory get() = instrumentedAppState.spanFactory
 
@@ -89,83 +86,7 @@ object BugsnagPerformance {
         Logger.delegate = configuration.logger
         instrumentedAppState.configure(configuration)
 
-        // mark the app as "starting" (if it isn't already)
-        synchronized(this) {
-            instrumentedAppState.bugsnagPerformanceStart(configuration.autoInstrumentAppStarts)
-        }
-
-        val application = configuration.application
-
-        // update isInForeground to a more accurate value (if accessible)
-        instrumentedAppState.defaultAttributeSource.update {
-            it.copy(isInForeground = isInForeground(application))
-        }
-
-        val connectivity =
-            Connectivity.newInstance(application) { status ->
-                if (status.hasConnection && this::worker.isInitialized) {
-                    worker.wake()
-                }
-
-                instrumentedAppState.defaultAttributeSource.update {
-                    it.copy(
-                        networkType = status.networkType,
-                        networkSubType = status.networkSubType,
-                    )
-                }
-            }
-
-        connectivity.registerForNetworkChanges()
-
-        val httpDelivery = HttpDelivery(
-            configuration.endpoint,
-            requireNotNull(configuration.apiKey) {
-                "PerformanceConfiguration.apiKey may not be null"
-            },
-            connectivity,
-        )
-
-        val persistence = Persistence(application)
-        val delivery = RetryDelivery(persistence.retryQueue, httpDelivery)
-
-        val workerTasks = ArrayList<Task>()
-
-        if (configuration.isReleaseStageEnabled) {
-            val sampler = ProbabilitySampler(1.0)
-
-            val samplerTask = SamplerTask(
-                delivery,
-                sampler,
-                persistence.persistentState,
-            )
-
-            delivery.newProbabilityCallback = samplerTask
-            workerTasks.add(samplerTask)
-
-            tracer.sampler = sampler
-        } else {
-            tracer.sampler = DiscardingSampler
-        }
-
-        val resourceAttributes = createResourceAttributes(configuration)
-        workerTasks.add(SendBatchTask(delivery, tracer, resourceAttributes))
-        workerTasks.add(RetryDeliveryTask(persistence.retryQueue, httpDelivery, connectivity))
-
-        val bsgWorker = Worker(
-            startupTasks = listOf(
-                LoadDeviceId(application, resourceAttributes),
-            ),
-            tasks = workerTasks,
-        )
-
-        // register the Worker with the components that depend on it
-        tracer.worker = bsgWorker
-
         loadModules()
-
-        bsgWorker.start()
-
-        worker = bsgWorker
     }
 
     private fun loadModules() {
