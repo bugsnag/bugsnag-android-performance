@@ -9,6 +9,8 @@
 
 * ApiKey can be read from "com.bugsnag.performance.android.API_KEY" so that `bugsnag-android` and `bugsnag-android-performance` can have different ApiKeys in the manifest.
   [#152](https://github.com/bugsnag/bugsnag-android-performance/pull/152)
+* AppStart spans now end strictly when the first ViewLoad ends, allowing manual control of the AppStart end (when combined with `PerformanceConfiguration.autoInstrumentActivities`)
+  [#154](https://github.com/bugsnag/bugsnag-android-performance/pull/154)
 
 ### Bug fixes
 

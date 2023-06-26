@@ -7,7 +7,11 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
+import android.os.SystemClock
+import com.bugsnag.android.performance.BugsnagPerformance
 import com.bugsnag.android.performance.Logger
+import com.bugsnag.android.performance.Span
+import com.bugsnag.android.performance.SpanOptions
 import kotlin.math.max
 
 typealias InForegroundCallback = (inForeground: Boolean) -> Unit
@@ -49,7 +53,7 @@ class PerformanceLifecycleCallbacks internal constructor(
     override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
             appStartIsForeground()
-            startViewLoad(activity, savedInstanceState)
+            maybeStartViewLoad(activity, savedInstanceState)
         }
     }
 
@@ -71,7 +75,7 @@ class PerformanceLifecycleCallbacks internal constructor(
 
     override fun onActivityPreCreated(activity: Activity, savedInstanceState: Bundle?) {
         appStartIsForeground()
-        startViewLoad(activity, savedInstanceState)
+        maybeStartViewLoad(activity, savedInstanceState)
         startViewLoadPhase(activity, ViewLoadPhase.CREATE)
     }
 
@@ -180,9 +184,9 @@ class PerformanceLifecycleCallbacks internal constructor(
         }
     }
 
-    private fun maybeEndAppStartSpan() {
+    private fun maybeEndAppStartSpan(endTime: Long) {
         if (instrumentAppStart) {
-            appStartSpan?.end()
+            appStartSpan?.end(endTime)
         }
 
         // we may have an appStartupSpan from before the configuration was in-place
@@ -198,20 +202,40 @@ class PerformanceLifecycleCallbacks internal constructor(
         handler.removeMessages(MSG_DISCARD_APP_START)
     }
 
-    private fun startViewLoad(activity: Activity, savedInstanceState: Bundle?) {
+    private fun maybeStartViewLoad(activity: Activity, savedInstanceState: Bundle?) {
         try {
             maybeStartAppLoad(savedInstanceState)
 
             if (openLoadSpans) {
-                spanTracker.associate(activity) {
-                    spanFactory.createViewLoadSpan(activity)
-                }
-
-                handler.sendMessage(handler.obtainMessage(MSG_CHECK_FINISHED, activity))
+                startViewLoadSpan(activity, SpanOptions.DEFAULTS)
             }
         } finally {
             activityInstanceCount++
         }
+    }
+
+    fun startViewLoadSpan(activity: Activity, spanOptions: SpanOptions): Span {
+        val span = spanTracker.associate(activity) {
+            // if this is still part of the AppStart span, then the first ViewLoad to end should
+            // also end the AppStart span
+            if (appStartSpan != null) {
+                spanFactory.createViewLoadSpan(activity, spanOptions) { span ->
+                    // we end the AppStart span at the same timestamp as the ViewLoad span ended
+                    maybeEndAppStartSpan(
+                        (span as? SpanImpl)?.endTime ?: SystemClock.elapsedRealtimeNanos(),
+                    )
+
+                    BugsnagPerformance.tracer.onEnd(span)
+                }
+            } else {
+                spanFactory.createViewLoadSpan(activity, spanOptions)
+            }
+
+        }
+
+        handler.sendMessage(handler.obtainMessage(MSG_CHECK_FINISHED, activity))
+
+        return span
     }
 
     private fun endViewLoad(activity: Activity) {
@@ -222,7 +246,11 @@ class PerformanceLifecycleCallbacks internal constructor(
             spanTracker.markSpanAutomaticEnd(activity)
         }
 
-        maybeEndAppStartSpan()
+        // if we do not automatically open spans, we always close the AppStart span when we
+        // would end ViewLoad for an Activity
+        if (!openLoadSpans) {
+            maybeEndAppStartSpan(SystemClock.elapsedRealtimeNanos())
+        }
     }
 
     private fun startViewLoadPhase(activity: Activity, phase: ViewLoadPhase) {

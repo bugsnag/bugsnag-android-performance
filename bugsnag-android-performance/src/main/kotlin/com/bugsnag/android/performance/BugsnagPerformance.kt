@@ -232,9 +232,7 @@ object BugsnagPerformance {
         options: SpanOptions = SpanOptions.DEFAULTS,
     ): Span {
         // create & track Activity referenced ViewLoad spans
-        return instrumentedAppState.spanTracker.associate(activity) {
-            spanFactory.createViewLoadSpan(activity, options)
-        }
+        return instrumentedAppState.activityCallbacks.startViewLoadSpan(activity, options)
     }
 
     /**
