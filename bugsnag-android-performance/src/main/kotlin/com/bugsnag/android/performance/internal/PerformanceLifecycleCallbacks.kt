@@ -10,9 +10,9 @@ import android.os.Message
 import android.os.SystemClock
 import com.bugsnag.android.performance.BugsnagPerformance
 import com.bugsnag.android.performance.Logger
-import com.bugsnag.android.performance.internal.InstrumentedAppState.Companion.applicationToken
 import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.SpanOptions
+import com.bugsnag.android.performance.internal.InstrumentedAppState.Companion.applicationToken
 import kotlin.math.max
 
 typealias InForegroundCallback = (inForeground: Boolean) -> Unit
@@ -39,9 +39,17 @@ class PerformanceLifecycleCallbacks internal constructor(
 
     private var backgroundSent = true
 
-    internal var openLoadSpans: Boolean = false
+    /**
+     * Whether this PerformanceLifecycleCallbacks should automatically open ViewLoad spans for
+     * Activities. Defaults to `true` but can be changed once configured.
+     */
+    internal var openLoadSpans: Boolean = true
 
-    internal var closeLoadSpans: Boolean = false
+    /**
+     * Whether this PerformanceLifecycleCallbacks should automatically close ViewLoad spans for
+     * Activities. Defaults to `true` but can be changed once configured.
+     */
+    internal var closeLoadSpans: Boolean = true
 
     internal var instrumentAppStart: Boolean = true
 
@@ -237,14 +245,15 @@ class PerformanceLifecycleCallbacks internal constructor(
         val span = spanTracker.associate(activity) {
             // if this is still part of the AppStart span, then the first ViewLoad to end should
             // also end the AppStart span
-            if (appStartSpan != null) {
+            if (spanTracker[applicationToken] != null) {
                 spanFactory.createViewLoadSpan(activity, spanOptions) { span ->
                     // we end the AppStart span at the same timestamp as the ViewLoad span ended
                     maybeEndAppStartSpan(
                         (span as? SpanImpl)?.endTime ?: SystemClock.elapsedRealtimeNanos(),
                     )
 
-                    BugsnagPerformance.tracer.onEnd(span)
+                    // end the span normally
+                    BugsnagPerformance.instrumentedAppState.spanProcessor.onEnd(span)
                 }
             } else {
                 spanFactory.createViewLoadSpan(activity, spanOptions)
