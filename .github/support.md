@@ -9,8 +9,8 @@ When contacting support, please include as much information as necessary, includ
 - steps to reproduce
 - expected/actual behaviour 
 
-* Bugsnag Performance library version:
-* Bugsnag Error Monitoring library version (if any):
+* BugSnag Performance library version:
+* BugSnag Error Monitoring library version (if any):
 * Android version:
 *  Emulator or physical device:
 
