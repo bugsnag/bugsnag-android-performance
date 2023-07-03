@@ -19,9 +19,10 @@ A clear and concise description of what the bug is.
 4. See error
 
 ### Environment
+* Bugsnag Performance library version:
+* Bugsnag Error Monitoring library version (if any):
 * Android version:
-* BugSnag Android Performance version:
-* Emulator or physical device:
+*  Emulator or physical device:
 
 <!--
   Below are a few approaches you might take to communicate the issue, in
