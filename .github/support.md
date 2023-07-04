@@ -9,9 +9,10 @@ When contacting support, please include as much information as necessary, includ
 - steps to reproduce
 - expected/actual behaviour 
 
+* BugSnag Performance library version:
+* BugSnag Error Monitoring library version (if any):
 * Android version:
-* BugSnag Android Performance version:
-* Emulator or physical device:
+*  Emulator or physical device:
 
 ## Bug or Feature Requests
 If you would like to raise a bug or feature request please do so by creating a [New Issue](https://github.com/bugsnag/bugsnag-android-performance/issues/new/choose) and selecting bug or feature.
