@@ -1,18 +1,19 @@
 package com.bugsnag.android.performance.coroutines
 
 import com.bugsnag.android.performance.SpanContext
-import com.bugsnag.android.performance.internal.currentStack
-import kotlin.coroutines.CoroutineContext
+import com.bugsnag.android.performance.internal.BugsnagPerformanceInternals
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.ThreadContextElement
-import java.util.Deque
 import java.util.ArrayDeque
+import java.util.Deque
+import kotlin.coroutines.CoroutineContext
 
-private class ContextAwareCoroutineContextElement(spanContext: SpanContext)
-    : ThreadContextElement<Deque<SpanContext>> {
+private class ContextAwareCoroutineContextElement(spanContext: SpanContext) :
+    ThreadContextElement<Deque<SpanContext>> {
+
     override val key: CoroutineContext.Key<ContextAwareCoroutineContextElement>
         get() = Key
 
@@ -25,17 +26,17 @@ private class ContextAwareCoroutineContextElement(spanContext: SpanContext)
     override fun updateThreadContext(context: CoroutineContext): Deque<SpanContext> {
         // coroutine starting/resuming - grab the current SpanContext stack for this thread
         // so that we can restore it when the coroutine is suspended
-        val previousStack = SpanContext.currentStack
+        val previousStack = BugsnagPerformanceInternals.currentSpanContextStack
 
         // Replace with the coroutine SpanContext stack
-        SpanContext.currentStack = coroutineContextStack
+        BugsnagPerformanceInternals.currentSpanContextStack = coroutineContextStack
 
         return previousStack
     }
 
     override fun restoreThreadContext(context: CoroutineContext, oldState: Deque<SpanContext>) {
         // coroutine suspended - restore this thread's previous SpanContext stack
-        SpanContext.currentStack = oldState
+        BugsnagPerformanceInternals.currentSpanContextStack = oldState
     }
 
     companion object Key : CoroutineContext.Key<ContextAwareCoroutineContextElement>
@@ -47,14 +48,15 @@ private class ContextAwareCoroutineContextElement(spanContext: SpanContext)
  * Maintains a Span Context stack for the coroutine, with the [SpanContext] at the root,
  * which persists the suspend/resume boundary.
  */
-fun SpanContext.asCoroutineElement(): CoroutineContext.Element = ContextAwareCoroutineContextElement(this)
+fun SpanContext.asCoroutineElement(): CoroutineContext.Element =
+    ContextAwareCoroutineContextElement(this)
 
 
 /**
  * Returns a context containing the [SpanContext] as a [CoroutineContext.Element] and elements
  * from other context.
  */
-operator fun SpanContext.plus(context: CoroutineContext) : CoroutineContext {
+operator fun SpanContext.plus(context: CoroutineContext): CoroutineContext {
     return context + this.asCoroutineElement()
 }
 
@@ -62,7 +64,7 @@ operator fun SpanContext.plus(context: CoroutineContext) : CoroutineContext {
  * Returns a context containing elements from this context and the [SpanContext] as a
  * [CoroutineContext.Element].
  */
-operator fun CoroutineContext.plus(context: SpanContext) : CoroutineContext {
+operator fun CoroutineContext.plus(context: SpanContext): CoroutineContext {
     return this + context.asCoroutineElement()
 }
 

@@ -1,10 +1,30 @@
 package com.bugsnag.android.performance
 
 import androidx.fragment.app.Fragment
+import com.bugsnag.android.performance.internal.BugsnagPerformanceInternals
+import com.bugsnag.android.performance.internal.SpanFactory
 import com.bugsnag.android.performance.internal.SpanImpl
 
-private fun spanNameForFragment(fragment: Fragment): String {
+internal fun viewNameForFragment(fragment: Fragment): String {
     return fragment.javaClass.simpleName
+}
+
+internal fun SpanFactory.createViewLoadSpan(
+    fragment: Fragment,
+    options: SpanOptions = SpanOptions.DEFAULTS,
+): SpanImpl {
+    val span = createViewLoadSpan(
+        ViewType.FRAGMENT,
+        viewNameForFragment(fragment),
+        options,
+    )
+
+    val tag = fragment.tag
+    if (tag != null) {
+        span.setAttribute("bugsnag.view.fragment_tag", tag)
+    }
+
+    return span
 }
 
 /**
@@ -18,16 +38,8 @@ fun BugsnagPerformance.startViewLoadSpan(
     fragment: Fragment,
     options: SpanOptions = SpanOptions.DEFAULTS,
 ): Span {
-    val span = startViewLoadSpan(
-        ViewType.FRAGMENT,
-        spanNameForFragment(fragment),
+    return BugsnagPerformanceInternals.spanFactory.createViewLoadSpan(
+        fragment,
         options,
     )
-
-    val tag = fragment.tag
-    if (tag != null && span is SpanImpl) {
-        span.setAttribute("bugsnag.view.fragment_tag", tag)
-    }
-
-    return span
 }
