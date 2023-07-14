@@ -4,10 +4,13 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import com.bugsnag.android.performance.internal.BugsnagPerformanceInternals
 import com.bugsnag.android.performance.internal.SpanFactory
+import com.bugsnag.android.performance.internal.SpanImpl
+import com.bugsnag.android.performance.internal.SpanProcessor
 import com.bugsnag.android.performance.internal.SpanTracker
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -18,7 +21,7 @@ import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
 class FragmentActivityLifecycleCallbacksTest {
-    private lateinit var spanCollector: MutableList<Span>
+    private lateinit var spanCollector: MutableList<SpanImpl>
 
     private lateinit var spanTracker: SpanTracker
 
@@ -34,7 +37,7 @@ class FragmentActivityLifecycleCallbacksTest {
         spanTracker = SpanTracker()
         lifecycleCallbacks = FragmentActivityLifecycleCallbacks(
             spanTracker,
-            SpanFactory(spanCollector::add),
+            SpanFactory({ spanCollector.add(it as SpanImpl) }),
         )
 
         fm = object : FragmentManager() {}
@@ -56,6 +59,7 @@ class FragmentActivityLifecycleCallbacksTest {
      * the SpanContext is what we expect it to be
      */
     @Test
+    @Suppress("DestructuringDeclarationWithTooManyEntries")
     fun testInterleavedLifecycles() {
         lifecycleCallbacks.onFragmentPreCreated(fm, fragment1, null)
         assertNotEquals(
@@ -86,5 +90,13 @@ class FragmentActivityLifecycleCallbacksTest {
         lifecycleCallbacks.onFragmentResumed(fm, fragment2)
 
         assertEquals(4, spanCollector.size)
+
+        val (f1Create, f2Create, f1ViewLoad, f2ViewLoad) = spanCollector
+        assertEquals(f1ViewLoad.spanId, f1Create.parentSpanId)
+        assertEquals(f2ViewLoad.spanId, f2Create.parentSpanId)
+
+        // 0 is invalid SpanId, ViewLoads in this test should not be nested
+        assertEquals(0L, f1ViewLoad.parentSpanId)
+        assertEquals(0L, f2ViewLoad.parentSpanId)
     }
 }
