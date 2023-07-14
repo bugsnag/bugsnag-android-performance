@@ -47,13 +47,11 @@ interface SpanContext {
         }
 
         @get:JvmSynthetic
-        internal val contextStack: Deque<SpanContext>
+        internal var contextStack: Deque<SpanContext>
             get() = threadLocalStorage.get() as Deque<SpanContext>
-
-        @JvmSynthetic
-        internal fun setContextStackUnsafe(stack: Deque<SpanContext>)  {
-            threadLocalStorage.set(stack)
-        }
+            set(value) {
+                threadLocalStorage.set(value)
+            }
 
         /**
          * Retrieve the current [SpanContext] for this thread (or [invalid] if not available).
@@ -100,7 +98,7 @@ interface SpanContext {
         }
 
         private fun removeClosedContexts() {
-            while((contextStack.peekFirst() as? Span)?.isEnded() == true) {
+            while ((contextStack.peekFirst() as? Span)?.isEnded() == true) {
                 contextStack.pollFirst()
             }
         }

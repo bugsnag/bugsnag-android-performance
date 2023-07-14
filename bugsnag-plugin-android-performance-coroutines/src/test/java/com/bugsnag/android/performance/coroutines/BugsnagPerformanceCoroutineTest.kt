@@ -1,9 +1,9 @@
 package com.bugsnag.android.performance.coroutines
 
 import com.bugsnag.android.performance.SpanContext
+import com.bugsnag.android.performance.internal.BugsnagPerformanceInternals
 import com.bugsnag.android.performance.internal.SpanFactory
 import com.bugsnag.android.performance.internal.SpanProcessor
-import com.bugsnag.android.performance.internal.currentStack
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -64,19 +64,20 @@ class BugsnagPerformanceCoroutineTest {
         }
     }
 
-    @Test fun coroutineStacks() {
+    @Test
+    fun coroutineStacks() {
         spanFactory.createCustomSpan("root span").use {
             val coroutineRootSpan = spanFactory.createCustomSpan("coroutine root span")
             val dispatcher = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
             runBlocking(dispatcher + SpanContext.current) {
                 // coroutine has its own context stack with the 'current' context at the root
                 assertSame(coroutineRootSpan, SpanContext.current)
-                assertEquals(1, SpanContext.currentStack.size)
+                assertEquals(1, BugsnagPerformanceInternals.currentSpanContextStack.size)
                 // coroutines sharing a thread should maintain their own separate context stacks
                 val subCoroutineSpan = spanFactory.createCustomSpan("sub-coroutine span")
                 launch(SpanContext.current.asCoroutineElement()) {
                     assertSame(subCoroutineSpan, SpanContext.current)
-                    assertEquals(1, SpanContext.currentStack.size)
+                    assertEquals(1, BugsnagPerformanceInternals.currentSpanContextStack.size)
                     // start some spans in this coroutine context
                     val coroutineSpan1 = spanFactory.createCustomSpan("coroutine span 1")
                     val coroutineSpan2 = spanFactory.createCustomSpan("coroutine span 2")
@@ -93,7 +94,7 @@ class BugsnagPerformanceCoroutineTest {
                 // this coroutine runs while the first one is suspended
                 launch(SpanContext.current.asCoroutineElement()) {
                     assertSame(subCoroutineSpan, SpanContext.current)
-                    assertEquals(1, SpanContext.currentStack.size)
+                    assertEquals(1, BugsnagPerformanceInternals.currentSpanContextStack.size)
                     // start some spans in this coroutine context
                     val coroutineSpan3 = spanFactory.createCustomSpan("coroutine span 3")
                     val coroutineSpan4 = spanFactory.createCustomSpan("coroutine span 4")

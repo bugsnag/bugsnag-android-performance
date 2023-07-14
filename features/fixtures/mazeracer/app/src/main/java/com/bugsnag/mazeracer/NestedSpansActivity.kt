@@ -57,9 +57,10 @@ class NestedSpansActivity : AppCompatActivity(), CoroutineScope by BugsnagPerfor
 
             // end the custom span
             customRootSpan.end()
-        }
 
-        finish()
+            // finish after we end the last span
+            finish()
+        }
     }
 
     class FirstFragment : Fragment() {

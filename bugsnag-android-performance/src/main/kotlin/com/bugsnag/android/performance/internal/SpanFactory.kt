@@ -54,7 +54,8 @@ class SpanFactory(
     }
 
     fun createViewLoadSpan(
-        viewType: ViewType, viewName: String,
+        viewType: ViewType,
+        viewName: String,
         options: SpanOptions = SpanOptions.DEFAULTS,
         spanProcessor: SpanProcessor = this.spanProcessor,
     ): SpanImpl {
@@ -83,23 +84,41 @@ class SpanFactory(
     }
 
     fun createViewLoadPhaseSpan(
-        activity: Activity,
+        viewName: String,
+        viewType: ViewType,
         phase: ViewLoadPhase,
-        parentContext: SpanContext,
+        options: SpanOptions,
         spanProcessor: SpanProcessor = this.spanProcessor,
     ): SpanImpl {
+        val phaseName = phase.phaseNameFor(viewType)
         val span = createSpan(
-            "[ViewLoadPhase/${phase.phaseName}]${activity::class.java.simpleName}",
+            "[ViewLoadPhase/$phaseName]$viewName",
             SpanKind.INTERNAL,
             SpanCategory.VIEW_LOAD_PHASE,
-            SpanOptions.DEFAULTS.within(parentContext),
+            options,
             spanProcessor,
         )
 
-        span.setAttribute("bugsnag.view.name", activity::class.java.simpleName)
-        span.setAttribute("bugsnag.phase", phase.phaseName)
+        span.setAttribute("bugsnag.view.name", viewName)
+        span.setAttribute("bugsnag.view.type", viewType.typeName)
+        span.setAttribute("bugsnag.phase", phaseName)
 
         return span
+    }
+
+    fun createViewLoadPhaseSpan(
+        activity: Activity,
+        phase: ViewLoadPhase,
+        options: SpanOptions,
+        spanProcessor: SpanProcessor = this.spanProcessor,
+    ): SpanImpl {
+        return createViewLoadPhaseSpan(
+            activity::class.java.simpleName,
+            ViewType.ACTIVITY,
+            phase,
+            options,
+            spanProcessor,
+        )
     }
 
     fun createAppStartSpan(
