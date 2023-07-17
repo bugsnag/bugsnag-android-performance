@@ -1,6 +1,9 @@
-package com.bugsnag.android.performance.internal
+package com.bugsnag.android.performance.internal.processing
 
 import com.bugsnag.android.performance.SpanOptions
+import com.bugsnag.android.performance.internal.InternalDebug
+import com.bugsnag.android.performance.internal.SpanFactory
+import com.bugsnag.android.performance.internal.Worker
 import com.bugsnag.android.performance.test.withDebugValues
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull

@@ -1,3 +1,10 @@
+## 1.0.0 (2023-07-17)
+
+### Bug fixes
+
+* Fragments added in the same FragmentTransaction won't unexpectedly nest their ViewLoad spans
+  [#159](https://github.com/bugsnag/bugsnag-android-performance/pull/159)
+
 ## 0.1.8 (2023-06-26)
 
 ### Changes

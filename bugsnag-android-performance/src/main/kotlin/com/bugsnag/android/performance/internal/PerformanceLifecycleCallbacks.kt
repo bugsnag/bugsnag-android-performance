@@ -257,7 +257,11 @@ class PerformanceLifecycleCallbacks internal constructor(
         val viewLoadSpan = spanTracker[activity]
         if (openLoadSpans && viewLoadSpan != null) {
             spanTracker.associate(activity, phase) {
-                spanFactory.createViewLoadPhaseSpan(activity, phase, viewLoadSpan)
+                spanFactory.createViewLoadPhaseSpan(
+                    activity,
+                    phase,
+                    SpanOptions.DEFAULTS.within(viewLoadSpan),
+                )
             }
         }
     }

@@ -2,6 +2,7 @@ package com.bugsnag.android.performance.internal
 
 import android.content.ComponentCallbacks2
 import android.content.res.Configuration
+import com.bugsnag.android.performance.internal.processing.Tracer
 
 internal class PerformanceComponentCallbacks(private val tracer: Tracer) : ComponentCallbacks2 {
     override fun onConfigurationChanged(newConfig: Configuration) = Unit

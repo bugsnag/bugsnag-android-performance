@@ -20,7 +20,7 @@ import com.bugsnag.android.performance.internal.RetryDeliveryTask
 import com.bugsnag.android.performance.internal.SamplerTask
 import com.bugsnag.android.performance.internal.SendBatchTask
 import com.bugsnag.android.performance.internal.Task
-import com.bugsnag.android.performance.internal.Tracer
+import com.bugsnag.android.performance.internal.processing.Tracer
 import com.bugsnag.android.performance.internal.Worker
 import com.bugsnag.android.performance.internal.createResourceAttributes
 import com.bugsnag.android.performance.internal.isInForeground
@@ -32,7 +32,7 @@ import java.net.URL
  * @see [start]
  */
 object BugsnagPerformance {
-    const val VERSION: String = "0.1.8"
+    const val VERSION: String = "1.0.0"
 
     internal val tracer = Tracer()
 

@@ -8,8 +8,10 @@ class AppCompatModule : Module {
     private lateinit var fragmentActivityLifecycleCallbacks: FragmentActivityLifecycleCallbacks
     override fun load(instrumentedAppState: InstrumentedAppState) {
         this.instrumentedAppState = instrumentedAppState
-        this.fragmentActivityLifecycleCallbacks =
-            FragmentActivityLifecycleCallbacks(instrumentedAppState.spanTracker)
+        this.fragmentActivityLifecycleCallbacks = FragmentActivityLifecycleCallbacks(
+            instrumentedAppState.spanTracker,
+            instrumentedAppState.spanFactory,
+        )
 
         instrumentedAppState.app.registerActivityLifecycleCallbacks(
             fragmentActivityLifecycleCallbacks,

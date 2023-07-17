@@ -21,7 +21,7 @@ class SpanImpl internal constructor(
     internal val startTime: Long,
     override val traceId: UUID,
     override val spanId: Long = nextSpanId(),
-    internal val parentSpanId: Long,
+    val parentSpanId: Long,
     private val processor: SpanProcessor,
     private val makeContext: Boolean,
 ) : Span, HasAttributes {
