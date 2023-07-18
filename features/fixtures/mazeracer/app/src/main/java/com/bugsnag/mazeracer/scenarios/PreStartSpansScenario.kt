@@ -2,7 +2,6 @@ package com.bugsnag.mazeracer.scenarios
 
 import com.bugsnag.android.performance.BugsnagPerformance
 import com.bugsnag.android.performance.PerformanceConfiguration
-import com.bugsnag.android.performance.internal.InternalDebug
 import com.bugsnag.android.performance.measureSpan
 import com.bugsnag.mazeracer.Scenario
 import kotlin.concurrent.thread
@@ -12,7 +11,7 @@ class PreStartSpansScenario(
     scenarioMetadata: String
 ) : Scenario(config, scenarioMetadata) {
     init {
-        InternalDebug.spanBatchSizeSendTriggerPoint = 4
+        config.autoInstrumentAppStarts = true
     }
 
     override fun startScenario() {
@@ -33,5 +32,8 @@ class PreStartSpansScenario(
         }
 
         Thread.sleep(50)
+
+        // background the app and flush the spans
+        context.finish()
     }
 }

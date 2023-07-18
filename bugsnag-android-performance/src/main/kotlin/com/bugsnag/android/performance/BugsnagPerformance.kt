@@ -21,7 +21,6 @@ import com.bugsnag.android.performance.internal.RetryDeliveryTask
 import com.bugsnag.android.performance.internal.SamplerTask
 import com.bugsnag.android.performance.internal.SendBatchTask
 import com.bugsnag.android.performance.internal.Task
-import com.bugsnag.android.performance.internal.processing.Tracer
 import com.bugsnag.android.performance.internal.Worker
 import com.bugsnag.android.performance.internal.createResourceAttributes
 import com.bugsnag.android.performance.internal.isInForeground
@@ -34,8 +33,6 @@ import java.net.URL
  */
 object BugsnagPerformance {
     const val VERSION: String = "1.0.0"
-
-    internal val tracer = Tracer()
 
     internal val instrumentedAppState = InstrumentedAppState()
 
@@ -87,7 +84,7 @@ object BugsnagPerformance {
 
     private fun startUnderLock(configuration: ImmutableConfig) {
         Logger.delegate = configuration.logger
-        instrumentedAppState.configure(configuration)
+        val tracer = instrumentedAppState.configure(configuration)
 
         if (configuration.autoInstrumentAppStarts) {
             // mark the app as "starting" (if it isn't already)

@@ -8,7 +8,7 @@ import android.os.Handler
 import android.os.Looper
 import android.os.Message
 import android.os.SystemClock
-import com.bugsnag.android.performance.BugsnagPerformance
+import com.bugsnag.android.performance.BugsnagPerformance.instrumentedAppState
 import com.bugsnag.android.performance.Logger
 import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.SpanOptions
@@ -234,7 +234,7 @@ class PerformanceLifecycleCallbacks internal constructor(
                         (span as? SpanImpl)?.endTime ?: SystemClock.elapsedRealtimeNanos(),
                     )
 
-                    BugsnagPerformance.tracer.onEnd(span)
+                    instrumentedAppState.spanProcessor.onEnd(span)
                 }
             } else {
                 spanFactory.createViewLoadSpan(activity, spanOptions)
@@ -248,9 +248,10 @@ class PerformanceLifecycleCallbacks internal constructor(
     }
 
     private fun endViewLoad(activity: Activity) {
+        val endTime = SystemClock.elapsedRealtimeNanos()
         if (closeLoadSpans) {
             // close any pending spans associated with the Activity
-            spanTracker.endAllSpans(activity)
+            spanTracker.endAllSpans(activity, endTime)
         } else {
             spanTracker.markSpanAutomaticEnd(activity)
         }
@@ -258,7 +259,7 @@ class PerformanceLifecycleCallbacks internal constructor(
         // if we do not automatically open spans, we always close the AppStart span when we
         // would end ViewLoad for an Activity
         if (!openLoadSpans) {
-            maybeEndAppStartSpan(SystemClock.elapsedRealtimeNanos())
+            maybeEndAppStartSpan(endTime)
         }
     }
 

@@ -11,7 +11,7 @@ import java.util.UUID
 internal typealias AttributeSource = (target: HasAttributes) -> Unit
 
 class SpanFactory(
-    private val spanProcessor: SpanProcessor,
+    var spanProcessor: SpanProcessor,
     val spanAttributeSource: AttributeSource = {},
 ) {
     fun createCustomSpan(
