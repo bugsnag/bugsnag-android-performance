@@ -132,7 +132,7 @@ class SpanTracker {
     }
 
     /**
-     * End all spans associated with the given `token` or any `subToken`s. This will attempt to
+     * End all spans associated with the given [token] or any `subToken`s. This will attempt to
      * use autoEndTimes where they are available, but will otherwise fallback to using [endTime]
      * for each of the spans that get closed.
      */
@@ -140,6 +140,20 @@ class SpanTracker {
         lock.write {
             val associatedSpans = backingStore[token]
             associatedSpans?.values?.forEach { it.markLeaked(endTime) }
+
+            backingStore.remove(token)
+        }
+    }
+
+    /**
+     * Discard & remove all spans associated with the given [token]. This will result in any
+     * associated spans being discarded, any of their child spans that have already been closed
+     * will have no valid parent span and will also be discarded by the server-side.
+     */
+    fun discardAllSpans(token: Any) {
+        lock.write {
+            val associatedSpans = backingStore[token]
+            associatedSpans?.values?.forEach { it.span.discard() }
 
             backingStore.remove(token)
         }

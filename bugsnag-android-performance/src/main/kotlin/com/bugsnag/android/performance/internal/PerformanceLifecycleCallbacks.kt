@@ -8,11 +8,9 @@ import android.os.Handler
 import android.os.Looper
 import android.os.Message
 import android.os.SystemClock
-import com.bugsnag.android.performance.BugsnagPerformance.instrumentedAppState
 import com.bugsnag.android.performance.Logger
 import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.SpanOptions
-import com.bugsnag.android.performance.internal.InstrumentedAppState.Companion.applicationToken
 import kotlin.math.max
 
 typealias InForegroundCallback = (inForeground: Boolean) -> Unit
@@ -20,6 +18,7 @@ typealias InForegroundCallback = (inForeground: Boolean) -> Unit
 class PerformanceLifecycleCallbacks internal constructor(
     private val spanTracker: SpanTracker,
     private val spanFactory: SpanFactory,
+    private val startupTracker: AppStartTracker,
     private val inForegroundCallback: InForegroundCallback,
 ) : ActivityLifecycleCallbacks, Handler.Callback {
 
@@ -43,12 +42,10 @@ class PerformanceLifecycleCallbacks internal constructor(
 
     internal var closeLoadSpans: Boolean = false
 
-    internal var instrumentAppStart: Boolean = true
-
     override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-            appStartIsForeground()
-            maybeStartViewLoad(activity, savedInstanceState)
+            startupTracker.onActivityCreate(savedInstanceState != null)
+            maybeStartViewLoad(activity)
         }
     }
 
@@ -56,6 +53,7 @@ class PerformanceLifecycleCallbacks internal constructor(
         startedActivityCount++
 
         if (startedActivityCount == 1 && backgroundSent) {
+            startupTracker.isInBackground = false
             inForegroundCallback(true)
         } else {
             handler.removeMessages(MSG_SEND_BACKGROUND)
@@ -69,8 +67,8 @@ class PerformanceLifecycleCallbacks internal constructor(
     }
 
     override fun onActivityPreCreated(activity: Activity, savedInstanceState: Bundle?) {
-        appStartIsForeground()
-        maybeStartViewLoad(activity, savedInstanceState)
+        startupTracker.onActivityCreate(savedInstanceState != null)
+        maybeStartViewLoad(activity)
         startViewLoadPhase(activity, ViewLoadPhase.CREATE)
     }
 
@@ -120,6 +118,7 @@ class PerformanceLifecycleCallbacks internal constructor(
     }
 
     private fun handleViewLoadLeak(activity: Activity) {
+        startupTracker.onViewLoadComplete(SystemClock.elapsedRealtimeNanos())
         if (spanTracker.markSpanLeaked(activity)) {
             Logger.w(
                 "${activity::class.java.name} appears to have leaked a ViewLoad Span. " +
@@ -131,9 +130,7 @@ class PerformanceLifecycleCallbacks internal constructor(
     override fun handleMessage(msg: Message): Boolean {
         when (msg.what) {
             MSG_SEND_BACKGROUND -> sendBackgroundCallback()
-            MSG_APP_CLASS_COMPLETE -> onApplicationPostCreated()
             MSG_CHECK_FINISHED -> (msg.obj as? Activity)?.let { checkActivityFinished(it) }
-            MSG_DISCARD_APP_START -> discardAppStart()
 
             else -> return false
         }
@@ -147,74 +144,14 @@ class PerformanceLifecycleCallbacks internal constructor(
         }
     }
 
-    private fun onApplicationPostCreated() {
-        spanTracker.endSpan(applicationToken, AppStartPhase.FRAMEWORK)
-        handler.sendEmptyMessageDelayed(MSG_DISCARD_APP_START, APP_START_TIMEOUT_MS)
-    }
-
     private fun sendBackgroundCallback() {
         inForegroundCallback(false)
+        startupTracker.isInBackground = true
         backgroundSent = true
-        discardAppStart()
     }
 
-    fun startAppStartSpan(startType: String) {
-        if (spanTracker[applicationToken] == null && instrumentAppStart) {
-            spanTracker.associate(applicationToken) {
-                spanFactory.createAppStartSpan(startType)
-            }
-
-            handler.sendMessageAtFrontOfQueue(handler.obtainMessage(MSG_APP_CLASS_COMPLETE))
-        }
-    }
-
-    fun startAppStartPhase(appStartPhase: AppStartPhase) {
-        val appStartSpan = spanTracker[applicationToken]
-
-        if (appStartSpan != null && instrumentAppStart) {
-            spanTracker.associate(applicationToken, appStartPhase) {
-                spanFactory.createAppStartPhaseSpan(appStartPhase, appStartSpan)
-            }
-        }
-    }
-
-    fun discardAppStart() {
-        // we discard all spans related to AppStart
-        spanTracker.removeAllAssociations(applicationToken).forEach { it.discard() }
-    }
-
-    private fun maybeStartAppLoad(savedInstanceState: Bundle?) {
-        if (activityInstanceCount == 0) {
-            if (savedInstanceState == null) {
-                startAppStartSpan("Warm")
-            } else {
-                startAppStartSpan("Hot")
-            }
-        }
-    }
-
-    private fun maybeEndAppStartSpan(endTime: Long) {
-        if (instrumentAppStart) {
-            spanTracker.endAllSpans(applicationToken, endTime)
-        }
-
-        // we may have an appStartupSpan from before the configuration was in-place
-        spanTracker.removeAssociation(applicationToken)
-    }
-
-    /**
-     * Called when it becomes clear that any pending AppStart is in the foreground, so we should
-     * avoid potentially discarding the AppStart span (and remove our background app-start detection).
-     */
-    private fun appStartIsForeground() {
-        handler.removeMessages(MSG_APP_CLASS_COMPLETE)
-        handler.removeMessages(MSG_DISCARD_APP_START)
-    }
-
-    private fun maybeStartViewLoad(activity: Activity, savedInstanceState: Bundle?) {
+    private fun maybeStartViewLoad(activity: Activity) {
         try {
-            maybeStartAppLoad(savedInstanceState)
-
             if (openLoadSpans) {
                 startViewLoadSpan(activity, SpanOptions.DEFAULTS)
             }
@@ -227,14 +164,14 @@ class PerformanceLifecycleCallbacks internal constructor(
         val span = spanTracker.associate(activity) {
             // if this is still part of the AppStart span, then the first ViewLoad to end should
             // also end the AppStart span
-            if (spanTracker[applicationToken] != null) {
+            if (spanTracker[AppStartTracker.appStartToken] != null) {
                 spanFactory.createViewLoadSpan(activity, spanOptions) { span ->
                     // we end the AppStart span at the same timestamp as the ViewLoad span ended
-                    maybeEndAppStartSpan(
+                    startupTracker.onViewLoadComplete(
                         (span as? SpanImpl)?.endTime ?: SystemClock.elapsedRealtimeNanos(),
                     )
 
-                    instrumentedAppState.spanProcessor.onEnd(span)
+                    spanFactory.spanProcessor.onEnd(span)
                 }
             } else {
                 spanFactory.createViewLoadSpan(activity, spanOptions)
@@ -249,17 +186,12 @@ class PerformanceLifecycleCallbacks internal constructor(
 
     private fun endViewLoad(activity: Activity) {
         val endTime = SystemClock.elapsedRealtimeNanos()
+        startupTracker.onViewLoadComplete(endTime)
         if (closeLoadSpans) {
             // close any pending spans associated with the Activity
             spanTracker.endAllSpans(activity, endTime)
         } else {
             spanTracker.markSpanAutomaticEnd(activity)
-        }
-
-        // if we do not automatically open spans, we always close the AppStart span when we
-        // would end ViewLoad for an Activity
-        if (!openLoadSpans) {
-            maybeEndAppStartSpan(endTime)
         }
     }
 
@@ -287,30 +219,13 @@ class PerformanceLifecycleCallbacks internal constructor(
         private const val MSG_SEND_BACKGROUND = 1
 
         /**
-         * Message ID sent directly after opening an AppStart span. This begins a second timeout
-         * tracking the time between the end of the `Application.onCreate` and the first
-         * `Activity.onCreate` (tracked by [MSG_DISCARD_APP_START]).
-         */
-        private const val MSG_APP_CLASS_COMPLETE = 2
-
-        /**
-         * Message ID sent delayed (after [APP_START_TIMEOUT_MS]) to force-discard any AppStart
-         * span still in-progress. This is used to avoid skewing metrics due to background starts
-         * triggered by things like broadcasts, service starts or content providers being accessed.
-         *
-         * This message is negated by any `Activity.onCreate` which will
-         * `removeMessages(MSG_DISCARD_APP_START)`.
-         */
-        private const val MSG_DISCARD_APP_START = 3
-
-        /**
          * Message ID used to check whether an Activity is finishing or has been finished at a
          * time we cannot otherwise detect (for example when running on <Q devices we have no
          * onActivityPostCreated hook). The [Message.obj] is expected to be the Activity to check,
          * and if it is finished or finishing all of its associated ViewLoad / ViewLoadPhase
          * spans will be closed.
          */
-        private const val MSG_CHECK_FINISHED = 4
+        private const val MSG_CHECK_FINISHED = 2
 
         /**
          * Same as `androidx.lifecycle.ProcessLifecycleOwner` and is used to avoid reporting
@@ -318,11 +233,5 @@ class PerformanceLifecycleCallbacks internal constructor(
          * changes.
          */
         private const val BACKGROUND_TIMEOUT_MS = 700L
-
-        /**
-         * How long to wait between the Application class loading and the first Activity.onCreate before
-         * discarding the AppStart span (and assuming the app-start is for a Service or Broadcast).
-         */
-        private const val APP_START_TIMEOUT_MS = 1000L
     }
 }

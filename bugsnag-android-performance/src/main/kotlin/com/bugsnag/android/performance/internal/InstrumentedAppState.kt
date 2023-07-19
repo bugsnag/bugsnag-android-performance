@@ -5,6 +5,7 @@ import com.bugsnag.android.performance.AutoInstrument
 import com.bugsnag.android.performance.SpanContext
 import com.bugsnag.android.performance.internal.processing.ForwardingSpanProcessor
 import com.bugsnag.android.performance.internal.processing.Tracer
+import kotlin.math.max
 
 class InstrumentedAppState {
     internal val defaultAttributeSource = DefaultAttributeSource()
@@ -15,6 +16,9 @@ class InstrumentedAppState {
     val spanTracker = SpanTracker()
 
     val spanFactory = SpanFactory(spanProcessor, defaultAttributeSource)
+
+    val startupTracker = AppStartTracker(spanTracker, spanFactory)
+
     val lifecycleCallbacks = createLifecycleCallbacks()
 
     lateinit var app: Application
@@ -51,7 +55,11 @@ class InstrumentedAppState {
     }
 
     private fun createLifecycleCallbacks(): PerformanceLifecycleCallbacks {
-        return PerformanceLifecycleCallbacks(spanTracker, spanFactory) { inForeground ->
+        return PerformanceLifecycleCallbacks(
+            spanTracker,
+            spanFactory,
+            startupTracker,
+        ) { inForeground ->
             defaultAttributeSource.update {
                 it.copy(isInForeground = inForeground)
             }
@@ -62,17 +70,11 @@ class InstrumentedAppState {
         lifecycleCallbacks.apply {
             openLoadSpans = configuration.autoInstrumentActivities != AutoInstrument.OFF
             closeLoadSpans = configuration.autoInstrumentActivities == AutoInstrument.FULL
-            instrumentAppStart = configuration.autoInstrumentAppStarts
         }
     }
 
-    fun startAppStartSpan(startType: String) = lifecycleCallbacks.startAppStartSpan(startType)
-
-    fun startAppStartPhase(phase: AppStartPhase) = lifecycleCallbacks.startAppStartPhase(phase)
-
-    fun markBugsnagPerformanceStart() {
-        spanTracker.endSpan(applicationToken, AppStartPhase.FRAMEWORK)
-        startAppStartSpan("Cold")
+    fun onBugsnagPerformanceStart() {
+        startupTracker.onBugsnagPerformanceStart()
     }
 
     companion object {
