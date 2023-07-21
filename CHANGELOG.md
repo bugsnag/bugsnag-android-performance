@@ -1,3 +1,10 @@
+## TBD
+
+### Enhancements
+
+* AppStartPhase/Framework introduced to mark the time between class loading & Application.onCreate
+  [#163](https://github.com/bugsnag/bugsnag-android-performance/pull/163)
+
 ## 1.0.0 (2023-07-17)
 
 ### Bug fixes

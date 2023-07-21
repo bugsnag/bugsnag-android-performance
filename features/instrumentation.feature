@@ -46,12 +46,17 @@ Feature: Automatic creation of spans
     Given I run "AppStartScenario"
     Then I relaunch the app after shutdown
     * I load scenario "AppStartScenario"
-    And I wait for 5 spans
+    And I wait for 6 spans
     * a span named "[AppStart/Cold]" contains the attributes:
                 | attribute                         | type        | value          |
                 | bugsnag.span.category             | stringValue | app_start      |
                 | bugsnag.app_start.type            | stringValue | cold           |
                 | bugsnag.app_start.first_view_name | stringValue | MainActivity   |
+
+    * a span named "[AppStartPhase/Framework]" contains the attributes:
+                | attribute                         | type        | value           |
+                | bugsnag.span.category             | stringValue | app_start_phase |
+                | bugsnag.phase                     | stringValue | FrameworkLoad   |
 
     * a span named "[ViewLoad/Activity]MainActivity" contains the attributes:
                 | attribute               | type        | value                    |

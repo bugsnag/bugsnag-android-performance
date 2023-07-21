@@ -11,7 +11,7 @@ import java.util.UUID
 internal typealias AttributeSource = (target: HasAttributes) -> Unit
 
 class SpanFactory(
-    private val spanProcessor: SpanProcessor,
+    var spanProcessor: SpanProcessor,
     val spanAttributeSource: AttributeSource = {},
 ) {
     fun createCustomSpan(
@@ -134,6 +134,24 @@ class SpanFactory(
         )
 
         span.setAttribute("bugsnag.app_start.type", startType.lowercase())
+
+        return span
+    }
+
+    fun createAppStartPhaseSpan(
+        phase: AppStartPhase,
+        appStartContext: SpanContext,
+        spanProcessor: SpanProcessor = this.spanProcessor,
+    ): SpanImpl {
+        val span = createSpan(
+            "[AppStartPhase/${phase.phaseName}]",
+            SpanKind.INTERNAL,
+            SpanCategory.APP_START_PHASE,
+            SpanOptions.DEFAULTS.within(appStartContext),
+            spanProcessor,
+        )
+
+        span.setAttribute("bugsnag.phase", "FrameworkLoad")
 
         return span
     }

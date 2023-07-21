@@ -78,6 +78,13 @@ class SpanTracker {
         }
     }
 
+    fun removeAllAssociations(tag: Any?): Collection<SpanImpl> {
+        return lock.write {
+            val associatedSpans = backingStore.remove(tag)
+            associatedSpans.orEmpty().values.map { it.span }
+        }
+    }
+
     /**
      * Mark when a `Span` would have been ended automatically. *If* the associated `Span` is later
      * marked as [leaked](markSpanLeaked) then its `endTime` will be set to the time that this

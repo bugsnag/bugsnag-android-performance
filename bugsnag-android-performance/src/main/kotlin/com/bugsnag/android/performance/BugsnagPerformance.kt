@@ -6,6 +6,7 @@ import android.content.Context
 import android.net.Uri
 import android.os.SystemClock
 import com.bugsnag.android.performance.BugsnagPerformance.start
+import com.bugsnag.android.performance.internal.AppStartPhase
 import com.bugsnag.android.performance.internal.Connectivity
 import com.bugsnag.android.performance.internal.DiscardingSampler
 import com.bugsnag.android.performance.internal.HttpDelivery
@@ -20,7 +21,6 @@ import com.bugsnag.android.performance.internal.RetryDeliveryTask
 import com.bugsnag.android.performance.internal.SamplerTask
 import com.bugsnag.android.performance.internal.SendBatchTask
 import com.bugsnag.android.performance.internal.Task
-import com.bugsnag.android.performance.internal.processing.Tracer
 import com.bugsnag.android.performance.internal.Worker
 import com.bugsnag.android.performance.internal.createResourceAttributes
 import com.bugsnag.android.performance.internal.isInForeground
@@ -33,8 +33,6 @@ import java.net.URL
  */
 object BugsnagPerformance {
     const val VERSION: String = "1.0.0"
-
-    internal val tracer = Tracer()
 
     internal val instrumentedAppState = InstrumentedAppState()
 
@@ -86,13 +84,15 @@ object BugsnagPerformance {
 
     private fun startUnderLock(configuration: ImmutableConfig) {
         Logger.delegate = configuration.logger
-        instrumentedAppState.configure(configuration)
+        val tracer = instrumentedAppState.configure(configuration)
 
         if (configuration.autoInstrumentAppStarts) {
             // mark the app as "starting" (if it isn't already)
-            reportApplicationClassLoaded()
+            synchronized(this) {
+                instrumentedAppState.markBugsnagPerformanceStart()
+            }
         } else {
-            instrumentedAppState.activityCallbacks.discardAppStart()
+            instrumentedAppState.lifecycleCallbacks.discardAppStart()
         }
 
         val application = configuration.application
@@ -232,7 +232,7 @@ object BugsnagPerformance {
         options: SpanOptions = SpanOptions.DEFAULTS,
     ): Span {
         // create & track Activity referenced ViewLoad spans
-        return instrumentedAppState.activityCallbacks.startViewLoadSpan(activity, options)
+        return instrumentedAppState.lifecycleCallbacks.startViewLoadSpan(activity, options)
     }
 
     /**
@@ -281,7 +281,8 @@ object BugsnagPerformance {
     @JvmStatic
     fun reportApplicationClassLoaded() {
         synchronized(this) {
-            instrumentedAppState.activityCallbacks.startAppLoadSpan("Cold")
+            instrumentedAppState.startAppStartSpan("Cold")
+            instrumentedAppState.startAppStartPhase(AppStartPhase.FRAMEWORK)
         }
     }
 }
