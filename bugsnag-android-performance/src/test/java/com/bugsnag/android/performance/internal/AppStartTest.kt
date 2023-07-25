@@ -10,8 +10,8 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.Shadows
 import org.robolectric.annotation.Config
 import org.robolectric.shadows.ShadowPausedSystemClock
 
@@ -92,12 +92,13 @@ class AppStartTest {
         SystemClock.setCurrentTimeMillis(100L)
         startupTracker.onFirstClassLoadReported()
         SystemClock.setCurrentTimeMillis(200L)
+        startupTracker.onApplicationCreate()
         startupTracker.onBugsnagPerformanceStart()
-        // Application.onCreate completes
-        Robolectric.flushForegroundThreadScheduler()
 
-        // no Activity is started
-        Robolectric.flushForegroundThreadScheduler()
+        // schedule discard AppStart
+        Shadows.shadowOf(Loopers.main).runToEndOfTasks()
+        // discard AppStart:
+        Shadows.shadowOf(Loopers.main).runToEndOfTasks()
 
         assertEquals(SpanContext.invalid, SpanContext.current)
 
@@ -118,13 +119,17 @@ class AppStartTest {
         SystemClock.setCurrentTimeMillis(100L)
         startupTracker.onFirstClassLoadReported()
         SystemClock.setCurrentTimeMillis(200L)
+        startupTracker.onApplicationCreate()
         startupTracker.onBugsnagPerformanceStart()
         // Application.onCreate completes
-        Robolectric.flushForegroundThreadScheduler()
+
+        Shadows.shadowOf(Loopers.main).runToEndOfTasks()
 
         SystemClock.setCurrentTimeMillis(300L)
         startupTracker.onActivityCreate(false)
         SystemClock.setCurrentTimeMillis(400L)
         startupTracker.onViewLoadComplete(SystemClock.elapsedRealtimeNanos())
+
+        Shadows.shadowOf(Loopers.main).runToEndOfTasks()
     }
 }

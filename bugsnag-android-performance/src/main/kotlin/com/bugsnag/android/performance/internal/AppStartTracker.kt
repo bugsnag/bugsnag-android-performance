@@ -1,7 +1,6 @@
 package com.bugsnag.android.performance.internal
 
 import android.os.Handler
-import android.os.Looper
 import android.os.Message
 
 class AppStartTracker(
@@ -17,39 +16,42 @@ class AppStartTracker(
 
     internal var isInBackground = true
 
-    private val handler = Handler(Looper.getMainLooper(), this)
+    private val handler = Loopers.newMainHandler(this)
 
     fun onFirstClassLoadReported() {
         if (processStarted) return
-        val appStart = startAppStart("Cold")
+        val appStart = startAppStartSpan("Cold")
 
         spanTracker.associate(appStartToken, AppStartPhase.FRAMEWORK) {
             spanFactory.createAppStartPhaseSpan(AppStartPhase.FRAMEWORK, appStart)
         }
 
-        handler.sendMessageAtFrontOfQueue(handler.obtainMessage(MSG_APP_CLASS_COMPLETE))
-
         processStarted = true
+    }
+
+    fun onApplicationCreate() {
+        handler.sendMessageAtFrontOfQueue(handler.obtainMessage(MSG_APP_CLASS_COMPLETE))
+        spanTracker.endSpan(appStartToken, AppStartPhase.FRAMEWORK)
     }
 
     fun onBugsnagPerformanceStart() {
         if (processStarted) return
 
-        spanTracker.endSpan(appStartToken, AppStartPhase.FRAMEWORK)
+        onApplicationCreate()
 
-        startAppStart("Cold")
+        startAppStartSpan("Cold")
         handler.sendMessageAtFrontOfQueue(handler.obtainMessage(MSG_APP_CLASS_COMPLETE))
 
         processStarted = true
     }
 
-    fun startAppStart(startType: String): SpanImpl {
+    internal fun startAppStartSpan(startType: String): SpanImpl {
         return spanTracker.associate(appStartToken) {
             spanFactory.createAppStartSpan(startType)
         }
     }
 
-    fun onApplicationPostCreated() {
+    private fun onApplicationPostCreated() {
         spanTracker.endSpan(appStartToken, AppStartPhase.FRAMEWORK)
 
         // if the process is being started in the background, we want to discard the AppStart
@@ -59,9 +61,9 @@ class AppStartTracker(
     fun onActivityCreate(hasSavedInstanceState: Boolean) {
         if (isInBackground) {
             if (hasSavedInstanceState) {
-                startAppStart("Hot")
+                startAppStartSpan("Hot")
             } else {
-                startAppStart("Warm")
+                startAppStartSpan("Warm")
             }
         }
 

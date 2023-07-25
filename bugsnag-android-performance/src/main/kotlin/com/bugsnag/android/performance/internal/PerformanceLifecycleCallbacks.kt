@@ -5,7 +5,6 @@ import android.app.Application.ActivityLifecycleCallbacks
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
-import android.os.Looper
 import android.os.Message
 import android.os.SystemClock
 import com.bugsnag.android.performance.Logger
@@ -22,7 +21,7 @@ class PerformanceLifecycleCallbacks internal constructor(
     private val inForegroundCallback: InForegroundCallback,
 ) : ActivityLifecycleCallbacks, Handler.Callback {
 
-    private val handler = Handler(Looper.getMainLooper(), this)
+    private val handler = Loopers.newMainHandler(this)
 
     /**
      * The number of Activities that have been created but not destroyed. This is used to determine
