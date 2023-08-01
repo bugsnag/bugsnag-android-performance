@@ -24,6 +24,7 @@ import com.bugsnag.android.performance.internal.Task
 import com.bugsnag.android.performance.internal.Worker
 import com.bugsnag.android.performance.internal.createResourceAttributes
 import com.bugsnag.android.performance.internal.isInForeground
+import com.bugsnag.android.performance.internal.processing.Tracer
 import java.net.URL
 
 /**
@@ -89,10 +90,10 @@ object BugsnagPerformance {
         if (configuration.autoInstrumentAppStarts) {
             // mark the app as "starting" (if it isn't already)
             synchronized(this) {
-                instrumentedAppState.markBugsnagPerformanceStart()
+                instrumentedAppState.onBugsnagPerformanceStart()
             }
         } else {
-            instrumentedAppState.lifecycleCallbacks.discardAppStart()
+            instrumentedAppState.startupTracker.discardAppStart()
         }
 
         val application = configuration.application
@@ -281,8 +282,7 @@ object BugsnagPerformance {
     @JvmStatic
     fun reportApplicationClassLoaded() {
         synchronized(this) {
-            instrumentedAppState.startAppStartSpan("Cold")
-            instrumentedAppState.startAppStartPhase(AppStartPhase.FRAMEWORK)
+            instrumentedAppState.startupTracker.onFirstClassLoadReported()
         }
     }
 }

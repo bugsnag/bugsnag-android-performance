@@ -49,11 +49,11 @@ Feature: Nested spans
                 | bugsnag.phase                     | stringValue | ActivityResume      |
                 | bugsnag.view.name                 | stringValue | NestedSpansActivity |
 
-    * a span named "[AppStart/Cold]" contains the attributes:
+    * a span named "[AppStart/Warm]" contains the attributes:
                 | attribute                         | type        | value               |
                 | bugsnag.span.category             | stringValue | app_start           |
                 | bugsnag.app_start.first_view_name | stringValue | NestedSpansActivity |
-                | bugsnag.app_start.type            | stringValue | cold                |
+                | bugsnag.app_start.type            | stringValue | warm                |
 
     * a span named "[ViewLoad/Activity]NestedSpansActivity" contains the attributes:
                 | attribute                         | type        | value               |
