@@ -5,7 +5,6 @@ import com.bugsnag.android.performance.AutoInstrument
 import com.bugsnag.android.performance.SpanContext
 import com.bugsnag.android.performance.internal.processing.ForwardingSpanProcessor
 import com.bugsnag.android.performance.internal.processing.Tracer
-import kotlin.math.max
 
 class InstrumentedAppState {
     internal val defaultAttributeSource = DefaultAttributeSource()
@@ -24,15 +23,22 @@ class InstrumentedAppState {
     lateinit var app: Application
         private set
 
+    internal fun attach(application: Application) {
+        if(this::app.isInitialized) {
+            return
+        }
+
+        app = application
+        app.registerActivityLifecycleCallbacks(lifecycleCallbacks)
+    }
+
     internal fun configure(configuration: ImmutableConfig): Tracer {
-        this.app = configuration.application
+        attach(configuration.application)
 
         val bootstrapSpanProcessor = spanProcessor
         val tracer = Tracer()
 
         configureLifecycleCallbacks(configuration)
-
-        app.registerActivityLifecycleCallbacks(lifecycleCallbacks)
         app.registerComponentCallbacks(PerformanceComponentCallbacks(tracer))
 
         spanProcessor = tracer
