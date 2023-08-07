@@ -1,8 +1,13 @@
 package com.bugsnag.android.performance.internal
 
 import android.app.Application
+import android.os.Build
 import com.bugsnag.android.performance.AutoInstrument
 import com.bugsnag.android.performance.SpanContext
+import com.bugsnag.android.performance.internal.instrumentation.AbstractActivityLifecycleInstrumentation
+import com.bugsnag.android.performance.internal.instrumentation.ActivityLifecycleInstrumentation
+import com.bugsnag.android.performance.internal.instrumentation.ForegroundState
+import com.bugsnag.android.performance.internal.instrumentation.LegacyActivityInstrumentation
 import com.bugsnag.android.performance.internal.processing.ForwardingSpanProcessor
 import com.bugsnag.android.performance.internal.processing.Tracer
 
@@ -18,18 +23,24 @@ class InstrumentedAppState {
 
     val startupTracker = AppStartTracker(spanTracker, spanFactory)
 
-    val lifecycleCallbacks = createLifecycleCallbacks()
+    internal val activityInstrumentation = createActivityInstrumentation()
 
     lateinit var app: Application
         private set
 
     internal fun attach(application: Application) {
-        if(this::app.isInitialized) {
+        if (this::app.isInitialized) {
             return
         }
 
         app = application
-        app.registerActivityLifecycleCallbacks(lifecycleCallbacks)
+        app.registerActivityLifecycleCallbacks(activityInstrumentation)
+
+        ForegroundState.addForegroundChangedCallback { inForeground ->
+            defaultAttributeSource.update {
+                it.copy(isInForeground = inForeground)
+            }
+        }
     }
 
     internal fun configure(configuration: ImmutableConfig): Tracer {
@@ -60,20 +71,24 @@ class InstrumentedAppState {
         return tracer
     }
 
-    private fun createLifecycleCallbacks(): PerformanceLifecycleCallbacks {
-        return PerformanceLifecycleCallbacks(
-            spanTracker,
-            spanFactory,
-            startupTracker,
-        ) { inForeground ->
-            defaultAttributeSource.update {
-                it.copy(isInForeground = inForeground)
-            }
+    private fun createActivityInstrumentation(): AbstractActivityLifecycleInstrumentation {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            ActivityLifecycleInstrumentation(
+                spanTracker,
+                spanFactory,
+                startupTracker,
+            )
+        } else {
+            LegacyActivityInstrumentation(
+                spanTracker,
+                spanFactory,
+                startupTracker,
+            )
         }
     }
 
     private fun configureLifecycleCallbacks(configuration: ImmutableConfig) {
-        lifecycleCallbacks.apply {
+        activityInstrumentation.apply {
             openLoadSpans = configuration.autoInstrumentActivities != AutoInstrument.OFF
             closeLoadSpans = configuration.autoInstrumentActivities == AutoInstrument.FULL
         }

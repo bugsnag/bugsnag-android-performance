@@ -6,7 +6,6 @@ import android.content.Context
 import android.net.Uri
 import android.os.SystemClock
 import com.bugsnag.android.performance.BugsnagPerformance.start
-import com.bugsnag.android.performance.internal.AppStartPhase
 import com.bugsnag.android.performance.internal.Connectivity
 import com.bugsnag.android.performance.internal.DiscardingSampler
 import com.bugsnag.android.performance.internal.HttpDelivery
@@ -24,7 +23,6 @@ import com.bugsnag.android.performance.internal.Task
 import com.bugsnag.android.performance.internal.Worker
 import com.bugsnag.android.performance.internal.createResourceAttributes
 import com.bugsnag.android.performance.internal.isInForeground
-import com.bugsnag.android.performance.internal.processing.Tracer
 import java.net.URL
 
 /**
@@ -233,7 +231,7 @@ object BugsnagPerformance {
         options: SpanOptions = SpanOptions.DEFAULTS,
     ): Span {
         // create & track Activity referenced ViewLoad spans
-        return instrumentedAppState.lifecycleCallbacks.startViewLoadSpan(activity, options)
+        return instrumentedAppState.activityInstrumentation.startViewLoadSpan(activity, options)
     }
 
     /**

@@ -1,6 +1,5 @@
 package com.bugsnag.mazeracer.scenarios
 
-import android.content.Intent
 import android.os.Handler
 import android.os.Looper
 import com.bugsnag.android.performance.BugsnagPerformance
@@ -30,13 +29,6 @@ class AppBackgroundedScenario(
         }
 
         // we send ourselves to the background, since the Appium action isn't very reliable
-        handler.post {
-            context.startActivity(
-                Intent().apply {
-                    setAction(Intent.ACTION_MAIN)
-                    addCategory(Intent.CATEGORY_HOME)
-                },
-            )
-        }
+        handler.post { context.finish() }
     }
 }
