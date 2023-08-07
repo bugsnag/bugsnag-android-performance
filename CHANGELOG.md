@@ -4,6 +4,8 @@
 
 * AppStartPhase/Framework introduced to mark the time between class loading & Application.onCreate
   [#163](https://github.com/bugsnag/bugsnag-android-performance/pull/163)
+* Support for OkHttp 5.0.0 in [bugsnag-plugin-android-performance-okhttp](bugsnag-plugin-android-performance-okhttp)
+  [#167](https://github.com/bugsnag/bugsnag-android-performance/pull/167)
 
 ## 1.0.0 (2023-07-17)
 
