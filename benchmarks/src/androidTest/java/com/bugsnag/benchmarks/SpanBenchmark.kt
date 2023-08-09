@@ -31,6 +31,9 @@ class SpanBenchmark {
                 ).apply {
                     // we set the endpoint to localhost so that no payloads can actually be delivered
                     endpoint = "http://localhost"
+                    // discard spans on end()
+                    releaseStage = "benchmarking"
+                    enabledReleaseStages = setOf("production")
                     logger = NoopLogger
                 },
             )
@@ -46,8 +49,11 @@ class SpanBenchmark {
 
     @Test
     fun logViewLoadSpans() {
+        val activity = MyActivity()
         benchmarkRule.measureRepeated {
-            BugsnagPerformance.startViewLoadSpan(ViewType.ACTIVITY, "MainActivity").end()
+            BugsnagPerformance
+                .startViewLoadSpan(ViewType.ACTIVITY, activity::class.java.simpleName)
+                .end()
         }
     }
 
@@ -55,7 +61,7 @@ class SpanBenchmark {
     fun logNetworkRequestSpans() {
         val url = URL("http://localhost")
         benchmarkRule.measureRepeated {
-            BugsnagPerformance.startNetworkRequestSpan(url, "POST")
+            BugsnagPerformance.startNetworkRequestSpan(url, "POST").end()
         }
     }
 
@@ -71,4 +77,7 @@ class SpanBenchmark {
             }
         }
     }
+
+    // it's not really an Activity, but we pretend it is
+    class MyActivity
 }
