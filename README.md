@@ -21,13 +21,8 @@ Monitor the start-up, screen loading and network requests of your app and see th
 
 ## Getting started
 
-_This functionality is currently in its preview phase – please [contact us](mailto:support@bugsnag.com) for more information._
-
 For integration instructions, see our online docs: [docs.bugsnag.com/performance/android](https://docs.bugsnag.com/performance/android)
 
-## Pre-releases
-
-We are currently publishing pre-1.0 releases. These releases may contain breaking changes, which are documented in the [CHANGELOG.md](./CHANGELOG.md).
 ## Support
 
 * [Read the integration guide](https://docs.bugsnag.com/performance/android/)
