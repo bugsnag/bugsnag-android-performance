@@ -3,6 +3,7 @@ package com.bugsnag.android.performance.internal
 import androidx.annotation.VisibleForTesting
 import com.bugsnag.android.performance.Attributes
 import com.bugsnag.android.performance.Logger
+import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
 
@@ -30,22 +31,28 @@ internal open class HttpDelivery(
             return DeliveryResult.Failed(tracePayload, true)
         }
 
-        val connection = openConnection()
-        with(connection) {
-            requestMethod = "POST"
+        try {
+            val connection = openConnection()
+            with(connection) {
+                requestMethod = "POST"
 
-            setHeaders(tracePayload)
+                setHeaders(tracePayload)
 
-            doOutput = true
-            doInput = true
-            outputStream.use { out -> out.write(tracePayload.body) }
+                doOutput = true
+                doInput = true
+                outputStream.use { out -> out.write(tracePayload.body) }
+            }
+
+            val result = getDeliveryResult(connection.responseCode, tracePayload)
+            val newP = connection.getHeaderField("Bugsnag-Sampling-Probability")?.toDoubleOrNull()
+            connection.disconnect()
+            newP?.let { newProbabilityCallback?.onNewProbability(it) }
+            return result
+        } catch (e: IOException) {
+            return DeliveryResult.Failed(tracePayload, true)
+        } catch (e: Exception) {
+            return DeliveryResult.Failed(tracePayload, false)
         }
-
-        val result = getDeliveryResult(connection.responseCode, tracePayload)
-        val newP = connection.getHeaderField("Bugsnag-Sampling-Probability")?.toDoubleOrNull()
-        connection.disconnect()
-        newP?.let { newProbabilityCallback?.onNewProbability(it) }
-        return result
     }
 
     @VisibleForTesting
