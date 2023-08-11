@@ -6,9 +6,9 @@ import android.net.ConnectivityManager
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import org.mockito.kotlin.doReturn
-import org.mockito.kotlin.eq
+import org.mockito.kotlin.doReturnConsecutively
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 
 @Suppress("DEPRECATION")
 class LegacyNetworkTypeTest {
@@ -43,19 +43,20 @@ class LegacyNetworkTypeTest {
     ) {
         val context = mock<Context>()
         var callbackInvoked = false
-        val connectivity = ConnectivityLegacy(context, mock()) { status ->
+        val connectivityManager = mock<ConnectivityManager> {
+            whenever(it.activeNetworkInfo) doReturnConsecutively listOf(
+                null,
+                newNetworkInfo(transportType, null),
+            )
+        }
+
+        val connectivity = ConnectivityLegacy(context, connectivityManager) { status ->
             assertEquals(expectedNetworkType, status.networkType)
             assertEquals(expectedMetering, status.metering)
             callbackInvoked = true
         }
 
-        val intent = mock<Intent> {
-            on { it.getParcelableExtra<android.net.NetworkInfo>(eq(ConnectivityManager.EXTRA_NETWORK_INFO)) } doReturn
-                newNetworkInfo(transportType, null)
-        }
-
-        connectivity.onReceive(context, intent) // first is always ignored
-        connectivity.onReceive(context, intent)
+        connectivity.onReceive(context, Intent())
 
         assertTrue("Network callback not invoked", callbackInvoked)
     }

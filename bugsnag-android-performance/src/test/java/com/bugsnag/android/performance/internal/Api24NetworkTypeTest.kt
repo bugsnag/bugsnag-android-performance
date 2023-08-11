@@ -37,6 +37,8 @@ class Api24NetworkTypeTest {
             callbackInvoked = true
         }
 
+        whenever(connectivityManager.activeNetwork).thenReturn(mock())
+
         val networkCapabilities = mock<NetworkCapabilities>()
         whenever(networkCapabilities.hasTransport(transportType))
             .thenReturn(true)
@@ -48,7 +50,6 @@ class Api24NetworkTypeTest {
         whenever(connectivityManager.getNetworkCapabilities(any()))
             .thenReturn(networkCapabilities)
 
-        connectivity.onAvailable(mock()) // first event is always ignored
         connectivity.onAvailable(mock())
 
         assertTrue("Network callback not invoked", callbackInvoked)

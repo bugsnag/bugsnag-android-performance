@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.net.ConnectivityManager
+import android.net.LinkProperties
 import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkCapabilities.NET_CAPABILITY_INTERNET
@@ -31,6 +32,13 @@ private val unknownNetwork = ConnectivityStatus(
     false,
     ConnectionMetering.DISCONNECTED,
     NetworkType.UNKNOWN,
+    null,
+)
+
+private val noNetwork = ConnectivityStatus(
+    false,
+    ConnectionMetering.DISCONNECTED,
+    NetworkType.UNAVAILABLE,
     null,
 )
 
@@ -60,8 +68,10 @@ internal interface Connectivity {
                 cm == null -> UnknownConnectivity
                 Build.VERSION.SDK_INT >= Build.VERSION_CODES.S ->
                     ConnectivityApi31(context, cm, callback)
+
                 Build.VERSION.SDK_INT >= Build.VERSION_CODES.N ->
                     ConnectivityApi24(context, cm, callback)
+
                 else -> ConnectivityLegacy(context, cm, callback)
             }
         }
@@ -71,7 +81,7 @@ internal interface Connectivity {
 @Suppress("DEPRECATION")
 internal class ConnectivityLegacy(
     private val context: Context,
-    cm: ConnectivityManager,
+    private val cm: ConnectivityManager,
     private val callback: NetworkChangeCallback?,
 ) : BroadcastReceiver(), Connectivity {
     override var connectivityStatus: ConnectivityStatus = networkInfoToStatus(cm.activeNetworkInfo)
@@ -97,7 +107,7 @@ internal class ConnectivityLegacy(
 
     private fun networkInfoToStatus(info: android.net.NetworkInfo?): ConnectivityStatus {
         if (info == null) {
-            return unknownNetwork
+            return noNetwork
         }
 
         val subtype = info.subtypeName
@@ -106,6 +116,7 @@ internal class ConnectivityLegacy(
             when (info.type) {
                 ConnectivityManager.TYPE_WIFI, ConnectivityManager.TYPE_ETHERNET ->
                     ConnectionMetering.UNMETERED
+
                 else -> ConnectionMetering.POTENTIALLY_METERED
             },
             when (info.type) {
@@ -125,10 +136,7 @@ internal class ConnectivityLegacy(
     }
 
     override fun onReceive(context: Context, intent: Intent) {
-        val newNetworkInfo: android.net.NetworkInfo? =
-            intent.getParcelableExtra(ConnectivityManager.EXTRA_NETWORK_INFO)
-
-        connectivityStatus = networkInfoToStatus(newNetworkInfo)
+        connectivityStatus = networkInfoToStatus(cm.activeNetworkInfo)
     }
 }
 
@@ -166,7 +174,8 @@ internal open class ConnectivityApi24(
     protected open fun networkTypeFor(capabilities: NetworkCapabilities): NetworkType {
         return when {
             capabilities.hasTransport(TRANSPORT_ETHERNET) ||
-                capabilities.hasTransport(TRANSPORT_USB) -> NetworkType.WIRED
+                    capabilities.hasTransport(TRANSPORT_USB) -> NetworkType.WIRED
+
             capabilities.hasTransport(TRANSPORT_WIFI) -> NetworkType.WIFI
             capabilities.hasTransport(TRANSPORT_CELLULAR) -> NetworkType.CELL
             else -> NetworkType.UNKNOWN
@@ -213,7 +222,8 @@ internal open class ConnectivityApi24(
         return when {
             capabilities.hasTransport(TRANSPORT_WIFI) -> ConnectionMetering.UNMETERED
             capabilities.hasTransport(TRANSPORT_ETHERNET) ||
-                capabilities.hasTransport(TRANSPORT_USB) -> ConnectionMetering.UNMETERED
+                    capabilities.hasTransport(TRANSPORT_USB) -> ConnectionMetering.UNMETERED
+
             capabilities.hasTransport(TRANSPORT_CELLULAR) -> ConnectionMetering.POTENTIALLY_METERED
             else -> ConnectionMetering.DISCONNECTED
         }
@@ -221,7 +231,7 @@ internal open class ConnectivityApi24(
 
     protected open fun connectedFor(capabilities: NetworkCapabilities): Boolean {
         return capabilities.hasCapability(NET_CAPABILITY_INTERNET) &&
-            capabilities.hasCapability(NET_CAPABILITY_VALIDATED)
+                capabilities.hasCapability(NET_CAPABILITY_VALIDATED)
     }
 
     override fun registerForNetworkChanges() {
@@ -236,18 +246,27 @@ internal open class ConnectivityApi24(
         }
     }
 
-    override fun onUnavailable() {
-        connectivityStatus = unknownNetwork
+    override fun onUnavailable() = updateActiveNetwork()
+    override fun onLost(network: Network) = updateActiveNetwork()
+    override fun onLinkPropertiesChanged(network: Network, linkProperties: LinkProperties) =
+        updateActiveNetwork()
+
+    override fun onAvailable(network: Network) = updateActiveNetwork()
+    override fun onBlockedStatusChanged(network: Network, blocked: Boolean) = updateActiveNetwork()
+    override fun onCapabilitiesChanged(network: Network, networkCapabilities: NetworkCapabilities) =
+        updateActiveNetwork()
+
+    private fun updateActiveNetwork() {
+        val activeNetwork = cm.activeNetwork
+        if (activeNetwork == null) {
+            connectivityStatus = noNetwork
+            return
+        }
+
+        val capabilities = cm.getNetworkCapabilities(activeNetwork) ?: return
+        connectivityStatus = networkCapabilitiesToStatus(capabilities)
     }
 
-    override fun onAvailable(network: Network) {
-        val capabilities = cm.getNetworkCapabilities(network) ?: return
-        if (capabilities.hasCapability(NET_CAPABILITY_INTERNET) &&
-            capabilities.hasCapability(NET_CAPABILITY_VALIDATED)
-        ) {
-            connectivityStatus = networkCapabilitiesToStatus(capabilities)
-        }
-    }
 }
 
 @RequiresApi(Build.VERSION_CODES.S)
@@ -260,7 +279,7 @@ internal class ConnectivityApi31(
     override fun meteringFor(capabilities: NetworkCapabilities): ConnectionMetering {
         return when {
             capabilities.hasCapability(NET_CAPABILITY_NOT_METERED) ||
-                capabilities.hasCapability(NET_CAPABILITY_TEMPORARILY_NOT_METERED) -> ConnectionMetering.UNMETERED
+                    capabilities.hasCapability(NET_CAPABILITY_TEMPORARILY_NOT_METERED) -> ConnectionMetering.UNMETERED
 
             else -> super.meteringFor(capabilities)
         }
