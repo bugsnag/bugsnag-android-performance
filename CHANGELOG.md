@@ -7,6 +7,11 @@
 * Support for OkHttp 5.0.0 in [bugsnag-plugin-android-performance-okhttp](bugsnag-plugin-android-performance-okhttp)
   [#167](https://github.com/bugsnag/bugsnag-android-performance/pull/167)
 
+### Bug fixes
+
+* Traces are now correctly enqueued for retry when there is no active network (instead of being swallowed by the `UnknownHostException`)
+  [#170](https://github.com/bugsnag/bugsnag-android-performance/pull/170)
+
 ## 1.0.0 (2023-07-17)
 
 ### Bug fixes
