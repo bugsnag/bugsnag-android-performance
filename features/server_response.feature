@@ -192,24 +192,46 @@ Feature: Server responses
     And I should receive no traces
 
   Scenario: Update P to 0 on second response: success, fail-retriable, fail-permanent
-    Given I set the HTTP status code for the next requests to 200,200,500,400
-    Given I set the sampling probability for the next traces to "1,null,0"
-    And I run "ThreeSpansScenario"
-    And I wait to receive at least 2 traces
-    Then the trace payload field "resourceSpans.0.scopeSpans.0.spans.0.name" equals "span 1"
+    Given I set the HTTP status code for the next requests to 200
+    And I set the sampling probability for the next traces to "1"
+    And I load scenario "GenerateSpansScenario"
+    Then I invoke "sendNextSpan"
+    And I wait to receive 1 trace
+    Then a span name equals "span 1"
     And I discard the oldest trace
-    Then the trace payload field "resourceSpans.0.scopeSpans.0.spans.0.name" equals "span 2"
+
+    # Respond with a server error, triggering a retry
+    Given I set the HTTP status code for the next request to 500
+    And I set the sampling probability for the next traces to "0"
+    And I invoke "sendNextSpan"
+    And I wait to receive 1 trace
+    Then a span name equals "span 2"
+    And I discard the oldest trace
+
+    # Retry after a server error, set sampling to 0
+    Given I set the HTTP status code for the next request to 400
+    And I set the sampling probability for the next traces to "0"
+    And I invoke "sendNextSpan"
+    And I wait to receive at least 1 trace
+    # the retry span
+    Then a span name equals "span 2"
 
   Scenario: Update P to 0 on second response: fail-retriable, fail-permanent, success
-    Given I set the HTTP status code for the next requests to 200,500,400,200
-    Given I set the sampling probability for the next traces to "1,null,0"
-    And I run "ThreeSpansScenario"
-    And I wait to receive at least 2 traces
-    # 500 - Payload rejected (retry)
-    Then the trace payload field "resourceSpans.0.scopeSpans.0.spans.0.name" equals "span 1"
+    Given I set the HTTP status code for the next requests to 500
+    And I load scenario "GenerateSpansScenario"
+    Then I invoke "sendNextSpan"
+    # Attempt to send the span - but we return a 500 error (triggering a retry)
+    And I wait to receive at least 1 trace
+    Then a span name equals "span 1"
     And I discard the oldest trace
-    # Retry of previously rejected trace
-    Then the trace payload field "resourceSpans.0.scopeSpans.0.spans.0.name" equals "span 1"
+
+    # Retry after the server error, but return a perm-failure and set sampling to 0
+    Given I set the HTTP status code for the next request to 400
+    And I set the sampling probability for the next traces to "0"
+    And I invoke "sendNextSpan"
+    And I wait to receive at least 2 traces
+    Then a span name equals "span 1"
+    Then a span name equals "span 2"
 
   Scenario: Update P to 0 on second response: fail-retriable, success, fail-permanent
     Given I set the HTTP status code for the next requests to 200,500,200,400

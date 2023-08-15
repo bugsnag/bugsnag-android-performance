@@ -14,6 +14,7 @@ internal class RetryDeliveryTask(
         }
 
         val nextPayload = retryQueue.next() ?: return false
+        Logger.d("Attempting retry from queue ${nextPayload.timestamp}")
         val result = delivery.deliver(nextPayload)
 
         // if it was delivered, or can never be delivered - delete it

@@ -43,13 +43,18 @@ internal open class HttpDelivery(
                 outputStream.use { out -> out.write(tracePayload.body) }
             }
 
-            val result = getDeliveryResult(connection.responseCode, tracePayload)
+            val responseCode = connection.responseCode
+
+            Logger.d("HttpDelivery received $responseCode response")
+
+            val result = getDeliveryResult(responseCode, tracePayload)
             val newP = connection.getHeaderField("Bugsnag-Sampling-Probability")?.toDoubleOrNull()
             connection.disconnect()
             newP?.let { newProbabilityCallback?.onNewProbability(it) }
 
             result
         } catch (e: IOException) {
+            Logger.w("IOException while attempting delivery", e)
             DeliveryResult.Failed(tracePayload, true)
         } catch (e: Exception) {
             DeliveryResult.Failed(tracePayload, false)
