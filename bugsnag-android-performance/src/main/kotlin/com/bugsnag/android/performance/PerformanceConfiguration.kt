@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Bundle
 import androidx.annotation.VisibleForTesting
+import com.bugsnag.android.performance.internal.NetworkRequestInfo
 
 class PerformanceConfiguration private constructor(val context: Context) {
 
@@ -28,6 +29,8 @@ class PerformanceConfiguration private constructor(val context: Context) {
     var appVersion: String? = null
 
     var logger: Logger? = null
+
+    var networkRequestCallback: ((NetworkRequestInfo) -> Unit)? = null
 
     override fun toString(): String =
         "PerformanceConfiguration(" +

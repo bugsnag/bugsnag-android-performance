@@ -19,6 +19,7 @@ internal data class ImmutableConfig(
     val versionCode: Long?,
     val appVersion: String?,
     val logger: Logger,
+    var networkRequestCallback: ((NetworkRequestInfo) -> Unit)?,
 ) {
     val isReleaseStageEnabled =
         enabledReleaseStages == null || enabledReleaseStages.contains(releaseStage)
@@ -37,6 +38,7 @@ internal data class ImmutableConfig(
         configuration.logger
             ?: if (getReleaseStage(configuration) == RELEASE_STAGE_PRODUCTION) NoopLogger
             else DebugLogger,
+        configuration.networkRequestCallback,
     )
 
     companion object {
