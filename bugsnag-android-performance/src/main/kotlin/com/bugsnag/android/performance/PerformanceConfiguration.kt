@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Bundle
 import androidx.annotation.VisibleForTesting
-import com.bugsnag.android.performance.internal.NetworkRequestInfo
 
 class PerformanceConfiguration private constructor(val context: Context) {
 
@@ -30,7 +29,11 @@ class PerformanceConfiguration private constructor(val context: Context) {
 
     var logger: Logger? = null
 
-    var networkRequestCallback: ((NetworkRequestInfo) -> Unit)? = null
+    /**
+     * Callback to be invoked on every network request that would generate a span.
+     * Use this to filter what URLs will generate spans and how.
+     */
+    var networkRequestCallback: NetworkRequestInstrumentationCallback? = null
 
     override fun toString(): String =
         "PerformanceConfiguration(" +

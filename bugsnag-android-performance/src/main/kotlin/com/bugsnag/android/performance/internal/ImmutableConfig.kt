@@ -5,6 +5,7 @@ import android.content.Context
 import android.os.Build
 import com.bugsnag.android.performance.AutoInstrument
 import com.bugsnag.android.performance.Logger
+import com.bugsnag.android.performance.NetworkRequestInstrumentationCallback
 import com.bugsnag.android.performance.PerformanceConfiguration
 
 internal data class ImmutableConfig(
@@ -19,7 +20,7 @@ internal data class ImmutableConfig(
     val versionCode: Long?,
     val appVersion: String?,
     val logger: Logger,
-    var networkRequestCallback: ((NetworkRequestInfo) -> Unit)?,
+    var networkRequestCallback: NetworkRequestInstrumentationCallback?,
 ) {
     val isReleaseStageEnabled =
         enabledReleaseStages == null || enabledReleaseStages.contains(releaseStage)

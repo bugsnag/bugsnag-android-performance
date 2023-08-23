@@ -2,6 +2,7 @@ package com.bugsnag.mazeracer.scenarios
 
 import android.util.Log
 import com.bugsnag.android.performance.BugsnagPerformance
+import com.bugsnag.android.performance.NetworkRequestInstrumentationCallback
 import com.bugsnag.android.performance.PerformanceConfiguration
 import com.bugsnag.android.performance.internal.InternalDebug
 import com.bugsnag.android.performance.okhttp.BugsnagPerformanceOkhttp
@@ -19,15 +20,14 @@ class OkhttpAutoInstrumentNetworkCallbackScenario(
     }
 
     override fun startScenario() {
-        config.networkRequestCallback = {reqInfo ->
-            reqInfo.url?.let { url ->
-                if (url.startsWith("http://bs-local.com")) {
-                    reqInfo.url = null
-                } else if (url == "https://google.com/") {
-                    reqInfo.url = null
-                } else if (url.endsWith("/changeme")) {
-                    reqInfo.url = url.dropLast(9) + "/changed"
-                }
+        config.networkRequestCallback = NetworkRequestInstrumentationCallback { reqInfo ->
+            val url = reqInfo.url ?: return@NetworkRequestInstrumentationCallback
+            if (url.startsWith("http://bs-local.com")) {
+                reqInfo.url = null
+            } else if (url == "https://google.com/") {
+                reqInfo.url = null
+            } else if (url.endsWith("/changeme")) {
+                reqInfo.url = url.dropLast(9) + "/changed"
             }
         }
 
@@ -42,7 +42,6 @@ class OkhttpAutoInstrumentNetworkCallbackScenario(
             makeCall(client, "https://bugsnag.com/changeme")
             makeCall(client, "https://google.com/")
         }
-        Thread.sleep(1000L)
     }
 
     fun makeCall(client: OkHttpClient, url: String) {
