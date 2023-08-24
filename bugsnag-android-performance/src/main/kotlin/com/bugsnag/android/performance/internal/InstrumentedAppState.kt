@@ -54,6 +54,7 @@ class InstrumentedAppState {
 
         spanProcessor = tracer
         spanFactory.spanProcessor = tracer
+        spanFactory.networkRequestCallback = configuration.networkRequestCallback
 
         if (configuration.autoInstrumentAppStarts) {
             // redirect existing spanProcessor -> new Tracer

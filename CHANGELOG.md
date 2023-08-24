@@ -2,6 +2,8 @@
 
 ### Enhancements
 
+* Network request spans can now be controlled/modified via configurable callback.
+  [#171](https://github.com/bugsnag/bugsnag-android-performance/pull/171)
 * AppStartPhase/Framework introduced to mark the time between class loading & Application.onCreate
   [#163](https://github.com/bugsnag/bugsnag-android-performance/pull/163)
 * Support for OkHttp 5.0.0 in [bugsnag-plugin-android-performance-okhttp](bugsnag-plugin-android-performance-okhttp)

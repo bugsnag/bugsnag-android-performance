@@ -31,12 +31,14 @@ class BugsnagPerformanceOkhttp : EventListener() {
             networkSpanOptions,
         )
 
-        val contentLength = call.request().body?.contentLength()
-        if (contentLength != null) {
-            NetworkRequestAttributes.setRequestContentLength(span, contentLength)
-        }
+        if (span != null) {
+            val contentLength = call.request().body?.contentLength()
+            if (contentLength != null) {
+                NetworkRequestAttributes.setRequestContentLength(span, contentLength)
+            }
 
-        spans[call] = span
+            spans[call] = span
+        }
     }
 
     override fun responseHeadersEnd(call: Call, response: Response) {

@@ -29,6 +29,12 @@ class PerformanceConfiguration private constructor(val context: Context) {
 
     var logger: Logger? = null
 
+    /**
+     * Callback to be invoked on every network request that would generate a span.
+     * Use this to filter what URLs will generate spans and how.
+     */
+    var networkRequestCallback: NetworkRequestInstrumentationCallback? = null
+
     override fun toString(): String =
         "PerformanceConfiguration(" +
                 "context=$context, " +

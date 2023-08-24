@@ -197,7 +197,7 @@ object BugsnagPerformance {
         url: URL,
         verb: String,
         options: SpanOptions = SpanOptions.DEFAULTS,
-    ): Span = spanFactory.createNetworkSpan(url.toString(), verb, options)
+    ): Span? = spanFactory.createNetworkSpan(url.toString(), verb, options)
 
     /**
      * Open a network span for a given url and HTTP [verb] to measure the time taken for an HTTP request.
@@ -212,7 +212,7 @@ object BugsnagPerformance {
         uri: Uri,
         verb: String,
         options: SpanOptions = SpanOptions.DEFAULTS,
-    ): Span = spanFactory.createNetworkSpan(uri.toString(), verb, options)
+    ): Span? = spanFactory.createNetworkSpan(uri.toString(), verb, options)
 
     /**
      * Open a ViewLoad span to measure the time taken to load and render a UI element (typically a screen).

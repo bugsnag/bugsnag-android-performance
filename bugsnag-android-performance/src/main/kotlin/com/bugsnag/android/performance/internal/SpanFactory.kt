@@ -2,6 +2,8 @@ package com.bugsnag.android.performance.internal
 
 import android.app.Activity
 import com.bugsnag.android.performance.HasAttributes
+import com.bugsnag.android.performance.NetworkRequestInfo
+import com.bugsnag.android.performance.NetworkRequestInstrumentationCallback
 import com.bugsnag.android.performance.SpanContext
 import com.bugsnag.android.performance.SpanKind
 import com.bugsnag.android.performance.SpanOptions
@@ -14,6 +16,7 @@ class SpanFactory(
     var spanProcessor: SpanProcessor,
     val spanAttributeSource: AttributeSource = {},
 ) {
+    var networkRequestCallback: NetworkRequestInstrumentationCallback? = null
     fun createCustomSpan(
         name: String,
         options: SpanOptions = SpanOptions.DEFAULTS,
@@ -30,18 +33,23 @@ class SpanFactory(
         verb: String,
         options: SpanOptions = SpanOptions.DEFAULTS,
         spanProcessor: SpanProcessor = this.spanProcessor,
-    ): SpanImpl {
-        val verbUpper = verb.uppercase()
-        val span = createSpan(
-            "[HTTP/$verbUpper]",
-            SpanKind.CLIENT,
-            SpanCategory.NETWORK,
-            options,
-            spanProcessor,
-        )
-        span.setAttribute("http.url", url)
-        span.setAttribute("http.method", verbUpper)
-        return span
+    ): SpanImpl? {
+        val reqInfo = NetworkRequestInfo(url)
+        networkRequestCallback?.onNetworkRequest(reqInfo)
+        reqInfo.url?.let {resultUrl ->
+            val verbUpper = verb.uppercase()
+            val span = createSpan(
+                "[HTTP/$verbUpper]",
+                SpanKind.CLIENT,
+                SpanCategory.NETWORK,
+                options,
+                spanProcessor,
+            )
+            span.setAttribute("http.url", resultUrl)
+            span.setAttribute("http.method", verbUpper)
+            return span
+        }
+        return null
     }
 
     fun createViewLoadSpan(
