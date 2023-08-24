@@ -16,8 +16,8 @@ internal class SendBatchTask(
         if (nextBatch.isNotEmpty()) {
             Logger.d("Sending a batch of ${nextBatch.size} spans to $delivery")
         }
-        delivery.deliver(nextBatch, resourceAttributes)
-        return nextBatch.isNotEmpty()
+        val result = delivery.deliver(nextBatch, resourceAttributes)
+        return nextBatch.isNotEmpty() && result is DeliveryResult.Success
     }
 
     override fun toString(): String = "SendBatch[$delivery]"
