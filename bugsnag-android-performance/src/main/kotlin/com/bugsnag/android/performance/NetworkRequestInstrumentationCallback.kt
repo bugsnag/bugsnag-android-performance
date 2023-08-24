@@ -5,6 +5,8 @@ fun interface NetworkRequestInstrumentationCallback {
      * Use this callback to filter network request URLs when generating spans.
      *
      * For example:
+     *
+     * ```kotlin
      * config.networkRequestCallback = NetworkRequestInstrumentationCallback { reqInfo ->
      *   val url = reqInfo.url ?: return@NetworkRequestInstrumentationCallback
      *   if (url.startsWith("http://my-api.com/uninteresting/")) {
@@ -16,6 +18,7 @@ fun interface NetworkRequestInstrumentationCallback {
      *   }
      *   // Otherwise, just create a span with the given URL
      * }
+     * ```
      */
     fun onNetworkRequest(info: NetworkRequestInfo)
 }
