@@ -11,8 +11,8 @@ internal interface Task {
     fun onDetach(worker: Worker) = Unit
 
     /**
-     * Run the task and return `true` if any work was done (and more work is likely to be available
-     * on the next call to `execute`).
+     * Run the task and return `true` if work was done successfully (and more work is likely to be
+     * available on the next call to `execute`).
      */
     fun execute(): Boolean
 }

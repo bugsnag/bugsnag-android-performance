@@ -13,6 +13,8 @@
 
 * Traces are now correctly enqueued for retry when there is no active network (instead of being swallowed by the `UnknownHostException`)
   [#170](https://github.com/bugsnag/bugsnag-android-performance/pull/170)
+* Delivery and retry are only considered to have done work if the payload was delivered successfully
+  [#172](https://github.com/bugsnag/bugsnag-android-performance/pull/172)
 
 ## 1.0.0 (2023-07-17)
 
