@@ -6,4 +6,5 @@ enum class SpanCategory(val category: String?) {
     VIEW_LOAD_PHASE("view_load_phase"),
     NETWORK("network"),
     APP_START("app_start"),
+    APP_START_PHASE("app_start_phase"),
 }

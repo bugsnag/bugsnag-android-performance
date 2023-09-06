@@ -8,6 +8,10 @@ import java.util.concurrent.ConcurrentLinkedQueue
 class CollectingSpanProcessor : SpanProcessor {
     private val spans = ConcurrentLinkedQueue<SpanImpl>()
 
+    fun clear() {
+        spans.clear()
+    }
+
     fun toList(): List<SpanImpl> = spans.sortedBy { it.startTime }
 
     override fun onEnd(span: Span) {

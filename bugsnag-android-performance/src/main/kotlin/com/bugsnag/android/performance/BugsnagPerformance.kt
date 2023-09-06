@@ -20,7 +20,6 @@ import com.bugsnag.android.performance.internal.RetryDeliveryTask
 import com.bugsnag.android.performance.internal.SamplerTask
 import com.bugsnag.android.performance.internal.SendBatchTask
 import com.bugsnag.android.performance.internal.Task
-import com.bugsnag.android.performance.internal.processing.Tracer
 import com.bugsnag.android.performance.internal.Worker
 import com.bugsnag.android.performance.internal.createResourceAttributes
 import com.bugsnag.android.performance.internal.isInForeground
@@ -32,9 +31,7 @@ import java.net.URL
  * @see [start]
  */
 object BugsnagPerformance {
-    const val VERSION: String = "1.0.0"
-
-    internal val tracer = Tracer()
+    const val VERSION: String = "1.1.0"
 
     internal val instrumentedAppState = InstrumentedAppState()
 
@@ -86,13 +83,15 @@ object BugsnagPerformance {
 
     private fun startUnderLock(configuration: ImmutableConfig) {
         Logger.delegate = configuration.logger
-        instrumentedAppState.configure(configuration)
+        val tracer = instrumentedAppState.configure(configuration)
 
         if (configuration.autoInstrumentAppStarts) {
             // mark the app as "starting" (if it isn't already)
-            reportApplicationClassLoaded()
+            synchronized(this) {
+                instrumentedAppState.onBugsnagPerformanceStart()
+            }
         } else {
-            instrumentedAppState.activityCallbacks.discardAppStart()
+            instrumentedAppState.startupTracker.discardAppStart()
         }
 
         val application = configuration.application
@@ -198,7 +197,7 @@ object BugsnagPerformance {
         url: URL,
         verb: String,
         options: SpanOptions = SpanOptions.DEFAULTS,
-    ): Span = spanFactory.createNetworkSpan(url.toString(), verb, options)
+    ): Span? = spanFactory.createNetworkSpan(url.toString(), verb, options)
 
     /**
      * Open a network span for a given url and HTTP [verb] to measure the time taken for an HTTP request.
@@ -213,7 +212,7 @@ object BugsnagPerformance {
         uri: Uri,
         verb: String,
         options: SpanOptions = SpanOptions.DEFAULTS,
-    ): Span = spanFactory.createNetworkSpan(uri.toString(), verb, options)
+    ): Span? = spanFactory.createNetworkSpan(uri.toString(), verb, options)
 
     /**
      * Open a ViewLoad span to measure the time taken to load and render a UI element (typically a screen).
@@ -232,7 +231,7 @@ object BugsnagPerformance {
         options: SpanOptions = SpanOptions.DEFAULTS,
     ): Span {
         // create & track Activity referenced ViewLoad spans
-        return instrumentedAppState.activityCallbacks.startViewLoadSpan(activity, options)
+        return instrumentedAppState.activityInstrumentation.startViewLoadSpan(activity, options)
     }
 
     /**
@@ -281,7 +280,7 @@ object BugsnagPerformance {
     @JvmStatic
     fun reportApplicationClassLoaded() {
         synchronized(this) {
-            instrumentedAppState.activityCallbacks.startAppLoadSpan("Cold")
+            instrumentedAppState.startupTracker.onFirstClassLoadReported()
         }
     }
 }

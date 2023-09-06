@@ -2,6 +2,8 @@ package com.bugsnag.android.performance.internal
 
 import android.app.Activity
 import com.bugsnag.android.performance.HasAttributes
+import com.bugsnag.android.performance.NetworkRequestInfo
+import com.bugsnag.android.performance.NetworkRequestInstrumentationCallback
 import com.bugsnag.android.performance.SpanContext
 import com.bugsnag.android.performance.SpanKind
 import com.bugsnag.android.performance.SpanOptions
@@ -11,9 +13,10 @@ import java.util.UUID
 internal typealias AttributeSource = (target: HasAttributes) -> Unit
 
 class SpanFactory(
-    private val spanProcessor: SpanProcessor,
+    var spanProcessor: SpanProcessor,
     val spanAttributeSource: AttributeSource = {},
 ) {
+    var networkRequestCallback: NetworkRequestInstrumentationCallback? = null
     fun createCustomSpan(
         name: String,
         options: SpanOptions = SpanOptions.DEFAULTS,
@@ -30,18 +33,23 @@ class SpanFactory(
         verb: String,
         options: SpanOptions = SpanOptions.DEFAULTS,
         spanProcessor: SpanProcessor = this.spanProcessor,
-    ): SpanImpl {
-        val verbUpper = verb.uppercase()
-        val span = createSpan(
-            "[HTTP/$verbUpper]",
-            SpanKind.CLIENT,
-            SpanCategory.NETWORK,
-            options,
-            spanProcessor,
-        )
-        span.setAttribute("http.url", url)
-        span.setAttribute("http.method", verbUpper)
-        return span
+    ): SpanImpl? {
+        val reqInfo = NetworkRequestInfo(url)
+        networkRequestCallback?.onNetworkRequest(reqInfo)
+        reqInfo.url?.let {resultUrl ->
+            val verbUpper = verb.uppercase()
+            val span = createSpan(
+                "[HTTP/$verbUpper]",
+                SpanKind.CLIENT,
+                SpanCategory.NETWORK,
+                options,
+                spanProcessor,
+            )
+            span.setAttribute("http.url", resultUrl)
+            span.setAttribute("http.method", verbUpper)
+            return span
+        }
+        return null
     }
 
     fun createViewLoadSpan(
@@ -134,6 +142,24 @@ class SpanFactory(
         )
 
         span.setAttribute("bugsnag.app_start.type", startType.lowercase())
+
+        return span
+    }
+
+    fun createAppStartPhaseSpan(
+        phase: AppStartPhase,
+        appStartContext: SpanContext,
+        spanProcessor: SpanProcessor = this.spanProcessor,
+    ): SpanImpl {
+        val span = createSpan(
+            "[AppStartPhase/${phase.phaseName}]",
+            SpanKind.INTERNAL,
+            SpanCategory.APP_START_PHASE,
+            SpanOptions.DEFAULTS.within(appStartContext),
+            spanProcessor,
+        )
+
+        span.setAttribute("bugsnag.phase", "FrameworkLoad")
 
         return span
     }

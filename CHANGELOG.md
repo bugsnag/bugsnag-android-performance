@@ -1,3 +1,21 @@
+## 1.1.0 (2023-09-06)
+
+### Enhancements
+
+* Network request spans can now be controlled/modified via configurable callback.
+  [#171](https://github.com/bugsnag/bugsnag-android-performance/pull/171)
+* AppStartPhase/Framework introduced to mark the time between class loading & Application.onCreate
+  [#163](https://github.com/bugsnag/bugsnag-android-performance/pull/163)
+* Support for OkHttp 5.0.0 in [bugsnag-plugin-android-performance-okhttp](bugsnag-plugin-android-performance-okhttp)
+  [#167](https://github.com/bugsnag/bugsnag-android-performance/pull/167)
+
+### Bug fixes
+
+* Traces are now correctly enqueued for retry when there is no active network (instead of being swallowed by the `UnknownHostException`)
+  [#170](https://github.com/bugsnag/bugsnag-android-performance/pull/170)
+* Delivery and retry are only considered to have done work if the payload was delivered successfully
+  [#172](https://github.com/bugsnag/bugsnag-android-performance/pull/172)
+
 ## 1.0.0 (2023-07-17)
 
 ### Bug fixes

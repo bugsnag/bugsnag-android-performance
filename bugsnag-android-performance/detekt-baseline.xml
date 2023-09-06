@@ -4,6 +4,7 @@
   <CurrentIssues>
     <ID>ComplexMethod:Connectivity.kt$ConnectivityApi24$private fun nameForDataNetworkType(dataNetworkType: Int): String</ID>
     <ID>ComplexMethod:SpanOptions.kt$SpanOptions$override fun equals(other: Any?): Boolean</ID>
+    <ID>DestructuringDeclarationWithTooManyEntries:ActivityLifecycleInstrumentationTest.kt$ActivityLifecycleInstrumentationTest$val (create, viewLoad, start, resume) = spans</ID>
     <ID>LongMethod:BugsnagPerformance.kt$BugsnagPerformance$private fun startUnderLock(configuration: ImmutableConfig)</ID>
     <ID>MagicNumber:Encodings.kt$0xff</ID>
     <ID>MagicNumber:Encodings.kt$16</ID>
@@ -30,6 +31,8 @@
     <ID>SwallowedException:ContextExtensions.kt$exc: RuntimeException</ID>
     <ID>SwallowedException:DeviceIdFilePersistence.kt$DeviceIdFilePersistence$exc: OverlappingFileLockException</ID>
     <ID>SwallowedException:ForegroundTracker.kt$exc: RuntimeException</ID>
+    <ID>SwallowedException:HttpDelivery.kt$HttpDelivery$e: Exception</ID>
+    <ID>SwallowedException:HttpDelivery.kt$HttpDelivery$e: IOException</ID>
     <ID>SwallowedException:ImmutableConfig.kt$ImmutableConfig.Companion$ex: RuntimeException</ID>
     <ID>SwallowedException:Module.kt$Module.Loader$ex: Exception</ID>
     <ID>TooGenericExceptionCaught:BugsnagClock.kt$BugsnagClock$ex: Exception</ID>
@@ -37,6 +40,7 @@
     <ID>TooGenericExceptionCaught:ContextExtensions.kt$exc: RuntimeException</ID>
     <ID>TooGenericExceptionCaught:DeviceIdFilePersistence.kt$DeviceIdFilePersistence$exc: Throwable</ID>
     <ID>TooGenericExceptionCaught:ForegroundTracker.kt$exc: RuntimeException</ID>
+    <ID>TooGenericExceptionCaught:HttpDelivery.kt$HttpDelivery$e: Exception</ID>
     <ID>TooGenericExceptionCaught:ImmutableConfig.kt$ImmutableConfig.Companion$ex: RuntimeException</ID>
     <ID>TooGenericExceptionCaught:Module.kt$Module.Loader$ex: Exception</ID>
     <ID>TooGenericExceptionCaught:PerformanceConfiguration.kt$PerformanceConfiguration.Loader$exc: Exception</ID>
@@ -44,6 +48,6 @@
     <ID>TooGenericExceptionCaught:Worker.kt$Worker$ex: Exception</ID>
     <ID>TooManyFunctions:Attributes.kt$Attributes : Collection</ID>
     <ID>TooManyFunctions:BugsnagPerformance.kt$BugsnagPerformance$BugsnagPerformance</ID>
-    <ID>TooManyFunctions:PerformanceLifecycleCallbacks.kt$PerformanceLifecycleCallbacks : ActivityLifecycleCallbacksCallback</ID>
+    <ID>TooManyFunctions:Connectivity.kt$ConnectivityApi24 : NetworkCallbackConnectivity</ID>
   </CurrentIssues>
 </SmellBaseline>

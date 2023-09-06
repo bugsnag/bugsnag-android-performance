@@ -22,7 +22,8 @@ internal class RetryDeliveryTask(
         ) {
             retryQueue.remove(nextPayload.timestamp)
         }
-        return true
+
+        return result is DeliveryResult.Success
     }
 
     override fun toString(): String = "RetryDeliveryTask"

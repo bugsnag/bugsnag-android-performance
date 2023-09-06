@@ -1,3 +1,12 @@
 [*.{kt,kts}]
 ij_kotlin_allow_trailing_comma_on_call_site = true
 ij_kotlin_allow_trailing_comma = true
+
+
+# ActivityLifecycleHelper.kt uses syntax that ktlintFormat currently can't cope with.
+# The use of `enum class` as abstract + trailing-commas causes it to demand a trailing
+# comma after the enum literals, and then to complain that it has an Unnecessary semicolon
+# so we exclude ActivityLifecycleHelper.kt from having trailing-commas for now
+[ActivityLifecycleHelper.kt]
+ij_kotlin_allow_trailing_comma_on_call_site = true
+ij_kotlin_allow_trailing_comma = false

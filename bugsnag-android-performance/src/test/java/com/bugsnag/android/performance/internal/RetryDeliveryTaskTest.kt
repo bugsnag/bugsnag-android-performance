@@ -92,7 +92,7 @@ class RetryDeliveryTaskTest {
         val retryDeliveryTask = RetryDeliveryTask(retryQueue, delivery, connectivity)
 
         delivery.nextResult = DeliveryResult.Failed(tracePayload, false)
-        assertTrue(retryDeliveryTask.execute())
+        assertFalse(retryDeliveryTask.execute())
 
         verify(retryQueue).remove(tracePayload.timestamp)
     }
@@ -119,7 +119,7 @@ class RetryDeliveryTaskTest {
         val retryDeliveryTask = RetryDeliveryTask(retryQueue, delivery, connectivity)
 
         delivery.nextResult = DeliveryResult.Failed(tracePayload, true)
-        assertTrue(retryDeliveryTask.execute())
+        assertFalse(retryDeliveryTask.execute())
 
         verify(retryQueue, never()).remove(any())
     }

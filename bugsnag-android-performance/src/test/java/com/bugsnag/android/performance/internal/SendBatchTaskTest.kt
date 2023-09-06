@@ -37,7 +37,9 @@ class SendBatchTaskTest {
             on { collectNextBatch() } doReturn spanFactory.newSpans(10, NoopSpanProcessor)
         }
 
-        val delivery = mock<Delivery>()
+        val delivery = mock<Delivery> {
+            on { deliver(any(), any()) } doReturn DeliveryResult.Success
+        }
 
         val resourceAttributes = Attributes()
         val sendBatchTask = SendBatchTask(delivery, tracer, resourceAttributes)

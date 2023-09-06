@@ -5,8 +5,8 @@
     <ID>MagicNumber:AppBackgroundedScenario.kt$AppBackgroundedScenario$100</ID>
     <ID>MagicNumber:AppBackgroundedScenario.kt$AppBackgroundedScenario$120_000L</ID>
     <ID>MagicNumber:AppStartScenario.kt$AppStartScenario$1000L</ID>
-    <ID>MagicNumber:AppStartScenario.kt$AppStartScenario$5</ID>
     <ID>MagicNumber:AppStartScenario.kt$AppStartScenario$500L</ID>
+    <ID>MagicNumber:AppStartScenario.kt$AppStartScenario$6</ID>
     <ID>MagicNumber:BackgroundAppStartScenario.kt$BackgroundAppStartScenario$100</ID>
     <ID>MagicNumber:BackgroundAppStartScenario.kt$BackgroundAppStartScenario$1000L</ID>
     <ID>MagicNumber:BackgroundAppStartScenario.kt$BackgroundAppStartScenario$100L</ID>
@@ -22,13 +22,15 @@
     <ID>MagicNumber:ManualSpanScenario.kt$ManualSpanScenario$100L</ID>
     <ID>MagicNumber:MazeRacerAlarmReceiver.kt$MazeRacerAlarmReceiver$250L</ID>
     <ID>MagicNumber:MazeRacerApplication.kt$MazeRacerApplication$2000L</ID>
+    <ID>MagicNumber:OkhttpAutoInstrumentNetworkCallbackScenario.kt$OkhttpAutoInstrumentNetworkCallbackScenario$1000L</ID>
+    <ID>MagicNumber:OkhttpAutoInstrumentNetworkCallbackScenario.kt$OkhttpAutoInstrumentNetworkCallbackScenario$9</ID>
+    <ID>MagicNumber:OkhttpManualNetworkCallbackScenario.kt$OkhttpManualNetworkCallbackScenario$1000L</ID>
+    <ID>MagicNumber:OkhttpManualNetworkCallbackScenario.kt$OkhttpManualNetworkCallbackScenario$9</ID>
     <ID>MagicNumber:OkhttpSpanScenario.kt$OkhttpSpanScenario$1000L</ID>
     <ID>MagicNumber:PreStartSpansScenario.kt$PreStartSpansScenario$100</ID>
     <ID>MagicNumber:PreStartSpansScenario.kt$PreStartSpansScenario$3</ID>
     <ID>MagicNumber:PreStartSpansScenario.kt$PreStartSpansScenario$30</ID>
-    <ID>MagicNumber:PreStartSpansScenario.kt$PreStartSpansScenario$4</ID>
     <ID>MagicNumber:PreStartSpansScenario.kt$PreStartSpansScenario$50</ID>
-    <ID>MagicNumber:SamplingProbabilityZeroScenario.kt$SamplingProbabilityZeroScenario$100</ID>
     <ID>MagicNumber:ThreeSpansScenario.kt$ThreeSpansScenario$300</ID>
     <ID>TooGenericExceptionCaught:MainActivity.kt$MainActivity$e: Exception</ID>
     <ID>TooManyFunctions:MainActivity.kt$MainActivity : AppCompatActivity</ID>
