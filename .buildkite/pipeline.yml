@@ -63,5 +63,5 @@ steps:
           - "--aws-public-ip"
           - "--fail-fast"
     concurrency: 25
-    concurrency_group: 'bitbar-app'
+    concurrency_group: 'bitbar'
     concurrency_method: eager
