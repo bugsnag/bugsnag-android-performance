@@ -30,6 +30,7 @@ Feature: Manual creation of spans
     * the trace payload field "resourceSpans.0.resource" string attribute "os.type" equals "linux"
     * the trace payload field "resourceSpans.0.resource" string attribute "os.name" equals "android"
     * the trace payload field "resourceSpans.0.resource" string attribute "os.version" exists
+    * the trace payload field "resourceSpans.0.resource" string attribute "bugsnag.device.android_api_version" exists
     * the trace payload field "resourceSpans.0.resource" string attribute "device.id" exists
     * the trace payload field "resourceSpans.0.resource" string attribute "device.model.identifier" exists
     * the trace payload field "resourceSpans.0.resource" string attribute "device.manufacturer" exists
