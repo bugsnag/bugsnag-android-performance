@@ -53,7 +53,7 @@ class AppStartTest {
         assertTrue(frameworkStart.isEnded())
 
         val appStart = spans[1]
-        assertEquals("[AppStart/Cold]", appStart.name)
+        assertEquals("[AppStart/AndroidCold]", appStart.name)
         // start and end time are in nanoseconds, not milliseconds
         assertEquals(100_000_000L, appStart.startTime)
         assertEquals(400_000_000L, appStart.endTime)
@@ -79,7 +79,7 @@ class AppStartTest {
         assertEquals(1, spans.size)
 
         val appStart = spans.first()
-        assertEquals("[AppStart/Warm]", appStart.name)
+        assertEquals("[AppStart/AndroidWarm]", appStart.name)
         // start and end time are in nanoseconds, not milliseconds
         assertEquals(500_000_000L, appStart.startTime)
         assertEquals(600_000_000L, appStart.endTime)

@@ -134,7 +134,7 @@ class SpanFactory(
         spanProcessor: SpanProcessor = this.spanProcessor,
     ): SpanImpl {
         val span = createSpan(
-            "[AppStart/$startType]",
+            "[AppStart/Android$startType]",
             SpanKind.INTERNAL,
             SpanCategory.APP_START,
             SpanOptions.DEFAULTS.within(null),
