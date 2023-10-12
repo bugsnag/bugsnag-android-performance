@@ -16,7 +16,8 @@ internal fun createResourceAttributes(configuration: ImmutableConfig): Attribute
 
     resourceAttributes["os.type"] = "linux"
     resourceAttributes["os.name"] = "android"
-    resourceAttributes["os.version"] = Build.VERSION.SDK_INT.toString()
+    resourceAttributes["os.version"] = Build.VERSION.RELEASE
+    resourceAttributes["bugsnag.device.android_api_version"] = Build.VERSION.SDK_INT.toString()
 
     resourceAttributes["device.model.identifier"] = Build.MODEL
     resourceAttributes["device.manufacturer"] = Build.MANUFACTURER
