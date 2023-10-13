@@ -1,5 +1,6 @@
 package com.bugsnag.android.performance
 
+import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Bundle
@@ -30,6 +31,18 @@ class PerformanceConfiguration private constructor(val context: Context) {
     var logger: Logger? = null
 
     /**
+     * Activity classes that are considered part of the AppStart and therefore will not
+     * end the AppStart when the associated ViewLoad is ended.
+     */
+    var doNotEndAppStart: Collection<Class<out Activity>> = HashSet()
+
+    /**
+     * A list of classes to not automatically instrument. This will only match the classes
+     * exactly (sub-classes must be listed separately).
+     */
+    var doNotAutoInstrument: Collection<Class<*>> = HashSet()
+
+    /**
      * Callback to be invoked on every network request that would generate a span.
      * Use this to filter what URLs will generate spans and how.
      */
@@ -46,6 +59,8 @@ class PerformanceConfiguration private constructor(val context: Context) {
                 "versionCode=$versionCode, " +
                 "appVersion=$appVersion, " +
                 "enabledReleaseStages=$enabledReleaseStages " +
+                "doNotEndAppStart=$doNotEndAppStart " +
+                "doNotAutoInstrument=$doNotAutoInstrument " +
                 ")"
 
     companion object Loader {
