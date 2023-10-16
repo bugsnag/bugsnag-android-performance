@@ -1,3 +1,12 @@
+## 1.1.1 (2023-10-16)
+
+### Bug fixes
+
+* os.version is now correctly reported as the release version (12, 13, 14), sdk level is reported in a new resource attribute
+  [#178](https://github.com/bugsnag/bugsnag-android-performance/pull/178)
+* AppStart spans are now platform-prefixed (eg: AppStart/AndroidCold) to differentiate different AppStart layers
+  [#179](https://github.com/bugsnag/bugsnag-android-performance/pull/179)
+
 ## 1.1.0 (2023-09-06)
 
 ### Enhancements

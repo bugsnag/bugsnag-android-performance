@@ -31,7 +31,7 @@ import java.net.URL
  * @see [start]
  */
 object BugsnagPerformance {
-    const val VERSION: String = "1.1.0"
+    const val VERSION: String = "1.1.1"
 
     internal val instrumentedAppState = InstrumentedAppState()
 
