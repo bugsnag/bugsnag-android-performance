@@ -6,7 +6,7 @@ package com.bugsnag.android.performance
  */
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)
-annotation class DoesNotEndAppStart
+annotation class DoNotEndAppStart
 
 /**
  * Annotation Activities and Fragments are ignored by automatic instrumentation.
