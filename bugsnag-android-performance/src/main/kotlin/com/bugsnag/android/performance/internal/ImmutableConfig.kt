@@ -1,5 +1,6 @@
 package com.bugsnag.android.performance.internal
 
+import android.app.Activity
 import android.app.Application
 import android.content.Context
 import android.os.Build
@@ -21,6 +22,8 @@ internal data class ImmutableConfig(
     val appVersion: String?,
     val logger: Logger,
     var networkRequestCallback: NetworkRequestInstrumentationCallback?,
+    var doNotEndAppStart: Collection<Class<out Activity>>,
+    var doNotAutoInstrument: Collection<Class<*>>
 ) {
     val isReleaseStageEnabled =
         enabledReleaseStages == null || enabledReleaseStages.contains(releaseStage)
@@ -40,6 +43,8 @@ internal data class ImmutableConfig(
             ?: if (getReleaseStage(configuration) == RELEASE_STAGE_PRODUCTION) NoopLogger
             else DebugLogger,
         configuration.networkRequestCallback,
+        configuration.doNotEndAppStart,
+        configuration.doNotAutoInstrument
     )
 
     companion object {
