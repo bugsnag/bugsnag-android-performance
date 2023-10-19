@@ -1,11 +1,15 @@
 package com.bugsnag.android.performance.internal.instrumentation
 
 import android.app.Activity
+import com.bugsnag.android.performance.AutoInstrumentationCache
+import com.bugsnag.android.performance.DoNotEndAppStart
+import com.bugsnag.android.performance.DoNotInstrument
 import com.bugsnag.android.performance.internal.Loopers
 import com.bugsnag.android.performance.internal.SpanCategory
 import com.bugsnag.android.performance.internal.SpanFactory
 import com.bugsnag.android.performance.internal.SpanTracker
 import com.bugsnag.android.performance.test.ActivityLifecycleHelper
+import com.bugsnag.android.performance.test.ActivityLifecycleStep.CREATED
 import com.bugsnag.android.performance.test.ActivityLifecycleStep.DESTROYED
 import com.bugsnag.android.performance.test.ActivityLifecycleStep.RESUMED
 import com.bugsnag.android.performance.test.CollectingSpanProcessor
@@ -30,13 +34,20 @@ class LegacyActivityInstrumentationTest {
     private lateinit var spanProcessor: CollectingSpanProcessor
     private lateinit var spanFactory: SpanFactory
     private lateinit var activityInstrumentation: LegacyActivityInstrumentation
+    private lateinit var autoInstrumentationCache: AutoInstrumentationCache
 
     @Before
     fun setup() {
         spanTracker = SpanTracker()
         spanProcessor = CollectingSpanProcessor()
         spanFactory = SpanFactory(spanProcessor)
-        activityInstrumentation = LegacyActivityInstrumentation(spanTracker, spanFactory, mock())
+        autoInstrumentationCache = AutoInstrumentationCache()
+        activityInstrumentation = LegacyActivityInstrumentation(
+            spanTracker,
+            spanFactory,
+            mock(),
+            autoInstrumentationCache,
+        )
     }
 
     @Test
@@ -62,6 +73,22 @@ class LegacyActivityInstrumentationTest {
     }
 
     @Test
+    fun disableActivityInstrumentation() {
+        @DoNotInstrument
+        class DoNotInstrumentActivity : Activity()
+
+        val activity = DoNotInstrumentActivity()
+
+        val lifecycleHelper = ActivityLifecycleHelper(activityInstrumentation) {
+            ShadowPausedSystemClock.advanceBy(1, TimeUnit.MILLISECONDS)
+        }
+        lifecycleHelper.progressLifecycle(activity, from = DESTROYED, to = CREATED)
+        Shadows.shadowOf(Loopers.main).runToEndOfTasks()
+        val spans = spanProcessor.toList()
+        assertEquals(0, spans.size)
+    }
+
+    @Test
     fun activityFinishesOnCreate() {
         val activity = mock<Activity> {
             whenever(it.isFinishing) doReturn true
@@ -82,6 +109,25 @@ class LegacyActivityInstrumentationTest {
         assertEquals(SpanCategory.VIEW_LOAD, viewLoad.category)
         assertEquals(100_000_000L, viewLoad.startTime)
         assertEquals(101_000_000L, viewLoad.endTime)
+    }
+
+    @Test
+    fun doNotAppStartActivityFinishesOnCreate() {
+        @DoNotEndAppStart
+        class DoNotEndAppStartActivity : Activity() {
+            override fun isFinishing() = true
+        }
+
+        val activity = DoNotEndAppStartActivity()
+
+        val lifecycleHelper = ActivityLifecycleHelper(activityInstrumentation) {
+            ShadowPausedSystemClock.advanceBy(1, TimeUnit.MILLISECONDS)
+        }
+
+        lifecycleHelper.progressLifecycle(activity, from = DESTROYED, to = CREATED)
+        Shadows.shadowOf(Loopers.main).runToEndOfTasks()
+        val spans = spanProcessor.toList()
+        assertEquals(1, spans.size)
     }
 
     @Test
