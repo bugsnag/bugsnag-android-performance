@@ -23,7 +23,7 @@ internal data class ImmutableConfig(
     val logger: Logger,
     var networkRequestCallback: NetworkRequestInstrumentationCallback?,
     var doNotEndAppStart: Collection<Class<out Activity>>,
-    var doNotAutoInstrument: Collection<Class<*>>
+    var doNotAutoInstrument: Collection<Class<*>>,
 ) {
     val isReleaseStageEnabled =
         enabledReleaseStages == null || enabledReleaseStages.contains(releaseStage)
@@ -44,7 +44,7 @@ internal data class ImmutableConfig(
             else DebugLogger,
         configuration.networkRequestCallback,
         configuration.doNotEndAppStart,
-        configuration.doNotAutoInstrument
+        configuration.doNotAutoInstrument,
     )
 
     companion object {

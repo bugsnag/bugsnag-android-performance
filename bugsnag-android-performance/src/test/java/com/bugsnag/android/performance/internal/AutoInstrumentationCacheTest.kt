@@ -62,9 +62,9 @@ internal class AutoInstrumentationCacheTest {
 
     @Test
     fun testDoNotInstrumentActivities() {
-        val doNotInstrumentActivities = hashSetOf<Class<Any>>()
-        doNotInstrumentActivities.add(DoNotInstrumentActivity::class.java as Class<Any>)
-        doNotInstrumentActivities.add(DoNotEndAppStartActivity::class.java as Class<Any>)
+        val doNotInstrumentActivities = hashSetOf<Class<out Any>>()
+        doNotInstrumentActivities.add(DoNotInstrumentActivity::class.java)
+        doNotInstrumentActivities.add(DoNotEndAppStartActivity::class.java)
 
         val autoInstrumentationCache = AutoInstrumentationCache().apply {
             configure(hashSetOf(), doNotInstrumentActivities)
@@ -82,7 +82,7 @@ internal class AutoInstrumentationCacheTest {
     @Test
     fun testDoNotEndAppStartActivities() {
         val doNotEndAppStartActivities = hashSetOf<Class<out Activity>>()
-        doNotEndAppStartActivities.add(DoNotEndAppStartActivity::class.java as Class<out Activity>)
+        doNotEndAppStartActivities.add(DoNotEndAppStartActivity::class.java)
         val autoInstrumentationCache = AutoInstrumentationCache().apply {
             configure(doNotEndAppStartActivities, hashSetOf())
         }
@@ -99,8 +99,8 @@ internal class AutoInstrumentationCacheTest {
     @Test
     fun testMixedActivities() {
         val doNotInstrumentActivities = hashSetOf(
-            DoNotEndAppStartActivity::class.java as Class<Any>,
-            NoAnnotatedActivity::class.java as Class<Any>,
+            DoNotEndAppStartActivity::class.java,
+            NoAnnotatedActivity::class.java,
         )
         val doNotEndAppStartActivities = hashSetOf(
             DoNotInstrumentActivity::class.java,

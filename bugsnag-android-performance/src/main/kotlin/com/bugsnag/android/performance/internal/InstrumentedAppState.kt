@@ -62,7 +62,7 @@ class InstrumentedAppState {
         if (configuration.autoInstrumentAppStarts) {
             // redirect existing spanProcessor -> new Tracer
             (bootstrapSpanProcessor as? ForwardingSpanProcessor)?.forwardTo(spanProcessor)
-            autoInstrumentationCache.configuration(configuration.doNotEndAppStart, configuration.doNotAutoInstrument)
+            autoInstrumentationCache.configure(configuration.doNotEndAppStart, configuration.doNotAutoInstrument)
         } else {
             // clear the contextStack to ensure that any new spans don't associate with
             // the discarded spans, this doesn't work if not on the main thread but
@@ -82,14 +82,14 @@ class InstrumentedAppState {
                 spanTracker,
                 spanFactory,
                 startupTracker,
-                autoInstrumentationCache
+                autoInstrumentationCache,
             )
         } else {
             LegacyActivityInstrumentation(
                 spanTracker,
                 spanFactory,
                 startupTracker,
-                autoInstrumentationCache
+                autoInstrumentationCache,
             )
         }
     }
@@ -103,13 +103,5 @@ class InstrumentedAppState {
 
     fun onBugsnagPerformanceStart() {
         startupTracker.onBugsnagPerformanceStart()
-    }
-
-    companion object {
-        /**
-         * The token used to track the spans measuring the start of the app from when the
-         * Application starts until the first Activity resumes.
-         */
-        val applicationToken = Any()
     }
 }

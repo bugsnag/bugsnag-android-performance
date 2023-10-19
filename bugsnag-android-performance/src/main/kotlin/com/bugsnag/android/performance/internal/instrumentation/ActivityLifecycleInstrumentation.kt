@@ -61,7 +61,8 @@ internal abstract class AbstractActivityLifecycleInstrumentation(
         val span = spanTracker.associate(activity) {
             // if this is still part of the AppStart span, then the first ViewLoad to end should
             // also end the AppStart span
-            if (spanTracker[AppStartTracker.appStartToken] != null && !autoInstrumentationCache.isAppStartActivity(activity::class.java)
+            if (spanTracker[AppStartTracker.appStartToken] != null &&
+                !autoInstrumentationCache.isAppStartActivity(activity::class.java)
             ) {
                 spanFactory.createViewLoadSpan(activity, spanOptions) { span ->
                     // we end the AppStart span at the same timestamp as the ViewLoad span ended
@@ -198,7 +199,8 @@ internal class ActivityLifecycleInstrumentation(
 
     private fun startViewLoadPhase(activity: Activity, phase: ViewLoadPhase) {
         val viewLoadSpan = spanTracker[activity]
-        if (openLoadSpans && viewLoadSpan != null && autoInstrumentationCache.isInstrumentationEnabled(activity::class.java)
+        if (openLoadSpans && viewLoadSpan != null &&
+            autoInstrumentationCache.isInstrumentationEnabled(activity::class.java)
         ) {
             spanTracker.associate(activity, phase) {
                 spanFactory.createViewLoadPhaseSpan(
