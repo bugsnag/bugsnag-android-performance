@@ -5,12 +5,10 @@ import androidx.fragment.app.FragmentManager
 import com.bugsnag.android.performance.internal.BugsnagPerformanceInternals
 import com.bugsnag.android.performance.internal.SpanFactory
 import com.bugsnag.android.performance.internal.SpanImpl
-import com.bugsnag.android.performance.internal.SpanProcessor
 import com.bugsnag.android.performance.internal.SpanTracker
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
-import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -30,14 +28,18 @@ class FragmentActivityLifecycleCallbacksTest {
     private lateinit var fm: FragmentManager
     private lateinit var fragment1: Fragment
     private lateinit var fragment2: Fragment
+    private lateinit var autoInstrumentationCache: AutoInstrumentationCache
+
 
     @Before
     fun setup() {
         spanCollector = ArrayList()
         spanTracker = SpanTracker()
+        autoInstrumentationCache = AutoInstrumentationCache()
         lifecycleCallbacks = FragmentActivityLifecycleCallbacks(
             spanTracker,
             SpanFactory({ spanCollector.add(it as SpanImpl) }),
+            autoInstrumentationCache,
         )
 
         fm = object : FragmentManager() {}
@@ -98,5 +100,21 @@ class FragmentActivityLifecycleCallbacksTest {
         // 0 is invalid SpanId, ViewLoads in this test should not be nested
         assertEquals(0L, f1ViewLoad.parentSpanId)
         assertEquals(0L, f2ViewLoad.parentSpanId)
+    }
+
+    @Test
+    fun testDoNotInstrumentFragment() {
+        @DoNotInstrument
+        class DoNotInstrumentFragment : Fragment()
+        val doNotInstrumentFragment = DoNotInstrumentFragment()
+        lifecycleCallbacks.onFragmentPreCreated(fm, doNotInstrumentFragment, null)
+
+        assertEquals(0, spanCollector.size)
+
+        lifecycleCallbacks.onFragmentCreated(fm, doNotInstrumentFragment, null)
+        lifecycleCallbacks.onFragmentStarted(fm, doNotInstrumentFragment)
+        lifecycleCallbacks.onFragmentResumed(fm, doNotInstrumentFragment)
+
+        assertEquals(0, spanCollector.size)
     }
 }

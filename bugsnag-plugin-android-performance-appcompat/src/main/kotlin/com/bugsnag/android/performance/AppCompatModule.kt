@@ -11,6 +11,7 @@ class AppCompatModule : Module {
         this.fragmentActivityLifecycleCallbacks = FragmentActivityLifecycleCallbacks(
             instrumentedAppState.spanTracker,
             instrumentedAppState.spanFactory,
+            instrumentedAppState.autoInstrumentationCache,
         )
 
         instrumentedAppState.app.registerActivityLifecycleCallbacks(
