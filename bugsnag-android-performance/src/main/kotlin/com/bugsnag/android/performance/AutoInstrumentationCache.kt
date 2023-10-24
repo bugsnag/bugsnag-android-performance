@@ -26,11 +26,11 @@ class AutoInstrumentationCache {
         }
     }
 
-    fun configuration(
+    fun configure(
         appStartActivities: Collection<Class<out Activity>>,
-        autoInstrument: Collection<Class<*>>
+        autoInstrument: Collection<Class<*>>,
     ) {
         appStartActivities.forEach { appStartActivitiesCache[it] = true }
-        autoInstrument.forEach { autoInstrumentCache[it] = true }
+        autoInstrument.forEach { autoInstrumentCache[it] = false }
     }
 }
