@@ -1,6 +1,7 @@
 package com.bugsnag.android.performance.internal.instrumentation
 
 import android.app.Activity
+import com.bugsnag.android.performance.AutoInstrumentationCache
 import com.bugsnag.android.performance.internal.Loopers
 import com.bugsnag.android.performance.internal.SpanCategory
 import com.bugsnag.android.performance.internal.SpanFactory
@@ -33,13 +34,20 @@ class ActivityLifecycleInstrumentationTest {
     private lateinit var spanFactory: SpanFactory
     private lateinit var activityInstrumentation: ActivityLifecycleInstrumentation
     private lateinit var lifecycleHelper: ActivityLifecycleHelper
+    private lateinit var autoInstrumentationCache: AutoInstrumentationCache
 
     @Before
     fun setup() {
         spanTracker = SpanTracker()
         spanProcessor = CollectingSpanProcessor()
         spanFactory = SpanFactory(spanProcessor)
-        activityInstrumentation = ActivityLifecycleInstrumentation(spanTracker, spanFactory, mock())
+        autoInstrumentationCache = AutoInstrumentationCache()
+        activityInstrumentation = ActivityLifecycleInstrumentation(
+            spanTracker,
+            spanFactory,
+            mock(),
+            autoInstrumentationCache,
+        )
         lifecycleHelper = ActivityLifecycleHelper(activityInstrumentation) {
             ShadowPausedSystemClock.advanceBy(1, TimeUnit.MILLISECONDS)
         }

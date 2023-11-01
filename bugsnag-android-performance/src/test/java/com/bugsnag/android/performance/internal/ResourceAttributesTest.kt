@@ -33,6 +33,8 @@ class ResourceAttributesTest {
             "6.5.4",
             NoopLogger,
             null,
+            emptySet(),
+            emptySet(),
         )
 
         val attributes = createResourceAttributes(configuration).toList().toMap()
@@ -68,6 +70,8 @@ class ResourceAttributesTest {
             "5.4.3",
             NoopLogger,
             null,
+            emptySet(),
+            emptySet(),
         )
 
         val attributes = createResourceAttributes(configuration).toList().toMap()
