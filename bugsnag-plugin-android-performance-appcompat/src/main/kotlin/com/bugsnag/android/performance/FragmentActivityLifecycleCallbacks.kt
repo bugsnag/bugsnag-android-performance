@@ -15,6 +15,7 @@ import com.bugsnag.android.performance.internal.ViewLoadPhase
 class FragmentActivityLifecycleCallbacks(
     private val spanTracker: SpanTracker,
     private val spanFactory: SpanFactory,
+    private val autoInstrumentationCache: AutoInstrumentationCache,
 ) : ActivityLifecycleCallbacks, FragmentLifecycleCallbacks() {
 
     /**
@@ -46,25 +47,27 @@ class FragmentActivityLifecycleCallbacks(
         f: Fragment,
         savedInstanceState: Bundle?,
     ) {
-        // we start both ViewLoad & ViewLoadPhase/Create at exactly the same timestamp
-        val timestamp = SystemClock.elapsedRealtimeNanos()
-        val viewLoad = spanTracker.associate(f) {
-            spanFactory.createViewLoadSpan(
-                ViewType.FRAGMENT,
-                viewNameForFragment(f),
-                viewLoadOpts.startTime(timestamp),
-            )
-        }
+        if (autoInstrumentationCache.isInstrumentationEnabled(f::class.java)) {
+            // we start both ViewLoad & ViewLoadPhase/Create at exactly the same timestamp
+            val timestamp = SystemClock.elapsedRealtimeNanos()
+            val viewLoad = spanTracker.associate(f) {
+                spanFactory.createViewLoadSpan(
+                    ViewType.FRAGMENT,
+                    viewNameForFragment(f),
+                    viewLoadOpts.startTime(timestamp),
+                )
+            }
 
-        spanTracker.associate(f, ViewLoadPhase.CREATE) {
-            spanFactory.createViewLoadPhaseSpan(
-                viewNameForFragment(f),
-                ViewType.FRAGMENT,
-                ViewLoadPhase.CREATE,
-                SpanOptions.DEFAULTS
-                    .within(viewLoad)
-                    .startTime(timestamp),
-            )
+            spanTracker.associate(f, ViewLoadPhase.CREATE) {
+                spanFactory.createViewLoadPhaseSpan(
+                    viewNameForFragment(f),
+                    ViewType.FRAGMENT,
+                    ViewLoadPhase.CREATE,
+                    SpanOptions.DEFAULTS
+                        .within(viewLoad)
+                        .startTime(timestamp),
+                )
+            }
         }
     }
 
