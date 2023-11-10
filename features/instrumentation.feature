@@ -226,21 +226,21 @@ Feature: Automatic creation of spans
       | bugsnag.span.category | stringValue | view_load_phase |
       | bugsnag.phase         | stringValue | ActivityResume  |
       | bugsnag.view.name     | stringValue | MainActivity    |
-    * a span named "[ViewLoadPhase/ActivityCreate]MainActivity" contains the attributes:
-      | attribute             | type        | value           |
-      | bugsnag.span.category | stringValue | view_load_phase |
-      | bugsnag.phase         | stringValue | ActivityCreate  |
-      | bugsnag.view.name     | stringValue | MainActivity    |
+    * a span named "[ViewLoadPhase/ActivityCreate]SplashScreenActivity" contains the attributes:
+      | attribute             | type        | value                |
+      | bugsnag.span.category | stringValue | view_load_phase      |
+      | bugsnag.phase         | stringValue | ActivityCreate       |
+      | bugsnag.view.name     | stringValue | SplashScreenActivity |
 
-    * a span named "[ViewLoadPhase/ActivityStart]MainActivity" contains the attributes:
-      | attribute             | type        | value           |
-      | bugsnag.span.category | stringValue | view_load_phase |
-      | bugsnag.phase         | stringValue | ActivityStart   |
-      | bugsnag.view.name     | stringValue | MainActivity    |
+    * a span named "[ViewLoadPhase/ActivityStart]SplashScreenActivity" contains the attributes:
+      | attribute             | type        | value                |
+      | bugsnag.span.category | stringValue | view_load_phase      |
+      | bugsnag.phase         | stringValue | ActivityStart        |
+      | bugsnag.view.name     | stringValue | SplashScreenActivity |
 
-    * a span named "[ViewLoadPhase/ActivityResume]MainActivity" contains the attributes:
-      | attribute             | type        | value           |
-      | bugsnag.span.category | stringValue | view_load_phase |
-      | bugsnag.phase         | stringValue | ActivityResume  |
-      | bugsnag.view.name     | stringValue | MainActivity    |
+    * a span named "[ViewLoadPhase/ActivityResume]SplashScreenActivity" contains the attributes:
+      | attribute             | type        | value                |
+      | bugsnag.span.category | stringValue | view_load_phase      |
+      | bugsnag.phase         | stringValue | ActivityResume       |
+      | bugsnag.view.name     | stringValue | SplashScreenActivity |
 
