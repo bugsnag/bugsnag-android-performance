@@ -13,4 +13,4 @@ annotation class DoNotEndAppStart
  */
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)
-annotation class DoNotInstrument
+annotation class DoNotAutoInstrument

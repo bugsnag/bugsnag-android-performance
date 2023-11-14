@@ -2,8 +2,8 @@ package com.bugsnag.android.performance.internal.instrumentation
 
 import android.app.Activity
 import com.bugsnag.android.performance.AutoInstrumentationCache
+import com.bugsnag.android.performance.DoNotAutoInstrument
 import com.bugsnag.android.performance.DoNotEndAppStart
-import com.bugsnag.android.performance.DoNotInstrument
 import com.bugsnag.android.performance.internal.Loopers
 import com.bugsnag.android.performance.internal.SpanCategory
 import com.bugsnag.android.performance.internal.SpanFactory
@@ -74,10 +74,10 @@ class LegacyActivityInstrumentationTest {
 
     @Test
     fun disableActivityInstrumentation() {
-        @DoNotInstrument
-        class DoNotInstrumentActivity : Activity()
+        @DoNotAutoInstrument
+        class DoNotAutoInstrumentActivity : Activity()
 
-        val activity = DoNotInstrumentActivity()
+        val activity = DoNotAutoInstrumentActivity()
 
         val lifecycleHelper = ActivityLifecycleHelper(activityInstrumentation) {
             ShadowPausedSystemClock.advanceBy(1, TimeUnit.MILLISECONDS)

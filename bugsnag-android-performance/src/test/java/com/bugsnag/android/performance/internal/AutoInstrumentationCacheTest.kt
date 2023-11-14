@@ -2,21 +2,21 @@ package com.bugsnag.android.performance.internal
 
 import android.app.Activity
 import com.bugsnag.android.performance.AutoInstrumentationCache
+import com.bugsnag.android.performance.DoNotAutoInstrument
 import com.bugsnag.android.performance.DoNotEndAppStart
-import com.bugsnag.android.performance.DoNotInstrument
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 internal class AutoInstrumentationCacheTest {
 
-    @DoNotInstrument
-    class DoNotInstrumentActivity : Activity()
+    @DoNotAutoInstrument
+    class DoNotAutoInstrumentActivity : Activity()
 
     @DoNotEndAppStart
     class DoNotEndAppStartActivity : Activity()
 
-    @DoNotInstrument
+    @DoNotAutoInstrument
     @DoNotEndAppStart
     class NoInstrumentationAppStartActivity : Activity()
 
@@ -25,7 +25,7 @@ internal class AutoInstrumentationCacheTest {
     @Test
     fun testIsInstrumentationEnabled() {
         val result =
-            AutoInstrumentationCache().isInstrumentationEnabled(DoNotInstrumentActivity::class.java)
+            AutoInstrumentationCache().isInstrumentationEnabled(DoNotAutoInstrumentActivity::class.java)
         assertFalse(result)
     }
 
@@ -61,21 +61,21 @@ internal class AutoInstrumentationCacheTest {
     }
 
     @Test
-    fun testDoNotInstrumentActivities() {
-        val doNotInstrumentActivities = hashSetOf<Class<out Any>>()
-        doNotInstrumentActivities.add(DoNotInstrumentActivity::class.java)
-        doNotInstrumentActivities.add(DoNotEndAppStartActivity::class.java)
+    fun testDoNotAutoInstrumentActivities() {
+        val doNotAutoInstrumentActivities = hashSetOf<Class<out Any>>()
+        doNotAutoInstrumentActivities.add(DoNotAutoInstrumentActivity::class.java)
+        doNotAutoInstrumentActivities.add(DoNotEndAppStartActivity::class.java)
 
         val autoInstrumentationCache = AutoInstrumentationCache().apply {
-            configure(hashSetOf(), doNotInstrumentActivities)
+            configure(hashSetOf(), doNotAutoInstrumentActivities)
         }
 
         val isInstrumentationResult1 =
-            autoInstrumentationCache.isInstrumentationEnabled(doNotInstrumentActivities.last())
+            autoInstrumentationCache.isInstrumentationEnabled(doNotAutoInstrumentActivities.last())
         assertFalse(isInstrumentationResult1)
 
         val isInstrumentationResult2 =
-            autoInstrumentationCache.isInstrumentationEnabled(doNotInstrumentActivities.first())
+            autoInstrumentationCache.isInstrumentationEnabled(doNotAutoInstrumentActivities.first())
         assertFalse(isInstrumentationResult2)
     }
 
@@ -98,25 +98,25 @@ internal class AutoInstrumentationCacheTest {
 
     @Test
     fun testMixedActivities() {
-        val doNotInstrumentActivities = hashSetOf(
+        val doNotAutoInstrumentFragmentActivities = hashSetOf(
             DoNotEndAppStartActivity::class.java,
             NoAnnotatedActivity::class.java,
         )
         val doNotEndAppStartActivities = hashSetOf(
-            DoNotInstrumentActivity::class.java,
+            DoNotAutoInstrumentActivity::class.java,
             NoAnnotatedActivity::class.java,
         )
 
         val autoInstrumentationCache = AutoInstrumentationCache().apply {
-            configure(doNotEndAppStartActivities, doNotInstrumentActivities)
+            configure(doNotEndAppStartActivities, doNotAutoInstrumentFragmentActivities)
         }
 
         val isInstrumentationResult1 =
-            autoInstrumentationCache.isInstrumentationEnabled(doNotInstrumentActivities.last())
+            autoInstrumentationCache.isInstrumentationEnabled(doNotAutoInstrumentFragmentActivities.last())
         assertFalse(isInstrumentationResult1)
 
         val isInstrumentationResult2 =
-            autoInstrumentationCache.isInstrumentationEnabled(doNotInstrumentActivities.first())
+            autoInstrumentationCache.isInstrumentationEnabled(doNotAutoInstrumentFragmentActivities.first())
         assertFalse(isInstrumentationResult2)
 
         val isEndAppStartResult1 =
