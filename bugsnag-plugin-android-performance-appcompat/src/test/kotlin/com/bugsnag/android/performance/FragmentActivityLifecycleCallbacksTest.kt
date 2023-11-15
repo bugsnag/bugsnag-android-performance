@@ -103,17 +103,18 @@ class FragmentActivityLifecycleCallbacksTest {
     }
 
     @Test
-    fun testDoNotInstrumentFragment() {
-        @DoNotInstrument
-        class DoNotInstrumentFragment : Fragment()
-        val doNotInstrumentFragment = DoNotInstrumentFragment()
-        lifecycleCallbacks.onFragmentPreCreated(fm, doNotInstrumentFragment, null)
+    fun testDoNotAutoInstrumentFragment() {
+        @DoNotAutoInstrument
+        class DoNotAutoInstrumentFragment : Fragment()
+
+        val doNotAutoInstrumentFragment = DoNotAutoInstrumentFragment()
+        lifecycleCallbacks.onFragmentPreCreated(fm, doNotAutoInstrumentFragment, null)
 
         assertEquals(0, spanCollector.size)
 
-        lifecycleCallbacks.onFragmentCreated(fm, doNotInstrumentFragment, null)
-        lifecycleCallbacks.onFragmentStarted(fm, doNotInstrumentFragment)
-        lifecycleCallbacks.onFragmentResumed(fm, doNotInstrumentFragment)
+        lifecycleCallbacks.onFragmentCreated(fm, doNotAutoInstrumentFragment, null)
+        lifecycleCallbacks.onFragmentStarted(fm, doNotAutoInstrumentFragment)
+        lifecycleCallbacks.onFragmentResumed(fm, doNotAutoInstrumentFragment)
 
         assertEquals(0, spanCollector.size)
     }

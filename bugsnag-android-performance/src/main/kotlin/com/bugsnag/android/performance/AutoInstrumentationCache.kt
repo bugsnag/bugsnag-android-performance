@@ -13,7 +13,7 @@ class AutoInstrumentationCache {
      */
     fun isInstrumentationEnabled(jclass: Class<*>): Boolean {
         return autoInstrumentCache.getOrPut(jclass) {
-            !jclass.isAnnotationPresent(DoNotInstrument::class.java)
+            !jclass.isAnnotationPresent(DoNotAutoInstrument::class.java)
         }
     }
 
