@@ -1,3 +1,13 @@
+## 1.2.0 (2023-11-22)
+
+### Enhancements
+
+* Prevent configured Activities from signalling the end of an AppStart (`doNotEndAppStart` configuration option).
+  [#185](https://github.com/bugsnag/bugsnag-android-performance/pull/185)
+* Exclude configured Activities & Fragments from automatic instrumentation (`doNotAutoInstrument` configuration option).
+  [#185](https://github.com/bugsnag/bugsnag-android-performance/pull/185)
+  [#186](https://github.com/bugsnag/bugsnag-android-performance/pull/186)
+
 ## 1.1.1 (2023-10-16)
 
 ### Bug fixes
