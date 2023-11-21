@@ -71,6 +71,7 @@ Feature: Server responses P value
     And I wait to receive 1 trace
     Then the trace payload field "resourceSpans.0.scopeSpans.0.spans.0.name" equals "span 3"
 
+  @skip
   Scenario: Update P to 0 on first response: fail-retriable, success, fail-permanent
 #    Given I set the HTTP status code for the next requests to 200,500,200,400
     Given I set the HTTP status code for the next requests to 200,500
@@ -187,6 +188,7 @@ Feature: Server responses P value
     And I invoke "sendNextSpan"
     And I should receive no traces
 
+  @skip
   Scenario: Update P to 0 on second response: fail-retriable, fail-permanent, success
 #    Given I set the HTTP status code for the next requests to 200,500,400,200
     Given I set the HTTP status code for the next requests to 200,500

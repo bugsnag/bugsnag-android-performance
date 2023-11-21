@@ -1,10 +1,21 @@
+## 1.2.0 (2023-11-21)
+
+### Enhancements
+
+* Prevent configured Activities from signalling the end of an App Start (`doNotEndAppStart`
+  configuration option).
+* Exclude configured Activities from automatic instrumentation (`doNotAutoInstrument` configuration
+  option).
+
 ## 1.1.1 (2023-10-16)
 
 ### Bug fixes
 
-* os.version is now correctly reported as the release version (12, 13, 14), sdk level is reported in a new resource attribute
+* os.version is now correctly reported as the release version (12, 13, 14), sdk level is reported in
+  a new resource attribute
   [#178](https://github.com/bugsnag/bugsnag-android-performance/pull/178)
-* AppStart spans are now platform-prefixed (eg: AppStart/AndroidCold) to differentiate different AppStart layers
+* AppStart spans are now platform-prefixed (eg: AppStart/AndroidCold) to differentiate different
+  AppStart layers
   [#179](https://github.com/bugsnag/bugsnag-android-performance/pull/179)
 
 ## 1.1.0 (2023-09-06)
@@ -67,7 +78,7 @@
 
 ### Enhancements
 
-* Each trace reported will include the current clock-time to allow the server-side to adjust device clocks 
+* Each trace reported will include the current clock-time to allow the server-side to adjust device clocks
   [#126](https://github.com/bugsnag/bugsnag-android-performance/pull/126)
 
 ### Bug fixes
