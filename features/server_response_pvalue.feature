@@ -188,7 +188,6 @@ Feature: Server responses P value
     And I should receive no traces
 
   Scenario: Update P to 0 on second response: fail-retriable, fail-permanent, success
-#    Given I set the HTTP status code for the next requests to 200,500,400,200
     Given I set the HTTP status code for the next requests to 200,500
     And I load scenario "GenerateSpansScenario"
     And I wait to receive a sampling request
@@ -196,6 +195,7 @@ Feature: Server responses P value
     And I wait to receive at least 1 trace
     Then the trace payload field "resourceSpans.0.scopeSpans.0.spans.0.name" equals "span 1"
     Then I discard the oldest trace
+
     Given I set the HTTP status code for the next request to 400
     Then I invoke "sendNextSpan"
     And I wait to receive 2 traces
@@ -203,13 +203,13 @@ Feature: Server responses P value
     * a span named "span 2" contains the attributes:
       | attribute                | type      | value |
       | bugsnag.span.first_class | boolValue | true  |
+    Then I discard the oldest trace
 
     * a span named "span 2" contains the attributes:
       | attribute                | type      | value |
       | bugsnag.span.first_class | boolValue | true  |
+    Then I discard the oldest trace
 
-    Then I discard the oldest trace
-    Then I discard the oldest trace
     Given I set the HTTP status code for the next request to 200
     Then I invoke "sendNextSpan"
     And I wait to receive 1 trace
