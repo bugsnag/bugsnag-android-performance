@@ -143,8 +143,8 @@ class MainActivity : AppCompatActivity() {
     private fun startBugsnag() {
         val config = Configuration.load(this).apply {
             endpoints = EndpointConfiguration(
-                "http://$mazeAddress/session",
-                "http://$mazeAddress/notify",
+                notify = "http://$mazeAddress/notify",
+                sessions = "http://$mazeAddress/session",
             )
         }
         Bugsnag.start(this, config)
@@ -158,6 +158,7 @@ class MainActivity : AppCompatActivity() {
             if (mazeAddress == null) setMazeRunnerAddress()
             checkNetwork()
             startBugsnag()
+            @Suppress("LoopWithTooManyJumpStatements")
             while (polling) {
                 Thread.sleep(1000)
                 try {
@@ -172,6 +173,13 @@ class MainActivity : AppCompatActivity() {
                     log("Received command: $commandStr")
                     val command = JSONObject(commandStr)
                     val action = command.getString("action")
+
+                    if (action == "noop") {
+                        log("noop - doing nothing and looping around for another poll()")
+                        // immediately loop around
+                        continue
+                    }
+
                     val scenarioName = command.getString("scenario_name")
                     val scenarioMetadata = command.getString("scenario_metadata")
                     val endpointUrl = command.getString("endpoint")
