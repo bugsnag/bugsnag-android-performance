@@ -18,22 +18,22 @@
             android:value="project_apikeyapikeyapikeyapikey" />
 
         <activity
-            android:name=".MainActivity"
+            android:name=".SplashScreenActivity"
             android:exported="true">
-
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
-        <activity android:name=".ActivityViewLoadActivity"/>
-        <activity android:name=".NestedSpansActivity"/>
+        <activity android:name=".MainActivity" />
+
+        <activity android:name=".ActivityViewLoadActivity" />
+        <activity android:name=".NestedSpansActivity" />
 
         <receiver
             android:name=".MazeRacerAlarmReceiver"
-            android:exported="true"
-            />
+            android:exported="true" />
     </application>
 
 </manifest>

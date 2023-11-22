@@ -74,24 +74,23 @@ Feature: Nested spans
                 | bugsnag.span.first_class          | boolValue   | true                |
 
     # Check span parentage (nested under NestedSpansActivity)
-    * the trace payload field "resourceSpans.0.scopeSpans.0.spans.8.spanId" is stored as the value "activity_start_span_id"
-    * the trace payload field "resourceSpans.0.scopeSpans.0.spans.12.spanId" is stored as the value "activity_resume_span_id"
-    * the trace payload field "resourceSpans.0.scopeSpans.0.spans.13.spanId" is stored as the value "view_load_span_id"
-    * the trace payload field "resourceSpans.0.scopeSpans.0.spans.17.spanId" is stored as the value "custom_root_span_id"
+    * the "[ViewLoadPhase/ActivityStart]NestedSpansActivity" span field "spanId" is stored as the value "activity_start_span_id"
+    * the "[ViewLoadPhase/ActivityResume]NestedSpansActivity" span field "spanId" is stored as the value "activity_resume_span_id"
+    * the "[ViewLoad/Activity]NestedSpansActivity" span field "spanId" is stored as the value "view_load_span_id"
+    * the "CustomRoot" span field "spanId" is stored as the value "custom_root_span_id"
 
     # ViewLoadPhase phase spans (Create, Start, Resume) should be nested under ViewLoad
-    * the trace payload field "resourceSpans.0.scopeSpans.0.spans.6.parentSpanId" equals the stored value "view_load_span_id"
-    * the trace payload field "resourceSpans.0.scopeSpans.0.spans.8.parentSpanId" equals the stored value "view_load_span_id"
-    * the trace payload field "resourceSpans.0.scopeSpans.0.spans.12.parentSpanId" equals the stored value "view_load_span_id"
+    * the "[ViewLoadPhase/ActivityCreate]NestedSpansActivity" span field "parentSpanId" equals the stored value "view_load_span_id"
+    * the "[ViewLoadPhase/ActivityStart]NestedSpansActivity" span field "parentSpanId" equals the stored value "view_load_span_id"
+    * the "[ViewLoadPhase/ActivityResume]NestedSpansActivity" span field "parentSpanId" equals the stored value "view_load_span_id"
 
     # FirstFragment should be nested under ViewLoadPhase/Start
-    * the trace payload field "resourceSpans.0.scopeSpans.0.spans.9.parentSpanId" equals the stored value "activity_start_span_id"
+    * the "[ViewLoad/Fragment]FirstFragment" span field "parentSpanId" equals the stored value "activity_start_span_id"
 
     # CustomRoot should be nested under ViewLoadPhase/Resume
-    * the trace payload field "resourceSpans.0.scopeSpans.0.spans.17.parentSpanId" equals the stored value "activity_resume_span_id"
+    * the "CustomRoot" span field "parentSpanId" equals the stored value "activity_resume_span_id"
 
     # Remaining spans (SecondFragment, DoStuff, LoadData) should be nested under CustomRoot
-    * the trace payload field "resourceSpans.0.scopeSpans.0.spans.11.parentSpanId" equals the stored value "custom_root_span_id"
-    # DoStuff is not reliably reported in the same location - so we don't check it for now
-    # * the trace payload field "resourceSpans.0.scopeSpans.0.spans.15.parentSpanId" equals the stored value "custom_root_span_id"
-    * the trace payload field "resourceSpans.0.scopeSpans.0.spans.16.parentSpanId" equals the stored value "custom_root_span_id"
+    * the "[ViewLoad/Fragment]SecondFragment" span field "parentSpanId" equals the stored value "custom_root_span_id"
+    * the "DoStuff" span field "parentSpanId" equals the stored value "custom_root_span_id"
+    * the "LoadData" span field "parentSpanId" equals the stored value "custom_root_span_id"

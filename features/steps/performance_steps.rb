@@ -42,6 +42,28 @@ When('I invoke {string}') do |function|
   execute_command 'invoke', function
 end
 
+Then("the {string} span field {string} is stored as the value {string}") do |span_name, field, key|
+  spans = spans_from_request_list(Maze::Server.list_for('traces'))
+  named_spans = spans.select { |s| s['name'].eql?(span_name) }
+
+  raise Test::Unit::AssertionFailedError.new "no span named #{span_name} found" if named_spans.empty?
+  raise Test::Unit::AssertionFailedError.new "found #{named_spans.size} spans named #{span_name}, expected exactly one" unless named_spans.size == 1
+
+  value = Maze::Helper.read_key_path(named_spans[0], field)
+  Maze::Store.values[key] = value.dup
+end
+
+Then("the {string} span field {string} equals the stored value {string}") do |span_name, field, stored_key|
+  spans = spans_from_request_list(Maze::Server.list_for('traces'))
+  named_spans = spans.select { |s| s['name'].eql?(span_name) }
+
+  raise Test::Unit::AssertionFailedError.new "no span named #{span_name} found" if named_spans.empty?
+  raise Test::Unit::AssertionFailedError.new "found #{named_spans.size} spans named #{span_name}, expected exactly one" unless named_spans.size == 1
+
+  value = Maze::Helper.read_key_path(named_spans[0], field)
+  Maze.check.equal(Maze::Store.values[stored_key], value)
+end
+
 When("I relaunch the app after shutdown") do
   max_attempts = 20
   attempts = 0
@@ -54,4 +76,12 @@ When("I relaunch the app after shutdown") do
   $logger.warn "App state #{state} instead of #{expected_state} after 10s" unless state == :not_running
 
   Maze.driver.launch_app
+end
+
+def spans_from_request_list list
+  return list.remaining
+             .flat_map { |req| req[:body]['resourceSpans'] }
+             .flat_map { |r| r['scopeSpans'] }
+             .flat_map { |s| s['spans'] }
+             .select { |s| !s.nil? }
 end
