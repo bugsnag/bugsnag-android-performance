@@ -1,3 +1,10 @@
+## TBD
+
+### Bug fixes
+
+* Coroutines forked from other coroutines within a `BugsnagPerformanceScope` will now have spans that nest naturally
+  [#193](https://github.com/bugsnag/bugsnag-android-performance/pull/193)
+
 ## 1.2.0 (2023-11-22)
 
 ### Enhancements
