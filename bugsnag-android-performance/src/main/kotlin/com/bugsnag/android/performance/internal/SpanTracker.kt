@@ -1,14 +1,25 @@
 package com.bugsnag.android.performance.internal
 
 import android.os.SystemClock
-import androidx.annotation.RestrictTo
 import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.internal.SpanImpl.Companion.NO_END_TIME
-import java.util.IdentityHashMap
-import java.util.WeakHashMap
+import java.lang.ref.ReferenceQueue
+import java.lang.ref.WeakReference
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.concurrent.read
 import kotlin.concurrent.write
+
+/**
+ * Default size of the SpanTracker table, this must be a power-of-two value
+ */
+private const val DEFAULT_SPAN_TRACKER_TABLE_SIZE = 8
+
+/**
+ * The maximum depth allowed in a SpanBinding linked-list / chain, adding
+ * to a linked-list this long will cause the binding table to grow in an attempt
+ * to reduce collisions
+ */
+private const val MAX_BINDING_LIST_DEPTH = 3
 
 /**
  * Container for [Span]s that are associated with other objects, which have their own
@@ -18,13 +29,54 @@ import kotlin.concurrent.write
  * the `endTime`. If the `Span` is then [marked as leaked](markSpanLeaked) then its "auto end"
  * time is used to close it.
  */
-@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
-public class SpanTracker {
-    private val backingStore: MutableMap<Any, MutableMap<Enum<*>?, SpanBinding>> = WeakHashMap()
+class SpanTracker {
+
+    /*
+     * Implementation:
+     * SpanTracker is effectively a dual-key WeakHashMap which correctly disposes of Spans that
+     * are "lost" due to garbage collection. Instead of a Map.Entry each Span is tracked against
+     * a SpanBinding, which holds a WeakReference to the bound "token" (the object the Span is
+     * associated with, typically an Activity or Fragment).
+     *
+     * We cannot reasonably use a WeakHashMap by itself as there is no way to know when keys (tokens)
+     * are "lost" due to being garbage collected. SpanTracker will correctly end, mark as leaked,
+     * or discard the associated Span objects when the token is leaked. This avoids the Span
+     * objects "leaking" within the SpanContext hierarchy, since we assume that once the token
+     * is lost there is no remaining way for the user to end() the Span.
+     */
+
+    private var bindings: Array<SpanBinding?> = arrayOfNulls(DEFAULT_SPAN_TRACKER_TABLE_SIZE)
+    private val referenceQueue = ReferenceQueue<Any>()
     private val lock = ReentrantReadWriteLock()
 
-    public operator fun get(token: Any, subToken: Enum<*>? = null): SpanImpl? {
-        return lock.read { backingStore[token]?.get(subToken)?.span }
+    /**
+     * Sweep the old entries from the table, closing any associated spans in the
+     */
+    private fun sweepStaleEntriesUnderWriteLock() {
+        val table = bindings
+        val tableSize = table.size
+
+        var binding: SpanBinding? = referenceQueue.poll() as? SpanBinding
+        while (binding != null) {
+            // make sure we don't leak the "lost" Span
+            binding.sweep()
+
+            val tableIndex = indexForHash(binding.hash, tableSize)
+            val removalResult = table[tableIndex]?.removeWhere { it === binding }
+            // replace the current table entry with the new head
+            table[tableIndex] = removalResult?.first
+
+            binding = referenceQueue.poll() as? SpanBinding
+        }
+    }
+
+    operator fun get(token: Any, subToken: Enum<*>? = null): SpanImpl? {
+        return lock.read {
+            val hash = hashCodeFor(token, subToken)
+            val index = indexForHash(hash, bindings.size)
+
+            return@read bindings[index]?.entryFor(token, subToken)?.span
+        }
     }
 
     /**
@@ -32,16 +84,41 @@ public class SpanTracker {
      * the actual `Span` being tracked. This function may discard [span] if the given [token] is
      * already being tracked, if this is the case the tracked span will be returned.
      */
-    public fun associate(token: Any, subToken: Enum<*>? = null, span: SpanImpl): SpanImpl {
-        lock.write {
-            val trackedSpans = backingStore[token] ?: IdentityHashMap()
-            val existingSpan = trackedSpans[subToken]
-            if (existingSpan != null) {
-                return existingSpan.span
+    fun associate(token: Any, subToken: Enum<*>? = null, span: SpanImpl): SpanImpl {
+        return lock.write {
+            sweepStaleEntriesUnderWriteLock()
+
+            val hash = hashCodeFor(token, subToken)
+            var index = indexForHash(hash, bindings.size)
+
+            val existingBinding = bindings[index]
+
+            // the slot is available so association is simple
+            if (existingBinding == null) {
+                bindings[index] = SpanBinding(token, referenceQueue, hash, subToken, span)
+                return@write span
             } else {
-                trackedSpans[subToken] = SpanBinding(span)
-                backingStore[token] = trackedSpans
-                return span
+                val bindingForToken = existingBinding.entryFor(token, subToken)
+                if (bindingForToken != null) {
+                    // this binding already exists, so we return the existing Span
+                    return@write bindingForToken.span
+                }
+
+                // we've collided with an existing SpanBinding for something else
+                if (existingBinding.depth >= MAX_BINDING_LIST_DEPTH) {
+                    // the depth of the chain is too long, so we expand the table
+                    bindings = expandBindingsTable()
+
+                    // update the index for the new bindings table
+                    index = indexForHash(hash, bindings.size)
+                }
+
+                // add the new binding as the start of the existing chain
+                val newBinding = SpanBinding(token, referenceQueue, hash, subToken, span)
+                newBinding.next = bindings[index]
+                bindings[index] = newBinding
+
+                return@write span
             }
         }
     }
@@ -54,7 +131,7 @@ public class SpanTracker {
      * Note: in race scenarios the [createSpan] may be invoked and the resulting `Span` discarded,
      * the currently tracked `Span` will however always be returned.
      */
-    public inline fun associate(
+    inline fun associate(
         token: Any,
         subToken: Enum<*>? = null,
         createSpan: () -> SpanImpl,
@@ -67,23 +144,22 @@ public class SpanTracker {
         return associatedSpan
     }
 
-    public fun removeAssociation(tag: Any?, subToken: Enum<*>? = null): SpanImpl? {
-        return lock.write {
-            val associatedSpans = backingStore[tag]
-            val span = associatedSpans?.remove(subToken)?.span
-
-            if (associatedSpans?.isEmpty() == true) {
-                backingStore.remove(tag)
-            }
-
-            span
+    fun removeAssociation(token: Any?, subToken: Enum<*>? = null): SpanImpl? {
+        if (token == null) {
+            return null
         }
-    }
 
-    public fun removeAllAssociations(tag: Any?): Collection<SpanImpl> {
         return lock.write {
-            val associatedSpans = backingStore.remove(tag)
-            associatedSpans.orEmpty().values.map { it.span }
+            sweepStaleEntriesUnderWriteLock()
+
+            val hash = hashCodeFor(token, subToken)
+            val index = indexForHash(hash, bindings.size)
+
+            val binding = bindings[index] ?: return@write null
+            val (newHead, removed) = binding.removeWhere { it.get() === token && it.subToken == subToken }
+            bindings[index] = newHead
+
+            return@write removed?.span
         }
     }
 
@@ -92,8 +168,14 @@ public class SpanTracker {
      * marked as [leaked](markSpanLeaked) then its `endTime` will be set to the time that this
      * function was last called. Otherwise this value will be discarded.
      */
-    public fun markSpanAutomaticEnd(token: Any, subToken: Enum<*>? = null) {
-        backingStore[token]?.get(subToken)?.autoEndTime = SystemClock.elapsedRealtimeNanos()
+    fun markSpanAutomaticEnd(token: Any, subToken: Enum<*>? = null) {
+        lock.read {
+            val hash = hashCodeFor(token, subToken)
+            val index = indexForHash(hash, bindings.size)
+
+            val binding = bindings[index]?.entryFor(token, subToken)
+            binding?.autoEndTime = SystemClock.elapsedRealtimeNanos()
+        }
     }
 
     /**
@@ -101,16 +183,18 @@ public class SpanTracker {
      * Returns `true` if the `Span` was marked as leaked, or `false` if the `Span` was already
      * considered to be closed (or was not tracked).
      */
-    public fun markSpanLeaked(token: Any, subToken: Enum<*>? = null): Boolean {
+    fun markSpanLeaked(token: Any, subToken: Enum<*>? = null): Boolean {
         return lock.write {
-            val associatedSpans = backingStore[token]
-            val leaked = associatedSpans?.remove(subToken)?.markLeaked() == true
+            sweepStaleEntriesUnderWriteLock()
 
-            if (associatedSpans?.isEmpty() == true) {
-                backingStore.remove(token)
-            }
+            val hash = hashCodeFor(token, subToken)
+            val index = indexForHash(hash, bindings.size)
 
-            leaked
+            val (newHead, binding) = bindings[index]?.removeWhere { it.get() === token && it.subToken == subToken }
+                ?: return@write false
+
+            bindings[index] = newHead
+            return@write binding?.markLeaked() == true
         }
     }
 
@@ -118,18 +202,23 @@ public class SpanTracker {
      * End the tracking of a `Span` marking its `endTime` if it has not already been closed.
      * This *must* be called in order to ensure tokens can be garbage-collected.
      */
-    public fun endSpan(
+    fun endSpan(
         token: Any,
         subToken: Enum<*>? = null,
         endTime: Long = SystemClock.elapsedRealtimeNanos(),
     ) {
         lock.write {
-            val associatedSpans = backingStore[token]
-            associatedSpans?.remove(subToken)?.span?.end(endTime)
+            sweepStaleEntriesUnderWriteLock()
 
-            if (associatedSpans?.isEmpty() == true) {
-                backingStore.remove(token)
-            }
+            val hash = hashCodeFor(token, subToken)
+            val index = indexForHash(hash, bindings.size)
+
+            val (newHead, binding) = bindings[index]
+                ?.removeWhere { it.get() === token && it.subToken == subToken }
+                ?: return@write
+
+            bindings[index] = newHead
+            binding?.span?.end(endTime)
         }
     }
 
@@ -138,12 +227,20 @@ public class SpanTracker {
      * use autoEndTimes where they are available, but will otherwise fallback to using [endTime]
      * for each of the spans that get closed.
      */
-    public fun endAllSpans(token: Any, endTime: Long = SystemClock.elapsedRealtimeNanos()) {
+    fun endAllSpans(token: Any, endTime: Long = SystemClock.elapsedRealtimeNanos()) {
         lock.write {
-            val associatedSpans = backingStore[token]
-            associatedSpans?.values?.forEach { it.markLeaked(endTime) }
+            sweepStaleEntriesUnderWriteLock()
 
-            backingStore.remove(token)
+            // we do a sweep of the end binding table
+            // this is typically quite small as it isn't common for more than a few
+            // root tokens to be active at a time, leading to the table mostly being
+            // subTokens of the same roots
+            for (index in bindings.indices) {
+                val binding = bindings[index] ?: continue
+                val (newHead, removed) = binding.removeWhere { it.get() === token }
+                bindings[index] = newHead
+                removed?.markLeaked(endTime)
+            }
         }
     }
 
@@ -152,17 +249,76 @@ public class SpanTracker {
      * associated spans being discarded, any of their child spans that have already been closed
      * will have no valid parent span and will also be discarded by the server-side.
      */
-    public fun discardAllSpans(token: Any) {
+    fun discardAllSpans(token: Any) {
         lock.write {
-            val associatedSpans = backingStore[token]
-            associatedSpans?.values?.forEach { it.span.discard() }
+            sweepStaleEntriesUnderWriteLock()
 
-            backingStore.remove(token)
+            // we do a sweep of the end binding table
+            // this is typically quite small as it isn't common for more than a few
+            // root tokens to be active at a time, leading to the table mostly being
+            // subTokens of the same roots
+            for (index in bindings.indices) {
+                var removed: SpanBinding?
+                do {
+                    val binding = bindings[index] ?: break
+                    val removeResult = binding.removeWhere { it.get() === token }
+
+                    bindings[index] = removeResult.first
+
+                    removed = removeResult.second
+                    removed?.span?.discard()
+                } while (removed != null)
+            }
         }
     }
 
-    private class SpanBinding(val span: SpanImpl) {
+    private fun indexForHash(hash: Int, tableSize: Int): Int {
+        return hash and (tableSize - 1)
+    }
+
+    private fun hashCodeFor(token: Any, subToken: Enum<*>?): Int {
+        return System.identityHashCode(token) xor subToken.hashCode()
+    }
+
+    private fun expandBindingsTable(): Array<SpanBinding?> {
+        // WARNING: do not put anything other than 2 here!
+        // The table size *must* remain power-of-two as it grows, otherwise indexForHash will break
+        val newBindingsTable = arrayOfNulls<SpanBinding>(bindings.size * 2)
+        val newTableSize = newBindingsTable.size
+
+        for (index in bindings.indices) {
+            var binding = bindings[index]
+            while (binding != null) {
+                val next = binding.next
+                val newBindingIndex = indexForHash(binding.hash, newTableSize)
+
+                // build a new chain for collisions in the expanded table
+                binding.next = newBindingsTable[newBindingIndex]
+                newBindingsTable[newBindingIndex] = binding
+
+                // move onto the next binding to be added to the expanded table
+                binding = next
+            }
+        }
+
+        return newBindingsTable
+    }
+
+    private class SpanBinding(
+        boundObject: Any,
+        referenceQueue: ReferenceQueue<in Any>,
+        @JvmField
+        val hash: Int,
+        @JvmField
+        val subToken: Enum<*>? = null,
+        @JvmField
+        var span: SpanImpl,
+    ) : WeakReference<Any>(boundObject, referenceQueue) {
+        @JvmField
         var autoEndTime: Long = NO_END_TIME
+
+        @JvmField
+        var next: SpanBinding? = null
 
         fun markLeaked(fallbackEndTime: Long = SystemClock.elapsedRealtimeNanos()): Boolean {
             // this span has not leaked, ignore and return
@@ -177,6 +333,75 @@ public class SpanTracker {
             }
 
             return true
+        }
+
+        /**
+         * Called when the token that this `SpanBinding` is bound to has been garbage collected.
+         * This method will ensure that the `Span` is either closed at it's [autoEndTime] or
+         * (discarded)[SpanImpl.discard] (depending which is more appropriate).
+         */
+        fun sweep() {
+            if (autoEndTime == NO_END_TIME) {
+                span.discard()
+            } else {
+                span.end(autoEndTime)
+            }
+        }
+
+        override fun toString(): String {
+            return "Binding[$span, token=${get()}, subToken=${subToken}]"
+        }
+
+        // Linked-list utility functions follow ----------------------------------------------------
+
+        val depth: Int
+            get() {
+                var d = 1
+                var node = next
+                while (node != null) {
+                    d++
+                    node = node.next
+                }
+
+                return d
+            }
+
+        fun entryFor(token: Any, subToken: Enum<*>?): SpanBinding? {
+            var link: SpanBinding? = this
+            while (link != null) {
+                if (link.get() === token && link.subToken == subToken) {
+                    return link
+                }
+                link = link.next
+            }
+
+            return null
+        }
+
+        /**
+         * Remove a SpanBinding from the linked-list where the given predicate matches that
+         * SpanBinding, returning the new "head" of the linked-list and the removed SpanBinding
+         * as a pair.
+         */
+        inline fun removeWhere(predicate: (SpanBinding) -> Boolean): Pair<SpanBinding?, SpanBinding?> {
+            if (predicate(this)) {
+                return (this.next to this)
+            } else {
+                val head = this
+                var node = next
+                var previous = this
+                while (node != null) {
+                    if (predicate(node)) {
+                        previous.next = node.next
+                        break
+                    } else {
+                        previous = node
+                        node = node.next
+                    }
+                }
+
+                return head to node
+            }
         }
     }
 }

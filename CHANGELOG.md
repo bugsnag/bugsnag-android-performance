@@ -1,3 +1,10 @@
+## TBD
+
+### Bug fixes
+
+* Fixed a theoretically possible `Span` leak when tracked Spans were on the context stack, and their bound tokens were garbage collected before the `Span` was closed.
+  []()
+
 ## 1.2.1 (2024-01-09)
 
 ### Bug fixes

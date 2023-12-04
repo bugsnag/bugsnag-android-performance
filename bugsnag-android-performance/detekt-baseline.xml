@@ -50,5 +50,6 @@
     <ID>TooManyFunctions:Attributes.kt$Attributes : Collection</ID>
     <ID>TooManyFunctions:BugsnagPerformance.kt$BugsnagPerformance$BugsnagPerformance</ID>
     <ID>TooManyFunctions:Connectivity.kt$ConnectivityApi24 : NetworkCallbackConnectivity</ID>
+    <ID>TooManyFunctions:SpanTracker.kt$SpanTracker</ID>
   </CurrentIssues>
 </SmellBaseline>
