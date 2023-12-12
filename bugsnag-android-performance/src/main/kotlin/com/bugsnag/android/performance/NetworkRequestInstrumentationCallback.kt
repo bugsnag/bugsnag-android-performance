@@ -1,6 +1,6 @@
 package com.bugsnag.android.performance
 
-fun interface NetworkRequestInstrumentationCallback {
+public fun interface NetworkRequestInstrumentationCallback {
     /**
      * Use this callback to filter network request URLs when generating spans.
      *
@@ -20,5 +20,5 @@ fun interface NetworkRequestInstrumentationCallback {
      * }
      * ```
      */
-    fun onNetworkRequest(info: NetworkRequestInfo)
+    public fun onNetworkRequest(info: NetworkRequestInfo)
 }

@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
@@ -46,6 +48,12 @@ android {
     kotlinOptions {
         jvmTarget = "1.8"
     }
+}
+
+project.tasks.withType(KotlinCompile::class.java).configureEach {
+    // Workaround for https://youtrack.jetbrains.com/issue/KT-37652
+    if (name.endsWith("TestKotlin")) return@configureEach
+    kotlinOptions.freeCompilerArgs += listOf("-Xexplicit-api=strict")
 }
 
 dependencies {

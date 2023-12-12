@@ -1,17 +1,16 @@
 package com.bugsnag.android.performance.internal.instrumentation
 
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Application
 import android.os.Bundle
 import android.os.Handler
 import android.os.Message
 import android.os.SystemClock
-import com.bugsnag.android.performance.AutoInstrumentationCache
 import com.bugsnag.android.performance.Logger
 import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.SpanOptions
 import com.bugsnag.android.performance.internal.AppStartTracker
+import com.bugsnag.android.performance.internal.AutoInstrumentationCache
 import com.bugsnag.android.performance.internal.Loopers
 import com.bugsnag.android.performance.internal.SpanFactory
 import com.bugsnag.android.performance.internal.SpanImpl

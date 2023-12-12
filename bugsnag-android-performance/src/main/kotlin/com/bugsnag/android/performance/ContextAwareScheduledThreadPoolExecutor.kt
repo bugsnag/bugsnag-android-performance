@@ -12,19 +12,19 @@ import java.util.concurrent.TimeUnit
  * Sets the current [SpanContext] within a task to the [SpanContext] that was active
  * when the task was scheduled.
  */
-class ContextAwareScheduledThreadPoolExecutor: ScheduledThreadPoolExecutor {
-    constructor(corePoolSize: Int) : super(corePoolSize)
-    constructor(corePoolSize: Int, threadFactory: ThreadFactory?) : super(
+public class ContextAwareScheduledThreadPoolExecutor: ScheduledThreadPoolExecutor {
+    public constructor(corePoolSize: Int) : super(corePoolSize)
+    public constructor(corePoolSize: Int, threadFactory: ThreadFactory?) : super(
         corePoolSize,
         threadFactory
     )
 
-    constructor(corePoolSize: Int, handler: RejectedExecutionHandler?) : super(
+    public constructor(corePoolSize: Int, handler: RejectedExecutionHandler?) : super(
         corePoolSize,
         handler
     )
 
-    constructor(
+    public constructor(
         corePoolSize: Int,
         threadFactory: ThreadFactory?,
         handler: RejectedExecutionHandler?

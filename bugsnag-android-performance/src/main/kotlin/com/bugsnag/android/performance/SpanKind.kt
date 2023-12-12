@@ -1,6 +1,6 @@
 package com.bugsnag.android.performance
 
-enum class SpanKind(
+public enum class SpanKind(
     @JvmField
     internal val otelName: String,
     @JvmField

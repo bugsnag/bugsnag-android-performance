@@ -6,47 +6,47 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import androidx.annotation.VisibleForTesting
 
-class PerformanceConfiguration private constructor(val context: Context) {
+public class PerformanceConfiguration private constructor(public val context: Context) {
 
-    constructor(context: Context, apiKey: String) : this(context) {
+    public constructor(context: Context, apiKey: String) : this(context) {
         this.apiKey = apiKey
     }
 
-    var apiKey: String = ""
+    public var apiKey: String = ""
 
-    var endpoint: String = "https://otlp.bugsnag.com/v1/traces"
+    public var endpoint: String = "https://otlp.bugsnag.com/v1/traces"
 
-    var autoInstrumentAppStarts = true
+    public var autoInstrumentAppStarts: Boolean = true
 
-    var autoInstrumentActivities = AutoInstrument.FULL
+    public var autoInstrumentActivities: AutoInstrument = AutoInstrument.FULL
 
-    var releaseStage: String? = null
+    public var releaseStage: String? = null
 
-    var enabledReleaseStages: Set<String>? = null
+    public var enabledReleaseStages: Set<String>? = null
 
-    var versionCode: Long? = null
+    public var versionCode: Long? = null
 
-    var appVersion: String? = null
+    public var appVersion: String? = null
 
-    var logger: Logger? = null
+    public var logger: Logger? = null
 
     /**
      * Activity classes that are considered part of the AppStart and therefore will not
      * end the AppStart when the associated ViewLoad is ended.
      */
-    var doNotEndAppStart: Collection<Class<out Activity>> = HashSet()
+    public var doNotEndAppStart: Collection<Class<out Activity>> = HashSet()
 
     /**
      * A list of classes to not automatically instrument. This will only match the classes
      * exactly (sub-classes must be listed separately).
      */
-    var doNotAutoInstrument: Collection<Class<*>> = HashSet()
+    public var doNotAutoInstrument: Collection<Class<*>> = HashSet()
 
     /**
      * Callback to be invoked on every network request that would generate a span.
      * Use this to filter what URLs will generate spans and how.
      */
-    var networkRequestCallback: NetworkRequestInstrumentationCallback? = null
+    public var networkRequestCallback: NetworkRequestInstrumentationCallback? = null
 
     override fun toString(): String =
         "PerformanceConfiguration(" +
@@ -63,7 +63,7 @@ class PerformanceConfiguration private constructor(val context: Context) {
                 "doNotAutoInstrument=$doNotAutoInstrument " +
                 ")"
 
-    companion object Loader {
+    public companion object Loader {
 
         // mandatory
         private const val BUGSNAG_NS = "com.bugsnag.android"
@@ -89,7 +89,7 @@ class PerformanceConfiguration private constructor(val context: Context) {
 
         @JvmStatic
         @JvmOverloads
-        fun load(ctx: Context, apiKey: String? = null): PerformanceConfiguration {
+        public fun load(ctx: Context, apiKey: String? = null): PerformanceConfiguration {
             try {
                 val packageManager = ctx.packageManager
                 val packageName = ctx.packageName

@@ -1,6 +1,6 @@
 package com.bugsnag.android.performance.internal
 
-enum class SpanCategory(val category: String?) {
+public enum class SpanCategory(public val category: String?) {
     CUSTOM(null),
     VIEW_LOAD("view_load"),
     VIEW_LOAD_PHASE("view_load_phase"),

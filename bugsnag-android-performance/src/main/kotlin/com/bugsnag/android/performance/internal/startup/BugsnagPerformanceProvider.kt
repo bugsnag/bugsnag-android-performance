@@ -4,7 +4,7 @@ import android.app.Application
 import com.bugsnag.android.performance.BugsnagPerformance
 import com.bugsnag.android.performance.internal.instrumentation.ForegroundState
 
-class BugsnagPerformanceProvider : AbstractStartupProvider() {
+public class BugsnagPerformanceProvider : AbstractStartupProvider() {
     private val startupTracker get() = BugsnagPerformance.instrumentedAppState.startupTracker
 
     override fun onCreate(): Boolean {
@@ -18,7 +18,7 @@ class BugsnagPerformanceProvider : AbstractStartupProvider() {
         return true
     }
 
-    companion object {
+    public companion object {
         init {
             // report the earliest class load we are aware of
             BugsnagPerformance.reportApplicationClassLoaded()

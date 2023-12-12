@@ -14,14 +14,14 @@ import java.util.UUID
 import java.util.concurrent.atomic.AtomicLongFieldUpdater
 
 @Suppress("LongParameterList")
-class SpanImpl internal constructor(
+public class SpanImpl internal constructor(
     name: String,
     internal val category: SpanCategory,
     internal val kind: SpanKind,
     internal val startTime: Long,
     override val traceId: UUID,
     override val spanId: Long = nextSpanId(),
-    val parentSpanId: Long,
+    public val parentSpanId: Long,
     private val processor: SpanProcessor,
     private val makeContext: Boolean,
 ) : Span, HasAttributes {
@@ -84,15 +84,15 @@ class SpanImpl internal constructor(
      * Deliberately discard this `SpanImpl`. This will mark the span as ended, but not record
      * a valid end time. It will also (if required) detach the Span from the SpanContext
      */
-    fun discard() {
+    public fun discard() {
         if (END_TIME_UPDATER.compareAndSet(this, NO_END_TIME, DISCARDED)) {
             if (makeContext) SpanContext.detach(this)
         }
     }
 
-    override fun end() = end(SystemClock.elapsedRealtimeNanos())
+    override fun end(): Unit = end(SystemClock.elapsedRealtimeNanos())
 
-    override fun isEnded() = endTime != NO_END_TIME
+    override fun isEnded(): Boolean = endTime != NO_END_TIME
 
     internal fun toJson(json: JsonWriter) {
         json.obj {
@@ -149,6 +149,7 @@ class SpanImpl internal constructor(
 
         if (traceId != other.traceId) return false
         if (spanId != other.spanId) return false
+        @Suppress("RedundantIf")
         if (parentSpanId != other.parentSpanId) return false
 
         return true
@@ -161,14 +162,14 @@ class SpanImpl internal constructor(
         return result
     }
 
-    companion object {
+    public companion object {
         private val END_TIME_UPDATER =
             AtomicLongFieldUpdater.newUpdater(SpanImpl::class.java, "endTime")
 
         private const val INVALID_ID = 0L
 
-        const val NO_END_TIME = -1L
-        const val DISCARDED = -2L
+        internal const val NO_END_TIME: Long = -1L
+        internal const val DISCARDED: Long = -2L
 
         private val spanIdRandom = Random(SecureRandom().nextLong())
 

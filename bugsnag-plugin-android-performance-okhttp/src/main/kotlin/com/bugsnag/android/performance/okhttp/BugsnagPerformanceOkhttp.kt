@@ -12,8 +12,8 @@ import okhttp3.Response
 import java.io.IOException
 import java.util.concurrent.ConcurrentHashMap
 
-class BugsnagPerformanceOkhttp : EventListener() {
-    companion object EventListenerFactory : EventListener.Factory {
+public class BugsnagPerformanceOkhttp : EventListener() {
+    public companion object EventListenerFactory : EventListener.Factory {
         override fun create(call: Call): EventListener {
             return BugsnagPerformanceOkhttp()
         }

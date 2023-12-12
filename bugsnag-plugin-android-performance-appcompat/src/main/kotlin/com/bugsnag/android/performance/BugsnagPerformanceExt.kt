@@ -34,7 +34,7 @@ internal fun SpanFactory.createViewLoadSpan(
  * @param fragment the fragment load being measured
  * @param options the optional configuration for the span
  */
-fun BugsnagPerformance.startViewLoadSpan(
+public fun BugsnagPerformance.startViewLoadSpan(
     fragment: Fragment,
     options: SpanOptions = SpanOptions.DEFAULTS,
 ): Span {

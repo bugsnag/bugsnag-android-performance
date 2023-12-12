@@ -17,11 +17,11 @@ import kotlin.concurrent.write
  * the `endTime`. If the `Span` is then [marked as leaked](markSpanLeaked) then its "auto end"
  * time is used to close it.
  */
-class SpanTracker {
+public class SpanTracker {
     private val backingStore: MutableMap<Any, MutableMap<Enum<*>?, SpanBinding>> = WeakHashMap()
     private val lock = ReentrantReadWriteLock()
 
-    operator fun get(token: Any, subToken: Enum<*>? = null): SpanImpl? {
+    public operator fun get(token: Any, subToken: Enum<*>? = null): SpanImpl? {
         return lock.read { backingStore[token]?.get(subToken)?.span }
     }
 
@@ -30,7 +30,7 @@ class SpanTracker {
      * the actual `Span` being tracked. This function may discard [span] if the given [token] is
      * already being tracked, if this is the case the tracked span will be returned.
      */
-    fun associate(token: Any, subToken: Enum<*>? = null, span: SpanImpl): SpanImpl {
+    public fun associate(token: Any, subToken: Enum<*>? = null, span: SpanImpl): SpanImpl {
         lock.write {
             val trackedSpans = backingStore[token] ?: IdentityHashMap()
             val existingSpan = trackedSpans[subToken]
@@ -52,7 +52,7 @@ class SpanTracker {
      * Note: in race scenarios the [createSpan] may be invoked and the resulting `Span` discarded,
      * the currently tracked `Span` will however always be returned.
      */
-    inline fun associate(
+    public inline fun associate(
         token: Any,
         subToken: Enum<*>? = null,
         createSpan: () -> SpanImpl,
@@ -65,7 +65,7 @@ class SpanTracker {
         return associatedSpan
     }
 
-    fun removeAssociation(tag: Any?, subToken: Enum<*>? = null): SpanImpl? {
+    public fun removeAssociation(tag: Any?, subToken: Enum<*>? = null): SpanImpl? {
         return lock.write {
             val associatedSpans = backingStore[tag]
             val span = associatedSpans?.remove(subToken)?.span
@@ -78,7 +78,7 @@ class SpanTracker {
         }
     }
 
-    fun removeAllAssociations(tag: Any?): Collection<SpanImpl> {
+    public fun removeAllAssociations(tag: Any?): Collection<SpanImpl> {
         return lock.write {
             val associatedSpans = backingStore.remove(tag)
             associatedSpans.orEmpty().values.map { it.span }
@@ -90,7 +90,7 @@ class SpanTracker {
      * marked as [leaked](markSpanLeaked) then its `endTime` will be set to the time that this
      * function was last called. Otherwise this value will be discarded.
      */
-    fun markSpanAutomaticEnd(token: Any, subToken: Enum<*>? = null) {
+    public fun markSpanAutomaticEnd(token: Any, subToken: Enum<*>? = null) {
         backingStore[token]?.get(subToken)?.autoEndTime = SystemClock.elapsedRealtimeNanos()
     }
 
@@ -99,7 +99,7 @@ class SpanTracker {
      * Returns `true` if the `Span` was marked as leaked, or `false` if the `Span` was already
      * considered to be closed (or was not tracked).
      */
-    fun markSpanLeaked(token: Any, subToken: Enum<*>? = null): Boolean {
+    public fun markSpanLeaked(token: Any, subToken: Enum<*>? = null): Boolean {
         return lock.write {
             val associatedSpans = backingStore[token]
             val leaked = associatedSpans?.remove(subToken)?.markLeaked() == true
@@ -116,7 +116,7 @@ class SpanTracker {
      * End the tracking of a `Span` marking its `endTime` if it has not already been closed.
      * This *must* be called in order to ensure tokens can be garbage-collected.
      */
-    fun endSpan(
+    public fun endSpan(
         token: Any,
         subToken: Enum<*>? = null,
         endTime: Long = SystemClock.elapsedRealtimeNanos(),
@@ -136,7 +136,7 @@ class SpanTracker {
      * use autoEndTimes where they are available, but will otherwise fallback to using [endTime]
      * for each of the spans that get closed.
      */
-    fun endAllSpans(token: Any, endTime: Long = SystemClock.elapsedRealtimeNanos()) {
+    public fun endAllSpans(token: Any, endTime: Long = SystemClock.elapsedRealtimeNanos()) {
         lock.write {
             val associatedSpans = backingStore[token]
             associatedSpans?.values?.forEach { it.markLeaked(endTime) }
@@ -150,7 +150,7 @@ class SpanTracker {
      * associated spans being discarded, any of their child spans that have already been closed
      * will have no valid parent span and will also be discarded by the server-side.
      */
-    fun discardAllSpans(token: Any) {
+    public fun discardAllSpans(token: Any) {
         lock.write {
             val associatedSpans = backingStore[token]
             associatedSpans?.values?.forEach { it.span.discard() }

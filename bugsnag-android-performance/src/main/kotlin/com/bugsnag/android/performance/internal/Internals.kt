@@ -1,7 +1,9 @@
 package com.bugsnag.android.performance.internal
 
+import androidx.annotation.RestrictTo
 import com.bugsnag.android.performance.BugsnagPerformance
 import com.bugsnag.android.performance.SpanContext
+import java.util.Deque
 
 /**
  * Test that no [SpanImpl] objects within the current [SpanContext] match the given [predicate].
@@ -15,7 +17,8 @@ internal inline fun SpanContext.Storage.findSpan(predicate: (SpanImpl) -> Boolea
     return contextStack.find { it is SpanImpl && predicate(it) } as? SpanImpl
 }
 
-object BugsnagPerformanceInternals {
-    var currentSpanContextStack by SpanContext.Storage::contextStack
-    val spanFactory get() = BugsnagPerformance.instrumentedAppState.spanFactory
+@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP_PREFIX)
+public object BugsnagPerformanceInternals {
+    public var currentSpanContextStack: Deque<SpanContext> by SpanContext.Storage::contextStack
+    public val spanFactory: SpanFactory get() = BugsnagPerformance.instrumentedAppState.spanFactory
 }

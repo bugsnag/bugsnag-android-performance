@@ -8,7 +8,7 @@ import com.bugsnag.android.performance.internal.Sampler
 import com.bugsnag.android.performance.internal.SpanImpl
 import com.bugsnag.android.performance.internal.Worker
 
-class Tracer : BatchingSpanProcessor() {
+internal class Tracer : BatchingSpanProcessor() {
 
     private var lastBatchSendTime = SystemClock.elapsedRealtime()
 
