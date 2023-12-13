@@ -113,9 +113,6 @@ internal abstract class AbstractActivityLifecycleInstrumentation(
         }
     }
 
-    override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
-        startupTracker.onActivityCreate(savedInstanceState != null)
-    }
 
     override fun onActivityDestroyed(activity: Activity) {
         onViewLoadLeak(activity)
@@ -125,6 +122,7 @@ internal abstract class AbstractActivityLifecycleInstrumentation(
         onViewLoadLeak(activity)
     }
 
+    override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) = Unit
     override fun onActivityStarted(activity: Activity) = Unit
     override fun onActivityResumed(activity: Activity) = Unit
     override fun onActivityPaused(activity: Activity) = Unit
@@ -145,12 +143,11 @@ internal class LegacyActivityInstrumentation(
 ) {
 
     override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
-        super.onActivityCreated(activity, savedInstanceState)
+        startupTracker.onActivityCreate(savedInstanceState != null)
         autoStartViewLoadSpan(activity)
     }
 
     override fun onActivityResumed(activity: Activity) {
-        super.onActivityResumed(activity)
         autoEndViewLoadSpan(activity)
     }
 
@@ -169,6 +166,7 @@ internal class ActivityLifecycleInstrumentation(
 ) {
 
     override fun onActivityPreCreated(activity: Activity, savedInstanceState: Bundle?) {
+        startupTracker.onActivityCreate(savedInstanceState != null)
         autoStartViewLoadSpan(activity)
         startViewLoadPhase(activity, ViewLoadPhase.CREATE)
     }
