@@ -3,7 +3,7 @@ package com.bugsnag.android.performance.internal
 import android.os.Handler
 import android.os.Message
 
-class AppStartTracker(
+internal class AppStartTracker(
     private val spanTracker: SpanTracker,
     private val spanFactory: SpanFactory,
 ) : Handler.Callback {
@@ -18,7 +18,7 @@ class AppStartTracker(
 
     private val handler = Loopers.newMainHandler(this)
 
-    fun onFirstClassLoadReported() {
+    public fun onFirstClassLoadReported() {
         if (processStarted) return
         val appStart = startAppStartSpan("Cold")
 
@@ -29,12 +29,12 @@ class AppStartTracker(
         processStarted = true
     }
 
-    fun onApplicationCreate() {
+    public fun onApplicationCreate() {
         handler.sendMessageAtFrontOfQueue(handler.obtainMessage(MSG_APP_CLASS_COMPLETE))
         spanTracker.endSpan(appStartToken, AppStartPhase.FRAMEWORK)
     }
 
-    fun onBugsnagPerformanceStart() {
+    public fun onBugsnagPerformanceStart() {
         if (processStarted) return
 
         onApplicationCreate()
@@ -58,7 +58,7 @@ class AppStartTracker(
         handler.sendEmptyMessageDelayed(MSG_DISCARD_APP_START, APP_START_TIMEOUT_MS)
     }
 
-    fun onActivityCreate(hasSavedInstanceState: Boolean) {
+    public fun onActivityCreate(hasSavedInstanceState: Boolean) {
         if (isInBackground) {
             if (hasSavedInstanceState) {
                 startAppStartSpan("Hot")
@@ -78,7 +78,7 @@ class AppStartTracker(
         handler.removeMessages(MSG_DISCARD_APP_START)
     }
 
-    fun onViewLoadComplete(timestamp: Long) {
+    public fun onViewLoadComplete(timestamp: Long) {
         // end the AppStart since the app is now considered "visible"
         spanTracker.endAllSpans(appStartToken, timestamp)
     }
@@ -93,7 +93,7 @@ class AppStartTracker(
         return true
     }
 
-    fun discardAppStart() {
+    public fun discardAppStart() {
         spanTracker.discardAllSpans(appStartToken)
     }
 

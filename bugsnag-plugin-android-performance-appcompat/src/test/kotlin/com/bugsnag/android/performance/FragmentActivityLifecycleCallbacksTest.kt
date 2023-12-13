@@ -2,6 +2,7 @@ package com.bugsnag.android.performance
 
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
+import com.bugsnag.android.performance.internal.AutoInstrumentationCache
 import com.bugsnag.android.performance.internal.BugsnagPerformanceInternals
 import com.bugsnag.android.performance.internal.SpanFactory
 import com.bugsnag.android.performance.internal.SpanImpl

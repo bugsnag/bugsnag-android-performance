@@ -2,6 +2,7 @@ package com.bugsnag.android.performance.internal
 
 
 import android.content.Context
+import androidx.annotation.RestrictTo
 import com.bugsnag.android.performance.Attributes
 import com.bugsnag.android.performance.Logger
 import org.json.JSONObject
@@ -21,7 +22,8 @@ import java.util.UUID
  *
  * This file mirrors the `DeviceIdFilePersistence` class in `bugsnag-android`.
  */
-class DeviceIdFilePersistence(
+@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
+public class DeviceIdFilePersistence(
     private val file: File,
     private val deviceIdGenerator: () -> UUID,
 ) {
@@ -30,7 +32,7 @@ class DeviceIdFilePersistence(
      * Loads the device ID from its file system location.
      * If no value is present then a UUID will be generated and persisted.
      */
-    fun loadDeviceId(requestCreateIfDoesNotExist: Boolean): String? {
+    public fun loadDeviceId(requestCreateIfDoesNotExist: Boolean): String? {
         return try {
             // optimistically read device ID without a lock - the majority of the time
             // the device ID will already be present so no synchronization is required.
@@ -119,15 +121,13 @@ class DeviceIdFilePersistence(
         return null
     }
 
-    companion object {
+    public companion object {
         private const val MAX_FILE_LOCK_ATTEMPTS = 20
         private const val FILE_LOCK_WAIT_MS = 25L
         private const val KEY_ID = "id"
 
-        fun forContext(context: Context) = DeviceIdFilePersistence(
-            File(context.filesDir, "device-id"),
-            UUID::randomUUID,
-        )
+        public fun forContext(context: Context): DeviceIdFilePersistence =
+            DeviceIdFilePersistence(File(context.filesDir, "device-id"), UUID::randomUUID)
     }
 }
 

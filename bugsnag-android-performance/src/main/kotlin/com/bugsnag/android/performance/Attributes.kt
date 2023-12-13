@@ -1,14 +1,14 @@
 package com.bugsnag.android.performance
 
-class Attributes : Collection<Pair<String, Any>> {
+public class Attributes : Collection<Pair<String, Any>> {
     private val content = mutableMapOf<String, Any>()
 
     override val size: Int
         get() = content.size
 
-    val keys get() = content.keys.toSet()
+    public val keys: Set<String> get() = content.keys.toSet()
 
-    operator fun set(name: String, value: String?) {
+    public operator fun set(name: String, value: String?) {
         if(value != null) {
             content[name] = value
         } else {
@@ -16,19 +16,19 @@ class Attributes : Collection<Pair<String, Any>> {
         }
     }
 
-    operator fun set(name: String, value: Long) {
+    public operator fun set(name: String, value: Long) {
         content[name] = value
     }
 
-    operator fun set(name: String, value: Int) {
+    public operator fun set(name: String, value: Int) {
         content[name] = value.toLong()
     }
 
-    operator fun set(name: String, value: Double) {
+    public operator fun set(name: String, value: Double) {
         content[name] = value
     }
 
-    operator fun set(name: String, value: Boolean) {
+    public operator fun set(name: String, value: Boolean) {
         content[name] = value
     }
 
@@ -37,7 +37,7 @@ class Attributes : Collection<Pair<String, Any>> {
         return content[name]
     }
 
-    fun remove(name: String) {
+    public fun remove(name: String) {
         content.remove(name)
     }
 

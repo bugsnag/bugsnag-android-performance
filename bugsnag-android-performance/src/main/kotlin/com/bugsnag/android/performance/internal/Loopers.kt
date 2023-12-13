@@ -5,7 +5,7 @@ import android.os.Looper
 
 internal object Loopers {
     @JvmStatic
-    val main = Looper.getMainLooper()
+    val main: Looper = Looper.getMainLooper()
 
     val mainHandler = Handler(main)
 

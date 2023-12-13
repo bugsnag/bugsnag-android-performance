@@ -48,7 +48,7 @@ private class ContextAwareCoroutineContextElement(
  * Maintains a Span Context stack for the coroutine, with the [SpanContext] at the root,
  * which persists the suspend/resume boundary.
  */
-fun SpanContext.asCoroutineElement(): CoroutineContext.Element =
+public fun SpanContext.asCoroutineElement(): CoroutineContext.Element =
     ContextAwareCoroutineContextElement(this)
 
 
@@ -56,7 +56,7 @@ fun SpanContext.asCoroutineElement(): CoroutineContext.Element =
  * Returns a context containing the [SpanContext] as a [CoroutineContext.Element] and elements
  * from other context.
  */
-operator fun SpanContext.plus(context: CoroutineContext): CoroutineContext {
+public operator fun SpanContext.plus(context: CoroutineContext): CoroutineContext {
     return context + this.asCoroutineElement()
 }
 
@@ -64,7 +64,7 @@ operator fun SpanContext.plus(context: CoroutineContext): CoroutineContext {
  * Returns a context containing elements from this context and the [SpanContext] as a
  * [CoroutineContext.Element].
  */
-operator fun CoroutineContext.plus(context: SpanContext): CoroutineContext {
+public operator fun CoroutineContext.plus(context: SpanContext): CoroutineContext {
     return this + context.asCoroutineElement()
 }
 
@@ -94,6 +94,7 @@ private class BugsnagCoroutineContext(
 
     override fun <E : CoroutineContext.Element> get(key: CoroutineContext.Key<E>): E? {
         return if (key === ContextAwareCoroutineContextElement.Key) {
+            @Suppress("UNCHECKED_CAST")
             baseSpanContext as E
         } else {
             baseContext[key]
@@ -113,7 +114,9 @@ private class BugsnagCoroutineContext(
 /**
  * A Coroutine Scope to automatically create context-aware coroutines
  */
-class BugsnagPerformanceScope(dispatcher: CoroutineDispatcher = Dispatchers.Main) : CoroutineScope {
+public class BugsnagPerformanceScope(
+    dispatcher: CoroutineDispatcher = Dispatchers.Main,
+) : CoroutineScope {
     private val baseContext = SupervisorJob() + dispatcher
 
     override val coroutineContext: CoroutineContext

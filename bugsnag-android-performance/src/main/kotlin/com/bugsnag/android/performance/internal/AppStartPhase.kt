@@ -1,5 +1,8 @@
 package com.bugsnag.android.performance.internal
 
-enum class AppStartPhase(internal val phaseName: String) {
+import androidx.annotation.RestrictTo
+
+@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
+public enum class AppStartPhase(internal val phaseName: String) {
     FRAMEWORK("Framework"),
 }

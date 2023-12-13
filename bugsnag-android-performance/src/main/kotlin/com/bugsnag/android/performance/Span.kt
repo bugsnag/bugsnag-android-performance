@@ -14,27 +14,27 @@ import java.io.Closeable
  *
  * @see BugsnagPerformance.startSpan
  */
-interface Span : SpanContext, Closeable {
+public interface Span : SpanContext, Closeable {
     /**
      * End this with a specified timestamp relative to [SystemClock.elapsedRealtimeNanos]. If this
      * span has already been closed this will have no effect.
      */
-    fun end(endTime: Long)
+    public fun end(endTime: Long)
 
     /**
      * End this span now. This is the same as `end(SystemClock.elapsedRealtimeNanos())`.
      */
-    fun end()
+    public fun end()
 
     /**
      * Convenience function to call [end], implementing the [Closeable] interface and allowing
      * `Span` to be used with try-with-resources in Java.
      */
-    override fun close() = end()
+    override fun close(): Unit = end()
 
     /**
      * Returns `true` if this span has been closed / ended. If this returns `true` the
      * span cannot be modified further.
      */
-    fun isEnded(): Boolean
+    public fun isEnded(): Boolean
 }

@@ -9,7 +9,7 @@ import com.bugsnag.android.performance.internal.unlinkTo
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
 
-open class BatchingSpanProcessor : SpanProcessor {
+internal open class BatchingSpanProcessor : SpanProcessor {
 
     private val batch = AtomicReference<SpanChain?>(null)
 

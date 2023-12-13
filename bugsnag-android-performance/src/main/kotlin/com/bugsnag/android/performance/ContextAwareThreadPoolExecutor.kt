@@ -11,8 +11,8 @@ import java.util.concurrent.TimeUnit
  * Sets the current [SpanContext] within a task to the [SpanContext] that was active
  * when the task was submitted.
  */
-class ContextAwareThreadPoolExecutor : ThreadPoolExecutor {
-    constructor(
+public class ContextAwareThreadPoolExecutor : ThreadPoolExecutor {
+    public constructor(
         corePoolSize: Int,
         maximumPoolSize: Int,
         keepAliveTime: Long,
@@ -20,7 +20,7 @@ class ContextAwareThreadPoolExecutor : ThreadPoolExecutor {
         workQueue: BlockingQueue<Runnable>?
     ) : super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue)
 
-    constructor(
+    public constructor(
         corePoolSize: Int,
         maximumPoolSize: Int,
         keepAliveTime: Long,
@@ -29,7 +29,7 @@ class ContextAwareThreadPoolExecutor : ThreadPoolExecutor {
         threadFactory: ThreadFactory?
     ) : super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, threadFactory)
 
-    constructor(
+    public constructor(
         corePoolSize: Int,
         maximumPoolSize: Int,
         keepAliveTime: Long,
@@ -39,7 +39,7 @@ class ContextAwareThreadPoolExecutor : ThreadPoolExecutor {
     ) : super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, handler)
 
     @Suppress("LongParameterList")
-    constructor(
+    public constructor(
         corePoolSize: Int,
         maximumPoolSize: Int,
         keepAliveTime: Long,

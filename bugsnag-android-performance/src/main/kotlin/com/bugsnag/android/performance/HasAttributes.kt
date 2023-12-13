@@ -4,8 +4,8 @@ package com.bugsnag.android.performance
  * Declares that a class contains [Attributes] and provides convenience functions to modify the
  * attributes directly without needing to access the [attributes] property.
  */
-interface HasAttributes {
-    val attributes: Attributes
+public interface HasAttributes {
+    public val attributes: Attributes
 
     /**
      * Set or clear a string attribute. Passing `null` is the same as calling [clearAttribute] for
@@ -14,7 +14,7 @@ interface HasAttributes {
      * @param name the attribute name
      * @param value the value to set the attribute to
      */
-    fun setAttribute(name: String, value: String?) {
+    public fun setAttribute(name: String, value: String?) {
         attributes[name] = value
     }
 
@@ -24,7 +24,7 @@ interface HasAttributes {
      * @param name the attribute name
      * @param value the value to set the attribute to
      */
-    fun setAttribute(name: String, value: Long) {
+    public fun setAttribute(name: String, value: Long) {
         attributes[name] = value
     }
 
@@ -34,7 +34,7 @@ interface HasAttributes {
      * @param name the attribute name
      * @param value the value to set the attribute to
      */
-    fun setAttribute(name: String, value: Int) {
+    public fun setAttribute(name: String, value: Int) {
         attributes[name] = value
     }
 
@@ -44,7 +44,7 @@ interface HasAttributes {
      * @param name the attribute name
      * @param value the value to set the attribute to
      */
-    fun setAttribute(name: String, value: Double) {
+    public fun setAttribute(name: String, value: Double) {
         attributes[name] = value
     }
 
@@ -54,7 +54,7 @@ interface HasAttributes {
      * @param name the attribute name
      * @param value the value to set the attribute to
      */
-    fun setAttribute(name: String, value: Boolean) {
+    public fun setAttribute(name: String, value: Boolean) {
         attributes[name] = value
     }
 
@@ -62,7 +62,7 @@ interface HasAttributes {
      * Clear / remove the specified attribute if it exists. This is the same
      * as `attributes.remove(name)`.
      */
-    fun clearAttribute(name: String) {
+    public fun clearAttribute(name: String) {
         attributes.remove(name)
     }
 }
