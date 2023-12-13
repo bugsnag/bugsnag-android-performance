@@ -1,5 +1,8 @@
 package com.bugsnag.android.performance.internal
 
+import androidx.annotation.RestrictTo
+
+@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 public enum class SpanCategory(public val category: String?) {
     CUSTOM(null),
     VIEW_LOAD("view_load"),

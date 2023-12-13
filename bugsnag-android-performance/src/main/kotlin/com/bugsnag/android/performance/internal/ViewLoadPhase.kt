@@ -3,7 +3,7 @@ package com.bugsnag.android.performance.internal
 import androidx.annotation.RestrictTo
 import com.bugsnag.android.performance.ViewType
 
-@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP_PREFIX)
+@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 public enum class ViewLoadPhase(private val phaseName: String) {
     CREATE("Create"),
     START("Start"),

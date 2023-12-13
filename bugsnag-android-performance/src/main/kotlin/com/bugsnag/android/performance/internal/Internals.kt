@@ -17,7 +17,7 @@ internal inline fun SpanContext.Storage.findSpan(predicate: (SpanImpl) -> Boolea
     return contextStack.find { it is SpanImpl && predicate(it) } as? SpanImpl
 }
 
-@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP_PREFIX)
+@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 public object BugsnagPerformanceInternals {
     public var currentSpanContextStack: Deque<SpanContext> by SpanContext.Storage::contextStack
     public val spanFactory: SpanFactory get() = BugsnagPerformance.instrumentedAppState.spanFactory

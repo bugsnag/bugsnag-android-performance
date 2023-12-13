@@ -1,6 +1,7 @@
 package com.bugsnag.android.performance.internal
 
 import android.os.SystemClock
+import androidx.annotation.RestrictTo
 import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.internal.SpanImpl.Companion.NO_END_TIME
 import java.util.IdentityHashMap
@@ -17,6 +18,7 @@ import kotlin.concurrent.write
  * the `endTime`. If the `Span` is then [marked as leaked](markSpanLeaked) then its "auto end"
  * time is used to close it.
  */
+@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 public class SpanTracker {
     private val backingStore: MutableMap<Any, MutableMap<Enum<*>?, SpanBinding>> = WeakHashMap()
     private val lock = ReentrantReadWriteLock()

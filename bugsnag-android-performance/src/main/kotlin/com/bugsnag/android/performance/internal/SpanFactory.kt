@@ -1,6 +1,7 @@
 package com.bugsnag.android.performance.internal
 
 import android.app.Activity
+import androidx.annotation.RestrictTo
 import com.bugsnag.android.performance.HasAttributes
 import com.bugsnag.android.performance.NetworkRequestInfo
 import com.bugsnag.android.performance.NetworkRequestInstrumentationCallback
@@ -12,6 +13,7 @@ import java.util.UUID
 
 internal typealias AttributeSource = (target: HasAttributes) -> Unit
 
+@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 public class SpanFactory(
     public var spanProcessor: SpanProcessor,
     public val spanAttributeSource: AttributeSource = {},

@@ -12,7 +12,7 @@ import com.bugsnag.android.performance.internal.instrumentation.LegacyActivityIn
 import com.bugsnag.android.performance.internal.processing.ForwardingSpanProcessor
 import com.bugsnag.android.performance.internal.processing.Tracer
 
-@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP_PREFIX)
+@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 public class InstrumentedAppState {
     internal val defaultAttributeSource = DefaultAttributeSource()
 

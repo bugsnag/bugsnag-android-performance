@@ -3,6 +3,7 @@ package com.bugsnag.android.performance.internal
 import android.os.SystemClock
 import android.util.JsonWriter
 import androidx.annotation.FloatRange
+import androidx.annotation.RestrictTo
 import com.bugsnag.android.performance.Attributes
 import com.bugsnag.android.performance.HasAttributes
 import com.bugsnag.android.performance.Span
@@ -14,6 +15,7 @@ import java.util.UUID
 import java.util.concurrent.atomic.AtomicLongFieldUpdater
 
 @Suppress("LongParameterList")
+@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 public class SpanImpl internal constructor(
     name: String,
     internal val category: SpanCategory,

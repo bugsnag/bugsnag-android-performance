@@ -2,6 +2,7 @@ package com.bugsnag.android.performance.internal
 
 
 import android.content.Context
+import androidx.annotation.RestrictTo
 import com.bugsnag.android.performance.Attributes
 import com.bugsnag.android.performance.Logger
 import org.json.JSONObject
@@ -21,6 +22,7 @@ import java.util.UUID
  *
  * This file mirrors the `DeviceIdFilePersistence` class in `bugsnag-android`.
  */
+@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 public class DeviceIdFilePersistence(
     private val file: File,
     private val deviceIdGenerator: () -> UUID,
