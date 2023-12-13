@@ -22,6 +22,21 @@ x-common-environment: &common-environment
   TEST_FIXTURE_SYMBOL_DIR:
 
 services:
+  android-common:
+    build:
+      context: .
+      dockerfile: dockerfiles/Dockerfile.android-common
+
+  android-publisher:
+    build:
+      context: .
+      dockerfile: dockerfiles/Dockerfile.android-publisher
+    environment:
+      KEY:
+      KEY_ID:
+      KEY_PASS:
+      PUBLISH_USER:
+      PUBLISH_PASS:
 
   android-maze-runner:
     image: 855461928731.dkr.ecr.us-west-1.amazonaws.com/maze-runner-releases:latest-v8-cli

@@ -65,3 +65,36 @@ steps:
     concurrency: 25
     concurrency_group: 'bitbar'
     concurrency_method: eager
+
+  # If this is the 'main' branch activate a manual publishing step
+
+  - block: 'Trigger package publish'
+    if: build.branch == "main"
+    key: trigger-publish
+    blocked_state: passed
+
+  - label: ':docker: Build Android base image'
+    if: build.branch == "main"
+    key: 'android-common'
+    timeout_in_minutes: 30
+    depends_on: 'trigger-publish'
+    plugins:
+      - docker-compose#v4.7.0:
+          build:
+            - android-common
+          image-repository: 855461928731.dkr.ecr.us-west-1.amazonaws.com/android
+          cache-from:
+            - android-common:855461928731.dkr.ecr.us-west-1.amazonaws.com/android:performance-release
+      - docker-compose#v4.7.0:
+          push:
+            - android-common:855461928731.dkr.ecr.us-west-1.amazonaws.com/android:performance-release
+
+  - label: 'Publish :rocket:'
+    if: build.branch == "main"
+    depends_on: 'android-common'
+    env:
+      BUILDKITE_PLUGIN_S3_SECRETS_BUCKET_PREFIX: bugsnag-android-publish
+    plugins:
+      docker-compose#v4.7.0:
+        no-cache: true
+        run: android-publisher
