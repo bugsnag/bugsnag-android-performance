@@ -65,6 +65,8 @@ Feature: Manual creation of spans
     And I wait for 1 span
     Then a span name equals "Span 1"
 
+  # Skip pending PLAT-11356
+  @skip
   Scenario: Spans logged in the background
     Given I run "BackgroundSpanScenario"
     And I send the app to the background for 5 seconds

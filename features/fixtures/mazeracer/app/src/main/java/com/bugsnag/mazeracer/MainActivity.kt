@@ -34,6 +34,7 @@ class MainActivity : AppCompatActivity() {
     var scenario: Scenario? = null
     var polling = false
     var mazeAddress: String? = null
+    var lastCommandUuid: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -163,7 +164,8 @@ class MainActivity : AppCompatActivity() {
                 Thread.sleep(1000)
                 try {
                     // Get the next command from Maze Runner
-                    val commandStr = readCommand()
+                    val lastUuid = lastCommandUuid.orEmpty()
+                    val commandStr = readCommand(lastUuid)
                     if (commandStr == "null") {
                         log("No Maze Runner commands queued")
                         continue
@@ -183,10 +185,15 @@ class MainActivity : AppCompatActivity() {
                     val scenarioName = command.getString("scenario_name")
                     val scenarioMetadata = command.getString("scenario_metadata")
                     val endpointUrl = command.getString("endpoint")
+                    val uuid = command.getString("uuid")
                     log("command.action: $action")
                     log("command.scenarioName: $scenarioName")
                     log("command.scenarioMode: $scenarioMetadata")
                     log("command.endpoint: $endpointUrl")
+                    log("command.uuid: $uuid")
+
+                    // Keep track of the current command
+                    this.lastCommandUuid = uuid
 
                     mainHandler.post {
                         // Display some feedback of the action being run on he UI
@@ -207,6 +214,7 @@ class MainActivity : AppCompatActivity() {
                             }
 
                             "invoke" -> {
+                                log("invoke: $scenarioName")
                                 scenario!!::class.java.getMethod(scenarioName).invoke(scenario)
                             }
 
@@ -240,8 +248,8 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun readCommand(): String {
-        val commandUrl = "http://$mazeAddress/command"
+    private fun readCommand(after: String): String {
+        val commandUrl = "http://$mazeAddress/command?after=$after"
         val urlConnection = URL(commandUrl).openConnection() as HttpURLConnection
         try {
             return urlConnection.inputStream.use { it.reader().readText() }
