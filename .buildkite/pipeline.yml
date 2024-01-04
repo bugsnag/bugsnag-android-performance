@@ -62,7 +62,8 @@ steps:
           - "--no-tunnel"
           - "--aws-public-ip"
           - "--fail-fast"
-          - "--capabilities={\"appPackage\":\"com.bugsnag.mazeracer\",\"appActivity\":\"com.bugsnag.mazeracer.SplashScreenActivity\"}"
+          - "--app-activity=com.bugsnag.mazeracer.SplashScreenActivity"
+          - "--app-package=com.bugsnag.mazeracer"
     concurrency: 25
     concurrency_group: 'bitbar'
     concurrency_method: eager
