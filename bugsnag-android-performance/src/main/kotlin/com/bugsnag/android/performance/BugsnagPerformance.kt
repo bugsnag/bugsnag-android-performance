@@ -30,8 +30,8 @@ import java.net.URL
  *
  * @see [start]
  */
-object BugsnagPerformance {
-    const val VERSION: String = "1.2.0"
+public object BugsnagPerformance {
+    public const val VERSION: String = "1.2.1"
 
     internal val instrumentedAppState = InstrumentedAppState()
 
@@ -48,12 +48,12 @@ object BugsnagPerformance {
      * @param context an Android `Context`, typically your `Application` instance
      */
     @JvmStatic
-    fun start(context: Context) {
+    public fun start(context: Context) {
         start(PerformanceConfiguration.load(context))
     }
 
     @JvmStatic
-    fun start(context: Context, apiKey: String) {
+    public fun start(context: Context, apiKey: String) {
         start(PerformanceConfiguration.load(context, apiKey))
     }
 
@@ -64,7 +64,7 @@ object BugsnagPerformance {
      * @param configuration the configuration for the SDK
      */
     @JvmStatic
-    fun start(configuration: PerformanceConfiguration) {
+    public fun start(configuration: PerformanceConfiguration) {
         if (!isStarted) {
             synchronized(this) {
                 if (!isStarted) {
@@ -181,7 +181,7 @@ object BugsnagPerformance {
      */
     @JvmStatic
     @JvmOverloads
-    fun startSpan(name: String, options: SpanOptions = SpanOptions.DEFAULTS): Span =
+    public fun startSpan(name: String, options: SpanOptions = SpanOptions.DEFAULTS): Span =
         spanFactory.createCustomSpan(name, options)
 
     /**
@@ -193,7 +193,7 @@ object BugsnagPerformance {
      */
     @JvmStatic
     @JvmOverloads
-    fun startNetworkRequestSpan(
+    public fun startNetworkRequestSpan(
         url: URL,
         verb: String,
         options: SpanOptions = SpanOptions.DEFAULTS,
@@ -208,7 +208,7 @@ object BugsnagPerformance {
      */
     @JvmStatic
     @JvmOverloads
-    fun startNetworkRequestSpan(
+    public fun startNetworkRequestSpan(
         uri: Uri,
         verb: String,
         options: SpanOptions = SpanOptions.DEFAULTS,
@@ -226,7 +226,7 @@ object BugsnagPerformance {
      */
     @JvmStatic
     @JvmOverloads
-    fun startViewLoadSpan(
+    public fun startViewLoadSpan(
         activity: Activity,
         options: SpanOptions = SpanOptions.DEFAULTS,
     ): Span {
@@ -244,7 +244,7 @@ object BugsnagPerformance {
      */
     @JvmStatic
     @JvmOverloads
-    fun endViewLoadSpan(activity: Activity, endTime: Long = SystemClock.elapsedRealtimeNanos()) {
+    public fun endViewLoadSpan(activity: Activity, endTime: Long = SystemClock.elapsedRealtimeNanos()) {
         instrumentedAppState.spanTracker.endSpan(activity, endTime = endTime)
     }
 
@@ -257,7 +257,7 @@ object BugsnagPerformance {
      */
     @JvmStatic
     @JvmOverloads
-    fun startViewLoadSpan(
+    public fun startViewLoadSpan(
         viewType: ViewType,
         viewName: String,
         options: SpanOptions = SpanOptions.DEFAULTS,
@@ -278,7 +278,7 @@ object BugsnagPerformance {
      * This method is safe to call before [start].
      */
     @JvmStatic
-    fun reportApplicationClassLoaded() {
+    public fun reportApplicationClassLoaded() {
         synchronized(this) {
             instrumentedAppState.startupTracker.onFirstClassLoadReported()
         }
@@ -296,6 +296,6 @@ object BugsnagPerformance {
  * @param block the block of code to measure the execution time
  * @see [BugsnagPerformance.startSpan]
  */
-inline fun <R> measureSpan(name: String, block: () -> R): R {
+public inline fun <R> measureSpan(name: String, block: () -> R): R {
     return BugsnagPerformance.startSpan(name).use { block() }
 }

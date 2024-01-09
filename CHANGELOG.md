@@ -1,3 +1,12 @@
+## 1.2.1 (2024-01-09)
+
+### Bug fixes
+
+* Coroutines forked from other coroutines within a `BugsnagPerformanceScope` will now have spans that nest naturally
+  [#193](https://github.com/bugsnag/bugsnag-android-performance/pull/193)
+* Warm & Hot start spans will no longer be started before the AppStart spans
+  [#196](https://github.com/bugsnag/bugsnag-android-performance/pull/196)
+
 ## 1.2.0 (2023-11-22)
 
 ### Enhancements

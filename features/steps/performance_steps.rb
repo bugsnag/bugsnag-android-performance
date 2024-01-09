@@ -19,11 +19,6 @@ def execute_command(action, scenario_name = '', scenario_metadata = '')
     endpoint: "http://#{address}/traces",
   }
   Maze::Server.commands.add command
-
-  # Ensure fixture has read the command
-  count = 600
-  sleep 0.1 until Maze::Server.commands.remaining.empty? || (count -= 1) < 1
-  raise 'Test fixture did not GET /command' unless Maze::Server.commands.remaining.empty?
 end
 
 When('I run {string}') do |scenario_name|

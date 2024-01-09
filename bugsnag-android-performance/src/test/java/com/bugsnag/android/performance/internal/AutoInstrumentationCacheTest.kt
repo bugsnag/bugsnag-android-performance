@@ -1,7 +1,6 @@
 package com.bugsnag.android.performance.internal
 
 import android.app.Activity
-import com.bugsnag.android.performance.AutoInstrumentationCache
 import com.bugsnag.android.performance.DoNotAutoInstrument
 import com.bugsnag.android.performance.DoNotEndAppStart
 import org.junit.Assert.assertFalse

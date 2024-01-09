@@ -1,11 +1,15 @@
 package com.bugsnag.android.performance.internal
 
-interface Module {
-    fun load(instrumentedAppState: InstrumentedAppState)
-    fun unload()
+import androidx.annotation.RestrictTo
 
-    class Loader(private val instrumentedAppState: InstrumentedAppState) : (String) -> Module? {
-        fun loadModule(className: String): Module? {
+@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP_PREFIX)
+public interface Module {
+    public fun load(instrumentedAppState: InstrumentedAppState)
+    public fun unload()
+
+    public class Loader(private val instrumentedAppState: InstrumentedAppState) :
+            (String) -> Module? {
+        public fun loadModule(className: String): Module? {
             return try {
                 val clazz = Class.forName(className)
                 val module = clazz.newInstance() as Module

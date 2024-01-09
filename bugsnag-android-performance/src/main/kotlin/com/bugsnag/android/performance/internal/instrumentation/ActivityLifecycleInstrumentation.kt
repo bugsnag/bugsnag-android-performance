@@ -1,17 +1,16 @@
 package com.bugsnag.android.performance.internal.instrumentation
 
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Application
 import android.os.Bundle
 import android.os.Handler
 import android.os.Message
 import android.os.SystemClock
-import com.bugsnag.android.performance.AutoInstrumentationCache
 import com.bugsnag.android.performance.Logger
 import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.SpanOptions
 import com.bugsnag.android.performance.internal.AppStartTracker
+import com.bugsnag.android.performance.internal.AutoInstrumentationCache
 import com.bugsnag.android.performance.internal.Loopers
 import com.bugsnag.android.performance.internal.SpanFactory
 import com.bugsnag.android.performance.internal.SpanImpl
@@ -114,9 +113,6 @@ internal abstract class AbstractActivityLifecycleInstrumentation(
         }
     }
 
-    override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
-        startupTracker.onActivityCreate(savedInstanceState != null)
-    }
 
     override fun onActivityDestroyed(activity: Activity) {
         onViewLoadLeak(activity)
@@ -126,6 +122,7 @@ internal abstract class AbstractActivityLifecycleInstrumentation(
         onViewLoadLeak(activity)
     }
 
+    override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) = Unit
     override fun onActivityStarted(activity: Activity) = Unit
     override fun onActivityResumed(activity: Activity) = Unit
     override fun onActivityPaused(activity: Activity) = Unit
@@ -146,12 +143,11 @@ internal class LegacyActivityInstrumentation(
 ) {
 
     override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
-        super.onActivityCreated(activity, savedInstanceState)
+        startupTracker.onActivityCreate(savedInstanceState != null)
         autoStartViewLoadSpan(activity)
     }
 
     override fun onActivityResumed(activity: Activity) {
-        super.onActivityResumed(activity)
         autoEndViewLoadSpan(activity)
     }
 
@@ -170,6 +166,7 @@ internal class ActivityLifecycleInstrumentation(
 ) {
 
     override fun onActivityPreCreated(activity: Activity, savedInstanceState: Bundle?) {
+        startupTracker.onActivityCreate(savedInstanceState != null)
         autoStartViewLoadSpan(activity)
         startViewLoadPhase(activity, ViewLoadPhase.CREATE)
     }

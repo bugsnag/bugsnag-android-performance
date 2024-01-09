@@ -6,7 +6,7 @@ package com.bugsnag.android.performance
  *
  * @see PerformanceConfiguration.autoInstrumentActivities
  */
-enum class AutoInstrument {
+public enum class AutoInstrument {
     /**
      * No automatic instrumentation should be done.
      */

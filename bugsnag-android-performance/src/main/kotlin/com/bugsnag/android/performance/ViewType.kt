@@ -5,7 +5,7 @@ package com.bugsnag.android.performance
  *
  * @see BugsnagPerformance.startViewLoadSpan
  */
-enum class ViewType(internal val typeName: String, internal val spanName: String) {
+public enum class ViewType(internal val typeName: String, internal val spanName: String) {
     ACTIVITY("activity", "Activity"),
     FRAGMENT("fragment", "Fragment"),
     COMPOSE("compose", "Compose");

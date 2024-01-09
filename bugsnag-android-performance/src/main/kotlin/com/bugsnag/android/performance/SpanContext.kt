@@ -5,16 +5,16 @@ import java.util.Deque
 import java.util.UUID
 import java.util.concurrent.Callable
 
-interface SpanContext {
-    val spanId: Long
-    val traceId: UUID
+public interface SpanContext {
+    public val spanId: Long
+    public val traceId: UUID
 
     /**
      * Convenience function to wrap a given [Runnable] in the current [SpanContext].
      * This can be used when submitting tasks to Executors or other targets that are not aware of
      * the BugSnag [SpanContext].
      */
-    fun wrap(runnable: Runnable): Runnable {
+    public fun wrap(runnable: Runnable): Runnable {
         return Runnable {
             try {
                 SpanContext.attach(this)
@@ -30,7 +30,7 @@ interface SpanContext {
      * This can be used when submitting tasks to Executors or other targets that are not aware of
      * the BugSnag [SpanContext].
      */
-    fun <T> wrap(callable: Callable<T>): Callable<T> {
+    public fun <T> wrap(callable: Callable<T>): Callable<T> {
         return Callable<T> {
             try {
                 SpanContext.attach(this)
@@ -41,7 +41,7 @@ interface SpanContext {
         }
     }
 
-    companion object Storage {
+    public companion object Storage {
         private val threadLocalStorage = object : ThreadLocal<Deque<SpanContext>>() {
             override fun initialValue(): Deque<SpanContext> = ArrayDeque()
         }
@@ -57,7 +57,7 @@ interface SpanContext {
          * Retrieve the current [SpanContext] for this thread (or [invalid] if not available).
          */
         @JvmStatic
-        val current: SpanContext
+        public val current: SpanContext
             get() {
                 removeClosedContexts()
                 return contextStack.peekFirst() ?: invalid
@@ -84,7 +84,7 @@ interface SpanContext {
         }
 
         @JvmStatic
-        val invalid: SpanContext = object : SpanContext {
+        public val invalid: SpanContext = object : SpanContext {
             override val spanId: Long
                 get() = 0
             override val traceId: UUID

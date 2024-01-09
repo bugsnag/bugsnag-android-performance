@@ -1,17 +1,19 @@
-package com.bugsnag.android.performance
+package com.bugsnag.android.performance.internal
 
 import android.app.Activity
 import androidx.annotation.RestrictTo
+import com.bugsnag.android.performance.DoNotAutoInstrument
+import com.bugsnag.android.performance.DoNotEndAppStart
 
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
-class AutoInstrumentationCache {
+public class AutoInstrumentationCache {
     private val appStartActivitiesCache = HashMap<Class<out Activity>, Boolean>()
     private val autoInstrumentCache = HashMap<Class<*>, Boolean>()
 
     /**
      * Class does not need instrumentation.
      */
-    fun isInstrumentationEnabled(jclass: Class<*>): Boolean {
+    public fun isInstrumentationEnabled(jclass: Class<*>): Boolean {
         return autoInstrumentCache.getOrPut(jclass) {
             !jclass.isAnnotationPresent(DoNotAutoInstrument::class.java)
         }
@@ -20,13 +22,13 @@ class AutoInstrumentationCache {
     /**
      * Activities do not need to be ended.
      */
-    fun isAppStartActivity(jclass: Class<out Activity>): Boolean {
+    public fun isAppStartActivity(jclass: Class<out Activity>): Boolean {
         return appStartActivitiesCache.getOrPut(jclass) {
             jclass.isAnnotationPresent(DoNotEndAppStart::class.java)
         }
     }
 
-    fun configure(
+    public fun configure(
         appStartActivities: Collection<Class<out Activity>>,
         autoInstrument: Collection<Class<*>>,
     ) {

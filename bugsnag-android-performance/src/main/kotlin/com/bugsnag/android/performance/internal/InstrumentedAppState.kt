@@ -2,8 +2,8 @@ package com.bugsnag.android.performance.internal
 
 import android.app.Application
 import android.os.Build
+import androidx.annotation.RestrictTo
 import com.bugsnag.android.performance.AutoInstrument
-import com.bugsnag.android.performance.AutoInstrumentationCache
 import com.bugsnag.android.performance.SpanContext
 import com.bugsnag.android.performance.internal.instrumentation.AbstractActivityLifecycleInstrumentation
 import com.bugsnag.android.performance.internal.instrumentation.ActivityLifecycleInstrumentation
@@ -12,23 +12,24 @@ import com.bugsnag.android.performance.internal.instrumentation.LegacyActivityIn
 import com.bugsnag.android.performance.internal.processing.ForwardingSpanProcessor
 import com.bugsnag.android.performance.internal.processing.Tracer
 
-class InstrumentedAppState {
+@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
+public class InstrumentedAppState {
     internal val defaultAttributeSource = DefaultAttributeSource()
 
-    var spanProcessor: SpanProcessor = ForwardingSpanProcessor()
+    public var spanProcessor: SpanProcessor = ForwardingSpanProcessor()
         private set
 
-    val spanTracker = SpanTracker()
+    public val spanTracker: SpanTracker = SpanTracker()
 
-    val spanFactory = SpanFactory(spanProcessor, defaultAttributeSource)
+    public val spanFactory: SpanFactory = SpanFactory(spanProcessor, defaultAttributeSource)
 
-    val startupTracker = AppStartTracker(spanTracker, spanFactory)
+    internal val startupTracker: AppStartTracker = AppStartTracker(spanTracker, spanFactory)
 
-    val autoInstrumentationCache = AutoInstrumentationCache()
+    public val autoInstrumentationCache: AutoInstrumentationCache = AutoInstrumentationCache()
 
     internal val activityInstrumentation = createActivityInstrumentation()
 
-    lateinit var app: Application
+    public lateinit var app: Application
         private set
 
     internal fun attach(application: Application) {
@@ -101,7 +102,7 @@ class InstrumentedAppState {
         }
     }
 
-    fun onBugsnagPerformanceStart() {
+    public fun onBugsnagPerformanceStart() {
         startupTracker.onBugsnagPerformanceStart()
     }
 }

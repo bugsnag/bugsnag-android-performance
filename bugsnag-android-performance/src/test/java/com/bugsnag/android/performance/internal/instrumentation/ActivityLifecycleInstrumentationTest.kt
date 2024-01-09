@@ -1,7 +1,7 @@
 package com.bugsnag.android.performance.internal.instrumentation
 
 import android.app.Activity
-import com.bugsnag.android.performance.AutoInstrumentationCache
+import com.bugsnag.android.performance.internal.AutoInstrumentationCache
 import com.bugsnag.android.performance.internal.Loopers
 import com.bugsnag.android.performance.internal.SpanCategory
 import com.bugsnag.android.performance.internal.SpanFactory

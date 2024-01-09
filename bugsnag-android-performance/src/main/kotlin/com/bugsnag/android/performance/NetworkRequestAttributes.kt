@@ -6,7 +6,7 @@ import com.bugsnag.android.performance.internal.SpanImpl
  * A container object for the well-known attributes for network request spans (started
  * with [BugsnagPerformance.startNetworkRequestSpan]).
  */
-object NetworkRequestAttributes {
+public object NetworkRequestAttributes {
     /**
      * Set the `"http.status_code"` attribute on the given [Span].
      *
@@ -14,7 +14,7 @@ object NetworkRequestAttributes {
      * @param statusCode the HTTP response code to record on the `Span`
      */
     @JvmStatic
-    fun setResponseCode(span: Span, statusCode: Int) {
+    public fun setResponseCode(span: Span, statusCode: Int) {
         (span as? SpanImpl)?.setAttribute("http.status_code", statusCode)
     }
 
@@ -25,7 +25,7 @@ object NetworkRequestAttributes {
      * @param contentLength the number of bytes in the request body
      */
     @JvmStatic
-    fun setRequestContentLength(span: Span, contentLength: Long) {
+    public fun setRequestContentLength(span: Span, contentLength: Long) {
         (span as? SpanImpl)?.setAttribute("http.request_content_length", contentLength)
     }
 
@@ -36,7 +36,7 @@ object NetworkRequestAttributes {
      * @param contentLength the number of bytes in the uncompressed request body
      */
     @JvmStatic
-    fun setUncompressedRequestContentLength(span: Span, contentLength: Long) {
+    public fun setUncompressedRequestContentLength(span: Span, contentLength: Long) {
         (span as? SpanImpl)?.setAttribute("http.request_content_length_uncompressed", contentLength)
     }
 
@@ -47,7 +47,7 @@ object NetworkRequestAttributes {
      * @param contentLength the number of bytes in the response body
      */
     @JvmStatic
-    fun setResponseContentLength(span: Span, contentLength: Long) {
+    public fun setResponseContentLength(span: Span, contentLength: Long) {
         (span as? SpanImpl)?.setAttribute("http.response_content_length", contentLength)
     }
 
@@ -58,7 +58,7 @@ object NetworkRequestAttributes {
      * @param contentLength the number of bytes in the uncompressed response body
      */
     @JvmStatic
-    fun setUncompressedResponseContentLength(span: Span, contentLength: Long) {
+    public fun setUncompressedResponseContentLength(span: Span, contentLength: Long) {
         (span as? SpanImpl)?.setAttribute(
             "http.response_content_length_uncompressed",
             contentLength,
@@ -75,7 +75,7 @@ object NetworkRequestAttributes {
      * @param httpFlavor the HTTP flavor
      */
     @JvmStatic
-    fun setHttpFlavor(span: Span, httpFlavor: String) {
+    public fun setHttpFlavor(span: Span, httpFlavor: String) {
         (span as? SpanImpl)?.setAttribute("http.flavor", httpFlavor)
     }
 }

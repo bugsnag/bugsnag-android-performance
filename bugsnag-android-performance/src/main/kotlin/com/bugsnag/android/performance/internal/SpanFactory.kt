@@ -1,6 +1,7 @@
 package com.bugsnag.android.performance.internal
 
 import android.app.Activity
+import androidx.annotation.RestrictTo
 import com.bugsnag.android.performance.HasAttributes
 import com.bugsnag.android.performance.NetworkRequestInfo
 import com.bugsnag.android.performance.NetworkRequestInstrumentationCallback
@@ -12,12 +13,13 @@ import java.util.UUID
 
 internal typealias AttributeSource = (target: HasAttributes) -> Unit
 
-class SpanFactory(
-    var spanProcessor: SpanProcessor,
-    val spanAttributeSource: AttributeSource = {},
+@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
+public class SpanFactory(
+    public var spanProcessor: SpanProcessor,
+    public val spanAttributeSource: AttributeSource = {},
 ) {
-    var networkRequestCallback: NetworkRequestInstrumentationCallback? = null
-    fun createCustomSpan(
+    public var networkRequestCallback: NetworkRequestInstrumentationCallback? = null
+    public fun createCustomSpan(
         name: String,
         options: SpanOptions = SpanOptions.DEFAULTS,
         spanProcessor: SpanProcessor = this.spanProcessor,
@@ -28,7 +30,7 @@ class SpanFactory(
         return span
     }
 
-    fun createNetworkSpan(
+    public fun createNetworkSpan(
         url: String,
         verb: String,
         options: SpanOptions = SpanOptions.DEFAULTS,
@@ -52,7 +54,7 @@ class SpanFactory(
         return null
     }
 
-    fun createViewLoadSpan(
+    public fun createViewLoadSpan(
         activity: Activity,
         options: SpanOptions = SpanOptions.DEFAULTS,
         spanProcessor: SpanProcessor = this.spanProcessor,
@@ -61,7 +63,7 @@ class SpanFactory(
         return createViewLoadSpan(ViewType.ACTIVITY, activityName, options, spanProcessor)
     }
 
-    fun createViewLoadSpan(
+    public fun createViewLoadSpan(
         viewType: ViewType,
         viewName: String,
         options: SpanOptions = SpanOptions.DEFAULTS,
@@ -91,7 +93,7 @@ class SpanFactory(
         return span
     }
 
-    fun createViewLoadPhaseSpan(
+    public fun createViewLoadPhaseSpan(
         viewName: String,
         viewType: ViewType,
         phase: ViewLoadPhase,
@@ -114,7 +116,7 @@ class SpanFactory(
         return span
     }
 
-    fun createViewLoadPhaseSpan(
+    public fun createViewLoadPhaseSpan(
         activity: Activity,
         phase: ViewLoadPhase,
         options: SpanOptions,
@@ -129,7 +131,7 @@ class SpanFactory(
         )
     }
 
-    fun createAppStartSpan(
+    public fun createAppStartSpan(
         startType: String,
         spanProcessor: SpanProcessor = this.spanProcessor,
     ): SpanImpl {
@@ -146,7 +148,7 @@ class SpanFactory(
         return span
     }
 
-    fun createAppStartPhaseSpan(
+    public fun createAppStartPhaseSpan(
         phase: AppStartPhase,
         appStartContext: SpanContext,
         spanProcessor: SpanProcessor = this.spanProcessor,

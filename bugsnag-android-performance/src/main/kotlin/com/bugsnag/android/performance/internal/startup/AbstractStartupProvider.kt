@@ -11,7 +11,7 @@ import android.os.Build.VERSION_CODES
 /**
  * Empty `ContentProvider` used for early loading / startup processing.
  */
-abstract class AbstractStartupProvider : ContentProvider() {
+public abstract class AbstractStartupProvider : ContentProvider() {
     override fun onCreate(): Boolean {
         return true
     }

@@ -17,11 +17,11 @@ import com.bugsnag.android.performance.SpanOptions.Companion.DEFAULTS
  * @see DEFAULTS
  * @see BugsnagPerformance.startSpan
  */
-class SpanOptions private constructor(
+public class SpanOptions private constructor(
     private val optionsSet: Int,
     startTime: Long,
     parentContext: SpanContext?,
-    val makeContext: Boolean,
+    public val makeContext: Boolean,
     isFirstClass: Boolean,
 ) {
     private val _startTime: Long = startTime
@@ -35,15 +35,15 @@ class SpanOptions private constructor(
      * be reported with. Defaults to returning [SystemClock.elapsedRealtimeNanos] if no specific
      * start time is specified.
      */
-    val startTime: Long
+    public val startTime: Long
         get() =
             if (isOptionSet(OPT_START_TIME)) _startTime
             else SystemClock.elapsedRealtimeNanos()
 
-    val isFirstClass: Boolean?
+    public val isFirstClass: Boolean?
         get() = _isFirstClass.takeIf { isOptionSet(OPT_IS_FIRST_CLASS) }
 
-    val parentContext: SpanContext?
+    public val parentContext: SpanContext?
         get() =
             if (isOptionSet(OPT_PARENT_CONTEXT)) _parentContext
             else SpanContext.current
@@ -54,7 +54,7 @@ class SpanOptions private constructor(
      *
      * @param startTime the start time to report relative to [SystemClock.elapsedRealtimeNanos]
      */
-    fun startTime(startTime: Long) = SpanOptions(
+    public fun startTime(startTime: Long): SpanOptions = SpanOptions(
         optionsSet or OPT_START_TIME,
         startTime,
         _parentContext,
@@ -62,7 +62,7 @@ class SpanOptions private constructor(
         _isFirstClass,
     )
 
-    fun within(parentContext: SpanContext?) = SpanOptions(
+    public fun within(parentContext: SpanContext?): SpanOptions = SpanOptions(
         optionsSet or OPT_PARENT_CONTEXT,
         _startTime,
         parentContext,
@@ -70,7 +70,7 @@ class SpanOptions private constructor(
         _isFirstClass,
     )
 
-    fun makeCurrentContext(makeContext: Boolean) = SpanOptions(
+    public fun makeCurrentContext(makeContext: Boolean): SpanOptions = SpanOptions(
         optionsSet or OPT_MAKE_CONTEXT,
         _startTime,
         _parentContext,
@@ -78,7 +78,7 @@ class SpanOptions private constructor(
         _isFirstClass,
     )
 
-    fun setFirstClass(isFirstClass: Boolean) = SpanOptions(
+    public fun setFirstClass(isFirstClass: Boolean): SpanOptions = SpanOptions(
         optionsSet or OPT_IS_FIRST_CLASS,
         _startTime,
         _parentContext,
@@ -102,6 +102,7 @@ class SpanOptions private constructor(
             && this.makeContext != other.makeContext
         ) return false
 
+        @Suppress("RedundantIf")
         if ((isOptionSet(OPT_IS_FIRST_CLASS) || other.isOptionSet(OPT_IS_FIRST_CLASS))
             && this.isFirstClass != other.isFirstClass
         ) return false
@@ -149,7 +150,7 @@ class SpanOptions private constructor(
     private fun isOptionSet(expectedFlag: Int): Boolean =
         (optionsSet and expectedFlag) != 0
 
-    companion object {
+    public companion object {
         private const val OPT_NONE = 0
         private const val OPT_START_TIME = 1
         private const val OPT_PARENT_CONTEXT = 2
@@ -161,6 +162,7 @@ class SpanOptions private constructor(
          * create new `SpanOptions`
          */
         @JvmField
-        val DEFAULTS = SpanOptions(OPT_NONE, 0, null, makeContext = true, isFirstClass = false)
+        public val DEFAULTS: SpanOptions =
+            SpanOptions(OPT_NONE, 0, null, makeContext = true, isFirstClass = false)
     }
 }

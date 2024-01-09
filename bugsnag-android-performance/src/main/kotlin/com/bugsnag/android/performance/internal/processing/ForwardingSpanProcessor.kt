@@ -10,7 +10,7 @@ import com.bugsnag.android.performance.internal.SpanProcessor
  * [forwardTo] is called, any batched spans are forwarded to the new processor (along with any
  * in-flight spans that end with the `ForwardingSpanProcessor`).
  */
-class ForwardingSpanProcessor : SpanProcessor {
+internal class ForwardingSpanProcessor : SpanProcessor {
     @Volatile
     private var backingProcessor: SpanProcessor = BatchingSpanProcessor()
 
