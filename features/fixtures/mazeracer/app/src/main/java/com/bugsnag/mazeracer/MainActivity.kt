@@ -22,26 +22,26 @@ import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
 import kotlin.concurrent.thread
+import kotlin.reflect.KProperty
 
 const val CONFIG_FILE_TIMEOUT = 5000
 
 class MainActivity : AppCompatActivity() {
-    private val apiKeyKey = "BUGSNAG_API_KEY"
     private val mainHandler = Handler(Looper.getMainLooper())
 
-    lateinit var prefs: SharedPreferences
+    val prefs: SharedPreferences by lazy { getPreferences(Context.MODE_PRIVATE) }
 
     var scenario: Scenario? = null
     var polling = false
     var mazeAddress: String? = null
-    var lastCommandUuid: String? = null
+    var lastCommandUuid: String? by prefs
+    var storedApiKey: String? by prefs
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         log("MainActivity.onCreate called")
         requestWindowFeature(Window.FEATURE_NO_TITLE)
         setContentView(R.layout.activity_main)
-        prefs = getPreferences(Context.MODE_PRIVATE)
 
         // Attempt to dismiss any system dialogs (such as "MazeRunner crashed")
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
@@ -54,19 +54,19 @@ class MainActivity : AppCompatActivity() {
         log("Set up clearUserData click handler")
         val clearUserData = findViewById<Button>(R.id.clearUserData)
         clearUserData.setOnClickListener {
-            clearStoredApiKey()
+            storedApiKey = null
             val apiKeyField = findViewById<EditText>(R.id.manualApiKey)
             apiKeyField.text.clear()
             log("Cleared user data")
         }
 
-        if (apiKeyStored()) {
+        storedApiKey?.let { apiKey ->
             log("Using stored API key")
-            val apiKey = getStoredApiKey()
             val apiKeyField = findViewById<EditText>(R.id.manualApiKey)
             apiKeyField.text.clear()
             apiKeyField.text.append(apiKey)
         }
+
         log("MainActivity.onCreate complete")
     }
 
@@ -258,10 +258,10 @@ class MainActivity : AppCompatActivity() {
                 val errorMessage = urlConnection.errorStream.use { it.reader().readText() }
                 log(
                     "Failed to GET $commandUrl (HTTP ${urlConnection.responseCode} " +
-                        "${urlConnection.responseMessage}):\n" +
-                        "${"-".repeat(errorMessage.width)}\n" +
-                        "$errorMessage\n" +
-                        "-".repeat(errorMessage.width),
+                            "${urlConnection.responseMessage}):\n" +
+                            "${"-".repeat(errorMessage.width)}\n" +
+                            "$errorMessage\n" +
+                            "-".repeat(errorMessage.width),
                 )
             } catch (e: Exception) {
                 log("Failed to retrieve error message from connection", e)
@@ -296,7 +296,7 @@ class MainActivity : AppCompatActivity() {
 
         if (manualMode) {
             log("Running in manual mode with API key: $apiKey")
-            setStoredApiKey(apiKey)
+            storedApiKey = apiKey
         }
 
         log("prepareConfig($apiKey, $endpoint)")
@@ -308,26 +308,26 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun apiKeyStored() = prefs.contains(apiKeyKey)
-
-    private fun setStoredApiKey(apiKey: String) {
-        with(prefs.edit()) {
-            putString(apiKeyKey, apiKey)
-            commit()
-        }
-    }
-
-    private fun clearStoredApiKey() {
-        with(prefs.edit()) {
-            remove(apiKeyKey)
-            commit()
-        }
-    }
-
-    private fun getStoredApiKey() = prefs.getString(apiKeyKey, "")
-
     private val String.width
         get() = lineSequence().fold(0) { maxWidth, line -> kotlin.math.max(maxWidth, line.length) }
+
+    @Suppress("UnusedPrivateMember")
+    private operator fun SharedPreferences.getValue(obj: Any, property: KProperty<*>): String? {
+        return this.getString(property.name, null)
+    }
+
+    @Suppress("UnusedPrivateMember")
+    private operator fun SharedPreferences.setValue(obj: Any, property: KProperty<*>, value: String?) {
+        edit()
+            .apply {
+                if (value == null) {
+                    remove(property.name)
+                } else {
+                    putString(property.name, value)
+                }
+            }
+            .commit()
+    }
 
     companion object {
         const val REQUEST_CODE_FINISH_ON_RETURN = 9090
