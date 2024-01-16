@@ -14,6 +14,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.mockito.kotlin.doReturn
+import java.util.UUID
 
 class SpanOptionsTest {
     private lateinit var spanFactory: SpanFactory
@@ -159,5 +160,26 @@ class SpanOptionsTest {
                     assertNotSame(SpanContext.current, overrideSpan)
                 }
         }
+    }
+
+    @Test
+    fun factoryOptions() {
+        val spanContext = object: SpanContext {
+            override val spanId: Long
+                get() = 123
+            override val traceId: UUID
+                get() = UUID(1L, 1L)
+
+        }
+
+        assertEquals(
+            SpanOptions.DEFAULTS.within(spanContext),
+            SpanOptions.within(spanContext),
+        )
+
+        assertEquals(
+            SpanOptions.DEFAULTS.startTime(123L),
+            SpanOptions.withStartTime(123L),
+        )
     }
 }

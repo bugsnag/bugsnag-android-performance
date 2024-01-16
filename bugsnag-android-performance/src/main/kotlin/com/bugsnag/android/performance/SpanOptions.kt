@@ -1,7 +1,6 @@
 package com.bugsnag.android.performance
 
 import android.os.SystemClock
-import com.bugsnag.android.performance.SpanOptions.Companion.DEFAULTS
 
 /**
  * Optional configuration used when starting a new `Span`. `SpanOptions` are immutable and
@@ -47,6 +46,7 @@ public class SpanOptions private constructor(
         get() =
             if (isOptionSet(OPT_PARENT_CONTEXT)) _parentContext
             else SpanContext.current
+
 
     /**
      * Override the start time of new `Span`s created with these `SpanOptions`. This is useful when
@@ -164,5 +164,33 @@ public class SpanOptions private constructor(
         @JvmField
         public val DEFAULTS: SpanOptions =
             SpanOptions(OPT_NONE, 0, null, makeContext = true, isFirstClass = false)
+
+        /**
+         * The default `SpanOptions` for spans that are not automatically tracked as a "context".
+         * These spans do not automatically become [SpanContext.current] for their duration, and
+         * will not have any child / detail spans unless they are manually specified.
+         *
+         * @see within
+         * @see makeCurrentContext
+         * @see SpanOptions.parentContext
+         */
+        @JvmField
+        public val NON_CONTEXT_SPAN: SpanOptions = DEFAULTS.makeCurrentContext(false)
+
+        /**
+         * Create a new `SpanOptions` with the specified parent context. If [parentContext] is
+         * `null` then the created [Span]s will have no parent context ([SpanContext.invalid]).
+         *
+         * @see NON_CONTEXT_SPAN
+         * @see makeCurrentContext
+         * @see SpanOptions.parentContext
+         */
+        @JvmStatic
+        @JvmName("createWithin")
+        public fun within(parentContext: SpanContext?): SpanOptions = DEFAULTS.within(parentContext)
+
+        @JvmStatic
+        @JvmName("createWithStartTime")
+        public fun withStartTime(startTime: Long): SpanOptions = DEFAULTS.startTime(startTime)
     }
 }
