@@ -27,6 +27,7 @@ const val CONFIG_FILE_TIMEOUT = 5000
 
 class MainActivity : AppCompatActivity() {
     private val apiKeyKey = "BUGSNAG_API_KEY"
+    private val commandUUIDKey = "MAZE_COMMAND_UUID"
     private val mainHandler = Handler(Looper.getMainLooper())
 
     lateinit var prefs: SharedPreferences
@@ -153,10 +154,16 @@ class MainActivity : AppCompatActivity() {
 
     // Starts a thread to poll for Maze Runner actions to perform
     private fun startCommandRunner() {
+
         // Get the next maze runner command
         polling = true
         thread(start = true) {
             if (mazeAddress == null) setMazeRunnerAddress()
+            if (commandUUIDStored()) {
+                log("Using stored command UUID")
+                lastCommandUuid = getStoredCommandUUID()
+                clearStoredCommandUUID()
+            }
             checkNetwork()
             startBugsnag()
             @Suppress("LoopWithTooManyJumpStatements")
@@ -177,7 +184,9 @@ class MainActivity : AppCompatActivity() {
                     val action = command.getString("action")
 
                     if (action == "noop") {
-                        log("noop - doing nothing and looping around for another poll()")
+                        lastCommandUuid = null
+                        clearStoredCommandUUID()
+                        log("noop - clearing command uuid, doing nothing and looping around for another poll()")
                         // immediately loop around
                         continue
                     }
@@ -194,6 +203,7 @@ class MainActivity : AppCompatActivity() {
 
                     // Keep track of the current command
                     this.lastCommandUuid = uuid
+                    setStoredCommandUUID(uuid)
 
                     mainHandler.post {
                         // Display some feedback of the action being run on he UI
@@ -325,6 +335,24 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun getStoredApiKey() = prefs.getString(apiKeyKey, "")
+
+    private fun commandUUIDStored() = prefs.contains(commandUUIDKey)
+
+    private fun setStoredCommandUUID(commandUUID: String) {
+        with(prefs.edit()) {
+            putString(commandUUIDKey, apiKey)
+            commit()
+        }
+    }
+
+    private fun clearStoredCommandUUID() {
+        with(prefs.edit()) {
+            remove(commandUUIDKey)
+            commit()
+        }
+    }
+
+    private fun getStoredCommandUUID() = prefs.getString(commandUUIDKey, "")
 
     private val String.width
         get() = lineSequence().fold(0) { maxWidth, line -> kotlin.math.max(maxWidth, line.length) }
