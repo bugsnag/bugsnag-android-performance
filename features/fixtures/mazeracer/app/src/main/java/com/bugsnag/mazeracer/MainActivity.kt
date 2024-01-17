@@ -340,7 +340,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun setStoredCommandUUID(commandUUID: String) {
         with(prefs.edit()) {
-            putString(commandUUIDKey, apiKey)
+            putString(commandUUIDKey, commandUUID)
             commit()
         }
     }
