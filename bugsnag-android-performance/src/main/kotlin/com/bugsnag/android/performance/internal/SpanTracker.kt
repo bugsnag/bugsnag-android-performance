@@ -1,6 +1,7 @@
 package com.bugsnag.android.performance.internal
 
 import android.os.SystemClock
+import androidx.annotation.RestrictTo
 import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.internal.SpanImpl.Companion.NO_END_TIME
 import java.lang.ref.ReferenceQueue
@@ -29,7 +30,8 @@ private const val MAX_BINDING_LIST_DEPTH = 3
  * the `endTime`. If the `Span` is then [marked as leaked](markSpanLeaked) then its "auto end"
  * time is used to close it.
  */
-class SpanTracker {
+@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP_PREFIX)
+public class SpanTracker {
 
     /*
      * Implementation:
@@ -43,6 +45,23 @@ class SpanTracker {
      * or discard the associated Span objects when the token is leaked. This avoids the Span
      * objects "leaking" within the SpanContext hierarchy, since we assume that once the token
      * is lost there is no remaining way for the user to end() the Span.
+     *
+     * The "bindings" table is structured similar to HashMap or similar classes, but using
+     * SpanBinding in place of a Map.Entry as we have a more complex key structure. For example
+     * a table might look something like:
+     *
+     * [ ] binding -> collision-binding -> collision-binding -> null
+     * [ ] null
+     * [ ] null
+     * [ ] binding -> null
+     * [ ] binding -> binding -> null
+     * [ ] null
+     * [ ] null
+     * [ ] null
+     *
+     * The linked-list represented by the SpanBinding.next property is *only* used to handle table
+     * space collisions (when multiple bindings need to occupy the same slot in the bindings table).
+     * They do *not* represent a full-table linked list (as LinkedHashMap would).
      */
 
     private var bindings: Array<SpanBinding?> = arrayOfNulls(DEFAULT_SPAN_TRACKER_TABLE_SIZE)
@@ -70,7 +89,7 @@ class SpanTracker {
         }
     }
 
-    operator fun get(token: Any, subToken: Enum<*>? = null): SpanImpl? {
+    public operator fun get(token: Any, subToken: Enum<*>? = null): SpanImpl? {
         return lock.read {
             val hash = hashCodeFor(token, subToken)
             val index = indexForHash(hash, bindings.size)
@@ -84,7 +103,7 @@ class SpanTracker {
      * the actual `Span` being tracked. This function may discard [span] if the given [token] is
      * already being tracked, if this is the case the tracked span will be returned.
      */
-    fun associate(token: Any, subToken: Enum<*>? = null, span: SpanImpl): SpanImpl {
+    public fun associate(token: Any, subToken: Enum<*>? = null, span: SpanImpl): SpanImpl {
         return lock.write {
             sweepStaleEntriesUnderWriteLock()
 
@@ -131,7 +150,7 @@ class SpanTracker {
      * Note: in race scenarios the [createSpan] may be invoked and the resulting `Span` discarded,
      * the currently tracked `Span` will however always be returned.
      */
-    inline fun associate(
+    public inline fun associate(
         token: Any,
         subToken: Enum<*>? = null,
         createSpan: () -> SpanImpl,
@@ -144,7 +163,7 @@ class SpanTracker {
         return associatedSpan
     }
 
-    fun removeAssociation(token: Any?, subToken: Enum<*>? = null): SpanImpl? {
+    public fun removeAssociation(token: Any?, subToken: Enum<*>? = null): SpanImpl? {
         if (token == null) {
             return null
         }
@@ -168,7 +187,7 @@ class SpanTracker {
      * marked as [leaked](markSpanLeaked) then its `endTime` will be set to the time that this
      * function was last called. Otherwise this value will be discarded.
      */
-    fun markSpanAutomaticEnd(token: Any, subToken: Enum<*>? = null) {
+    public fun markSpanAutomaticEnd(token: Any, subToken: Enum<*>? = null) {
         lock.read {
             val hash = hashCodeFor(token, subToken)
             val index = indexForHash(hash, bindings.size)
@@ -183,7 +202,7 @@ class SpanTracker {
      * Returns `true` if the `Span` was marked as leaked, or `false` if the `Span` was already
      * considered to be closed (or was not tracked).
      */
-    fun markSpanLeaked(token: Any, subToken: Enum<*>? = null): Boolean {
+    public fun markSpanLeaked(token: Any, subToken: Enum<*>? = null): Boolean {
         return lock.write {
             sweepStaleEntriesUnderWriteLock()
 
@@ -202,7 +221,7 @@ class SpanTracker {
      * End the tracking of a `Span` marking its `endTime` if it has not already been closed.
      * This *must* be called in order to ensure tokens can be garbage-collected.
      */
-    fun endSpan(
+    public fun endSpan(
         token: Any,
         subToken: Enum<*>? = null,
         endTime: Long = SystemClock.elapsedRealtimeNanos(),
@@ -227,19 +246,41 @@ class SpanTracker {
      * use autoEndTimes where they are available, but will otherwise fallback to using [endTime]
      * for each of the spans that get closed.
      */
-    fun endAllSpans(token: Any, endTime: Long = SystemClock.elapsedRealtimeNanos()) {
+    public fun endAllSpans(token: Any, endTime: Long = SystemClock.elapsedRealtimeNanos()) {
         lock.write {
             sweepStaleEntriesUnderWriteLock()
 
-            // we do a sweep of the end binding table
+            // we do a sweep of the entire binding table
             // this is typically quite small as it isn't common for more than a few
             // root tokens to be active at a time, leading to the table mostly being
             // subTokens of the same roots
-            for (index in bindings.indices) {
-                val binding = bindings[index] ?: continue
-                val (newHead, removed) = binding.removeWhere { it.get() === token }
-                bindings[index] = newHead
-                removed?.markLeaked(endTime)
+            val table = bindings
+            // this loop walks "down" the bindings table
+            for (index in table.indices) {
+                var currentBinding: SpanBinding? = table[index] ?: continue
+
+                var newHead: SpanBinding? = null
+                var previous: SpanBinding? = null
+
+                // this loop walks "sideways" through the linked-list of bindings on this "row"
+                while (currentBinding != null) {
+                    if (currentBinding.get() === token) {
+                        // end the span at an appropriate time
+                        currentBinding.markLeaked(endTime)
+                        // unlink currentBinding from the list
+                        previous?.next = currentBinding.next
+                    } else if (newHead == null) {
+                        newHead = currentBinding
+                        previous = currentBinding
+                    } else {
+                        previous = currentBinding
+                    }
+
+                    // move to the next binding (if there is one)
+                    currentBinding = currentBinding.next
+                }
+
+                table[index] = newHead
             }
         }
     }
@@ -249,7 +290,7 @@ class SpanTracker {
      * associated spans being discarded, any of their child spans that have already been closed
      * will have no valid parent span and will also be discarded by the server-side.
      */
-    fun discardAllSpans(token: Any) {
+    public fun discardAllSpans(token: Any) {
         lock.write {
             sweepStaleEntriesUnderWriteLock()
 
@@ -281,9 +322,7 @@ class SpanTracker {
     }
 
     private fun expandBindingsTable(): Array<SpanBinding?> {
-        // WARNING: do not put anything other than 2 here!
-        // The table size *must* remain power-of-two as it grows, otherwise indexForHash will break
-        val newBindingsTable = arrayOfNulls<SpanBinding>(bindings.size * 2)
+        val newBindingsTable = arrayOfNulls<SpanBinding>(expandedTableSize(bindings.size))
         val newTableSize = newBindingsTable.size
 
         for (index in bindings.indices) {
@@ -303,6 +342,10 @@ class SpanTracker {
 
         return newBindingsTable
     }
+
+    // WARNING: do not put anything other than 2 here!
+    // The table size *must* remain power-of-two as it grows, otherwise indexForHash will break
+    private fun expandedTableSize(currentTableSize: Int) = currentTableSize * 2
 
     private class SpanBinding(
         boundObject: Any,
@@ -379,7 +422,7 @@ class SpanTracker {
         }
 
         /**
-         * Remove a SpanBinding from the linked-list where the given predicate matches that
+         * Remove a *single* SpanBinding from the linked-list where the given predicate matches that
          * SpanBinding, returning the new "head" of the linked-list and the removed SpanBinding
          * as a pair.
          */

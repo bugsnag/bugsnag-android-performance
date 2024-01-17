@@ -3,7 +3,7 @@
 ### Bug fixes
 
 * Fixed a theoretically possible `Span` leak when tracked Spans were on the context stack, and their bound tokens were garbage collected before the `Span` was closed.
-  []()
+  [#205](https://github.com/bugsnag/bugsnag-android-performance/pull/205)
 
 ## 1.2.1 (2024-01-09)
 

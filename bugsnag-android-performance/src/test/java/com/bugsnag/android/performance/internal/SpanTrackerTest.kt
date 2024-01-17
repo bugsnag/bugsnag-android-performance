@@ -148,7 +148,7 @@ class SpanTrackerTest {
         val tracker = SpanTracker()
         val trackedSpans = populateDenseSpanTracker(tokens, tracker)
 
-        val endedToken = tokens[3]
+        val endedToken = tokens[3] // it doesn't really matter which we choose
         tracker.endAllSpans(endedToken, 1234L)
 
         val rootSpan = trackedSpans.remove(endedToken to null)!!
@@ -185,18 +185,18 @@ class SpanTrackerTest {
     }
 
     private fun populateDenseSpanTracker(
-        tokens: Array<Any>,
+        tokens: Array<out Any>,
         tracker: SpanTracker,
     ): MutableMap<Pair<Any, ViewLoadPhase?>, SpanImpl> {
         val spans = HashMap<Pair<Any, ViewLoadPhase?>, SpanImpl>()
 
-        tokens.forEachIndexed { index, token ->
-            val rootTokenSpan = createSpan("Token$index")
+        tokens.forEach { token ->
+            val rootTokenSpan = createSpan(token.toString())
             assertSame(rootTokenSpan, tracker.associate(token, null, rootTokenSpan))
             spans[token to null] = rootTokenSpan
 
             ViewLoadPhase.values().forEach { phase ->
-                val span = createSpan("Token$index/$phase")
+                val span = createSpan("$token/$phase")
                 val boundSpan = tracker.associate(token, phase, span)
 
                 assertSame(span, boundSpan)
