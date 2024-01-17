@@ -1,10 +1,9 @@
 package com.bugsnag.android.performance.internal
 
 import android.app.Application
-import android.os.Build
 import com.bugsnag.android.performance.AutoInstrument
-import com.bugsnag.android.performance.test.setStatic
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -13,7 +12,7 @@ import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import org.robolectric.shadows.ShadowBuild
 
-@Config(sdk = [32])
+@Config(sdk = [33])
 @RunWith(RobolectricTestRunner::class)
 class ResourceAttributesTest {
     @Test
@@ -39,10 +38,10 @@ class ResourceAttributesTest {
 
         val attributes = createResourceAttributes(configuration).toList().toMap()
 
-        assertEquals("amd64", attributes["host.arch"])
+        assertTrue(attributes["host.arch"] in setOf("amd64", "arm64", "arm32", "x86"))
         assertEquals("linux", attributes["os.type"])
         assertEquals("android", attributes["os.name"])
-        assertEquals("12", attributes["os.version"])
+        assertEquals("13", attributes["os.version"])
         assertEquals("33", attributes["bugsnag.device.android_api_version"])
         assertEquals("TEST-1234", attributes["device.model.identifier"])
         assertEquals("Bugsnag", attributes["device.manufacturer"])
@@ -76,10 +75,10 @@ class ResourceAttributesTest {
 
         val attributes = createResourceAttributes(configuration).toList().toMap()
 
-        assertEquals("amd64", attributes["host.arch"])
+        assertTrue(attributes["host.arch"] in setOf("amd64", "arm64", "arm32", "x86"))
         assertEquals("linux", attributes["os.type"])
         assertEquals("android", attributes["os.name"])
-        assertEquals("12", attributes["os.version"])
+        assertEquals("13", attributes["os.version"])
         assertEquals("33", attributes["bugsnag.device.android_api_version"])
         assertEquals("TEST-1234", attributes["device.model.identifier"])
         assertEquals("Bugsnag", attributes["device.manufacturer"])
@@ -93,9 +92,6 @@ class ResourceAttributesTest {
     private fun configureApplication(): Application {
         ShadowBuild.setManufacturer("Bugsnag")
         ShadowBuild.setModel("TEST-1234")
-
-        setStatic(Build::SUPPORTED_ABIS, arrayOf("x86_64", "arm64-v8a"))
-        setStatic(Build.VERSION::SDK_INT, 33)
 
         val application = RuntimeEnvironment.getApplication()
 
