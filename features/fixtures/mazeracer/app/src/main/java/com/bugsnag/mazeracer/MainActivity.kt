@@ -158,14 +158,7 @@ class MainActivity : AppCompatActivity() {
         // Get the next maze runner command
         polling = true
         thread(start = true) {
-            if (mazeAddress == null) setMazeRunnerAddress()
-            if (commandUUIDStored()) {
-                log("Using stored command UUID")
-                lastCommandUuid = getStoredCommandUUID()
-                clearStoredCommandUUID()
-            }
-            checkNetwork()
-            startBugsnag()
+            setupCommandRunner()
             @Suppress("LoopWithTooManyJumpStatements")
             while (polling) {
                 Thread.sleep(1000)
@@ -353,6 +346,17 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun getStoredCommandUUID() = prefs.getString(commandUUIDKey, "")
+
+    private fun setupCommandRunner() {
+        if (mazeAddress == null) setMazeRunnerAddress()
+        if (commandUUIDStored()) {
+            log("Using stored command UUID")
+            lastCommandUuid = getStoredCommandUUID()
+            clearStoredCommandUUID()
+        }
+        checkNetwork()
+        startBugsnag()
+    }
 
     private val String.width
         get() = lineSequence().fold(0) { maxWidth, line -> kotlin.math.max(maxWidth, line.length) }
