@@ -154,7 +154,6 @@ class MainActivity : AppCompatActivity() {
 
     // Starts a thread to poll for Maze Runner actions to perform
     private fun startCommandRunner() {
-
         // Get the next maze runner command
         polling = true
         thread(start = true) {
@@ -184,49 +183,53 @@ class MainActivity : AppCompatActivity() {
                         continue
                     }
 
-                    val scenarioName = command.getString("scenario_name")
-                    val scenarioMetadata = command.getString("scenario_metadata")
-                    val endpointUrl = command.getString("endpoint")
-                    val uuid = command.getString("uuid")
-                    log("command.action: $action")
-                    log("command.scenarioName: $scenarioName")
-                    log("command.scenarioMode: $scenarioMetadata")
-                    log("command.endpoint: $endpointUrl")
-                    log("command.uuid: $uuid")
-
-                    // Keep track of the current command
-                    this.lastCommandUuid = uuid
-                    setStoredCommandUUID(uuid)
-
-                    mainHandler.post {
-                        // Display some feedback of the action being run on he UI
-                        val actionField = findViewById<EditText>(R.id.command_action)
-                        val scenarioField = findViewById<EditText>(R.id.command_scenario)
-                        actionField.setText(action)
-                        scenarioField.setText(scenarioName)
-
-                        // Perform the given action on the UI thread
-                        when (action) {
-                            "run_scenario" -> {
-                                polling = false
-                                runScenario(scenarioName, scenarioMetadata, endpointUrl)
-                            }
-
-                            "load_scenario" -> {
-                                scenario = loadScenario(scenarioName, scenarioMetadata, endpointUrl)
-                            }
-
-                            "invoke" -> {
-                                log("invoke: $scenarioName")
-                                scenario!!::class.java.getMethod(scenarioName).invoke(scenario)
-                            }
-
-                            else -> throw IllegalArgumentException("Unknown action: $action")
-                        }
-                    }
+                    executeCommand(command)
                 } catch (e: Exception) {
                     log("Failed to fetch command from Maze Runner", e)
                 }
+            }
+        }
+    }
+
+    private fun executeCommand(command: JSONObject) {
+        val scenarioName = command.getString("scenario_name")
+        val scenarioMetadata = command.getString("scenario_metadata")
+        val endpointUrl = command.getString("endpoint")
+        val uuid = command.getString("uuid")
+        log("command.action: $action")
+        log("command.scenarioName: $scenarioName")
+        log("command.scenarioMode: $scenarioMetadata")
+        log("command.endpoint: $endpointUrl")
+        log("command.uuid: $uuid")
+
+        // Keep track of the current command
+        this.lastCommandUuid = uuid
+        setStoredCommandUUID(uuid)
+
+        mainHandler.post {
+            // Display some feedback of the action being run on he UI
+            val actionField = findViewById<EditText>(R.id.command_action)
+            val scenarioField = findViewById<EditText>(R.id.command_scenario)
+            actionField.setText(action)
+            scenarioField.setText(scenarioName)
+
+            // Perform the given action on the UI thread
+            when (action) {
+                "run_scenario" -> {
+                    polling = false
+                    runScenario(scenarioName, scenarioMetadata, endpointUrl)
+                }
+
+                "load_scenario" -> {
+                    scenario = loadScenario(scenarioName, scenarioMetadata, endpointUrl)
+                }
+
+                "invoke" -> {
+                    log("invoke: $scenarioName")
+                    scenario!!::class.java.getMethod(scenarioName).invoke(scenario)
+                }
+
+                else -> throw IllegalArgumentException("Unknown action: $action")
             }
         }
     }
