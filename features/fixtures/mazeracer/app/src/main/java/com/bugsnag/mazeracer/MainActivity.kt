@@ -192,6 +192,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun executeCommand(command: JSONObject) {
+        val action = command.getString("action")
         val scenarioName = command.getString("scenario_name")
         val scenarioMetadata = command.getString("scenario_metadata")
         val endpointUrl = command.getString("endpoint")
