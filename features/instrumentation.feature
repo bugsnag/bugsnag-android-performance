@@ -42,8 +42,6 @@ Feature: Automatic creation of spans
       | bugsnag.view.name     | stringValue | LoaderFragment |
 
 
-  # TODO: Skipped entirely pending PLAT-11382
-  @skip
   @skip_below_android_10
   Scenario: AppStart instrumentation
     Given I run "AppStartScenario"
@@ -85,8 +83,6 @@ Feature: Automatic creation of spans
       | bugsnag.phase         | stringValue | ActivityResume  |
       | bugsnag.view.name     | stringValue | MainActivity    |
 
-  # TODO: Skipped entirely pending PLAT-11382
-  @skip
   @skip_above_android_9
   Scenario: AppStart instrumentation
     Given I run "AppStartScenario"
