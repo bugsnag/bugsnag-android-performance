@@ -11,6 +11,10 @@ steps:
     agents:
       queue: macos-12-arm
     command: './gradlew test'
+    plugins:
+      artifacts#v1.9.0:
+        upload: "bugsnag-android-performance/build/reports/tests/"
+        compressed: bugsnag-android-performance-test-reports.tgz
 
   - label: ':android: Lint test scenarios'
     timeout_in_minutes: 10

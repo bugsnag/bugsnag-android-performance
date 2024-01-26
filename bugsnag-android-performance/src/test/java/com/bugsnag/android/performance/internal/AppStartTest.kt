@@ -21,7 +21,6 @@ class AppStartTest {
     private lateinit var spanFactory: SpanFactory
     private lateinit var spanTracker: SpanTracker
     private lateinit var startupTracker: AppStartTracker
-
     private lateinit var spanProcessor: CollectingSpanProcessor
 
     @Before
@@ -42,9 +41,13 @@ class AppStartTest {
         coldStart()
 
         val spans = spanProcessor.toList()
-        assertEquals(2, spans.size)
+        assertEquals(
+            "expected 2 spans, but was ${spans.size} ${spans.joinToString(transform = { it.name })}",
+            2,
+            spans.size,
+        )
 
-        val frameworkStart = spans[0]
+        val (frameworkStart, appStart) = spans
         assertEquals("[AppStartPhase/Framework]", frameworkStart.name)
         // start and end time are in nanoseconds, not milliseconds
         assertEquals(100_000_000L, frameworkStart.startTime)
@@ -52,7 +55,6 @@ class AppStartTest {
         assertEquals(SpanKind.INTERNAL, frameworkStart.kind)
         assertTrue(frameworkStart.isEnded())
 
-        val appStart = spans[1]
         assertEquals("[AppStart/AndroidCold]", appStart.name)
         // start and end time are in nanoseconds, not milliseconds
         assertEquals(100_000_000L, appStart.startTime)

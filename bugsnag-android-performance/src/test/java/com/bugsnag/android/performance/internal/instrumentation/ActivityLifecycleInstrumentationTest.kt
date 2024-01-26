@@ -125,7 +125,11 @@ class ActivityLifecycleInstrumentationTest {
     }
 
     private fun assertViewLoadSpans(spans: List<SpanImpl>) {
-        assertEquals(4, spans.size)
+        assertEquals(
+            "expected 4 spans, but was ${spans.size} ${spans.joinToString(transform = { it.name })}",
+            4,
+            spans.size,
+        )
 
         val (create, viewLoad, start, resume) = spans
         assertEquals("[ViewLoad/Activity]Activity", viewLoad.name)
