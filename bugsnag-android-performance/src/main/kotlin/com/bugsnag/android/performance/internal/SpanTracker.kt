@@ -69,7 +69,9 @@ public class SpanTracker {
     private val lock = ReentrantReadWriteLock()
 
     /**
-     * Sweep the old entries from the table, closing any associated spans in the
+     * Sweep the old entries from the table, closing any associated spans in the process.
+     *
+     * This must only be called by a thread that already holds the write lock.
      */
     private fun sweepStaleEntriesUnderWriteLock() {
         val table = bindings
@@ -81,9 +83,7 @@ public class SpanTracker {
             binding.sweep()
 
             val tableIndex = indexForHash(binding.hash, tableSize)
-            val removalResult = table[tableIndex]?.removeWhere { it === binding }
-            // replace the current table entry with the new head
-            table[tableIndex] = removalResult?.first
+            table.unlinkBindingWhere(tableIndex) { it === binding }
 
             binding = referenceQueue.poll() as? SpanBinding
         }
@@ -174,9 +174,9 @@ public class SpanTracker {
             val hash = hashCodeFor(token, subToken)
             val index = indexForHash(hash, bindings.size)
 
-            val binding = bindings[index] ?: return@write null
-            val (newHead, removed) = binding.removeWhere { it.get() === token && it.subToken == subToken }
-            bindings[index] = newHead
+            val removed = bindings.unlinkBindingWhere(index) {
+                it.get() === token && it.subToken == subToken
+            }
 
             return@write removed?.span
         }
@@ -209,10 +209,10 @@ public class SpanTracker {
             val hash = hashCodeFor(token, subToken)
             val index = indexForHash(hash, bindings.size)
 
-            val (newHead, binding) = bindings[index]?.removeWhere { it.get() === token && it.subToken == subToken }
-                ?: return@write false
+            val binding = bindings.unlinkBindingWhere(index) {
+                it.get() === token && it.subToken == subToken
+            }
 
-            bindings[index] = newHead
             return@write binding?.markLeaked() == true
         }
     }
@@ -232,12 +232,11 @@ public class SpanTracker {
             val hash = hashCodeFor(token, subToken)
             val index = indexForHash(hash, bindings.size)
 
-            val (newHead, binding) = bindings[index]
-                ?.removeWhere { it.get() === token && it.subToken == subToken }
-                ?: return@write
+            val removed = bindings.unlinkBindingWhere(index) {
+                it.get() === token && it.subToken == subToken
+            }
 
-            bindings[index] = newHead
-            binding?.span?.end(endTime)
+            removed?.span?.end(endTime)
         }
     }
 
@@ -298,16 +297,14 @@ public class SpanTracker {
             // this is typically quite small as it isn't common for more than a few
             // root tokens to be active at a time, leading to the table mostly being
             // subTokens of the same roots
-            for (index in bindings.indices) {
+            val bindingsTable = bindings
+            for (index in bindingsTable.indices) {
                 var removed: SpanBinding?
                 do {
-                    val binding = bindings[index] ?: break
-                    val removeResult = binding.removeWhere { it.get() === token }
+                    removed = bindingsTable.unlinkBindingWhere(index) { it.get() === token }
+                        ?: break
 
-                    bindings[index] = removeResult.first
-
-                    removed = removeResult.second
-                    removed?.span?.discard()
+                    removed.span.discard()
                 } while (removed != null)
             }
         }
@@ -341,6 +338,37 @@ public class SpanTracker {
         }
 
         return newBindingsTable
+    }
+
+    /**
+     * Remove a *single* SpanBinding at a given [bindingIndex] from the linked-list where the given
+     * predicate matches that SpanBinding, returning the removed SpanBinding (if one was removed).
+     */
+    @Suppress("ReturnCount") // 1 extra return for an early-exit
+    private inline fun Array<SpanBinding?>.unlinkBindingWhere(
+        bindingIndex: Int,
+        predicate: (SpanBinding) -> Boolean,
+    ): SpanBinding? {
+        val head = this[bindingIndex] ?: return null
+
+        if (predicate(head)) {
+            this[bindingIndex] = head.next
+            return head
+        } else {
+            var node = head.next
+            var previous = head
+            while (node != null) {
+                if (predicate(node)) {
+                    previous.next = node.next
+                    break
+                } else {
+                    previous = node
+                    node = node.next
+                }
+            }
+
+            return node
+        }
     }
 
     // WARNING: do not put anything other than 2 here!
@@ -419,32 +447,6 @@ public class SpanTracker {
             }
 
             return null
-        }
-
-        /**
-         * Remove a *single* SpanBinding from the linked-list where the given predicate matches that
-         * SpanBinding, returning the new "head" of the linked-list and the removed SpanBinding
-         * as a pair.
-         */
-        inline fun removeWhere(predicate: (SpanBinding) -> Boolean): Pair<SpanBinding?, SpanBinding?> {
-            if (predicate(this)) {
-                return (this.next to this)
-            } else {
-                val head = this
-                var node = next
-                var previous = this
-                while (node != null) {
-                    if (predicate(node)) {
-                        previous.next = node.next
-                        break
-                    } else {
-                        previous = node
-                        node = node.next
-                    }
-                }
-
-                return head to node
-            }
         }
     }
 }
