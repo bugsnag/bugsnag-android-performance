@@ -1,10 +1,10 @@
 package com.bugsnag.mazeracer.scenarios
 
+import android.util.Log
 import com.bugsnag.android.performance.BugsnagPerformance
 import com.bugsnag.android.performance.PerformanceConfiguration
 import com.bugsnag.android.performance.internal.InternalDebug
 import com.bugsnag.mazeracer.Scenario
-
 class GenerateSpansScenario(
     config: PerformanceConfiguration,
     scenarioMetadata: String
@@ -22,6 +22,7 @@ class GenerateSpansScenario(
     }
 
     fun sendNextSpan() {
+        Log.i("GenerateSpansScenario", "sendNextSpan($spanId)")
         BugsnagPerformance.startSpan("span $spanId").end()
         spanId++
     }

@@ -363,7 +363,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private val String.width
-        get() = lineSequence().fold(0) { maxWidth, line -> kotlin.math.max(maxWidth, line.length) }
+        get() = lineSequence().maxOf { it.length }
 
     companion object {
         const val REQUEST_CODE_FINISH_ON_RETURN = 9090

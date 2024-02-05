@@ -45,23 +45,31 @@ Feature: Server responses
     Then the trace payload field "resourceSpans.0.scopeSpans.0.spans.0.name" equals "span 2"
 
   Scenario: No P update: fail-retriable, fail-permanent, success
-    Given I set the HTTP status code for the next request to 200
-    And I load scenario "GenerateSpansScenario"
+    When I load scenario "GenerateSpansScenario"
     And I wait to receive a sampling request
     # 500 - Server error (retry) but still recorded by MazeRunner
-    Given I set the HTTP status code for the next request to 500
-    Then I invoke "sendNextSpan"
-    And I wait to receive 2 traces
-    Then the trace payload field "resourceSpans.0.scopeSpans.0.spans.0.name" equals "span 1"
-    And I discard the oldest trace
+    * I set the HTTP status code for the next requests to 500,500
+    * I invoke "sendNextSpan" for "span 1 - fail/retry"
+    # Failure & Retry
+    * I wait to receive 2 traces
+    * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0.name" equals "span 1"
+    * I discard the oldest trace
+    * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0.name" equals "span 1"
+    * I discard the oldest trace
     # 400 - Retry, payload rejected (no retry)
-    Then the trace payload field "resourceSpans.0.scopeSpans.0.spans.0.name" equals "span 1"
-    And I discard the oldest trace
+    * I set the HTTP status code for the next requests to 400,200
+    * I invoke "sendNextSpan" for "span 2 - fail/no retry"
+    * I wait to receive 2 traces
+    * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0.name" equals "span 2"
+    * I discard the oldest trace
+    # Retry again of the earlier 500 failure
+    * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0.name" equals "span 1"
+    * I discard the oldest trace
     # 200 - Payload accepted
-    Given I set the HTTP status code for the next request to 200
-    Then I invoke "sendNextSpan"
-    And I wait to receive 1 trace
-    Then the trace payload field "resourceSpans.0.scopeSpans.0.spans.0.name" equals "span 2"
+    * I set the HTTP status code for the next request to 200
+    * I invoke "sendNextSpan" for "span 3 - success"
+    * I wait to receive 1 trace
+    * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0.name" equals "span 3"
 
   Scenario: No P update: fail-retriable, success, fail-permanent
     Given I set the HTTP status code for the next request to 200
