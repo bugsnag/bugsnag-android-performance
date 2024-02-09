@@ -37,6 +37,10 @@ When('I invoke {string}') do |function|
   execute_command 'invoke', function
 end
 
+When('I invoke {string} for {string}') do |function, metadata|
+  execute_command 'invoke', function, metadata
+end
+
 Then("the {string} span field {string} is stored as the value {string}") do |span_name, field, key|
   spans = spans_from_request_list(Maze::Server.list_for('traces'))
   named_spans = spans.select { |s| s['name'].eql?(span_name) }
