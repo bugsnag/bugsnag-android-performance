@@ -27,6 +27,7 @@ const val CONFIG_FILE_TIMEOUT = 5000
 
 class MainActivity : AppCompatActivity() {
     private val apiKeyKey = "BUGSNAG_API_KEY"
+    private val commandUUIDKey = "MAZE_COMMAND_UUID"
     private val mainHandler = Handler(Looper.getMainLooper())
 
     lateinit var prefs: SharedPreferences
@@ -156,9 +157,7 @@ class MainActivity : AppCompatActivity() {
         // Get the next maze runner command
         polling = true
         thread(start = true) {
-            if (mazeAddress == null) setMazeRunnerAddress()
-            checkNetwork()
-            startBugsnag()
+            setupCommandRunner()
             @Suppress("LoopWithTooManyJumpStatements")
             while (polling) {
                 Thread.sleep(1000)
@@ -177,53 +176,61 @@ class MainActivity : AppCompatActivity() {
                     val action = command.getString("action")
 
                     if (action == "noop") {
-                        log("noop - doing nothing and looping around for another poll()")
+                        lastCommandUuid = null
+                        clearStoredCommandUUID()
+                        log("noop - clearing command uuid, doing nothing and looping around for another poll()")
                         // immediately loop around
                         continue
                     }
 
-                    val scenarioName = command.getString("scenario_name")
-                    val scenarioMetadata = command.getString("scenario_metadata")
-                    val endpointUrl = command.getString("endpoint")
-                    val uuid = command.getString("uuid")
-                    log("command.action: $action")
-                    log("command.scenarioName: $scenarioName")
-                    log("command.scenarioMode: $scenarioMetadata")
-                    log("command.endpoint: $endpointUrl")
-                    log("command.uuid: $uuid")
-
-                    // Keep track of the current command
-                    this.lastCommandUuid = uuid
-
-                    mainHandler.post {
-                        // Display some feedback of the action being run on he UI
-                        val actionField = findViewById<EditText>(R.id.command_action)
-                        val scenarioField = findViewById<EditText>(R.id.command_scenario)
-                        actionField.setText(action)
-                        scenarioField.setText(scenarioName)
-
-                        // Perform the given action on the UI thread
-                        when (action) {
-                            "run_scenario" -> {
-                                polling = false
-                                runScenario(scenarioName, scenarioMetadata, endpointUrl)
-                            }
-
-                            "load_scenario" -> {
-                                scenario = loadScenario(scenarioName, scenarioMetadata, endpointUrl)
-                            }
-
-                            "invoke" -> {
-                                log("invoke: $scenarioName")
-                                scenario!!::class.java.getMethod(scenarioName).invoke(scenario)
-                            }
-
-                            else -> throw IllegalArgumentException("Unknown action: $action")
-                        }
-                    }
+                    executeCommand(command)
                 } catch (e: Exception) {
                     log("Failed to fetch command from Maze Runner", e)
                 }
+            }
+        }
+    }
+
+    private fun executeCommand(command: JSONObject) {
+        val action = command.getString("action")
+        val scenarioName = command.getString("scenario_name")
+        val scenarioMetadata = command.getString("scenario_metadata")
+        val endpointUrl = command.getString("endpoint")
+        val uuid = command.getString("uuid")
+        log("command.action: $action")
+        log("command.scenarioName: $scenarioName")
+        log("command.scenarioMode: $scenarioMetadata")
+        log("command.endpoint: $endpointUrl")
+        log("command.uuid: $uuid")
+
+        // Keep track of the current command
+        this.lastCommandUuid = uuid
+        setStoredCommandUUID(uuid)
+
+        mainHandler.post {
+            // Display some feedback of the action being run on he UI
+            val actionField = findViewById<EditText>(R.id.command_action)
+            val scenarioField = findViewById<EditText>(R.id.command_scenario)
+            actionField.setText(action)
+            scenarioField.setText(scenarioName)
+
+            // Perform the given action on the UI thread
+            when (action) {
+                "run_scenario" -> {
+                    polling = false
+                    runScenario(scenarioName, scenarioMetadata, endpointUrl)
+                }
+
+                "load_scenario" -> {
+                    scenario = loadScenario(scenarioName, scenarioMetadata, endpointUrl)
+                }
+
+                "invoke" -> {
+                    log("invoke: $scenarioName")
+                    scenario!!::class.java.getMethod(scenarioName).invoke(scenario)
+                }
+
+                else -> throw IllegalArgumentException("Unknown action: $action")
             }
         }
     }
@@ -326,8 +333,37 @@ class MainActivity : AppCompatActivity() {
 
     private fun getStoredApiKey() = prefs.getString(apiKeyKey, "")
 
+    private fun commandUUIDStored() = prefs.contains(commandUUIDKey)
+
+    private fun setStoredCommandUUID(commandUUID: String) {
+        with(prefs.edit()) {
+            putString(commandUUIDKey, commandUUID)
+            commit()
+        }
+    }
+
+    private fun clearStoredCommandUUID() {
+        with(prefs.edit()) {
+            remove(commandUUIDKey)
+            commit()
+        }
+    }
+
+    private fun getStoredCommandUUID() = prefs.getString(commandUUIDKey, "")
+
+    private fun setupCommandRunner() {
+        if (mazeAddress == null) setMazeRunnerAddress()
+        if (commandUUIDStored()) {
+            log("Using stored command UUID")
+            lastCommandUuid = getStoredCommandUUID()
+            clearStoredCommandUUID()
+        }
+        checkNetwork()
+        startBugsnag()
+    }
+
     private val String.width
-        get() = lineSequence().fold(0) { maxWidth, line -> kotlin.math.max(maxWidth, line.length) }
+        get() = lineSequence().maxOf { it.length }
 
     companion object {
         const val REQUEST_CODE_FINISH_ON_RETURN = 9090

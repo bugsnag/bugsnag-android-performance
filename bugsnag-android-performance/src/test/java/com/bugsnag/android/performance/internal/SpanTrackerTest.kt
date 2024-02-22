@@ -9,6 +9,7 @@ import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertSame
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
@@ -117,7 +118,93 @@ class SpanTrackerTest {
         assertNull(tracker["TestActivity"])
     }
 
+    @Test
+    fun testDenseTrackedSpans() {
+        val tokens = Array(16) { Any() }
+        val tracker = SpanTracker()
+        val trackedSpans = populateDenseSpanTracker(tokens, tracker)
+
+        assertTrackerSpans(tracker, trackedSpans)
+    }
+
+    @Test
+    fun testRemoveAssociation() {
+        val tokens = Array(16) { Any() }
+        val tracker = SpanTracker()
+        val trackedSpans = populateDenseSpanTracker(tokens, tracker)
+
+        tracker.removeAssociation(tokens[5])
+        tracker.removeAssociation(tokens[6], ViewLoadPhase.RESUME)
+
+        trackedSpans.keys.removeAll { (token, _) -> token === tokens[5] }
+        trackedSpans.keys.remove(tokens[6] to ViewLoadPhase.RESUME)
+
+        assertTrackerSpans(tracker, trackedSpans)
+    }
+
+    @Test
+    fun testEndAllSpans() {
+        val tokens = Array(16) { Any() }
+        val tracker = SpanTracker()
+        val trackedSpans = populateDenseSpanTracker(tokens, tracker)
+
+        val endedToken = tokens[3] // it doesn't really matter which we choose
+        tracker.endAllSpans(endedToken, 1234L)
+
+        val rootSpan = trackedSpans.remove(endedToken to null)!!
+        assertTrue(rootSpan.isEnded())
+        assertEquals(1234L, rootSpan.endTime)
+        assertNull(tracker[endedToken])
+
+        ViewLoadPhase.values().forEach { phase ->
+            val span = trackedSpans.remove(endedToken to phase)!!
+            assertTrue(span.isEnded())
+            assertEquals(1234L, span.endTime)
+            assertNull(tracker[endedToken, phase])
+        }
+
+        assertTrackerSpans(tracker, trackedSpans)
+    }
+
+    private fun createSpan(name: String): SpanImpl {
+        return spanFactory.newSpan(name, processor = NoopSpanProcessor, endTime = null)
+    }
+
     private fun createSpan(): SpanImpl {
         return spanFactory.newSpan(processor = NoopSpanProcessor, endTime = null)
+    }
+
+    private fun assertTrackerSpans(
+        tracker: SpanTracker,
+        expectedSpans: Map<Pair<Any, ViewLoadPhase?>, SpanImpl>,
+    ) {
+        expectedSpans.entries.forEach { entry ->
+            val (token, subToken) = entry.key
+            assertSame(entry.value, tracker[token, subToken])
+        }
+    }
+
+    private fun populateDenseSpanTracker(
+        tokens: Array<out Any>,
+        tracker: SpanTracker,
+    ): MutableMap<Pair<Any, ViewLoadPhase?>, SpanImpl> {
+        val spans = HashMap<Pair<Any, ViewLoadPhase?>, SpanImpl>()
+
+        tokens.forEach { token ->
+            val rootTokenSpan = createSpan(token.toString())
+            assertSame(rootTokenSpan, tracker.associate(token, null, rootTokenSpan))
+            spans[token to null] = rootTokenSpan
+
+            ViewLoadPhase.values().forEach { phase ->
+                val span = createSpan("$token/$phase")
+                val boundSpan = tracker.associate(token, phase, span)
+
+                assertSame(span, boundSpan)
+
+                spans[token to phase] = span
+            }
+        }
+
+        return spans
     }
 }

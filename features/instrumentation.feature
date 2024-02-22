@@ -41,6 +41,7 @@ Feature: Automatic creation of spans
       | bugsnag.view.type     | stringValue | fragment       |
       | bugsnag.view.name     | stringValue | LoaderFragment |
 
+
   @skip_below_android_10
   Scenario: AppStart instrumentation
     Given I run "AppStartScenario"
