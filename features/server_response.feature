@@ -63,7 +63,7 @@ Feature: Server responses
     * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0.name" equals "span 2"
     * I discard the oldest trace
     # Retry again of the earlier 500 failure
-    * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0.name" equals "span 1"
+    * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0.name" equals "span 2"
     * I discard the oldest trace
     # 200 - Payload accepted
     * I set the HTTP status code for the next request to 200
