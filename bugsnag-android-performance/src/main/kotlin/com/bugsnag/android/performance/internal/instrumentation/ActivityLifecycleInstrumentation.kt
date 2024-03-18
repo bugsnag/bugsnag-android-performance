@@ -118,10 +118,7 @@ internal abstract class AbstractActivityLifecycleInstrumentation(
         onViewLoadLeak(activity)
     }
 
-    override fun onActivityStopped(activity: Activity) {
-        onViewLoadLeak(activity)
-    }
-
+    override fun onActivityStopped(activity: Activity)= Unit
     override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) = Unit
     override fun onActivityStarted(activity: Activity) = Unit
     override fun onActivityResumed(activity: Activity) = Unit
