@@ -1,3 +1,10 @@
+## TBD
+
+### Bug fixes
+
+* Remove leak mark when the Activity is on stopped since Auto-instrumented spans should only be considered “leaked” when the Activity is destroyed.
+  [#210](https://github.com/bugsnag/bugsnag-android-performance/pull/210)
+
 ## 1.2.2 (2024-02-22)
 
 ### Bug fixes
