@@ -62,9 +62,8 @@ public class SpanImpl internal constructor(
     @FloatRange(from = 0.0, to = 1.0)
     internal var samplingProbability: Double = 1.0
         internal set(value) {
-            require(field in 0.0..1.0) { "samplingProbability out of range (0..1): $value" }
-            field = value
-            attributes["bugsnag.sampling.p"] = value
+            field = value.coerceIn(0.0, 1.0)
+            attributes["bugsnag.sampling.p"] = field
         }
 
     init {
@@ -151,7 +150,6 @@ public class SpanImpl internal constructor(
 
         if (traceId != other.traceId) return false
         if (spanId != other.spanId) return false
-        @Suppress("RedundantIf")
         if (parentSpanId != other.parentSpanId) return false
 
         return true

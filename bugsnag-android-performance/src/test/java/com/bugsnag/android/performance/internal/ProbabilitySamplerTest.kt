@@ -145,4 +145,34 @@ class ProbabilitySamplerTest {
         val sampled = sampler.sampled(batch)
         assertEquals(3, sampled.size)
     }
+
+    @Test
+    fun testSpanReducedProbability() {
+        val sampler = ProbabilitySampler(0.25)
+        val span = spanFactory.newSpan(
+            processor = spanProcessor,
+            traceId = uuidWithUpper(0),
+        )
+
+        span.samplingProbability = 1.0
+
+        // when the sampler has lower probability, the span samplingProbability should be reduced
+        assertTrue(sampler.shouldKeepSpan(span))
+        assertEquals(0.25, span.samplingProbability, 0.001)
+    }
+
+    @Test
+    fun testSpanIncreaseProbability() {
+        val sampler = ProbabilitySampler(1.0)
+        val span = spanFactory.newSpan(
+            processor = spanProcessor,
+            traceId = uuidWithUpper(0),
+        )
+
+        // when the sampler has higher probability, the span samplingProbability should stay the same
+        span.samplingProbability = 0.4
+
+        assertTrue(sampler.shouldKeepSpan(span))
+        assertEquals(0.4, span.samplingProbability, 0.01)
+    }
 }
