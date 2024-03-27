@@ -3,13 +3,13 @@ steps:
   - label: ':android: Coding standards checks'
     timeout_in_minutes: 20
     agents:
-      queue: macos-12-arm
+      queue: macos-14
     command: './gradlew --continue license detekt lint ktlintCheck'
 
   - label: ':android: JVM tests'
     timeout_in_minutes: 10
     agents:
-      queue: macos-12-arm
+      queue: macos-14
     command: './gradlew test'
     plugins:
       artifacts#v1.9.0:
@@ -19,7 +19,7 @@ steps:
   - label: ':android: Lint test scenarios'
     timeout_in_minutes: 10
     agents:
-      queue: macos-12-arm
+      queue: macos-14
     commands:
       - cd features/fixtures/mazeracer
       - ./gradlew ktlintCheck detekt
@@ -27,14 +27,14 @@ steps:
   - label: ':android: Android size reporting'
     timeout_in_minutes: 10
     agents:
-      queue: macos-12-arm
+      queue: macos-14
     command: scripts/run-sizer.sh
 
   - label: ':android: Build and upload test fixture'
     key: 'fixture'
     timeout_in_minutes: 30
     agents:
-      queue: macos-12-arm
+      queue: macos-14
     artifact_paths:
       - "build/fixture_url.txt"
     commands:
