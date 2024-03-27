@@ -59,12 +59,16 @@ public class SpanImpl internal constructor(
 
     internal val samplingValue: Double
 
-    @FloatRange(from = 0.0, to = 1.0)
+    @get:FloatRange(from = 0.0, to = 1.0)
     internal var samplingProbability: Double = 1.0
-        internal set(value) {
+        set(@FloatRange(from = 0.0, to = 1.0) value) {
             field = value.coerceIn(0.0, 1.0)
             attributes["bugsnag.sampling.p"] = field
         }
+
+    init {
+        samplingProbability = 1.0
+    }
 
     init {
         category.category?.let { attributes["bugsnag.span.category"] = it }
