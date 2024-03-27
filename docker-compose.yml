@@ -44,7 +44,6 @@ services:
       <<: *common-environment
       BITBAR_USERNAME:
       BITBAR_ACCESS_KEY:
-      TRACE: "true"
     ports:
       - "9000-9499:9339"
     volumes:
