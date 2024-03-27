@@ -53,6 +53,10 @@ class SpanJsonTest {
                     "parentSpanId": "000000000000007b",
                     "attributes": [
                         {
+                            "key": "bugsnag.sampling.p",
+                            "value": { "doubleValue": 1.0 }
+                        },
+                        {
                             "key": "fps.average",
                             "value": { "doubleValue": 61.9 }
                         },
