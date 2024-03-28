@@ -17,6 +17,7 @@ def execute_command(action, scenario_name = '', scenario_metadata = '')
     scenario_name: scenario_name,
     scenario_metadata: scenario_metadata,
     endpoint: "http://#{address}/traces",
+    index: Maze::Server.commands.size.to_s
   }
   Maze::Server.commands.add command
 end
