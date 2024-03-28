@@ -206,7 +206,7 @@ class MainActivity : AppCompatActivity() {
         log("command.index: $index")
 
         // If this is the first command issued from this scenario, clear the cache
-        if (index?.equals("0")) {
+        if (index.equals("0")) {
             log("Clearing scenario cache")
             File(cacheDir, "bugsnag-performance").deleteRecursively()
         }
