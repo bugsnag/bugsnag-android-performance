@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Bundle
 import androidx.annotation.VisibleForTesting
+import java.util.regex.Pattern
 
 public class PerformanceConfiguration private constructor(public val context: Context) {
 
@@ -48,6 +49,8 @@ public class PerformanceConfiguration private constructor(public val context: Co
      */
     public var networkRequestCallback: NetworkRequestInstrumentationCallback? = null
 
+    public var tracePropagationUrls: Collection<Pattern> = HashSet()
+
     override fun toString(): String =
         "PerformanceConfiguration(" +
                 "context=$context, " +
@@ -61,6 +64,7 @@ public class PerformanceConfiguration private constructor(public val context: Co
                 "enabledReleaseStages=$enabledReleaseStages " +
                 "doNotEndAppStart=$doNotEndAppStart " +
                 "doNotAutoInstrument=$doNotAutoInstrument " +
+                "tracePropagationUrls=$tracePropagationUrls " +
                 ")"
 
     public companion object Loader {
