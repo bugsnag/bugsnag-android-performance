@@ -166,6 +166,9 @@ public class SpanImpl internal constructor(
         return result
     }
 
+    public fun isSampled(): Boolean =
+        samplingProbability > 0.0 && samplingValue <= samplingProbability
+
     public companion object {
         private val END_TIME_UPDATER =
             AtomicLongFieldUpdater.newUpdater(SpanImpl::class.java, "endTime")
