@@ -167,7 +167,7 @@ public class SpanImpl internal constructor(
     }
 
     public fun isSampled(): Boolean =
-        samplingProbability > 0.0 && samplingValue <= samplingProbability
+        samplingValue <= samplingProbability
 
     public companion object {
         private val END_TIME_UPDATER =
