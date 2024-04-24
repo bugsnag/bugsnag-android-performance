@@ -83,4 +83,12 @@ public class BugsnagPerformanceOkhttp : EventListener() {
         // remove the span and discard
         (spans.remove(call) as? SpanImpl)?.discard()
     }
+
+    public fun buildTraceparentHeader(
+        traceId: String,
+        parentSpanId: String,
+        sampled: Boolean,
+    ): String {
+        return "00-$traceId-$parentSpanId-${if (sampled) "01" else "00"}"
+    }
 }
