@@ -171,6 +171,7 @@ public object BugsnagPerformance {
     private fun loadModules() {
         val moduleLoader = Module.Loader(instrumentedAppState)
         moduleLoader.loadModule("com.bugsnag.android.performance.AppCompatModule")
+        moduleLoader.loadModule("com.bugsnag.android.performance.okhttp.OkhttpModule")
     }
 
     /**
