@@ -9,6 +9,7 @@ import com.bugsnag.android.performance.SpanContext
 import com.bugsnag.android.performance.SpanKind
 import com.bugsnag.android.performance.SpanOptions
 import com.bugsnag.android.performance.ViewType
+import com.bugsnag.android.performance.internal.integration.NotifierIntegration
 import java.util.UUID
 
 internal typealias AttributeSource = (target: HasAttributes) -> Unit
@@ -187,6 +188,8 @@ public class SpanFactory(
         )
 
         spanAttributeSource(span)
+
+        NotifierIntegration.onSpanStarted(span)
 
         return span
     }
