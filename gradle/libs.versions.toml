@@ -33,6 +33,8 @@ androidx-compose-ui-test-manifest = { module = "androidx.compose.ui:ui-test-mani
 androidx-test-runner = "androidx.test:runner:1.5.2"
 androidx-test-junit = "androidx.test.ext:junit:1.1.3"
 
+bugsnag-android = "com.bugsnag:bugsnag-android-core:6.6.0"
+
 jsonSchemaFriend = "net.jimblackler.jsonschemafriend:core:0.11.4"
 
 junit = "junit:junit:4.13.2"

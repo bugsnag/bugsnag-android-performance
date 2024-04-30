@@ -9,6 +9,7 @@ import com.bugsnag.android.performance.HasAttributes
 import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.SpanContext
 import com.bugsnag.android.performance.SpanKind
+import com.bugsnag.android.performance.internal.integration.NotifierIntegration
 import java.security.SecureRandom
 import java.util.Random
 import java.util.UUID
@@ -79,6 +80,7 @@ public class SpanImpl internal constructor(
     override fun end(endTime: Long) {
         if (this.endTime.compareAndSet(NO_END_TIME, endTime)) {
             processor.onEnd(this)
+            NotifierIntegration.onSpanEnded(this)
             if (makeContext) SpanContext.detach(this)
         }
     }
@@ -89,6 +91,7 @@ public class SpanImpl internal constructor(
      */
     public fun discard() {
         if (endTime.compareAndSet(NO_END_TIME, DISCARDED)) {
+            NotifierIntegration.onSpanEnded(this)
             if (makeContext) SpanContext.detach(this)
         }
     }
