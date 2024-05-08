@@ -15,6 +15,5 @@ internal class OkhttpModule : Module {
 
     internal companion object {
         var tracePropagationUrls: Collection<Pattern> = emptyList()
-            private set
     }
 }
