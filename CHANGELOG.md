@@ -1,5 +1,10 @@
 ## TBD
 
+### Enhancements
+
+* Update the `bugsnag-plugin-android-performance-okhttp` module to optionally carry the current `SpanContext` as an OpenTelemetry `traceparent` header in outgoing HTTP requests.
+  [#221](https://github.com/bugsnag/bugsnag-android-performance/pull/221)
+
 ### Bug fixes
 
 * Remove leak mark when the Activity is on stopped since Auto-instrumented spans should only be considered “leaked” when the Activity is destroyed.
