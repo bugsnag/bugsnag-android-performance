@@ -3,16 +3,23 @@ package com.bugsnag.android.performance.okhttp
 import com.bugsnag.android.performance.BugsnagPerformance
 import com.bugsnag.android.performance.NetworkRequestAttributes
 import com.bugsnag.android.performance.Span
+import com.bugsnag.android.performance.SpanContext
 import com.bugsnag.android.performance.SpanOptions
 import com.bugsnag.android.performance.internal.SpanImpl
+import com.bugsnag.android.performance.internal.appendHexLong
+import com.bugsnag.android.performance.internal.appendHexUUID
+import com.bugsnag.android.performance.okhttp.OkhttpModule.Companion.tracePropagationUrls
 import okhttp3.Call
 import okhttp3.EventListener
+import okhttp3.Interceptor
+import okhttp3.OkHttpClient
 import okhttp3.Protocol
 import okhttp3.Response
 import java.io.IOException
+import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 
-public class BugsnagPerformanceOkhttp : EventListener() {
+public class BugsnagPerformanceOkhttp : EventListener(), Interceptor {
     public companion object EventListenerFactory : EventListener.Factory {
         override fun create(call: Call): EventListener {
             return BugsnagPerformanceOkhttp()
@@ -84,11 +91,47 @@ public class BugsnagPerformanceOkhttp : EventListener() {
         (spans.remove(call) as? SpanImpl)?.discard()
     }
 
-    public fun buildTraceparentHeader(
-        traceId: String,
-        parentSpanId: String,
+    private fun buildTraceParentHeader(
+        traceId: UUID,
+        parentSpanId: Long,
         sampled: Boolean,
     ): String {
-        return "00-$traceId-$parentSpanId-${if (sampled) "01" else "00"}"
+        return buildString {
+            append("00-")
+            appendHexUUID(traceId)
+            append('-')
+            appendHexLong(parentSpanId)
+            append('-')
+            append(if (sampled) "01" else "00")
+        }
     }
+
+    override fun intercept(chain: Interceptor.Chain): Response {
+        val spanContext: SpanContext? = spans[chain.call()]
+            ?: SpanContext.current.takeUnless { it == SpanContext.invalid }
+        val url = chain.request().url.toString()
+        if (spanContext == null || !tracePropagationUrls.any { it.matcher(url).matches() }) {
+            return chain.proceed(chain.request())
+        }
+        return chain.proceed(
+            chain.request()
+                .newBuilder()
+                .header(
+                    "traceparent",
+                    buildTraceParentHeader(
+                        spanContext.traceId,
+                        spanContext.spanId,
+                        (spanContext as? SpanImpl)?.isSampled() != false,
+                    ),
+                )
+                .build(),
+        )
+    }
+
+}
+
+public fun OkHttpClient.Builder.withBugsnagPerformance(): OkHttpClient.Builder {
+    val performanceInstrumentation = BugsnagPerformanceOkhttp()
+    return eventListener(performanceInstrumentation)
+        .addInterceptor(performanceInstrumentation)
 }
