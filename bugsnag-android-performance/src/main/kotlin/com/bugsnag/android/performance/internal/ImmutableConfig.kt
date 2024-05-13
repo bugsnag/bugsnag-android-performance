@@ -8,6 +8,7 @@ import com.bugsnag.android.performance.AutoInstrument
 import com.bugsnag.android.performance.Logger
 import com.bugsnag.android.performance.NetworkRequestInstrumentationCallback
 import com.bugsnag.android.performance.PerformanceConfiguration
+import java.util.regex.Pattern
 
 internal data class ImmutableConfig(
     val application: Application,
@@ -21,9 +22,10 @@ internal data class ImmutableConfig(
     val versionCode: Long?,
     val appVersion: String?,
     val logger: Logger,
-    var networkRequestCallback: NetworkRequestInstrumentationCallback?,
-    var doNotEndAppStart: Collection<Class<out Activity>>,
-    var doNotAutoInstrument: Collection<Class<*>>,
+    val networkRequestCallback: NetworkRequestInstrumentationCallback?,
+    val doNotEndAppStart: Collection<Class<out Activity>>,
+    val doNotAutoInstrument: Collection<Class<*>>,
+    val tracePropagationUrls: Collection<Pattern>,
 ) {
     val isReleaseStageEnabled =
         enabledReleaseStages == null || enabledReleaseStages.contains(releaseStage)
@@ -45,6 +47,7 @@ internal data class ImmutableConfig(
         configuration.networkRequestCallback,
         configuration.doNotEndAppStart,
         configuration.doNotAutoInstrument,
+        configuration.tracePropagationUrls.toSet(),
     )
 
     companion object {

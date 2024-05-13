@@ -69,6 +69,9 @@ dependencies {
     testImplementation(libs.kotlin.reflect)
     testImplementation(libs.jsonSchemaFriend)
     testImplementation(libs.okhttp.mockServer)
+    testImplementation("com.squareup.okhttp3:mockwebserver:4.9.1") {
+        exclude(group = "org.jetbrains.kotlin")
+    }
 }
 
 license {
