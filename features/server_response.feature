@@ -13,11 +13,13 @@ Feature: Server responses
     And I wait to receive 1 trace
     Then the trace payload field "resourceSpans.0.scopeSpans.0.spans.0.name" equals "span 1"
     Then I discard the oldest trace
+    # 400 - Payload rejected
     Given I set the HTTP status code for the next request to 400
     Then I invoke "sendNextSpan"
     And I wait to receive 1 trace
     Then the trace payload field "resourceSpans.0.scopeSpans.0.spans.0.name" equals "span 2"
     Then I discard the oldest trace
+    # 500 - Payload rejected (retry)
     Given I set the HTTP status code for the next requests to 500,200
     Then I invoke "sendNextSpan"
     And I wait to receive 2 traces
@@ -54,14 +56,19 @@ Feature: Server responses
     And I wait to receive 2 traces
     Then the trace payload field "resourceSpans.0.scopeSpans.0.spans.0.name" equals "span 1"
     And I discard the oldest trace
-    # 200 - Payload accepted
     Then the trace payload field "resourceSpans.0.scopeSpans.0.spans.0.name" equals "span 1"
+    And I discard the oldest trace
+    # 200 - Payload accepted
+    Given I set the HTTP status code for the next request to 200
+    Then I invoke "sendNextSpan"
+    And I wait to receive 1 trace
+    Then the trace payload field "resourceSpans.0.scopeSpans.0.spans.0.name" equals "span 2"
     And I discard the oldest trace
     # 400 - Payload rejected
     Given I set the HTTP status code for the next request to 400
     Then I invoke "sendNextSpan"
     And I wait to receive 1 trace
-    Then the trace payload field "resourceSpans.0.scopeSpans.0.spans.0.name" equals "span 2"
+    Then the trace payload field "resourceSpans.0.scopeSpans.0.spans.0.name" equals "span 3"
 
   Scenario: No P update: fail-permanent, fail-retriable, success
     Given I set the HTTP status code for the next requests to 200,400
