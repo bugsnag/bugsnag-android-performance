@@ -25,14 +25,14 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            allButtons(network = network, context = this)
+            AllButtons(network = network, context = this)
 
         }
     }
 }
 
 @Composable
-fun allButtons(network: ExampleNetworkCalls, context: Context) {
+fun AllButtons(network: ExampleNetworkCalls, context: Context) {
     Column {
         Button(
             onClick = {

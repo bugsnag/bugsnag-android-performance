@@ -1,93 +1,59 @@
 package com.example.bugsnag.performance
 
+import android.app.Activity
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
-import android.view.View
-import android.widget.Button
-import android.widget.ProgressBar
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import com.bugsnag.android.performance.BugsnagPerformance
+import kotlinx.coroutines.delay
 
 class LoadingActivity : AppCompatActivity() {
 
-    private lateinit var close: Button
-    private lateinit var progressBar: ProgressBar
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-//        setContent {
-//             loading()
-//        }
-
-        setContentView(R.layout.activity_loading)
-
-        close = findViewById(R.id.close)
-        close.setOnClickListener {
-            finish()
+        setContent {
+            LoadingScreen()
         }
-
-        progressBar = findViewById(R.id.progress_bar)
-
-        Thread.sleep(200L)
     }
 
     override fun onStart() {
         super.onStart()
         Thread.sleep(150L)
     }
-
-    override fun onResume() {
-        val secondaryLoadSpan = BugsnagPerformance.startSpan("SecondaryLoad")
-
-        Handler(Looper.getMainLooper()).postDelayed(
-            {
-                progressBar.visibility = View.GONE
-                close.visibility = View.VISIBLE
-
-                secondaryLoadSpan.end()
-            },
-            500L,
-        )
-
-        super.onResume()
-    }
 }
 
-//@OptIn(ExperimentalMaterial3Api::class)
-//@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-//@Preview
-//@Composable
-//fun loading() {
-//    val context = LocalContext.current as Activity
-//
-//    LaunchedEffect(Unit) {
-//        delay(200L)
-//        context.finish()
-//    }
-//
-//    Scaffold(
-//        topBar = {
-//            TopAppBar(
-//                title = { Text("Loading...") },
-//                navigationIcon = {
-//                    IconButton(onClick = {
-//                        context.finish()
-//                    }) {
-//                        Icon(Icons.Filled.Close, contentDescription = "Close")
-//                    }
-//                }
-//            )
-//        },
-//
-//        ) {
-//        Box(
-//            modifier = Modifier.fillMaxSize(),
-//            contentAlignment = Alignment.Center
-//        ) {
-//            CircularProgressIndicator()
-//        }
-//    }
-//
-//}
+@Composable
+fun LoadingScreen() {
+    val context = LocalContext.current as Activity
+    val visibility = remember { mutableStateOf(true) }
+
+    LaunchedEffect(Unit) {
+        val secondaryLoadSpan = BugsnagPerformance.startSpan("SecondaryLoad")
+        delay(500L)
+        visibility.value = false
+        secondaryLoadSpan.end()
+    }
+
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        if (visibility.value) {
+            CircularProgressIndicator()
+        } else {
+            Button(onClick = { context.finish() }) {
+                Text(text = "Close")
+
+            }
+        }
+    }
+}
