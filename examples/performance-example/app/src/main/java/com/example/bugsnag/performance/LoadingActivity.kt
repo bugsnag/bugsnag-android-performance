@@ -11,12 +11,14 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import com.bugsnag.android.performance.BugsnagPerformance
+import com.bugsnag.android.performance.measureSpan
 import kotlinx.coroutines.delay
 
 class LoadingActivity : AppCompatActivity() {
@@ -37,17 +39,18 @@ class LoadingActivity : AppCompatActivity() {
 @Composable
 fun LoadingScreen() {
     val context = LocalContext.current as Activity
-    val visibility = remember { mutableStateOf(true) }
+    var visibility by remember { mutableStateOf(true) }
 
     LaunchedEffect(Unit) {
-        val secondaryLoadSpan = BugsnagPerformance.startSpan("SecondaryLoad")
-        delay(500L)
-        visibility.value = false
-        secondaryLoadSpan.end()
+        measureSpan("SecondaryLoad") {
+            // simulate doing some work
+            delay(500L)
+        }
+        visibility = false
     }
 
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        if (visibility.value) {
+        if (visibility) {
             CircularProgressIndicator()
         } else {
             Button(onClick = { context.finish() }) {
