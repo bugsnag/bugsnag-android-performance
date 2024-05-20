@@ -29,7 +29,11 @@ internal class ProbabilitySampler(
     // Side effect: Sets span.samplingProbability to the current probability
     override fun shouldKeepSpan(span: SpanImpl): Boolean {
         val upperBound = sampleProbability
-        span.samplingProbability = upperBound
+        // only change the span samplingProbability if the new probability is lower
+        if (upperBound < span.samplingProbability) {
+            span.samplingProbability = upperBound
+        }
+
         return upperBound > 0.0 && span.samplingValue <= upperBound
     }
 }

@@ -11,6 +11,7 @@ import com.bugsnag.android.performance.internal.instrumentation.ForegroundState
 import com.bugsnag.android.performance.internal.instrumentation.LegacyActivityInstrumentation
 import com.bugsnag.android.performance.internal.processing.ForwardingSpanProcessor
 import com.bugsnag.android.performance.internal.processing.Tracer
+import java.util.regex.Pattern
 
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 public class InstrumentedAppState {
@@ -28,6 +29,8 @@ public class InstrumentedAppState {
     public val autoInstrumentationCache: AutoInstrumentationCache = AutoInstrumentationCache()
 
     internal val activityInstrumentation = createActivityInstrumentation()
+
+    public var tracePropagationUrls: Collection<Pattern> = emptySet()
 
     public lateinit var app: Application
         private set
@@ -59,6 +62,8 @@ public class InstrumentedAppState {
         spanProcessor = tracer
         spanFactory.spanProcessor = tracer
         spanFactory.networkRequestCallback = configuration.networkRequestCallback
+
+        tracePropagationUrls = configuration.tracePropagationUrls
 
         if (configuration.autoInstrumentAppStarts) {
             // redirect existing spanProcessor -> new Tracer

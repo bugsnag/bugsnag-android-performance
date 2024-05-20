@@ -25,7 +25,6 @@
     <ID>MagicNumber:SpanKind.kt$SpanKind.CLIENT$3</ID>
     <ID>MagicNumber:SpanKind.kt$SpanKind.CONSUMER$5</ID>
     <ID>MagicNumber:SpanKind.kt$SpanKind.PRODUCER$4</ID>
-    <ID>NewLineAtEndOfFile:AutoInstrumentationCache.kt$com.bugsnag.android.performance.AutoInstrumentationCache.kt</ID>
     <ID>ReturnCount:RetryDeliveryTask.kt$RetryDeliveryTask$override fun execute(): Boolean</ID>
     <ID>SwallowedException:BugsnagClock.kt$BugsnagClock$ex: Exception</ID>
     <ID>SwallowedException:Connectivity.kt$ConnectivityApi24$e: Exception</ID>

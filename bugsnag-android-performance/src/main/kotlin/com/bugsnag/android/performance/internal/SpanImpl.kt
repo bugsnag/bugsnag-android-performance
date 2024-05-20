@@ -59,13 +59,16 @@ public class SpanImpl internal constructor(
 
     internal val samplingValue: Double
 
-    @FloatRange(from = 0.0, to = 1.0)
+    @get:FloatRange(from = 0.0, to = 1.0)
     internal var samplingProbability: Double = 1.0
-        internal set(value) {
-            require(field in 0.0..1.0) { "samplingProbability out of range (0..1): $value" }
-            field = value
-            attributes["bugsnag.sampling.p"] = value
+        set(@FloatRange(from = 0.0, to = 1.0) value) {
+            field = value.coerceIn(0.0, 1.0)
+            attributes["bugsnag.sampling.p"] = field
         }
+
+    init {
+        samplingProbability = 1.0
+    }
 
     init {
         category.category?.let { attributes["bugsnag.span.category"] = it }
@@ -151,7 +154,6 @@ public class SpanImpl internal constructor(
 
         if (traceId != other.traceId) return false
         if (spanId != other.spanId) return false
-        @Suppress("RedundantIf")
         if (parentSpanId != other.parentSpanId) return false
 
         return true
@@ -163,6 +165,9 @@ public class SpanImpl internal constructor(
         result = 31 * result + parentSpanId.hashCode()
         return result
     }
+
+    public fun isSampled(): Boolean =
+        samplingValue <= samplingProbability
 
     public companion object {
         private val END_TIME_UPDATER =

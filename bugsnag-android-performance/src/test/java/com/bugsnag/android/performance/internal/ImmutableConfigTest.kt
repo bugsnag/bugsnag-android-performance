@@ -20,6 +20,7 @@ import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
+import java.util.regex.Pattern
 
 class ImmutableConfigTest {
     @Before
@@ -37,6 +38,7 @@ class ImmutableConfigTest {
             autoInstrumentActivities = AutoInstrument.START_ONLY
             versionCode = 543L
             appVersion = "9.8.1"
+            tracePropagationUrls = emptySet<Pattern>()
         }
 
         val immutableConfig = ImmutableConfig(perfConfig)
@@ -50,6 +52,7 @@ class ImmutableConfigTest {
         assertEquals(perfConfig.enabledReleaseStages, immutableConfig.enabledReleaseStages)
         assertEquals(perfConfig.versionCode, immutableConfig.versionCode)
         assertEquals(perfConfig.appVersion, immutableConfig.appVersion)
+        assertEquals(perfConfig.tracePropagationUrls, immutableConfig.tracePropagationUrls)
     }
 
     @Test

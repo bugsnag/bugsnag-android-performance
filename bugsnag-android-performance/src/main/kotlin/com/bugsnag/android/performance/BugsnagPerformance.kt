@@ -31,7 +31,7 @@ import java.net.URL
  * @see [start]
  */
 public object BugsnagPerformance {
-    public const val VERSION: String = "1.2.2"
+    public const val VERSION: String = "1.3.0"
 
     internal val instrumentedAppState = InstrumentedAppState()
 
@@ -171,6 +171,7 @@ public object BugsnagPerformance {
     private fun loadModules() {
         val moduleLoader = Module.Loader(instrumentedAppState)
         moduleLoader.loadModule("com.bugsnag.android.performance.AppCompatModule")
+        moduleLoader.loadModule("com.bugsnag.android.performance.okhttp.OkhttpModule")
     }
 
     /**

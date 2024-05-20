@@ -1,51 +1,62 @@
 package com.example.bugsnag.performance
 
+import android.app.Activity
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
-import android.view.View
-import android.widget.Button
-import android.widget.ProgressBar
+import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
-import com.bugsnag.android.performance.BugsnagPerformance
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import com.bugsnag.android.performance.measureSpan
+import kotlinx.coroutines.delay
 
 class LoadingActivity : AppCompatActivity() {
 
-    private lateinit var close: Button
-    private lateinit var progressBar: ProgressBar
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_loading)
-
-        close = findViewById(R.id.close)
-        close.setOnClickListener {
-            finish()
+        setContent {
+            LoadingScreen()
         }
-
-        progressBar = findViewById(R.id.progress_bar)
-
-        Thread.sleep(200L)
     }
 
     override fun onStart() {
         super.onStart()
         Thread.sleep(150L)
     }
+}
 
-    override fun onResume() {
-        val secondaryLoadSpan = BugsnagPerformance.startSpan("SecondaryLoad")
+@Composable
+fun LoadingScreen() {
+    val context = LocalContext.current as Activity
+    var visibility by remember { mutableStateOf(true) }
 
-        Handler(Looper.getMainLooper()).postDelayed(
-            {
-                progressBar.visibility = View.GONE
-                close.visibility = View.VISIBLE
+    LaunchedEffect(Unit) {
+        measureSpan("SecondaryLoad") {
+            // simulate doing some work
+            delay(500L)
+        }
+        visibility = false
+    }
 
-                secondaryLoadSpan.end()
-            },
-            500L,
-        )
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        if (visibility) {
+            CircularProgressIndicator()
+        } else {
+            Button(onClick = { context.finish() }) {
+                Text(text = "Close")
 
-        super.onResume()
+            }
+        }
     }
 }

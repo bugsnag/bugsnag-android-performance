@@ -197,11 +197,19 @@ class MainActivity : AppCompatActivity() {
         val scenarioMetadata = command.getString("scenario_metadata")
         val endpointUrl = command.getString("endpoint")
         val uuid = command.getString("uuid")
+        val index = command.getString("index")
         log("command.action: $action")
         log("command.scenarioName: $scenarioName")
         log("command.scenarioMode: $scenarioMetadata")
         log("command.endpoint: $endpointUrl")
         log("command.uuid: $uuid")
+        log("command.index: $index")
+
+        // If this is the first command issued from this scenario, clear the cache
+        if (index.equals("0")) {
+            log("Clearing scenario cache")
+            File(cacheDir, "bugsnag-performance").deleteRecursively()
+        }
 
         // Keep track of the current command
         this.lastCommandUuid = uuid
