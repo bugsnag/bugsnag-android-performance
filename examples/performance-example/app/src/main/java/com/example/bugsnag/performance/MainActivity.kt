@@ -2,30 +2,80 @@ package com.example.bugsnag.performance
 
 import android.content.Intent
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
-import android.widget.Button
+import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
-import com.bugsnag.android.performance.BugsnagPerformance
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
+import com.bugsnag.android.performance.measureSpan
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
     private val network = ExampleNetworkCalls(this)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        setContent {
+            AllButtons(network = network)
 
-        findViewById<Button>(R.id.network_request).setOnClickListener {
-            network.runRequest()
+        }
+    }
+}
+
+@Composable
+fun AllButtons(network: ExampleNetworkCalls) {
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+
+    Column {
+        Button(
+            onClick = {
+                network.runRequest()
+            },
+            shape = RoundedCornerShape(5.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp),
+        ) {
+            Text("Network Request")
         }
 
-        findViewById<Button>(R.id.custom_span).setOnClickListener {
-            val span = BugsnagPerformance.startSpan("I am custom!")
-            Handler(Looper.getMainLooper()).postDelayed(span::end, (10L..2000L).random())
+        Button(
+            onClick = {
+                coroutineScope.launch {
+                    measureSpan("I am custom!") {
+                        delay((10L..2000L).random())
+                    }
+                }
+            },
+            shape = RoundedCornerShape(5.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp),
+        ) {
+            Text("Custom Span")
         }
 
-        findViewById<Button>(R.id.loading_activity).setOnClickListener {
-            startActivity(Intent(this, LoadingActivity::class.java))
+        Button(
+            onClick = {
+                context.startActivity(Intent(context, LoadingActivity::class.java))
+            },
+            shape = RoundedCornerShape(5.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp),
+        ) {
+            Text("Loading Activity")
         }
+
     }
 }
