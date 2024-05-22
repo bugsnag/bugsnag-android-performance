@@ -178,8 +178,8 @@ Feature: Automatic creation of spans
       # this is required here to avoid interfering with other scenarios
     * I force stop the Android app
 
-  Scenario: ViewLoad spans can be safely leaked
-    Given I run "ViewLoadLeakScenario"
+  Scenario: ViewLoad spans only appear with app start
+    Given I run "DiscardViewLoadOnStopScenario"
     And I wait to receive a trace
     Then a span named "[ViewLoad/Activity]ActivityViewLoadActivity" contains the attributes:
       | attribute             | type        | value                    |
