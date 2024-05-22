@@ -103,7 +103,7 @@ internal abstract class AbstractActivityLifecycleInstrumentation(
         }
     }
 
-    override fun onActivityDestroyed(p0: Activity) = Unit
+    override fun onActivityDestroyed(activity: Activity) = Unit
     override fun onActivityStopped(activity: Activity)= Unit
     override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) = Unit
     override fun onActivityStarted(activity: Activity) = Unit
