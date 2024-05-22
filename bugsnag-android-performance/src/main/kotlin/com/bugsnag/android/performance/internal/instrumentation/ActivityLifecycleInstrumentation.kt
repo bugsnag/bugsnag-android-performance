@@ -103,21 +103,7 @@ internal abstract class AbstractActivityLifecycleInstrumentation(
         }
     }
 
-    protected fun onViewLoadLeak(activity: Activity) {
-        startupTracker.onViewLoadComplete(SystemClock.elapsedRealtimeNanos())
-        if (spanTracker.markSpanLeaked(activity)) {
-            Logger.w(
-                "${activity::class.java.name} appears to have leaked a ViewLoad Span. " +
-                        "This is probably because BugsnagPerformance.endViewLoad was not called.",
-            )
-        }
-    }
-
-
-    override fun onActivityDestroyed(activity: Activity) {
-        onViewLoadLeak(activity)
-    }
-
+    override fun onActivityDestroyed(p0: Activity) = Unit
     override fun onActivityStopped(activity: Activity)= Unit
     override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) = Unit
     override fun onActivityStarted(activity: Activity) = Unit
@@ -189,6 +175,11 @@ internal class ActivityLifecycleInstrumentation(
     override fun onActivityPostResumed(activity: Activity) {
         endViewLoadPhase(activity, ViewLoadPhase.RESUME)
         autoEndViewLoadSpan(activity)
+    }
+
+    override fun onActivityStopped(activity: Activity) {
+        super.onActivityStopped(activity)
+        Loopers.mainHandler.post { spanTracker.discardAllSpans(activity) }
     }
 
     private fun startViewLoadPhase(activity: Activity, phase: ViewLoadPhase) {
