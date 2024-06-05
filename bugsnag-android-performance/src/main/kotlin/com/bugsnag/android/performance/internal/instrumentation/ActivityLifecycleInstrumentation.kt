@@ -66,7 +66,7 @@ internal abstract class AbstractActivityLifecycleInstrumentation(
                 spanFactory.createViewLoadSpan(activity, spanOptions) { span ->
                     // we end the AppStart span at the same timestamp as the ViewLoad span ended
                     startupTracker.onViewLoadComplete(
-                        (span as? SpanImpl)?.endTime ?: SystemClock.elapsedRealtimeNanos(),
+                        (span as? SpanImpl)?.endTime?.get() ?: SystemClock.elapsedRealtimeNanos(),
                     )
                     spanFactory.spanProcessor.onEnd(span)
                 }

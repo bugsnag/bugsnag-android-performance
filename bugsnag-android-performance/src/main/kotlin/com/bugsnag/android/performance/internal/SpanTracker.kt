@@ -6,6 +6,7 @@ import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.internal.SpanImpl.Companion.NO_END_TIME
 import java.lang.ref.ReferenceQueue
 import java.lang.ref.WeakReference
+import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.concurrent.read
 import kotlin.concurrent.write
@@ -393,7 +394,7 @@ public class SpanTracker {
 
         fun markLeaked(fallbackEndTime: Long = SystemClock.elapsedRealtimeNanos()): Boolean {
             // this span has not leaked, ignore and return
-            if (span.endTime != NO_END_TIME) {
+            if (span.endTime.get() != NO_END_TIME) {
                 return false
             }
 
