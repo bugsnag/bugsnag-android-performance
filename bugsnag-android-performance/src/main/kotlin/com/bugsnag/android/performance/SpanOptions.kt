@@ -11,7 +11,7 @@ import com.bugsnag.android.performance.SpanOptions.Companion.DEFAULTS
  *
  * New `SpanOptions` are typically based on the [DEFAULTS]:
  * ```kotlin
- * BugsnagPerformance.startSpan("LoadSuggestions", SpanOptions.DEFAULTS.startTime(actualStartTime))
+ * BugsnagPerformance.startSpan("LoadSuggestions", SpanOptions.startTime(actualStartTime))
  * ```
  *
  * @see DEFAULTS
@@ -157,12 +157,30 @@ public class SpanOptions private constructor(
         private const val OPT_MAKE_CONTEXT = 4
         private const val OPT_IS_FIRST_CLASS = 8
 
-        /**
-         * The default set of `SpanOptions` with no overrides set. Use this as a starting-point to
-         * create new `SpanOptions`
-         */
-        @JvmField
-        public val DEFAULTS: SpanOptions =
-            SpanOptions(OPT_NONE, 0, null, makeContext = true, isFirstClass = false)
+        public var DEFAULTS: SpanOptions = SpanOptions(
+            OPT_NONE,
+            0,
+            null,
+            makeContext = true,
+            isFirstClass = false,
+        )
+            internal set
+
+        @JvmName("fromStartTime")
+        @JvmStatic
+        public fun startTime(startTime: Long): SpanOptions = DEFAULTS.startTime(startTime)
+
+        @JvmName("fromParentContext")
+        @JvmStatic
+        public fun within(parentContext: SpanContext?): SpanOptions = DEFAULTS.within(parentContext)
+
+        @JvmName("fromMakeCurrentContext")
+        @JvmStatic
+        public fun makeCurrentContext(makeContext: Boolean): SpanOptions = DEFAULTS.makeCurrentContext(makeContext)
+
+        @JvmName("fromFirstClass")
+        @JvmStatic
+        public fun setFirstClass(isFirstClass: Boolean): SpanOptions = DEFAULTS.setFirstClass(isFirstClass)
+
     }
 }

@@ -34,7 +34,7 @@ public class FragmentActivityLifecycleCallbacks(
      * measure ViewLoad from PreCreate -> Resume, and use a ViewLoadPhase/FragmentCreate
      * as the context for [Fragment.onCreate] which does not interleave with other fragments.
      */
-    private val viewLoadOpts = SpanOptions.DEFAULTS.makeCurrentContext(false)
+    private val viewLoadOpts = SpanOptions.makeCurrentContext(false)
 
     override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
         if (activity !is FragmentActivity) return

@@ -139,7 +139,7 @@ public class SpanFactory(
             "[AppStart/Android$startType]",
             SpanKind.INTERNAL,
             SpanCategory.APP_START,
-            SpanOptions.DEFAULTS.within(null),
+            SpanOptions.within(null),
             spanProcessor,
         )
 
@@ -157,7 +157,7 @@ public class SpanFactory(
             "[AppStartPhase/${phase.phaseName}]",
             SpanKind.INTERNAL,
             SpanCategory.APP_START_PHASE,
-            SpanOptions.DEFAULTS.within(appStartContext),
+            SpanOptions.within(appStartContext),
             spanProcessor,
         )
 
