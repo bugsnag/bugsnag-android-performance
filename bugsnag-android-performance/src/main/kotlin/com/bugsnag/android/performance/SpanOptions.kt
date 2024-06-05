@@ -157,30 +157,31 @@ public class SpanOptions private constructor(
         private const val OPT_MAKE_CONTEXT = 4
         private const val OPT_IS_FIRST_CLASS = 8
 
-        public var DEFAULTS: SpanOptions = SpanOptions(
-            OPT_NONE,
-            0,
-            null,
-            makeContext = true,
-            isFirstClass = false,
-        )
-            internal set
+        /**
+         * The default set of `SpanOptions` with no overrides set. Use this as a starting-point to
+         * create new `SpanOptions`
+         */
+        @JvmField
+        public val DEFAULTS: SpanOptions =
+            SpanOptions(OPT_NONE, 0, null, makeContext = true, isFirstClass = false)
 
-        @JvmName("fromStartTime")
+        @JvmName("createWithStartTime")
         @JvmStatic
         public fun startTime(startTime: Long): SpanOptions = DEFAULTS.startTime(startTime)
 
-        @JvmName("fromParentContext")
+        @JvmName("createWithin")
         @JvmStatic
         public fun within(parentContext: SpanContext?): SpanOptions = DEFAULTS.within(parentContext)
 
-        @JvmName("fromMakeCurrentContext")
+        @JvmName("createAsCurrentContext")
         @JvmStatic
-        public fun makeCurrentContext(makeContext: Boolean): SpanOptions = DEFAULTS.makeCurrentContext(makeContext)
+        public fun makeCurrentContext(makeContext: Boolean): SpanOptions =
+            DEFAULTS.makeCurrentContext(makeContext)
 
-        @JvmName("fromFirstClass")
+        @JvmName("createFirstClass")
         @JvmStatic
-        public fun setFirstClass(isFirstClass: Boolean): SpanOptions = DEFAULTS.setFirstClass(isFirstClass)
+        public fun setFirstClass(isFirstClass: Boolean): SpanOptions =
+            DEFAULTS.setFirstClass(isFirstClass)
 
     }
 }
