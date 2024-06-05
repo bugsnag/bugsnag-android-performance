@@ -12,6 +12,7 @@ import com.bugsnag.android.performance.SpanKind
 import java.security.SecureRandom
 import java.util.Random
 import java.util.UUID
+import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicLongFieldUpdater
 
 @Suppress("LongParameterList")
@@ -53,9 +54,7 @@ public class SpanImpl internal constructor(
     /**
      * The time that this `Span` ended at, or [NO_END_TIME] if still open.
      */
-    @Volatile
-    internal var endTime: Long = NO_END_TIME
-        private set
+    internal val endTime: AtomicLong = AtomicLong(NO_END_TIME)
 
     internal val samplingValue: Double
 
@@ -79,7 +78,7 @@ public class SpanImpl internal constructor(
     }
 
     override fun end(endTime: Long) {
-        if (END_TIME_UPDATER.compareAndSet(this, NO_END_TIME, endTime)) {
+        if (this.endTime.compareAndSet(NO_END_TIME, endTime)) {
             processor.onEnd(this)
             if (makeContext) SpanContext.detach(this)
         }
@@ -90,14 +89,14 @@ public class SpanImpl internal constructor(
      * a valid end time. It will also (if required) detach the Span from the SpanContext
      */
     public fun discard() {
-        if (END_TIME_UPDATER.compareAndSet(this, NO_END_TIME, DISCARDED)) {
+        if (endTime.compareAndSet(NO_END_TIME, DISCARDED)) {
             if (makeContext) SpanContext.detach(this)
         }
     }
 
     override fun end(): Unit = end(SystemClock.elapsedRealtimeNanos())
 
-    override fun isEnded(): Boolean = endTime != NO_END_TIME
+    override fun isEnded(): Boolean = endTime.get() != NO_END_TIME
 
     internal fun toJson(json: JsonWriter) {
         json.obj {
@@ -108,7 +107,7 @@ public class SpanImpl internal constructor(
             name("startTimeUnixNano")
                 .value(BugsnagClock.elapsedNanosToUnixTime(startTime).toString())
             name("endTimeUnixNano")
-                .value(BugsnagClock.elapsedNanosToUnixTime(endTime).toString())
+                .value(BugsnagClock.elapsedNanosToUnixTime(endTime.get()).toString())
 
             if (parentSpanId != 0L) {
                 name("parentSpanId").value(parentSpanId.toHexString())
@@ -139,7 +138,7 @@ public class SpanImpl internal constructor(
 
             append(", startTime=").append(startTime)
 
-            if (endTime == NO_END_TIME) append(", no endTime")
+            if (endTime.get() == NO_END_TIME) append(", no endTime")
             else append(", endTime=").append(endTime)
 
             append(')')
@@ -170,9 +169,6 @@ public class SpanImpl internal constructor(
         samplingValue <= samplingProbability
 
     public companion object {
-        private val END_TIME_UPDATER =
-            AtomicLongFieldUpdater.newUpdater(SpanImpl::class.java, "endTime")
-
         private const val INVALID_ID = 0L
 
         internal const val NO_END_TIME: Long = -1L
