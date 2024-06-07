@@ -2,10 +2,10 @@ package com.bugsnag.android.performance.okhttp
 
 import com.bugsnag.android.performance.BugsnagPerformance
 import com.bugsnag.android.performance.NetworkRequestAttributes
-import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.SpanContext
 import com.bugsnag.android.performance.SpanOptions
 import com.bugsnag.android.performance.internal.SpanImpl
+import com.bugsnag.android.performance.internal.SpanTracker
 import com.bugsnag.android.performance.internal.appendHexLong
 import com.bugsnag.android.performance.internal.appendHexUUID
 import com.bugsnag.android.performance.okhttp.OkhttpModule.Companion.tracePropagationUrls
@@ -17,7 +17,6 @@ import okhttp3.Protocol
 import okhttp3.Response
 import java.io.IOException
 import java.util.UUID
-import java.util.concurrent.ConcurrentHashMap
 
 public class BugsnagPerformanceOkhttp : EventListener(), Interceptor {
     public companion object EventListenerFactory : EventListener.Factory {
@@ -28,7 +27,7 @@ public class BugsnagPerformanceOkhttp : EventListener(), Interceptor {
 
     private val networkSpanOptions = SpanOptions.DEFAULTS.makeCurrentContext(false)
 
-    private val spans = ConcurrentHashMap<Call, Span>()
+    private val spans = SpanTracker()
 
     override fun callStart(call: Call) {
         val url = call.request().url.toUrl()
@@ -43,8 +42,7 @@ public class BugsnagPerformanceOkhttp : EventListener(), Interceptor {
             if (contentLength != null) {
                 NetworkRequestAttributes.setRequestContentLength(span, contentLength)
             }
-
-            spans[call] = span
+            spans.associate(call, span = span as SpanImpl)
         }
     }
 
@@ -78,17 +76,17 @@ public class BugsnagPerformanceOkhttp : EventListener(), Interceptor {
     }
 
     override fun callEnd(call: Call) {
-        spans.remove(call)?.end()
+        spans.endSpan(call)
     }
 
     override fun callFailed(call: Call, ioe: IOException) {
         // remove the span and discard
-        (spans.remove(call) as? SpanImpl)?.discard()
+        spans.discardAllSpans(call)
     }
 
     override fun canceled(call: Call) {
         // remove the span and discard
-        (spans.remove(call) as? SpanImpl)?.discard()
+        spans.discardAllSpans(call)
     }
 
     private fun buildTraceParentHeader(
