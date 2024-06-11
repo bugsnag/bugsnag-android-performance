@@ -1,3 +1,10 @@
+## TBD
+
+### Enhancements
+
+* Added utility functions for creating `SpanOptions` while avoiding the need to reference `DEFAULTS`
+  [#230](https://github.com/bugsnag/bugsnag-android-performance/pull/230)
+
 ## 1.3.0 (2024-05-20)
 
 ### Enhancements

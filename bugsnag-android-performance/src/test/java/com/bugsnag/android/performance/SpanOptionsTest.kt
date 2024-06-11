@@ -27,52 +27,52 @@ class SpanOptionsTest {
     fun testEquals() {
         assertEquals(
             // doesn't actually change the output
-            SpanOptions.DEFAULTS.makeCurrentContext(SpanOptions.DEFAULTS.makeContext),
+            SpanOptions.makeCurrentContext(SpanOptions.DEFAULTS.makeContext),
             SpanOptions.DEFAULTS,
         )
 
         assertEquals(
-            SpanOptions.DEFAULTS.makeCurrentContext(true),
-            SpanOptions.DEFAULTS,
-        )
-
-        assertNotEquals(
-            SpanOptions.DEFAULTS.makeCurrentContext(false),
-            SpanOptions.DEFAULTS,
-        )
-
-        assertEquals(
-            SpanOptions.DEFAULTS.startTime(12345L),
-            SpanOptions.DEFAULTS.startTime(12345L),
-        )
-
-        assertNotEquals(
-            SpanOptions.DEFAULTS.startTime(12345L),
+            SpanOptions.makeCurrentContext(true),
             SpanOptions.DEFAULTS,
         )
 
         assertNotEquals(
-            SpanOptions.DEFAULTS.startTime(12345L),
-            SpanOptions.DEFAULTS.startTime(54321L),
-        )
-
-        assertEquals(
-            SpanOptions.DEFAULTS.within(SpanContext.invalid),
-            SpanOptions.DEFAULTS.within(SpanContext.invalid),
-        )
-
-        assertEquals(
-            SpanOptions.DEFAULTS.setFirstClass(true),
-            SpanOptions.DEFAULTS.setFirstClass(true),
-        )
-
-        assertEquals(
-            SpanOptions.DEFAULTS.within(SpanContext.current),
+            SpanOptions.makeCurrentContext(false),
             SpanOptions.DEFAULTS,
         )
 
         assertEquals(
-            SpanOptions.DEFAULTS.within(SpanOptions.DEFAULTS.parentContext),
+            SpanOptions.startTime(12345L),
+            SpanOptions.startTime(12345L),
+        )
+
+        assertNotEquals(
+            SpanOptions.startTime(12345L),
+            SpanOptions.DEFAULTS,
+        )
+
+        assertNotEquals(
+            SpanOptions.startTime(12345L),
+            SpanOptions.startTime(54321L),
+        )
+
+        assertEquals(
+            SpanOptions.within(SpanContext.invalid),
+            SpanOptions.within(SpanContext.invalid),
+        )
+
+        assertEquals(
+            SpanOptions.setFirstClass(true),
+            SpanOptions.setFirstClass(true),
+        )
+
+        assertEquals(
+            SpanOptions.within(SpanContext.current),
+            SpanOptions.DEFAULTS,
+        )
+
+        assertEquals(
+            SpanOptions.within(SpanOptions.DEFAULTS.parentContext),
             SpanOptions.DEFAULTS,
         )
     }
@@ -87,9 +87,9 @@ class SpanOptionsTest {
     @Test
     fun overrideStartTime() {
         val time = 876123L
-        assertEquals(time, SpanOptions.DEFAULTS.startTime(time).startTime)
+        assertEquals(time, SpanOptions.startTime(time).startTime)
         // test multi overrides of the same value
-        assertEquals(time, SpanOptions.DEFAULTS.startTime(0L).startTime(time).startTime)
+        assertEquals(time, SpanOptions.startTime(0L).startTime(time).startTime)
     }
 
     @Test
@@ -97,11 +97,11 @@ class SpanOptionsTest {
         val expectedTime = 12345L
         clock.`when`<Long> { SystemClock.elapsedRealtimeNanos() }.doReturn(expectedTime)
 
-        assertEquals(false, SpanOptions.DEFAULTS.setFirstClass(false).isFirstClass)
+        assertEquals(false, SpanOptions.setFirstClass(false).isFirstClass)
         // test multi overrides of the same value
         assertEquals(
             true,
-            SpanOptions.DEFAULTS.setFirstClass(false).setFirstClass(true).isFirstClass,
+            SpanOptions.setFirstClass(false).setFirstClass(true).isFirstClass,
         )
 
         // test nested span creation
@@ -110,7 +110,7 @@ class SpanOptionsTest {
             spanFactory.createCustomSpan("child").use { childSpan ->
                 // All Custom spans are first_class
                 assertTrue(childSpan.attributes.contains("bugsnag.span.first_class" to true))
-                spanFactory.createCustomSpan("override", SpanOptions.DEFAULTS.setFirstClass(true))
+                spanFactory.createCustomSpan("override", SpanOptions.setFirstClass(true))
                     .use { overrideSpan ->
                         assertTrue(overrideSpan.attributes.contains("bugsnag.span.first_class" to true))
                     }
@@ -123,16 +123,16 @@ class SpanOptionsTest {
         val expectedTime = 12345L
         clock.`when`<Long> { SystemClock.elapsedRealtimeNanos() }.doReturn(expectedTime)
 
-        assertNull(SpanOptions.DEFAULTS.within(null).parentContext)
+        assertNull(SpanOptions.within(null).parentContext)
         // test multi overrides of the same value
-        assertNull(SpanOptions.DEFAULTS.within(SpanContext.current).within(null).parentContext)
+        assertNull(SpanOptions.within(SpanContext.current).within(null).parentContext)
 
         // test nested span creation
         spanFactory.createCustomSpan("parent").use { rootSpan ->
             assertEquals(0L, rootSpan.parentSpanId)
             spanFactory.createCustomSpan("child").use { childSpan ->
                 assertEquals(rootSpan.spanId, childSpan.parentSpanId)
-                spanFactory.createCustomSpan("override", SpanOptions.DEFAULTS.within(null))
+                spanFactory.createCustomSpan("override", SpanOptions.within(null))
                     .use { overrideSpan ->
                         assertEquals(0L, overrideSpan.parentSpanId)
                     }
@@ -145,16 +145,16 @@ class SpanOptionsTest {
         val expectedTime = 12345L
         clock.`when`<Long> { SystemClock.elapsedRealtimeNanos() }.doReturn(expectedTime)
 
-        assertFalse(SpanOptions.DEFAULTS.makeCurrentContext(false).makeContext)
+        assertFalse(SpanOptions.makeCurrentContext(false).makeContext)
         // test multi overrides of the same value
         assertTrue(
-            SpanOptions.DEFAULTS.makeCurrentContext(false).makeCurrentContext(true).makeContext,
+            SpanOptions.makeCurrentContext(false).makeCurrentContext(true).makeContext,
         )
 
         // test nested span creation
         spanFactory.createCustomSpan("parent").use { defaultSpan ->
             assertSame(SpanContext.current, defaultSpan)
-            spanFactory.createCustomSpan("child", SpanOptions.DEFAULTS.makeCurrentContext(false))
+            spanFactory.createCustomSpan("child", SpanOptions.makeCurrentContext(false))
                 .use { overrideSpan ->
                     assertNotSame(SpanContext.current, overrideSpan)
                 }
