@@ -200,7 +200,7 @@ internal class ActivityLifecycleInstrumentation(
                 spanFactory.createViewLoadPhaseSpan(
                     activity,
                     phase,
-                    SpanOptions.DEFAULTS.within(viewLoadSpan),
+                    SpanOptions.within(viewLoadSpan),
                 )
             }
         }

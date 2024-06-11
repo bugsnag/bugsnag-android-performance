@@ -30,11 +30,11 @@ class TracerTest {
     fun testBatchSize() = InternalDebug.withDebugValues {
         InternalDebug.spanBatchSizeSendTriggerPoint = 2
 
-        spanFactory.createCustomSpan("BatchSize1.1", SpanOptions.DEFAULTS.startTime(1L)).end(10L)
+        spanFactory.createCustomSpan("BatchSize1.1", SpanOptions.startTime(1L)).end(10L)
 
         // assert it won't be delivered immediately (the batch size is 2)
         assertNull(tracer.collectNextBatch())
-        spanFactory.createCustomSpan("BatchSize1.2", SpanOptions.DEFAULTS.startTime(1L)).end(10L)
+        spanFactory.createCustomSpan("BatchSize1.2", SpanOptions.startTime(1L)).end(10L)
         // give the delivery thread time to wake up and do it's work
         assertEquals(2, tracer.collectNextBatch()!!.size)
 
@@ -42,8 +42,8 @@ class TracerTest {
         assertNull(tracer.collectNextBatch())
 
         // we deliver another two to ensure that the loop behaves as expected
-        spanFactory.createCustomSpan("BatchSize2.1", SpanOptions.DEFAULTS.startTime(2L)).end(20L)
-        spanFactory.createCustomSpan("BatchSize2.2", SpanOptions.DEFAULTS.startTime(3L)).end(30L)
+        spanFactory.createCustomSpan("BatchSize2.1", SpanOptions.startTime(2L)).end(20L)
+        spanFactory.createCustomSpan("BatchSize2.2", SpanOptions.startTime(3L)).end(30L)
 
         assertEquals(2, tracer.collectNextBatch()!!.size)
     }
@@ -55,8 +55,8 @@ class TracerTest {
         val worker = mock<Worker>()
         tracer.worker = worker
 
-        spanFactory.createCustomSpan("BatchSize1.1", SpanOptions.DEFAULTS.startTime(2L)).end(20L)
-        spanFactory.createCustomSpan("BatchSize1.2", SpanOptions.DEFAULTS.startTime(3L)).end(30L)
+        spanFactory.createCustomSpan("BatchSize1.1", SpanOptions.startTime(2L)).end(20L)
+        spanFactory.createCustomSpan("BatchSize1.2", SpanOptions.startTime(3L)).end(30L)
 
         // ensure that 2 spans woke the worker up exactly once
         verify(worker, times(1)).wake()

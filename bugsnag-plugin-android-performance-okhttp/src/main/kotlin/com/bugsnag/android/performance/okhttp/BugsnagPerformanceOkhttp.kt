@@ -26,7 +26,7 @@ public class BugsnagPerformanceOkhttp : EventListener(), Interceptor {
         }
     }
 
-    private val networkSpanOptions = SpanOptions.DEFAULTS.makeCurrentContext(false)
+    private val networkSpanOptions = SpanOptions.makeCurrentContext(false)
 
     private val spans = ConcurrentHashMap<Call, Span>()
 
