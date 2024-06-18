@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Message
 import android.os.SystemClock
-import com.bugsnag.android.performance.Logger
 import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.SpanOptions
 import com.bugsnag.android.performance.internal.AppStartTracker
@@ -25,6 +24,8 @@ import com.bugsnag.android.performance.internal.ViewLoadPhase
  * spans will be closed.
  */
 private const val MSG_CHECK_FINISHED = 1
+
+private const val MSG_DISCARD_VIEW_LOAD = 2
 
 @Suppress("TooManyFunctions")
 internal abstract class AbstractActivityLifecycleInstrumentation(
@@ -91,6 +92,11 @@ internal abstract class AbstractActivityLifecycleInstrumentation(
     override fun handleMessage(msg: Message): Boolean {
         when (msg.what) {
             MSG_CHECK_FINISHED -> (msg.obj as? Activity)?.let { checkActivityFinished(it) }
+            MSG_DISCARD_VIEW_LOAD -> {
+                spanTracker.discardAllSpans(msg.what)
+                startupTracker.discardAppStart()
+            }
+
             else -> return false
         }
 
@@ -103,24 +109,22 @@ internal abstract class AbstractActivityLifecycleInstrumentation(
         }
     }
 
-    protected fun onViewLoadLeak(activity: Activity) {
-        startupTracker.onViewLoadComplete(SystemClock.elapsedRealtimeNanos())
-        if (spanTracker.markSpanLeaked(activity)) {
-            Logger.w(
-                "${activity::class.java.name} appears to have leaked a ViewLoad Span. " +
-                        "This is probably because BugsnagPerformance.endViewLoad was not called.",
-            )
-        }
+    override fun onActivityDestroyed(activity: Activity) = Unit
+    override fun onActivityStopped(activity: Activity) {
+        handler.sendMessageDelayed(
+            Message.obtain(
+                handler,
+                MSG_DISCARD_VIEW_LOAD,
+                activity,
+            ),
+            ForegroundState.BACKGROUND_TIMEOUT_MS,
+        )
     }
 
-
-    override fun onActivityDestroyed(activity: Activity) {
-        onViewLoadLeak(activity)
-    }
-
-    override fun onActivityStopped(activity: Activity)= Unit
     override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) = Unit
-    override fun onActivityStarted(activity: Activity) = Unit
+    override fun onActivityStarted(activity: Activity) {
+        handler.removeMessages(MSG_DISCARD_VIEW_LOAD)
+    }
     override fun onActivityResumed(activity: Activity) = Unit
     override fun onActivityPaused(activity: Activity) = Unit
     override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) = Unit

@@ -17,7 +17,7 @@ internal object ForegroundState : ActivityLifecycleCallbacks {
      * background / foreground changes when there is only 1 Activity being restarted for configuration
      * changes.
      */
-    private const val BACKGROUND_TIMEOUT_MS = 700L
+    const val BACKGROUND_TIMEOUT_MS = 700L
 
     /**
      * The number of Activities that have been created but not destroyed. This is used to determine
