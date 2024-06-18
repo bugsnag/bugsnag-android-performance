@@ -13,7 +13,6 @@ import java.security.SecureRandom
 import java.util.Random
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicLong
-import java.util.concurrent.atomic.AtomicLongFieldUpdater
 
 @Suppress("LongParameterList")
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)

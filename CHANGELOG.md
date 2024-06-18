@@ -11,6 +11,8 @@
 
 * Update the `bugsnag-plugin-android-performance-okhttp` module to optionally carry the current `SpanContext` as an OpenTelemetry `traceparent` header in outgoing HTTP requests.
   [#221](https://github.com/bugsnag/bugsnag-android-performance/pull/221)
+* To avoid unrealistically long ViewLoad & AppStart spans, these are discarded if the user backgrounds the app while an Activity is considered loading
+  [#227](https://github.com/bugsnag/bugsnag-android-performance/pull/227)
 
 ### Bug fixes
 
