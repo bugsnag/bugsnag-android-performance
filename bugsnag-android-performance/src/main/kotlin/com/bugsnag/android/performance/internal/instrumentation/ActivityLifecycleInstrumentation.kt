@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Message
 import android.os.SystemClock
-import com.bugsnag.android.performance.Logger
 import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.SpanOptions
 import com.bugsnag.android.performance.internal.AppStartTracker
@@ -25,6 +24,8 @@ import com.bugsnag.android.performance.internal.ViewLoadPhase
  * spans will be closed.
  */
 private const val MSG_CHECK_FINISHED = 1
+
+private const val MSG_DISCARD_VIEW_LOAD = 2
 
 @Suppress("TooManyFunctions")
 internal abstract class AbstractActivityLifecycleInstrumentation(
@@ -91,6 +92,11 @@ internal abstract class AbstractActivityLifecycleInstrumentation(
     override fun handleMessage(msg: Message): Boolean {
         when (msg.what) {
             MSG_CHECK_FINISHED -> (msg.obj as? Activity)?.let { checkActivityFinished(it) }
+            MSG_DISCARD_VIEW_LOAD -> {
+                spanTracker.discardAllSpans(msg.what)
+                startupTracker.discardAppStart()
+            }
+
             else -> return false
         }
 
@@ -104,9 +110,21 @@ internal abstract class AbstractActivityLifecycleInstrumentation(
     }
 
     override fun onActivityDestroyed(activity: Activity) = Unit
-    override fun onActivityStopped(activity: Activity)= Unit
+    override fun onActivityStopped(activity: Activity) {
+        handler.sendMessageDelayed(
+            Message.obtain(
+                handler,
+                MSG_DISCARD_VIEW_LOAD,
+                activity,
+            ),
+            ForegroundState.BACKGROUND_TIMEOUT_MS,
+        )
+    }
+
     override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) = Unit
-    override fun onActivityStarted(activity: Activity) = Unit
+    override fun onActivityStarted(activity: Activity) {
+        handler.removeMessages(MSG_DISCARD_VIEW_LOAD)
+    }
     override fun onActivityResumed(activity: Activity) = Unit
     override fun onActivityPaused(activity: Activity) = Unit
     override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) = Unit
@@ -175,11 +193,6 @@ internal class ActivityLifecycleInstrumentation(
     override fun onActivityPostResumed(activity: Activity) {
         endViewLoadPhase(activity, ViewLoadPhase.RESUME)
         autoEndViewLoadSpan(activity)
-    }
-
-    override fun onActivityStopped(activity: Activity) {
-        super.onActivityStopped(activity)
-        Loopers.mainHandler.post { spanTracker.discardAllSpans(activity) }
     }
 
     private fun startViewLoadPhase(activity: Activity, phase: ViewLoadPhase) {

@@ -97,7 +97,7 @@ class ActivityLifecycleInstrumentationTest {
     }
 
     @Test
-    fun leakedViewLoad() {
+    fun discardedViewLoad() {
         val activity = Activity()
 
         // we tell the Instrumentation not to auto-close the span - but we also don't close it manually
@@ -115,13 +115,34 @@ class ActivityLifecycleInstrumentationTest {
         lifecycleHelper.progressLifecycle(
             activity,
             from = RESUMED,
-            to = DESTROYED,
+            to = CREATED, // onPause, onStop
         )
 
         Shadows.shadowOf(Loopers.main).runToEndOfTasks()
 
         val spans = spanProcessor.toList()
-        assertViewLoadSpans(spans)
+
+        assertEquals(
+            "expected 3 spans, but was ${spans.size} ${spans.joinToString(transform = { it.name })}",
+            3,
+            spans.size,
+        )
+
+        val (create, start, resume) = spans
+        assertEquals("[ViewLoadPhase/ActivityCreate]Activity", create.name)
+        assertEquals(SpanCategory.VIEW_LOAD_PHASE, create.category)
+        assertEquals(100_000_000L, create.startTime)
+        assertEquals(100_000_000L, create.endTime.get())
+
+        assertEquals("[ViewLoadPhase/ActivityStart]Activity", start.name)
+        assertEquals(SpanCategory.VIEW_LOAD_PHASE, start.category)
+        assertEquals(101_000_000L, start.startTime)
+        assertEquals(101_000_000L, start.endTime.get())
+
+        assertEquals("[ViewLoadPhase/ActivityResume]Activity", resume.name)
+        assertEquals(SpanCategory.VIEW_LOAD_PHASE, resume.category)
+        assertEquals(102_000_000L, resume.startTime)
+        assertEquals(102_000_000L, resume.endTime.get())
     }
 
     private fun assertViewLoadSpans(spans: List<SpanImpl>) {
