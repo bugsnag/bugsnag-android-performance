@@ -85,3 +85,9 @@ def spans_from_request_list list
              .flat_map { |s| s['spans'] }
              .select { |s| !s.nil? }
 end
+
+Then('every span integer attribute {string} matches the regex {string}') do |attribute, pattern|
+  regex = Regexp.new(pattern)
+  spans = spans_from_request_list(Maze::Server.list_for('traces'))
+  spans.map { |span| Maze::check.match(regex, span['attributes'].find { |a| a['key'] == attribute }['value']['intValue']) }
+end

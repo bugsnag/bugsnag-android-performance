@@ -13,14 +13,15 @@ Feature: Manual creation of spans
     And the trace "Bugsnag-Sent-At" header is present
     And the trace "Bugsnag-Span-Sampling" header equals "1.0:1"
     And the trace "Bugsnag-Api-Key" header equals "a35a2a72bd230ac0aa0f52715bbdc6aa"
-    * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0.name" equals "ManualSpanScenario"
-    * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0.spanId" matches the regex "^[A-Fa-f0-9]{16}$"
-    * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0.traceId" matches the regex "^[A-Fa-f0-9]{32}$"
-    * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0.kind" equals 1
-    * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0.startTimeUnixNano" matches the regex "^[0-9]+$"
-    * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0.endTimeUnixNano" matches the regex "^[0-9]+$"
-    * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0" string attribute "net.host.connection.type" exists
-    * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0" boolean attribute "bugsnag.app.in_foreground" is true
+
+    * a span name equals "ManualSpanScenario"
+    * a span field "kind" equals 1
+    * a span field "spanId" matches the regex "^[A-Fa-f0-9]{16}$"
+    * a span field "traceId" matches the regex "^[A-Fa-f0-9]{32}$"
+    * a span field "startTimeUnixNano" matches the regex "^[0-9]+$"
+    * a span field "endTimeUnixNano" matches the regex "^[0-9]+$"
+    * a span string attribute "net.host.connection.type" exists
+    * every span bool attribute "bugsnag.app.in_foreground" is true
 
     * the trace payload field "resourceSpans.0.resource" string attribute "host.arch" is one of:
       | x86   |
