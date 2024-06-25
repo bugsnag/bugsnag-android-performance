@@ -35,7 +35,6 @@
     <ID>SwallowedException:HttpDelivery.kt$HttpDelivery$e: IOException</ID>
     <ID>SwallowedException:ImmutableConfig.kt$ImmutableConfig.Companion$ex: RuntimeException</ID>
     <ID>SwallowedException:Module.kt$Module.Loader$ex: Exception</ID>
-    <ID>SwallowedException:NotifierIntegration.kt$NotifierIntegration$noClass: NoClassDefFoundError</ID>
     <ID>TooGenericExceptionCaught:BugsnagClock.kt$BugsnagClock$ex: Exception</ID>
     <ID>TooGenericExceptionCaught:Connectivity.kt$ConnectivityApi24$e: Exception</ID>
     <ID>TooGenericExceptionCaught:ContextExtensions.kt$exc: RuntimeException</ID>
