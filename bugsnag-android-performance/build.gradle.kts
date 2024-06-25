@@ -58,12 +58,15 @@ project.tasks.withType(KotlinCompile::class.java).configureEach {
 dependencies {
     api(libs.kotlin.stdlib)
 
+    compileOnly(libs.bugsnag.android)
+
     implementation(libs.androidx.annotation)
 
     testImplementation(libs.bundles.test.jvm)
 
     testImplementation(libs.kotlin.reflect)
     testImplementation(libs.jsonSchemaFriend)
+    testImplementation(libs.bugsnag.android)
 }
 
 license {

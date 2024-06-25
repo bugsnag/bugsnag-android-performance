@@ -22,6 +22,7 @@ import com.bugsnag.android.performance.internal.SendBatchTask
 import com.bugsnag.android.performance.internal.Task
 import com.bugsnag.android.performance.internal.Worker
 import com.bugsnag.android.performance.internal.createResourceAttributes
+import com.bugsnag.android.performance.internal.integration.NotifierIntegration
 import com.bugsnag.android.performance.internal.isInForeground
 import java.net.URL
 
@@ -166,6 +167,8 @@ public object BugsnagPerformance {
         bsgWorker.start()
 
         worker = bsgWorker
+
+        NotifierIntegration.link()
     }
 
     private fun loadModules() {
