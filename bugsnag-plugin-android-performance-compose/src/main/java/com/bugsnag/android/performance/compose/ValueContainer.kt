@@ -15,7 +15,7 @@ import com.bugsnag.android.performance.SpanOptions
 import com.bugsnag.android.performance.ViewType
 
 @Immutable
-public data class ValueContainer<T>(var content: T)
+internal data class ValueContainer<T>(var content: T)
 
 private val RENDER_SPAN_OPTIONS = SpanOptions.DEFAULTS
     .makeCurrentContext(false)

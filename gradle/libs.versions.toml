@@ -1,11 +1,11 @@
 [versions]
-agp = "7.3.0"
+agp = "8.4.2"
 appcompat = "1.4.2"
 benchmarkPlugin = "1.1.0-beta04"
 detekt = "1.21.0"
 dokka = "1.7.20"
 kotlin = "1.8.0"
-kotlinCoroutines = "1.6.4"
+kotlinCoroutines = "1.7.0"
 ktlint = "11.2.0"
 licenseCheck = "0.16.1"
 compose = "1.6.8"
