@@ -32,7 +32,7 @@ import java.net.URL
  * @see [start]
  */
 public object BugsnagPerformance {
-    public const val VERSION: String = "1.3.0"
+    public const val VERSION: String = "1.4.0"
 
     @get:JvmName("getInstrumentedAppState\$internal")
     internal val instrumentedAppState = InstrumentedAppState()
