@@ -69,7 +69,7 @@ class LegacyActivityInstrumentationTest {
         assertEquals("[ViewLoad/Activity]Activity", viewLoad.name)
         assertEquals(SpanCategory.VIEW_LOAD, viewLoad.category)
         assertEquals(100_000_000L, viewLoad.startTime)
-        assertEquals(102_000_000L, viewLoad.endTime)
+        assertEquals(102_000_000L, viewLoad.endTime.get())
     }
 
     @Test
@@ -108,7 +108,7 @@ class LegacyActivityInstrumentationTest {
         assertEquals("[ViewLoad/Activity]Activity", viewLoad.name)
         assertEquals(SpanCategory.VIEW_LOAD, viewLoad.category)
         assertEquals(100_000_000L, viewLoad.startTime)
-        assertEquals(101_000_000L, viewLoad.endTime)
+        assertEquals(101_000_000L, viewLoad.endTime.get())
     }
 
     @Test
@@ -128,32 +128,5 @@ class LegacyActivityInstrumentationTest {
         Shadows.shadowOf(Loopers.main).runToEndOfTasks()
         val spans = spanProcessor.toList()
         assertEquals(1, spans.size)
-    }
-
-    @Test
-    fun leakedViewLoad() {
-        val activity = Activity()
-
-        // we tell the Instrumentation not to auto-close the span - but we also don't close it manually
-        activityInstrumentation.closeLoadSpans = false
-
-        val lifecycleHelper = ActivityLifecycleHelper(activityInstrumentation) {
-            ShadowPausedSystemClock.advanceBy(1, TimeUnit.MILLISECONDS)
-        }
-
-        lifecycleHelper.progressLifecycle(activity, from = DESTROYED, to = RESUMED)
-        // tear the activity back down again
-        lifecycleHelper.progressLifecycle(activity, from = RESUMED, to = DESTROYED)
-
-        Shadows.shadowOf(Loopers.main).runToEndOfTasks()
-
-        val spans = spanProcessor.toList()
-        assertEquals(1, spans.size)
-
-        val viewLoad = spans[0]
-        assertEquals("[ViewLoad/Activity]Activity", viewLoad.name)
-        assertEquals(SpanCategory.VIEW_LOAD, viewLoad.category)
-        assertEquals(100_000_000L, viewLoad.startTime)
-        assertEquals(102_000_000L, viewLoad.endTime)
     }
 }

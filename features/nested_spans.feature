@@ -94,3 +94,4 @@ Feature: Nested spans
     * the "[ViewLoad/Fragment]SecondFragment" span field "parentSpanId" equals the stored value "custom_root_span_id"
     * the "DoStuff" span field "parentSpanId" equals the stored value "custom_root_span_id"
     * the "LoadData" span field "parentSpanId" equals the stored value "custom_root_span_id"
+

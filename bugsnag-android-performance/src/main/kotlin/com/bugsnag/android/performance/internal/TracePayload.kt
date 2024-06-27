@@ -50,7 +50,7 @@ internal data class TracePayload(
         ): TracePayload {
             val payloadBytes = encodeSpanPayload(spans, resourceAttributes)
             val timestamp =
-                if (spans.isNotEmpty()) spans.maxOf { it.endTime }
+                if (spans.isNotEmpty()) spans.maxOf { it.endTime.get() }
                 else SystemClock.elapsedRealtimeNanos()
 
             val headers = mapOf("Bugsnag-Span-Sampling" to calculateSpanSamplingHeader(spans))

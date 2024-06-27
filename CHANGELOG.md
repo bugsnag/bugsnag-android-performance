@@ -1,9 +1,20 @@
+## 1.4.0 (2024-06-27)
+
+### Enhancements
+
+* Added utility functions for creating `SpanOptions` while avoiding the need to reference `DEFAULTS`
+  [#230](https://github.com/bugsnag/bugsnag-android-performance/pull/230)
+* Set the trace/span id for the current `SpanContext` when an error is reported via `bugsnag-android`
+  [#233](https://github.com/bugsnag/bugsnag-android-performance/pull/233)
+
 ## 1.3.0 (2024-05-20)
 
 ### Enhancements
 
 * Update the `bugsnag-plugin-android-performance-okhttp` module to optionally carry the current `SpanContext` as an OpenTelemetry `traceparent` header in outgoing HTTP requests.
   [#221](https://github.com/bugsnag/bugsnag-android-performance/pull/221)
+* To avoid unrealistically long ViewLoad & AppStart spans, these are discarded if the user backgrounds the app while an Activity is considered loading
+  [#227](https://github.com/bugsnag/bugsnag-android-performance/pull/227)
 
 ### Bug fixes
 
