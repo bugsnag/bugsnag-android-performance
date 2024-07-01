@@ -9,8 +9,6 @@ kotlinCoroutines = "1.7.0"
 ktlint = "11.2.0"
 licenseCheck = "0.16.1"
 compose = "1.6.8"
-uiTestJunit4Android = "1.6.8"
-appcompatVersion = "1.7.0"
 
 [plugins]
 agp-library = { id = "com.android.library", version.ref = "agp" }
@@ -53,7 +51,6 @@ okhttp = "com.squareup.okhttp3:okhttp:4.9.1"
 okhttp-mockServer = "com.squareup.okhttp3:mockwebserver:4.9.1"
 
 robolectric = "org.robolectric:robolectric:4.11.1"
-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompatVersion" }
 
 [bundles]
 test-jvm = ["androidx-test-junit", "junit", "mockito-inline", "mockito-kotlin", "robolectric"]
