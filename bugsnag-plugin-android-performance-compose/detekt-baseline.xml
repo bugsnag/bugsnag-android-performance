@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>FunctionNaming:ValueContainer.kt$@Composable public fun MeasuredComposable( name: String, modifier: Modifier = Modifier, content: @Composable BoxScope.() -> Unit, )</ID>
+  </CurrentIssues>
+</SmellBaseline>
