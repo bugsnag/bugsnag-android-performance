@@ -83,7 +83,6 @@ dependencies {
     androidTestImplementation("androidx.compose.material3:material3")
     androidTestImplementation("androidx.compose.material:material-icons-core")
     androidTestImplementation("androidx.activity:activity-compose:1.9.0")
-
 }
 
 license {
