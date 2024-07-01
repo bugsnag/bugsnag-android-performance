@@ -54,7 +54,7 @@ dependencies {
 
     implementation 'com.squareup.okhttp3:okhttp:5.0.0-alpha.11'
 
-    implementation "com.bugsnag:bugsnag-android:5.+"
+    implementation "com.bugsnag:bugsnag-android:6.+"
 
     implementation 'com.bugsnag:bugsnag-android-performance:9.9.9'
     implementation 'com.bugsnag:bugsnag-android-performance-okhttp:9.9.9'
