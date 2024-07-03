@@ -65,15 +65,25 @@ project.tasks.withType(KotlinCompile::class.java).configureEach {
 
 dependencies {
     api(libs.kotlin.stdlib)
+    implementation(libs.appcompat)
     compileOnly(libs.okhttp)
 
     implementation(project(":bugsnag-android-performance"))
     implementation(libs.androidx.annotation)
     implementation(libs.androidx.compose)
     implementation(libs.androidx.compose.foundation.layout)
-
+    androidTestImplementation(libs.androidx.compose.ui.test.junit)
+    androidTestImplementation(libs.bundles.test.android)
+    debugImplementation(libs.androidx.compose.ui.test.manifest)
     testImplementation(libs.bundles.test.jvm)
     testImplementation(libs.kotlin.reflect)
+
+    val composeBom = platform("androidx.compose:compose-bom:2024.06.00")
+    androidTestImplementation(composeBom)
+    androidTestImplementation("androidx.compose.material3:material3")
+    androidTestImplementation("androidx.compose.material:material-icons-core")
+    androidTestImplementation("androidx.activity:activity-compose:1.9.0")
+
 }
 
 license {
