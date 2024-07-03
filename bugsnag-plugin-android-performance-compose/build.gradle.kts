@@ -65,7 +65,6 @@ project.tasks.withType(KotlinCompile::class.java).configureEach {
 
 dependencies {
     api(libs.kotlin.stdlib)
-
     compileOnly(libs.okhttp)
 
     implementation(project(":bugsnag-android-performance"))
