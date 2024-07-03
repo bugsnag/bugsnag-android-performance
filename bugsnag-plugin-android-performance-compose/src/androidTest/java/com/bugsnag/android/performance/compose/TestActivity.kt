@@ -15,7 +15,6 @@ import androidx.compose.ui.unit.dp
 fun LogInButton() {
     val context = LocalContext.current
     Column {
-
         Button(
             onClick = {
 
@@ -27,6 +26,5 @@ fun LogInButton() {
         ) {
             Text("Log In")
         }
-
     }
 }
