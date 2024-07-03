@@ -1,10 +1,15 @@
 package com.bugsnag.android.performance.compose
 
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.bugsnag.android.performance.BugsnagPerformance
+import com.bugsnag.android.performance.takeCurrentBatch
+import org.junit.Assert
+import org.junit.Assert.*
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -18,21 +23,24 @@ class ComposeTest {
     @get:Rule
     val composeTestRule = createComposeRule()
 
+    @Before
+    fun setupTest() {
+        // clear any pending spans from the batch before each test runs
+        BugsnagPerformance.takeCurrentBatch()
+    }
+
     @Test
     fun myUIComponentTest() {
-//        val mockBugsnag = mock<BugsnagPerformance>()
-        try {
-//            mockBugsnag.`when`<Void> { BugsnagPerformance.startViewLoadSpan(any()) }
-//                .thenAnswer { null }
-//
-//            mockBugsnag.verify({ BugsnagPerformance.startViewLoadSpan(any()) }, never())
-            composeTestRule.setContent {
+        composeTestRule.setContent {
+            MeasuredComposable(name = "Login") {
                 LogInButton()
             }
-            composeTestRule.onNode(hasText("Log In")).performClick()
-        } finally {
-//            mockBugsnag.close()
         }
+        composeTestRule.onNode(hasText("Log In")).performClick()
+        composeTestRule.onNode(hasText("Log In")).assertIsDisplayed()
+
+        val spans = BugsnagPerformance.takeCurrentBatch()
+        assertEquals(2, spans.size)
     }
 
 }
