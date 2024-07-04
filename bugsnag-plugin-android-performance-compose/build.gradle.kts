@@ -53,7 +53,7 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.4.1"
+        kotlinCompilerExtensionVersion = "1.5.13"
     }
 }
 
@@ -65,7 +65,7 @@ project.tasks.withType(KotlinCompile::class.java).configureEach {
 
 dependencies {
     api(libs.kotlin.stdlib)
-    implementation(libs.appcompat)
+
     compileOnly(libs.okhttp)
 
     implementation(project(":bugsnag-android-performance"))
