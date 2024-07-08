@@ -27,7 +27,6 @@ androidx-compose = { module = "androidx.compose.ui:ui", version.ref = "compose" 
 androidx-compose-foundation-layout = { module = "androidx.compose.foundation:foundation-layout-android", version.ref = "compose" }
 androidx-compose-ui-test-junit = { module = "androidx.compose.ui:ui-test-junit4", version.ref = "compose" }
 androidx-compose-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest", version.ref = "compose"}
-
 androidx-test-runner = "androidx.test:runner:1.5.2"
 androidx-test-junit = "androidx.test.ext:junit:1.1.3"
 
