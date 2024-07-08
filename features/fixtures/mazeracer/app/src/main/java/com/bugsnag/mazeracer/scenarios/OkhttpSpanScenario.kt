@@ -17,25 +17,22 @@ class OkhttpSpanScenario(
         BugsnagPerformance.start(config)
 
         thread {
-            val client = OkHttpClient.Builder()
-                .eventListenerFactory(BugsnagPerformanceOkhttp.EventListenerFactory)
-                .build()
-            val request = Request.Builder()
-                .url(
-                    scenarioMetadata.takeUnless { it.isBlank() }
-                        ?: "https://google.com/?test=true",
-                )
-                .build()
+            runAndFlush {
+                val client = OkHttpClient.Builder()
+                    .eventListenerFactory(BugsnagPerformanceOkhttp.EventListenerFactory)
+                    .build()
+                val request = Request.Builder()
+                    .url(
+                        scenarioMetadata.takeUnless { it.isBlank() }
+                            ?: "https://google.com/?test=true",
+                    )
+                    .build()
 
-            client.newCall(request).execute().use { response ->
-                // Consume and discard the response body.
-                val size = response.body?.byteString()?.size?.toString() ?: "no"
-                Log.i("OkhttpSpanScenario", "Read $size bytes from ${request.url}")
-            }
-
-            // background the app to flush the span queue
-            context.runOnUiThread {
-                context.finish()
+                client.newCall(request).execute().use { response ->
+                    // Consume and discard the response body.
+                    val size = response.body.byteString().size.toString()
+                    Log.i("OkhttpSpanScenario", "Read $size bytes from ${request.url}")
+                }
             }
         }
     }

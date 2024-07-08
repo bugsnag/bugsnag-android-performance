@@ -4,7 +4,6 @@ import android.util.Log
 import com.bugsnag.android.performance.BugsnagPerformance
 import com.bugsnag.android.performance.NetworkRequestInstrumentationCallback
 import com.bugsnag.android.performance.PerformanceConfiguration
-import com.bugsnag.android.performance.internal.InternalDebug
 import com.bugsnag.mazeracer.Scenario
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -15,10 +14,6 @@ class OkhttpManualNetworkCallbackScenario(
     config: PerformanceConfiguration,
     scenarioMetadata: String,
 ) : Scenario(config, scenarioMetadata) {
-    init {
-        InternalDebug.spanBatchSizeSendTriggerPoint = 1
-    }
-
     override fun startScenario() {
         config.networkRequestCallback = NetworkRequestInstrumentationCallback { reqInfo ->
             reqInfo.url?.let { url ->
@@ -35,12 +30,14 @@ class OkhttpManualNetworkCallbackScenario(
         BugsnagPerformance.start(config)
 
         thread {
-            val client = OkHttpClient.Builder()
-                .build()
+            runAndFlush {
+                val client = OkHttpClient.Builder()
+                    .build()
 
-            makeCall(client, "https://bugsnag.com/")
-            makeCall(client, "https://bugsnag.com/changeme")
-            makeCall(client, "https://google.com/")
+                makeCall(client, "https://bugsnag.com/")
+                makeCall(client, "https://bugsnag.com/changeme")
+                makeCall(client, "https://google.com/")
+            }
         }
     }
 
@@ -51,7 +48,7 @@ class OkhttpManualNetworkCallbackScenario(
         client.newCall(request).execute().use { response ->
             span?.end()
             // Consume and discard the response body.
-            val size = response.body?.byteString()?.size?.toString() ?: "no"
+            val size = response.body.byteString().size.toString()
             Log.i("OkhttpAutoInstrument", "Read $size bytes from ${request.url}")
         }
     }

@@ -2,8 +2,9 @@ Feature: Server responses
 
   Scenario: Startup P request returns 0
     Given I set the sampling probability for the next traces to "0"
-    And I run "ThreeSpansScenario"
-    And I should receive no traces
+    And I load scenario "GenerateSpansScenario"
+    And I invoke "sendNextSpan"
+    Then I should receive no traces
 
   Scenario: No P update: fail-retriable, fail-permanent
     Given I set the HTTP status code for the next request to 200

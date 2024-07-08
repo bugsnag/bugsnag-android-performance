@@ -8,7 +8,7 @@ import kotlin.concurrent.thread
 
 class PreStartSpansScenario(
     config: PerformanceConfiguration,
-    scenarioMetadata: String
+    scenarioMetadata: String,
 ) : Scenario(config, scenarioMetadata) {
     init {
         config.autoInstrumentAppStarts = true
@@ -27,13 +27,12 @@ class PreStartSpansScenario(
         Thread.sleep(100)
         BugsnagPerformance.start(config)
 
-        measureSpan("Post Start") {
-            Thread.sleep(100)
+        runAndFlush {
+            measureSpan("Post Start") {
+                Thread.sleep(100)
+            }
+
+            Thread.sleep(50)
         }
-
-        Thread.sleep(50)
-
-        // background the app and flush the spans
-        context.finish()
     }
 }
