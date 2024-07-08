@@ -11,7 +11,7 @@ import com.bugsnag.android.performance.SpanOptions.Companion.DEFAULTS
  *
  * New `SpanOptions` are typically based on the [DEFAULTS]:
  * ```kotlin
- * BugsnagPerformance.startSpan("LoadSuggestions", SpanOptions.DEFAULTS.startTime(actualStartTime))
+ * BugsnagPerformance.startSpan("LoadSuggestions", SpanOptions.startTime(actualStartTime))
  * ```
  *
  * @see DEFAULTS
@@ -164,5 +164,24 @@ public class SpanOptions private constructor(
         @JvmField
         public val DEFAULTS: SpanOptions =
             SpanOptions(OPT_NONE, 0, null, makeContext = true, isFirstClass = false)
+
+        @JvmName("createWithStartTime")
+        @JvmStatic
+        public fun startTime(startTime: Long): SpanOptions = DEFAULTS.startTime(startTime)
+
+        @JvmName("createWithin")
+        @JvmStatic
+        public fun within(parentContext: SpanContext?): SpanOptions = DEFAULTS.within(parentContext)
+
+        @JvmName("createAsCurrentContext")
+        @JvmStatic
+        public fun makeCurrentContext(makeContext: Boolean): SpanOptions =
+            DEFAULTS.makeCurrentContext(makeContext)
+
+        @JvmName("createFirstClass")
+        @JvmStatic
+        public fun setFirstClass(isFirstClass: Boolean): SpanOptions =
+            DEFAULTS.setFirstClass(isFirstClass)
+
     }
 }

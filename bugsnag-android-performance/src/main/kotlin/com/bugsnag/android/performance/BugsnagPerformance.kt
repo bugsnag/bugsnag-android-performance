@@ -22,6 +22,7 @@ import com.bugsnag.android.performance.internal.SendBatchTask
 import com.bugsnag.android.performance.internal.Task
 import com.bugsnag.android.performance.internal.Worker
 import com.bugsnag.android.performance.internal.createResourceAttributes
+import com.bugsnag.android.performance.internal.integration.NotifierIntegration
 import com.bugsnag.android.performance.internal.isInForeground
 import java.net.URL
 
@@ -31,7 +32,7 @@ import java.net.URL
  * @see [start]
  */
 public object BugsnagPerformance {
-    public const val VERSION: String = "1.3.0"
+    public const val VERSION: String = "1.4.0"
 
     internal val instrumentedAppState = InstrumentedAppState()
 
@@ -166,6 +167,8 @@ public object BugsnagPerformance {
         bsgWorker.start()
 
         worker = bsgWorker
+
+        NotifierIntegration.link()
     }
 
     private fun loadModules() {

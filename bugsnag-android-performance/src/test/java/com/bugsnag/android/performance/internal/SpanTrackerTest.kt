@@ -38,16 +38,16 @@ class SpanTrackerTest {
         tracker.markSpanAutomaticEnd("TestActivity", ViewLoadPhase.CREATE)
         tracker.markSpanLeaked("TestActivity", ViewLoadPhase.CREATE)
 
-        assertEquals(autoEndTime, onCreateSpan.endTime)
+        assertEquals(autoEndTime, onCreateSpan.endTime.get())
         assertNull(tracker["TestActivity", ViewLoadPhase.CREATE])
 
         assertNotNull(tracker["TestActivity"])
-        assertNotEquals(autoEndTime, loadSpan.endTime)
+        assertNotEquals(autoEndTime, loadSpan.endTime.get())
 
         tracker.markSpanAutomaticEnd("TestActivity")
         tracker.markSpanLeaked("TestActivity")
 
-        assertEquals(autoEndTime, loadSpan.endTime)
+        assertEquals(autoEndTime, loadSpan.endTime.get())
         assertNull(tracker["TestActivity"])
     }
 
@@ -72,7 +72,7 @@ class SpanTrackerTest {
         onCreateSpan.end(realEndTime)
         tracker.markSpanLeaked("TestActivity", ViewLoadPhase.CREATE)
 
-        assertEquals(realEndTime, onCreateSpan.endTime)
+        assertEquals(realEndTime, onCreateSpan.endTime.get())
         assertNull(tracker["TestActivity", ViewLoadPhase.CREATE])
 
         // Activity.onResume
@@ -84,7 +84,7 @@ class SpanTrackerTest {
         // Activity.onDestroy
         tracker.markSpanLeaked("TestActivity")
 
-        assertEquals(realEndTime, loadSpan.endTime)
+        assertEquals(realEndTime, loadSpan.endTime.get())
         assertNull(tracker["TestActivity"])
     }
 
@@ -107,14 +107,14 @@ class SpanTrackerTest {
         // end the onCreate span
         tracker.endSpan("TestActivity", ViewLoadPhase.CREATE, endTime = endTime)
 
-        assertEquals(endTime, onCreateSpan.endTime)
+        assertEquals(endTime, onCreateSpan.endTime.get())
         assertNull(tracker["TestActivity", ViewLoadPhase.CREATE])
         assertSame(loadSpan, tracker["TestActivity"])
 
         // end the view load span
         tracker.endSpan("TestActivity", endTime = endTime)
 
-        assertEquals(endTime, loadSpan.endTime)
+        assertEquals(endTime, loadSpan.endTime.get())
         assertNull(tracker["TestActivity"])
     }
 
@@ -153,13 +153,13 @@ class SpanTrackerTest {
 
         val rootSpan = trackedSpans.remove(endedToken to null)!!
         assertTrue(rootSpan.isEnded())
-        assertEquals(1234L, rootSpan.endTime)
+        assertEquals(1234L, rootSpan.endTime.get())
         assertNull(tracker[endedToken])
 
         ViewLoadPhase.values().forEach { phase ->
             val span = trackedSpans.remove(endedToken to phase)!!
             assertTrue(span.isEnded())
-            assertEquals(1234L, span.endTime)
+            assertEquals(1234L, span.endTime.get())
             assertNull(tracker[endedToken, phase])
         }
 

@@ -9,6 +9,7 @@ import com.bugsnag.android.performance.SpanContext
 import com.bugsnag.android.performance.SpanKind
 import com.bugsnag.android.performance.SpanOptions
 import com.bugsnag.android.performance.ViewType
+import com.bugsnag.android.performance.internal.integration.NotifierIntegration
 import java.util.UUID
 
 internal typealias AttributeSource = (target: HasAttributes) -> Unit
@@ -139,7 +140,7 @@ public class SpanFactory(
             "[AppStart/Android$startType]",
             SpanKind.INTERNAL,
             SpanCategory.APP_START,
-            SpanOptions.DEFAULTS.within(null),
+            SpanOptions.within(null),
             spanProcessor,
         )
 
@@ -157,7 +158,7 @@ public class SpanFactory(
             "[AppStartPhase/${phase.phaseName}]",
             SpanKind.INTERNAL,
             SpanCategory.APP_START_PHASE,
-            SpanOptions.DEFAULTS.within(appStartContext),
+            SpanOptions.within(appStartContext),
             spanProcessor,
         )
 
@@ -187,6 +188,8 @@ public class SpanFactory(
         )
 
         spanAttributeSource(span)
+
+        NotifierIntegration.onSpanStarted(span)
 
         return span
     }
