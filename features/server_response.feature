@@ -13,6 +13,7 @@ Feature: Server responses
     # 500 - Server error (retry) but still recorded by MazeRunner
     Given I set the HTTP status code for the next request to 500
     Then I invoke "sendNextSpan"
+    # 2 traces: 1 failed, 1 retry
     And I wait to receive 2 traces
     Then a span name equals "span 1"
     And I discard the oldest trace
@@ -20,9 +21,10 @@ Feature: Server responses
     And I discard the oldest trace
     # 400 - Payload rejected
     Given I set the HTTP status code for the next request to 400
-    Then I invoke "sendNextSpan"
-    And I wait to receive 1 trace
-    Then a span name equals "span 2"
+    And I invoke "sendNextSpan"
+    And I wait to receive 2 traces
+    Then a span name equals "span 1"
+    And a span name equals "span 2"
 
   Scenario: No P update: fail-permanent
     Given I set the HTTP status code for the next requests to 400
