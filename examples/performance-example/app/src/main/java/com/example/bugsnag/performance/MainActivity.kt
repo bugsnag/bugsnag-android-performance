@@ -15,6 +15,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.bugsnag.android.performance.compose.MeasuredComposable
 import com.bugsnag.android.performance.measureSpan
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -25,8 +26,9 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            AllButtons(network = network)
-
+            MeasuredComposable(name = "MainActivity") {
+                AllButtons(network = network)
+            }
         }
     }
 }
