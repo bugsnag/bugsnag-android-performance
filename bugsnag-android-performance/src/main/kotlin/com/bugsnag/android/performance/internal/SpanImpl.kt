@@ -44,7 +44,7 @@ public class SpanImpl internal constructor(
     /**
      * The name of this `Span`
      */
-    internal var name: String = name
+    public var name: String = name
         set(value) {
             if (!isEnded()) {
                 field = value
