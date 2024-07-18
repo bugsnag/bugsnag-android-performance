@@ -8,7 +8,7 @@ import kotlin.collections.forEach
 
 internal fun JsonWriter.value(attributes: Attributes): JsonWriter {
     return array {
-        attributes.forEach { (key, value) ->
+        attributes.entries.forEach { (key, value) ->
             obj {
                 name("key").value(key)
 

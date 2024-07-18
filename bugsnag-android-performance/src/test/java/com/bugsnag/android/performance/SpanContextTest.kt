@@ -146,7 +146,7 @@ internal class SpanContextTest {
         spanFactory.createViewLoadSpan(ViewType.ACTIVITY, "MainActivity").use { activitySpan ->
             assertEquals(
                 true,
-                activitySpan.attributes.find { (key) -> key == "bugsnag.span.first_class" }!!.second,
+                activitySpan.attributes["bugsnag.span.first_class"],
             )
 
             // create a nested span between "MainActivity" and "IndexFragment"
@@ -155,7 +155,7 @@ internal class SpanContextTest {
                     .use { fragmentSpan ->
                         assertEquals(
                             false,
-                            fragmentSpan.attributes.find { (key) -> key == "bugsnag.span.first_class" }!!.second,
+                            fragmentSpan.attributes["bugsnag.span.first_class"],
                         )
                     }
             }
