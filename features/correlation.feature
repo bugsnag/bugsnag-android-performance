@@ -2,7 +2,6 @@ Feature: Manual creation of spans
 
 Scenario: Errors notified within a span include the correlation data
   Given I run "CorrelatedErrorScenario"
-  And I wait to receive a sampling request
   And I wait to receive a trace
   And I wait to receive an error
 

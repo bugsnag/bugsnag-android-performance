@@ -34,14 +34,14 @@ android {
     testBuildType = "release"
     buildTypes {
         debug {
+        }
+        release {
+            isDefault = true
             isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "benchmark-proguard-rules.pro",
             )
-        }
-        release {
-            isDefault = true
         }
     }
 }
