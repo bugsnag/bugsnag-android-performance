@@ -1,7 +1,5 @@
 package com.bugsnag.android.performance.internal
 
-import com.bugsnag.android.performance.Attributes
-
 internal sealed class DeliveryResult {
     object Success : DeliveryResult() {
         override fun toString(): String = "Success"

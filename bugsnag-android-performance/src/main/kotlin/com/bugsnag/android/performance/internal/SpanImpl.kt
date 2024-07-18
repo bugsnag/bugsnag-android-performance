@@ -4,7 +4,6 @@ import android.os.SystemClock
 import android.util.JsonWriter
 import androidx.annotation.FloatRange
 import androidx.annotation.RestrictTo
-import com.bugsnag.android.performance.Attributes
 import com.bugsnag.android.performance.HasAttributes
 import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.SpanContext

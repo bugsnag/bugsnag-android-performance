@@ -3,7 +3,6 @@ package com.bugsnag.android.performance.internal
 import android.os.SystemClock
 import android.util.JsonWriter
 import androidx.annotation.VisibleForTesting
-import com.bugsnag.android.performance.Attributes
 import java.io.ByteArrayOutputStream
 import java.security.MessageDigest
 import java.util.TreeMap

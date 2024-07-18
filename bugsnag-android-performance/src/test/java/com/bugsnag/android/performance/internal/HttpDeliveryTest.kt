@@ -1,6 +1,5 @@
 package com.bugsnag.android.performance.internal
 
-import com.bugsnag.android.performance.Attributes
 import com.bugsnag.android.performance.test.CollectingSpanProcessor
 import com.bugsnag.android.performance.test.TestSpanFactory
 import org.junit.Assert.assertNotEquals

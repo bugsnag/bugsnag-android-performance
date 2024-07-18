@@ -1,5 +1,8 @@
-package com.bugsnag.android.performance
+package com.bugsnag.android.performance.internal
 
+import androidx.annotation.RestrictTo
+
+@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 public class Attributes {
     private val content = mutableMapOf<String, Any>()
 
