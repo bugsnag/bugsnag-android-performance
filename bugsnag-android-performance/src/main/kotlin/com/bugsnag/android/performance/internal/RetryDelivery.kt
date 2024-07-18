@@ -1,6 +1,5 @@
 package com.bugsnag.android.performance.internal
 
-import com.bugsnag.android.performance.Attributes
 import com.bugsnag.android.performance.Logger
 
 internal class RetryDelivery(

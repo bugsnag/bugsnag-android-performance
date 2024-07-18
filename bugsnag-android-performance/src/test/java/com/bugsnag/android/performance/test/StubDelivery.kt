@@ -1,6 +1,6 @@
 package com.bugsnag.android.performance.test
 
-import com.bugsnag.android.performance.Attributes
+import com.bugsnag.android.performance.internal.Attributes
 import com.bugsnag.android.performance.internal.Delivery
 import com.bugsnag.android.performance.internal.DeliveryResult
 import com.bugsnag.android.performance.internal.NewProbabilityCallback
