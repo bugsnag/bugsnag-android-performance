@@ -45,4 +45,20 @@ public interface HasAttributes {
      * @param value the value to set the attribute to
      */
     public fun setAttribute(name: String, value: Boolean)
+
+    /**
+     * Set or clear a string collection attribute. Passing `null` will remove the attribute.
+     *
+     * @param name the attribute name
+     * @param value the value to set the attribute to
+     */
+    public fun setAttribute(name: String, value: Collection<String>?)
+
+    /**
+     * Set or clear a string collection attribute. Passing `null` will remove the attribute.
+     *
+     * @param name the attribute name
+     * @param value the value to set the attribute to
+     */
+    public fun setAttribute(name: String, value: Array<String>?)
 }

@@ -47,4 +47,20 @@ public class Attributes {
     public fun remove(name: String) {
         content.remove(name)
     }
+
+    public operator fun set(name: String, value: Collection<String>?) {
+        if (value != null) {
+            content[name] = value
+        } else {
+            content.remove(name)
+        }
+    }
+
+    public operator fun set(name: String, value: Array<String>?) {
+        if (value != null) {
+            content[name] = value
+        } else {
+            content.remove(name)
+        }
+    }
 }
