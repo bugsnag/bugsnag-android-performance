@@ -26,7 +26,56 @@ private fun toAttributeJson(value: Any, json: JsonWriter) {
             is Double -> json.name("doubleValue").value(value)
             is Boolean -> json.name("boolValue").value(value)
             // int64 is JSON encoded as a String
-            is Long, Int, Short, Byte -> json.name("intValue").value(value.toString())
+            is Long, is Int, is Short, is Byte -> {
+                json.name("intValue").value(value.toString())
+            }
+            is Collection<*> -> json.name("arrayValue").obj {
+                json.name("values").array {
+                    value.forEach { item ->
+                        item?.let {
+                            toAttributeJson(item, json)
+                        }
+                    }
+                }
+            }
+
+            is Array<*> -> json.name("arrayValue").obj {
+                json.name("values").array {
+                    value.forEach { item ->
+                        item?.let { toAttributeJson(it, json) }
+                    }
+                }
+            }
+
+            is IntArray -> json.name("array").obj {
+                json.name("values").array {
+                    value.forEach { intValue ->
+                        json.obj {
+                            name("intValue").value(intValue.toString())
+                        }
+                    }
+                }
+            }
+
+            is LongArray -> json.name("array").obj {
+                json.name("values").array {
+                    value.forEach { longValue ->
+                        json.obj {
+                            name("longValue").value(longValue.toString())
+                        }
+                    }
+                }
+            }
+
+            is DoubleArray -> json.name("array").obj {
+                json.name("values").array {
+                    value.forEach { doubleArray ->
+                        json.obj {
+                            name("doubleValue").value(doubleArray.toString())
+                        }
+                    }
+                }
+            }
         }
     }
 }

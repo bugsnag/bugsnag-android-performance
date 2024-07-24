@@ -1,6 +1,7 @@
 package com.bugsnag.android.performance.internal
 
 import androidx.annotation.RestrictTo
+import com.bugsnag.android.performance.Logger
 
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 public class Attributes {
@@ -46,5 +47,37 @@ public class Attributes {
 
     public fun remove(name: String) {
         content.remove(name)
+    }
+
+    public operator fun set(name: String, value: Collection<Any>) {
+        try {
+            content[name] = value
+        } catch (e: UnsupportedOperationException) {
+            Logger.e("Failed to set attribute: $name", e)
+        }
+    }
+
+    public operator fun set(name: String, value: IntArray?) {
+        if (value != null) {
+            content[name] = value
+        } else {
+            content.remove(name)
+        }
+    }
+
+    public operator fun set(name: String, value: LongArray?) {
+        if (value != null) {
+            content[name] = value
+        } else {
+            content.remove(name)
+        }
+    }
+
+    public operator fun set(name: String, value: DoubleArray?) {
+        if (value != null) {
+            content[name] = value
+        } else {
+            content.remove(name)
+        }
     }
 }

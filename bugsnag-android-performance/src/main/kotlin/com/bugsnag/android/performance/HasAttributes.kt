@@ -45,4 +45,36 @@ public interface HasAttributes {
      * @param value the value to set the attribute to
      */
     public fun setAttribute(name: String, value: Boolean)
+
+    /**
+     * Set a collection of values.
+     *
+     * @param name the attribute name
+     * @param value the value to set the attribute to
+     */
+    public fun setAttribute(name: String, value: Collection<Any>)
+
+    /**
+     * Set an array of integer values.
+     *
+     * @param name the attribute name
+     * @param value the value to set the attribute to
+     */
+    public fun setAttribute(name: String, value: IntArray?)
+
+    /**
+     * Set an array of long values.
+     *
+     * @param name the attribute name
+     * @param value the value to set the attribute to
+     */
+    public fun setAttribute(name: String, value: LongArray?)
+
+    /**
+     * Set an array of double values.
+     *
+     * @param name the attribute name
+     * @param value the value to set the attribute to
+     */
+    public fun setAttribute(name: String, value: DoubleArray?)
 }
