@@ -50,11 +50,7 @@ public class Attributes {
     }
 
     public operator fun set(name: String, value: Collection<Any>) {
-        try {
-            content[name] = value
-        } catch (e: UnsupportedOperationException) {
-            Logger.e("Failed to set attribute: $name", e)
-        }
+        content[name] = value
     }
 
     public operator fun set(name: String, value: IntArray?) {
