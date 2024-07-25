@@ -3,12 +3,11 @@
 package com.bugsnag.android.performance.internal
 
 import android.util.JsonWriter
-import com.bugsnag.android.performance.Attributes
 import kotlin.collections.forEach
 
 internal fun JsonWriter.value(attributes: Attributes): JsonWriter {
     return array {
-        attributes.forEach { (key, value) ->
+        attributes.entries.forEach { (key, value) ->
             obj {
                 name("key").value(key)
 

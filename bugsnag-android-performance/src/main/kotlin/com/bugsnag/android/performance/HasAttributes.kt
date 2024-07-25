@@ -5,18 +5,14 @@ package com.bugsnag.android.performance
  * attributes directly without needing to access the [attributes] property.
  */
 public interface HasAttributes {
-    public val attributes: Attributes
 
     /**
-     * Set or clear a string attribute. Passing `null` is the same as calling [clearAttribute] for
-     * the given `name`.
+     * Set or clear a string attribute. Passing `null` will remove the attribute.
      *
      * @param name the attribute name
      * @param value the value to set the attribute to
      */
-    public fun setAttribute(name: String, value: String?) {
-        attributes[name] = value
-    }
+    public fun setAttribute(name: String, value: String?)
 
     /**
      * Set a long integer attribute.
@@ -24,9 +20,7 @@ public interface HasAttributes {
      * @param name the attribute name
      * @param value the value to set the attribute to
      */
-    public fun setAttribute(name: String, value: Long) {
-        attributes[name] = value
-    }
+    public fun setAttribute(name: String, value: Long)
 
     /**
      * Set an integer attribute.
@@ -34,9 +28,7 @@ public interface HasAttributes {
      * @param name the attribute name
      * @param value the value to set the attribute to
      */
-    public fun setAttribute(name: String, value: Int) {
-        attributes[name] = value
-    }
+    public fun setAttribute(name: String, value: Int)
 
     /**
      * Set a floating point / double attribute.
@@ -44,9 +36,7 @@ public interface HasAttributes {
      * @param name the attribute name
      * @param value the value to set the attribute to
      */
-    public fun setAttribute(name: String, value: Double) {
-        attributes[name] = value
-    }
+    public fun setAttribute(name: String, value: Double)
 
     /**
      * Set a boolean attribute.
@@ -54,15 +44,5 @@ public interface HasAttributes {
      * @param name the attribute name
      * @param value the value to set the attribute to
      */
-    public fun setAttribute(name: String, value: Boolean) {
-        attributes[name] = value
-    }
-
-    /**
-     * Clear / remove the specified attribute if it exists. This is the same
-     * as `attributes.remove(name)`.
-     */
-    public fun clearAttribute(name: String) {
-        attributes.remove(name)
-    }
+    public fun setAttribute(name: String, value: Boolean)
 }

@@ -21,6 +21,7 @@ class SpanOptionsTest {
     @Before
     fun newSpanFactory() {
         spanFactory = SpanFactory(NoopSpanProcessor)
+        SpanContext.contextStack.clear()
     }
 
     @Test
@@ -106,13 +107,13 @@ class SpanOptionsTest {
 
         // test nested span creation
         spanFactory.createCustomSpan("parent").use { rootSpan ->
-            assertTrue(rootSpan.attributes.contains("bugsnag.span.first_class" to true))
+            assertEquals(true, rootSpan.attributes["bugsnag.span.first_class"])
             spanFactory.createCustomSpan("child").use { childSpan ->
                 // All Custom spans are first_class
-                assertTrue(childSpan.attributes.contains("bugsnag.span.first_class" to true))
+                assertEquals(true, childSpan.attributes["bugsnag.span.first_class"])
                 spanFactory.createCustomSpan("override", SpanOptions.setFirstClass(true))
                     .use { overrideSpan ->
-                        assertTrue(overrideSpan.attributes.contains("bugsnag.span.first_class" to true))
+                        assertEquals(true, overrideSpan.attributes["bugsnag.span.first_class"])
                     }
             }
         }

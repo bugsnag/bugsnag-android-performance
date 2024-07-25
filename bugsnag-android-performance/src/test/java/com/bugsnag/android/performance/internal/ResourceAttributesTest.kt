@@ -37,7 +37,7 @@ class ResourceAttributesTest {
             emptySet(),
         )
 
-        val attributes = createResourceAttributes(configuration).toList().toMap()
+        val attributes = createResourceAttributes(configuration)
 
         assertTrue(attributes["host.arch"] in setOf("amd64", "arm64", "arm32", "x86"))
         assertEquals("linux", attributes["os.type"])
@@ -75,7 +75,7 @@ class ResourceAttributesTest {
             emptySet(),
         )
 
-        val attributes = createResourceAttributes(configuration).toList().toMap()
+        val attributes = createResourceAttributes(configuration)
 
         assertTrue(attributes["host.arch"] in setOf("amd64", "arm64", "arm32", "x86"))
         assertEquals("linux", attributes["os.type"])
