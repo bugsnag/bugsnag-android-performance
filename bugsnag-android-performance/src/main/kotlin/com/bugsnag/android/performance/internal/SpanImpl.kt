@@ -176,6 +176,18 @@ public class SpanImpl internal constructor(
         }
     }
 
+    override fun setAttribute(name: String, value: Collection<String>?) {
+        if (!isEnded()) {
+            attributes[name] = value
+        }
+    }
+
+    override fun setAttribute(name: String, value: Array<String>?) {
+        if (!isEnded()) {
+            attributes[name] = value
+        }
+    }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false

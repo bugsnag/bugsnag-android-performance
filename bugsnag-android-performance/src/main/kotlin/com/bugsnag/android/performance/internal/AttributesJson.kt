@@ -27,6 +27,21 @@ private fun toAttributeJson(value: Any, json: JsonWriter) {
             is Boolean -> json.name("boolValue").value(value)
             // int64 is JSON encoded as a String
             is Long, Int, Short, Byte -> json.name("intValue").value(value.toString())
+            is Collection<*> -> json.name("arrayValue").obj {
+                json.name("values").array {
+                    value.forEach { item ->
+                        item?.let { toAttributeJson(it, json) }
+                    }
+                }
+            }
+
+            is Array<*> -> json.name("arrayValue").obj {
+                json.name("values").array {
+                    value.forEach { item ->
+                        item?.let { toAttributeJson(it, json) }
+                    }
+                }
+            }
         }
     }
 }

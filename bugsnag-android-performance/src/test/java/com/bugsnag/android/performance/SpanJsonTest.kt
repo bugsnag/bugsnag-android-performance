@@ -34,7 +34,8 @@ class SpanJsonTest {
         span.setAttribute("frameTime.minimum", 1)
         span.setAttribute("release", true)
         span.setAttribute("my.custom.attribute", "Computer, belay that order.")
-
+        span.setAttribute("string collection attribute", listOf("one", "two", "three"))
+        span.setAttribute("string array attribute", arrayOf("111", "222", "333"))
         span.end(currentTime)
 
         val json = StringWriter()
@@ -71,6 +72,30 @@ class SpanJsonTest {
                         {
                             "key": "my.custom.attribute",
                             "value": { "stringValue": "Computer, belay that order." }
+                        },
+                        {
+                            "key": "string collection attribute",
+                            "value": { 
+                                "arrayValue":{
+                                    "values": [
+                                        {"stringValue":"one"},
+                                        {"stringValue":"two"},
+                                        {"stringValue":"three"}
+                                     ]
+                                }
+                            }
+                        },
+                        {
+                            "key": "string array attribute",
+                            "value": { 
+                                    "arrayValue":{
+                                        "values": [
+                                            {"stringValue":"111"},
+                                            {"stringValue":"222"},
+                                            {"stringValue":"333"}
+                                        ]
+                                    }
+                            }
                         }
                     ]
                 }
