@@ -108,7 +108,7 @@ class SpanJsonTest {
                         {
                             "key": "IntArray custom attributes", 
                             "value": { 
-                                "array": {
+                                "arrayValue": {
                                     "values": [
                                         { "intValue": "10" },
                                         { "intValue": "20" },
@@ -120,7 +120,7 @@ class SpanJsonTest {
                         {
                             "key": "LongArray custom attributes", 
                             "value": { 
-                                "array": {
+                                "arrayValue": {
                                     "values": [
                                         { "intValue": "11" },
                                         { "intValue": "22" },
@@ -132,7 +132,7 @@ class SpanJsonTest {
                         {
                             "key": "DoubleArray custom attributes", 
                             "value": { 
-                                "array": {
+                                "arrayValue": {
                                     "values": [
                                         { "doubleValue": "1.0" },
                                         { "doubleValue": "2.0" },

@@ -48,3 +48,40 @@ private fun writeArray(json: JsonWriter, value: Iterator<Any?>) {
         }
     }
 }
+
+
+private fun writeIntArray(json: JsonWriter, value: IntArray) {
+    json.name("arrayValue").obj {
+        json.name("values").array {
+            value.forEach { intValue ->
+                json.obj {
+                    name("intValue").value(intValue.toString())
+                }
+            }
+        }
+    }
+}
+
+private fun writeDoubleArray(json: JsonWriter, value: DoubleArray) {
+    json.name("arrayValue").obj {
+        json.name("values").array {
+            value.forEach { doubleArray ->
+                json.obj {
+                    name("doubleValue").value(doubleArray.toString())
+                }
+            }
+        }
+    }
+}
+
+private fun writeLongArray(json: JsonWriter, value: LongArray) {
+    json.name("arrayValue").obj {
+        json.name("values").array {
+            value.forEach { longValue ->
+                json.obj {
+                    name("intValue").value(longValue.toString())
+                }
+            }
+        }
+    }
+}
