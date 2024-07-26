@@ -31,6 +31,9 @@ public class PerformanceConfiguration private constructor(public val context: Co
 
     public var logger: Logger? = null
 
+    @JvmSynthetic
+    internal val spanEndCallbacks: MutableList<SpanEndCallback> = ArrayList()
+
     /**
      * Activity classes that are considered part of the AppStart and therefore will not
      * end the AppStart when the associated ViewLoad is ended.
@@ -144,5 +147,13 @@ public class PerformanceConfiguration private constructor(public val context: Co
                 }
             }
         }
+    }
+
+    public fun addOnSpanEndCallback (spanEndCallback:SpanEndCallback) {
+        spanEndCallbacks.add(spanEndCallback)
+    }
+
+    public fun removeOnSpanEndCallback (spanEndCallback:SpanEndCallback) {
+        spanEndCallbacks.remove(spanEndCallback)
     }
 }
