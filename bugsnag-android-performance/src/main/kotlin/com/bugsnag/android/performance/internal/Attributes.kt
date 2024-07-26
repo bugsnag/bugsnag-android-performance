@@ -1,7 +1,6 @@
 package com.bugsnag.android.performance.internal
 
 import androidx.annotation.RestrictTo
-import com.bugsnag.android.performance.Logger
 
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 public class Attributes {
@@ -49,8 +48,20 @@ public class Attributes {
         content.remove(name)
     }
 
-    public operator fun set(name: String, value: Collection<Any>) {
-        content[name] = value
+    public operator fun set(name: String, value: Array<String>?) {
+        if (value != null) {
+            content[name] = value
+        } else {
+            content.remove(name)
+        }
+    }
+
+    public operator fun set(name: String, value: Collection<Any>?) {
+        if (value != null) {
+            content[name] = value
+        } else {
+            content.remove(name)
+        }
     }
 
     public operator fun set(name: String, value: IntArray?) {

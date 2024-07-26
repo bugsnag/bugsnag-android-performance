@@ -34,6 +34,8 @@ class SpanJsonTest {
         span.setAttribute("frameTime.minimum", 1)
         span.setAttribute("release", true)
         span.setAttribute("my.custom.attribute", "Computer, belay that order.")
+        span.setAttribute("string collection attribute", listOf("one", "two", "three"))
+        span.setAttribute("string array attribute", arrayOf("111", "222", "333"))
         span.setAttribute("IntArray custom attributes", intArrayOf(10, 20, 30))
         span.setAttribute("LongArray custom attributes", longArrayOf(11, 22, 33))
         span.setAttribute("DoubleArray custom attributes", doubleArrayOf(1.0, 2.0, 3.0))
@@ -80,6 +82,30 @@ class SpanJsonTest {
                             "value": { "stringValue": "Computer, belay that order." }
                         },
                         {
+                            "key": "string collection attribute",
+                            "value": { 
+                                "arrayValue":{
+                                    "values": [
+                                        {"stringValue":"one"},
+                                        {"stringValue":"two"},
+                                        {"stringValue":"three"}
+                                     ]
+                                }
+                            }
+                        },
+                        {
+                            "key": "string array attribute",
+                            "value": { 
+                                    "arrayValue":{
+                                        "values": [
+                                            {"stringValue":"111"},
+                                            {"stringValue":"222"},
+                                            {"stringValue":"333"}
+                                        ]
+                                    }
+                            }
+                        },
+                        {
                             "key": "IntArray custom attributes", 
                             "value": { 
                                 "array": {
@@ -96,9 +122,9 @@ class SpanJsonTest {
                             "value": { 
                                 "array": {
                                     "values": [
-                                        { "longValue": "11" },
-                                        { "longValue": "22" },
-                                        { "longValue": "33" }
+                                        { "intValue": "11" },
+                                        { "intValue": "22" },
+                                        { "intValue": "33" }
                                     ]
                                 }
                             }

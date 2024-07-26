@@ -176,9 +176,17 @@ public class SpanImpl internal constructor(
         }
     }
 
-    override fun setAttribute(name: String, value: Collection<Any>) {
+    override fun setAttribute(name: String, value: Array<String>?) {
         if (!isEnded()) {
             attributes[name] = value
+        }
+    }
+
+    override fun setAttribute(name: String, value: Collection<Any>?) {
+        if (!isEnded()) {
+            if (value != null) {
+                attributes[name] = value
+            }
         }
     }
 

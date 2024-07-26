@@ -2,7 +2,6 @@
 <SmellBaseline>
   <ManuallySuppressedIssues/>
   <CurrentIssues>
-    <ID>ComplexMethod:AttributesJson.kt$private fun toAttributeJson(value: Any, json: JsonWriter)</ID>
     <ID>ComplexMethod:Connectivity.kt$ConnectivityApi24$private fun nameForDataNetworkType(dataNetworkType: Int): String</ID>
     <ID>ComplexMethod:SpanOptions.kt$SpanOptions$override fun equals(other: Any?): Boolean</ID>
     <ID>DestructuringDeclarationWithTooManyEntries:ActivityLifecycleInstrumentationTest.kt$ActivityLifecycleInstrumentationTest$val (create, viewLoad, start, resume) = spans</ID>
