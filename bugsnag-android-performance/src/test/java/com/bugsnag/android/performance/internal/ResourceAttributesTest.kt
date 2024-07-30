@@ -35,6 +35,7 @@ class ResourceAttributesTest {
             emptySet(),
             emptySet(),
             emptySet(),
+            emptyArray(),
         )
 
         val attributes = createResourceAttributes(configuration)
@@ -73,6 +74,7 @@ class ResourceAttributesTest {
             emptySet(),
             emptySet(),
             emptySet(),
+            emptyArray(),
         )
 
         val attributes = createResourceAttributes(configuration)

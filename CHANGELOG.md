@@ -1,3 +1,10 @@
+## TBC
+
+### Enhancements
+
+* Intruduced `OnSpanEndCallback`s that allow changes to spans when their `end()` method is called, but before they are sent.
+  [#254](https://github.com/bugsnag/bugsnag-android-performance/pull/254)
+
 ## 1.4.0 (2024-06-27)
 
 ### Enhancements
