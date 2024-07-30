@@ -55,14 +55,10 @@ public interface HasAttributes {
     public fun setAttribute(name: String, value: Array<String>?)
 
     /**
-     * Set a collection of values.
      * Set a collection of primitive values as an attribute.
      * Every element should be of the same type, and only String, Integer, Long, Double and Boolean
-     * are supported.
-     * If the collection contains mixed values, null, or any other type: the behavior is undefined.
-     *
-     * @param name the attribute name
-     * @param value the value to set the attribute to
+     * are supported. If the collection contains mixed values, null, or any other type: the behavior is
+     * undefined.
      */
     public fun setAttribute(name: String, value: Collection<Any>?)
 
