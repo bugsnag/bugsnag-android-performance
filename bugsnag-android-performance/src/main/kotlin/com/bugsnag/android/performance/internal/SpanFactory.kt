@@ -39,7 +39,7 @@ public class SpanFactory(
     ): SpanImpl? {
         val reqInfo = NetworkRequestInfo(url)
         networkRequestCallback?.onNetworkRequest(reqInfo)
-        reqInfo.url?.let {resultUrl ->
+        reqInfo.url?.let { resultUrl ->
             val verbUpper = verb.uppercase()
             val span = createSpan(
                 "[HTTP/$verbUpper]",
@@ -71,7 +71,7 @@ public class SpanFactory(
         spanProcessor: SpanProcessor = this.spanProcessor,
     ): SpanImpl {
         val isFirstClass = options.isFirstClass
-            ?: SpanContext.noSpansMatch { it.category == SpanCategory.VIEW_LOAD }
+            ?: SpanContext.contextStack.noSpansMatch { it.category == SpanCategory.VIEW_LOAD }
 
         val span = createSpan(
             "[ViewLoad/${viewType.spanName}]$viewName",
@@ -85,7 +85,7 @@ public class SpanFactory(
         span.setAttribute("bugsnag.view.name", viewName)
         span.setAttribute("bugsnag.span.first_class", isFirstClass)
 
-        val appStart = SpanContext.findSpan { it.category == SpanCategory.APP_START }
+        val appStart = SpanContext.contextStack.findSpan { it.category == SpanCategory.APP_START }
         if (appStart != null && appStart.attributes["bugsnag.app_start.first_view_name"] == null) {
             appStart.setAttribute("bugsnag.view.type", viewType.typeName)
             appStart.setAttribute("bugsnag.app_start.first_view_name", viewName)
