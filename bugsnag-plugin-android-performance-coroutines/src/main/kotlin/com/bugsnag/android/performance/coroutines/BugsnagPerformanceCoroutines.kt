@@ -2,6 +2,7 @@ package com.bugsnag.android.performance.coroutines
 
 import com.bugsnag.android.performance.SpanContext
 import com.bugsnag.android.performance.internal.BugsnagPerformanceInternals
+import com.bugsnag.android.performance.internal.SpanContextStack
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -13,17 +14,17 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
 private class ContextAwareCoroutineContextElement(
-    private val coroutineContextStack: Deque<SpanContext> = ArrayDeque(),
-) : ThreadContextElement<Deque<SpanContext>> {
+    private val coroutineContextStack: SpanContextStack,
+) : ThreadContextElement<SpanContextStack> {
 
-    constructor(spanContext: SpanContext) : this(ArrayDeque<SpanContext>().apply { push(spanContext) })
+    constructor(spanContext: SpanContext) : this(SpanContextStack().apply { attach(spanContext) })
 
     override val key: CoroutineContext.Key<ContextAwareCoroutineContextElement>
         get() = Key
 
-    fun copy() = ContextAwareCoroutineContextElement(ArrayDeque(coroutineContextStack))
+    fun copy() = ContextAwareCoroutineContextElement(coroutineContextStack.copy())
 
-    override fun updateThreadContext(context: CoroutineContext): Deque<SpanContext> {
+    override fun updateThreadContext(context: CoroutineContext): SpanContextStack {
         // coroutine starting/resuming - grab the current SpanContext stack for this thread
         // so that we can restore it when the coroutine is suspended
         val previousStack = BugsnagPerformanceInternals.currentSpanContextStack
@@ -34,7 +35,7 @@ private class ContextAwareCoroutineContextElement(
         return previousStack
     }
 
-    override fun restoreThreadContext(context: CoroutineContext, oldState: Deque<SpanContext>) {
+    override fun restoreThreadContext(context: CoroutineContext, oldState: SpanContextStack) {
         // coroutine suspended - restore this thread's previous SpanContext stack
         BugsnagPerformanceInternals.currentSpanContextStack = oldState
     }

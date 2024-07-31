@@ -1,7 +1,6 @@
 package com.bugsnag.android.performance
 
-import java.util.ArrayDeque
-import java.util.Deque
+import com.bugsnag.android.performance.internal.SpanContextStack
 import java.util.UUID
 import java.util.concurrent.Callable
 
@@ -42,13 +41,13 @@ public interface SpanContext {
     }
 
     public companion object Storage {
-        private val threadLocalStorage = object : ThreadLocal<Deque<SpanContext>>() {
-            override fun initialValue(): Deque<SpanContext> = ArrayDeque()
+        private val threadLocalStorage = object : ThreadLocal<SpanContextStack>() {
+            override fun initialValue(): SpanContextStack = SpanContextStack()
         }
 
         @get:JvmSynthetic
-        internal var contextStack: Deque<SpanContext>
-            get() = threadLocalStorage.get() as Deque<SpanContext>
+        internal var contextStack: SpanContextStack
+            get() = threadLocalStorage.get() as SpanContextStack
             set(value) {
                 threadLocalStorage.set(value)
             }
@@ -58,29 +57,16 @@ public interface SpanContext {
          */
         @JvmStatic
         public val current: SpanContext
-            get() {
-                removeClosedContexts()
-                return contextStack.peekFirst() ?: invalid
-            }
+            get() = contextStack.top ?: invalid
 
         @JvmSynthetic
         internal fun attach(toAttach: SpanContext) {
-            contextStack.push(toAttach)
+            contextStack.attach(toAttach)
         }
 
         @JvmSynthetic
         internal fun detach(spanContext: SpanContext) {
-            val stack = contextStack
-            // assume that the top of the stack is 'spanContext' and 'poll' it off
-            // since poll returns null instead of throwing an exception
-            val top = contextStack.pollFirst() ?: return
-
-            if (top != spanContext) {
-                // oops! the top of the stack wasn't what we expected so we put it back here
-                stack.push(top)
-            }
-            // remove any closed contexts from the top of the stack
-            removeClosedContexts()
+            contextStack.detach(spanContext)
         }
 
         @JvmStatic
@@ -95,12 +81,6 @@ public interface SpanContext {
             override fun wrap(runnable: Runnable): Runnable = runnable
 
             override fun <T> wrap(callable: Callable<T>): Callable<T> = callable
-        }
-
-        private fun removeClosedContexts() {
-            while ((contextStack.peekFirst() as? Span)?.isEnded() == true) {
-                contextStack.pollFirst()
-            }
         }
     }
 }

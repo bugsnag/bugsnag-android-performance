@@ -4,10 +4,10 @@
 
 * Custom attributes can now be set on a span, including as arrays of primitives (int, long, double, boolean, string).
   [#252](https://github.com/bugsnag/bugsnag-android-performance/pull/252)
-
 * Introduced `OnSpanEndCallback`s that allow changes to spans when their `end()` method is called, but before they are sent.
   [#254](https://github.com/bugsnag/bugsnag-android-performance/pull/254)
-
+* Spans in the `SpanContext` stack are now weak referenced to avoid holding spans that cannot be closed externally
+  [#255](https://github.com/bugsnag/bugsnag-android-performance/pull/255)
 
 ## 1.4.0 (2024-06-27)
 
