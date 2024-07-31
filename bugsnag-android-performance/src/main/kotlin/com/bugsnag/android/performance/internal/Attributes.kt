@@ -48,7 +48,7 @@ public class Attributes {
         content.remove(name)
     }
 
-    public operator fun set(name: String, value: Collection<String>?) {
+    public operator fun set(name: String, value: Array<String>?) {
         if (value != null) {
             content[name] = value
         } else {
@@ -56,7 +56,31 @@ public class Attributes {
         }
     }
 
-    public operator fun set(name: String, value: Array<String>?) {
+    public operator fun set(name: String, value: Collection<Any>?) {
+        if (value != null) {
+            content[name] = value
+        } else {
+            content.remove(name)
+        }
+    }
+
+    public operator fun set(name: String, value: IntArray?) {
+        if (value != null) {
+            content[name] = value
+        } else {
+            content.remove(name)
+        }
+    }
+
+    public operator fun set(name: String, value: LongArray?) {
+        if (value != null) {
+            content[name] = value
+        } else {
+            content.remove(name)
+        }
+    }
+
+    public operator fun set(name: String, value: DoubleArray?) {
         if (value != null) {
             content[name] = value
         } else {

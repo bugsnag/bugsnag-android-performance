@@ -47,6 +47,7 @@
     <ID>TooGenericExceptionCaught:PerformanceConfiguration.kt$PerformanceConfiguration.Loader$exc: Exception</ID>
     <ID>TooGenericExceptionCaught:Worker.kt$Worker$e: Exception</ID>
     <ID>TooGenericExceptionCaught:Worker.kt$Worker$ex: Exception</ID>
+    <ID>TooManyFunctions:Attributes.kt$Attributes</ID>
     <ID>TooManyFunctions:BugsnagPerformance.kt$BugsnagPerformance$BugsnagPerformance</ID>
     <ID>TooManyFunctions:Connectivity.kt$ConnectivityApi24 : NetworkCallbackConnectivity</ID>
     <ID>TooManyFunctions:SpanTracker.kt$SpanTracker</ID>

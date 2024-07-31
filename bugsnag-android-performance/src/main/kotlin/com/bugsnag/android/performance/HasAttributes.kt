@@ -52,13 +52,37 @@ public interface HasAttributes {
      * @param name the attribute name
      * @param value the value to set the attribute to
      */
-    public fun setAttribute(name: String, value: Collection<String>?)
+    public fun setAttribute(name: String, value: Array<String>?)
 
     /**
-     * Set or clear a string collection attribute. Passing `null` will remove the attribute.
+     * Set a collection of primitive values as an attribute.
+     * Every element should be of the same type, and only String, Integer, Long, Double and Boolean
+     * are supported. If the collection contains mixed values, null, or any other type: the behavior is
+     * undefined.
+     */
+    public fun setAttribute(name: String, value: Collection<Any>?)
+
+    /**
+     * Set an array of integer values.
      *
      * @param name the attribute name
      * @param value the value to set the attribute to
      */
-    public fun setAttribute(name: String, value: Array<String>?)
+    public fun setAttribute(name: String, value: IntArray?)
+
+    /**
+     * Set an array of long values.
+     *
+     * @param name the attribute name
+     * @param value the value to set the attribute to
+     */
+    public fun setAttribute(name: String, value: LongArray?)
+    
+     /**
+     * Set an array of double values.
+     *
+     * @param name the attribute name
+     * @param value the value to set the attribute to
+     */
+    public fun setAttribute(name: String, value: DoubleArray?)
 }

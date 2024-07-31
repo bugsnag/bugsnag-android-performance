@@ -3,7 +3,6 @@
 package com.bugsnag.android.performance.internal
 
 import android.util.JsonWriter
-import kotlin.collections.forEach
 
 internal fun JsonWriter.value(attributes: Attributes): JsonWriter {
     return array {
@@ -26,20 +25,61 @@ private fun toAttributeJson(value: Any, json: JsonWriter) {
             is Double -> json.name("doubleValue").value(value)
             is Boolean -> json.name("boolValue").value(value)
             // int64 is JSON encoded as a String
-            is Long, Int, Short, Byte -> json.name("intValue").value(value.toString())
-            is Collection<*> -> json.name("arrayValue").obj {
-                json.name("values").array {
-                    value.forEach { item ->
-                        item?.let { toAttributeJson(it, json) }
-                    }
+            is Long, is Int, is Short, is Byte -> {
+                json.name("intValue").value(value.toString())
+            }
+            is Collection<*> -> writeArray(json, value.iterator())
+            is Array<*> -> writeArray(json, value.iterator())
+            is IntArray -> writeIntArray(json, value)
+            is LongArray -> writeLongArray(json, value)
+            is DoubleArray -> writeDoubleArray(json, value)
+        }
+    }
+}
+
+private fun writeArray(json: JsonWriter, value: Iterator<Any?>) {
+    json.name("arrayValue").obj {
+        json.name("values").array {
+            value.forEach { item ->
+                item?.let {
+                    toAttributeJson(item, json)
                 }
             }
+        }
+    }
+}
 
-            is Array<*> -> json.name("arrayValue").obj {
-                json.name("values").array {
-                    value.forEach { item ->
-                        item?.let { toAttributeJson(it, json) }
-                    }
+
+private fun writeIntArray(json: JsonWriter, value: IntArray) {
+    json.name("arrayValue").obj {
+        json.name("values").array {
+            value.forEach { intValue ->
+                json.obj {
+                    name("intValue").value(intValue.toString())
+                }
+            }
+        }
+    }
+}
+
+private fun writeDoubleArray(json: JsonWriter, value: DoubleArray) {
+    json.name("arrayValue").obj {
+        json.name("values").array {
+            value.forEach { doubleArray ->
+                json.obj {
+                    name("doubleValue").value(doubleArray.toString())
+                }
+            }
+        }
+    }
+}
+
+private fun writeLongArray(json: JsonWriter, value: LongArray) {
+    json.name("arrayValue").obj {
+        json.name("values").array {
+            value.forEach { longValue ->
+                json.obj {
+                    name("intValue").value(longValue.toString())
                 }
             }
         }

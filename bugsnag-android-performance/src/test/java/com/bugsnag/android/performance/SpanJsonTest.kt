@@ -36,6 +36,14 @@ class SpanJsonTest {
         span.setAttribute("my.custom.attribute", "Computer, belay that order.")
         span.setAttribute("string collection attribute", listOf("one", "two", "three"))
         span.setAttribute("string array attribute", arrayOf("111", "222", "333"))
+        span.setAttribute("IntArray custom attributes", intArrayOf(10, 20, 30))
+        span.setAttribute("LongArray custom attributes", longArrayOf(11, 22, 33))
+        span.setAttribute("DoubleArray custom attributes", doubleArrayOf(1.0, 2.0, 3.0))
+
+        span.setAttribute("Int collection attribute", listOf(4, 5, 6))
+        span.setAttribute("Long collection attribute", listOf(4L, 5L, 6L))
+        span.setAttribute("Double collection attribute", listOf(4.4, 5.5, 6.6))
+
         span.end(currentTime)
 
         val json = StringWriter()
@@ -95,6 +103,78 @@ class SpanJsonTest {
                                             {"stringValue":"333"}
                                         ]
                                     }
+                            }
+                        },
+                        {
+                            "key": "IntArray custom attributes", 
+                            "value": { 
+                                "arrayValue": {
+                                    "values": [
+                                        { "intValue": "10" },
+                                        { "intValue": "20" },
+                                        { "intValue": "30" }
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "key": "LongArray custom attributes", 
+                            "value": { 
+                                "arrayValue": {
+                                    "values": [
+                                        { "intValue": "11" },
+                                        { "intValue": "22" },
+                                        { "intValue": "33" }
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "key": "DoubleArray custom attributes", 
+                            "value": { 
+                                "arrayValue": {
+                                    "values": [
+                                        { "doubleValue": "1.0" },
+                                        { "doubleValue": "2.0" },
+                                        { "doubleValue": "3.0" }
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "key": "Int collection attribute", 
+                            "value": { 
+                                "arrayValue": {
+                                    "values": [
+                                        { "intValue": "4" },
+                                        { "intValue": "5" },
+                                        { "intValue": "6" }
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "key": "Long collection attribute", 
+                            "value": { 
+                                "arrayValue": {
+                                    "values": [
+                                        { "intValue": "4" },
+                                        { "intValue": "5" },
+                                        { "intValue": "6" }
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "key": "Double collection attribute", 
+                            "value": { 
+                                "arrayValue": {
+                                    "values": [
+                                        { "doubleValue": 4.4 },
+                                        { "doubleValue": 5.5 },
+                                        { "doubleValue": 6.6 }
+                                    ]
+                                }
                             }
                         }
                     ]

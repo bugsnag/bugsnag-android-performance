@@ -176,13 +176,31 @@ public class SpanImpl internal constructor(
         }
     }
 
-    override fun setAttribute(name: String, value: Collection<String>?) {
+    override fun setAttribute(name: String, value: Array<String>?) {
         if (!isEnded()) {
             attributes[name] = value
         }
     }
 
-    override fun setAttribute(name: String, value: Array<String>?) {
+    override fun setAttribute(name: String, value: Collection<Any>?) {
+        if (!isEnded()) {
+            attributes[name] = value
+        }
+    }
+
+    override fun setAttribute(name: String, value: IntArray?) {
+        if (!isEnded()) {
+            attributes[name] = value
+        }
+    }
+
+    override fun setAttribute(name: String, value: LongArray?) {
+        if (!isEnded()) {
+            attributes[name] = value
+        }
+    }
+
+    override fun setAttribute(name: String, value: DoubleArray?) {
         if (!isEnded()) {
             attributes[name] = value
         }
