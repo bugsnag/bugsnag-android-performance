@@ -11,6 +11,6 @@ plugins {
 
 tasks.create("clean") {
     doLast {
-        delete(rootProject.buildDir)
+        delete(rootProject.layout.buildDirectory)
     }
 }

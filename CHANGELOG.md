@@ -9,6 +9,17 @@
 * Spans in the `SpanContext` stack are now weak referenced to avoid holding spans that cannot be closed externally
   [#255](https://github.com/bugsnag/bugsnag-android-performance/pull/255)
 
+## 1.5.0 (2024-08-01)
+
+### Enhancements
+
+* Add `serviceName` config option to allow the `service.name` attribute defaults to be overridden
+  [258](https://github.com/bugsnag/bugsnag-android-performance/pull/258)
+
+### Changes
+
+* Bumped minimum Kotlin version to 1.8.0
+
 ## 1.4.0 (2024-06-27)
 
 ### Enhancements

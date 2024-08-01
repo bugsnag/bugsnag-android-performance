@@ -29,6 +29,8 @@ public class PerformanceConfiguration private constructor(public val context: Co
 
     public var appVersion: String? = null
 
+    public var serviceName: String? = null
+
     public var logger: Logger? = null
 
     @JvmSynthetic

@@ -9,6 +9,10 @@ class ManualSpanScenario(
     config: PerformanceConfiguration,
     scenarioMetadata: String,
 ) : Scenario(config, scenarioMetadata) {
+    init {
+        config.serviceName = "manual.span.service"
+    }
+
     override fun startScenario() {
         BugsnagPerformance.start(config)
         runAndFlush {
