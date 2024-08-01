@@ -1,3 +1,10 @@
+## TBD
+
+### Enhancements
+
+* Add `serviceName` config option to allow the `service.name` attribute defaults to be overridden
+  [257](https://github.com/bugsnag/bugsnag-android-performance/pull/257)
+
 ## 1.4.0 (2024-06-27)
 
 ### Enhancements
