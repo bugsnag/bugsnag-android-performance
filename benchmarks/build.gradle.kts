@@ -22,7 +22,6 @@ android {
 
     defaultConfig {
         minSdk = 23
-        targetSdk = 33
 
         testInstrumentationRunner = "androidx.benchmark.junit4.AndroidBenchmarkRunner"
 
@@ -34,14 +33,14 @@ android {
     testBuildType = "release"
     buildTypes {
         debug {
+        }
+        release {
+            isDefault = true
             isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "benchmark-proguard-rules.pro",
             )
-        }
-        release {
-            isDefault = true
         }
     }
 }

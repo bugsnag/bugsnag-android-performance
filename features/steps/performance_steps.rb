@@ -75,7 +75,7 @@ When("I relaunch the app after shutdown") do
   end
   $logger.warn "App state #{state} instead of #{expected_state} after 10s" unless state == :not_running
 
-  Maze.driver.launch_app
+  Maze.driver.activate_app Maze.driver.app_id
 end
 
 def spans_from_request_list list
