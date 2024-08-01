@@ -69,6 +69,7 @@ steps:
           - "--app=@build/fixture_url.txt"
           - "--farm=bb"
           - "--device={{matrix}}"
+          - "--appium-version=1.22"
           - "--no-tunnel"
           - "--aws-public-ip"
           - "--fail-fast"
