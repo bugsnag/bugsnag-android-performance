@@ -148,6 +148,8 @@ class MainActivity : AppCompatActivity() {
                 notify = "http://$mazeAddress/notify",
                 sessions = "http://$mazeAddress/session",
             )
+
+            logger = BugsnagLogger
         }
         Bugsnag.start(this, config)
     }

@@ -1,7 +1,6 @@
 package com.bugsnag.android.performance.internal
 
 import android.os.Build
-import com.bugsnag.android.performance.Attributes
 import com.bugsnag.android.performance.BugsnagPerformance
 
 internal fun createResourceAttributes(configuration: ImmutableConfig): Attributes {
