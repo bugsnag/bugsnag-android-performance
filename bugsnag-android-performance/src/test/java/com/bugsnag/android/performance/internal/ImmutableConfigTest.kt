@@ -47,7 +47,7 @@ class ImmutableConfigTest {
         assertEquals(perfConfig.apiKey, immutableConfig.apiKey)
         assertEquals(perfConfig.endpoint, immutableConfig.endpoint)
         assertEquals(perfConfig.autoInstrumentAppStarts, immutableConfig.autoInstrumentAppStarts)
-        assertEquals(TEST_PACKAGE_NAME, immutableConfig.packageName)
+        assertEquals(TEST_PACKAGE_NAME, immutableConfig.serviceName)
         assertEquals(perfConfig.releaseStage, immutableConfig.releaseStage)
         assertEquals(perfConfig.enabledReleaseStages, immutableConfig.enabledReleaseStages)
         assertEquals(perfConfig.versionCode, immutableConfig.versionCode)

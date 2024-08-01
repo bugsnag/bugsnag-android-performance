@@ -11,6 +11,7 @@ class ManualSpanScenario(
     scenarioMetadata: String
 ) : Scenario(config, scenarioMetadata) {
     init {
+        config.serviceName = "manual.span.service"
         InternalDebug.spanBatchSizeSendTriggerPoint = 1
     }
 
