@@ -2,6 +2,7 @@ package com.bugsnag.android.performance.internal.processing
 
 import android.os.SystemClock
 import com.bugsnag.android.performance.Span
+import com.bugsnag.android.performance.SpanEndCallback
 import com.bugsnag.android.performance.internal.InternalDebug
 import com.bugsnag.android.performance.internal.ProbabilitySampler
 import com.bugsnag.android.performance.internal.Sampler
@@ -15,6 +16,8 @@ internal class Tracer : BatchingSpanProcessor() {
     internal var sampler: Sampler = ProbabilitySampler(1.0)
 
     internal var worker: Worker? = null
+
+    internal var spanEndCallbacks: MutableList<SpanEndCallback> = ArrayList()
 
     /**
      * Returns the next batch of spans to be sent, or `null` if the batch is not "ready" to be sent.
@@ -47,11 +50,26 @@ internal class Tracer : BatchingSpanProcessor() {
     override fun onEnd(span: Span) {
         if (span !is SpanImpl) return
 
-        if (sampler.shouldKeepSpan(span)) {
+        if (sampler.shouldKeepSpan(span) && callbacksKeepSpan(span)) {
+            span.isEnded = true
             val batchSize = addToBatch(span)
             if (batchSize >= InternalDebug.spanBatchSizeSendTriggerPoint) {
                 worker?.wake()
             }
         }
+    }
+
+    private fun callbacksKeepSpan(span: SpanImpl): Boolean {
+        if (spanEndCallbacks.isNotEmpty()) {
+            val startTime = SystemClock.elapsedRealtimeNanos()
+            spanEndCallbacks.forEach {
+                if (!it.onSpanEnd(span)) {
+                    return false
+                }
+            }
+            val duration = SystemClock.elapsedRealtimeNanos() - startTime
+            span.attributes["bugsnag.span.callbacks_duration"] = duration
+        }
+        return true
     }
 }

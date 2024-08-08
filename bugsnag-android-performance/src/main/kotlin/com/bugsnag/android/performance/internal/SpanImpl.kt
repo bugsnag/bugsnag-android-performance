@@ -30,6 +30,8 @@ public class SpanImpl internal constructor(
 
     public val attributes: Attributes = Attributes()
 
+    internal var isEnded: Boolean = false
+
     /**
      * Internally SpanImpl objects can be chained together as a fast linked-list structure
      * (nicknamed [SpanChain]) allowing us a lock-free / allocation-free batching structure.
@@ -97,7 +99,7 @@ public class SpanImpl internal constructor(
 
     override fun end(): Unit = end(SystemClock.elapsedRealtimeNanos())
 
-    override fun isEnded(): Boolean = endTime.get() != NO_END_TIME
+    override fun isEnded(): Boolean = endTime.get() != NO_END_TIME && isEnded
 
     internal fun toJson(json: JsonWriter) {
         json.obj {

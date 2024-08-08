@@ -43,6 +43,7 @@ Feature: Manual creation of spans
     * the trace payload field "resourceSpans.0.resource" string attribute "service.name" equals "com.bugsnag.mazeracer"
     * the trace payload field "resourceSpans.0.resource" string attribute "telemetry.sdk.name" equals "bugsnag.performance.android"
     * the trace payload field "resourceSpans.0.resource" string attribute "telemetry.sdk.version" matches the regex "[0-9]+\.[0-9]+\.[0-9]+"
+    * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0" long attribute "bugsnag.span.callbacks_duration" exists
 
   Scenario: Spans can be logged before start
     Given I run "PreStartSpansScenario"

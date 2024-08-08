@@ -1,11 +1,13 @@
 package com.bugsnag.android.performance.internal.processing
 
+import com.bugsnag.android.performance.SpanEndCallback
 import com.bugsnag.android.performance.SpanOptions
 import com.bugsnag.android.performance.internal.InternalDebug
 import com.bugsnag.android.performance.internal.SpanFactory
 import com.bugsnag.android.performance.internal.Worker
 import com.bugsnag.android.performance.test.withDebugValues
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
@@ -19,11 +21,17 @@ import org.robolectric.RobolectricTestRunner
 class TracerTest {
     private lateinit var tracer: Tracer
     private lateinit var spanFactory: SpanFactory
+    private val spanEndCallback1 = SpanEndCallback { true }
+    private val spanEndCallback2 = SpanEndCallback { false }
+    private val worker = mock<Worker>()
+
 
     @Before
     fun createTracer() {
         tracer = Tracer()
+        tracer.worker = worker
         spanFactory = SpanFactory(tracer)
+        tracer.spanEndCallbacks = mutableListOf(spanEndCallback1)
     }
 
     @Test
@@ -51,10 +59,6 @@ class TracerTest {
     @Test
     fun activatesWorker() = InternalDebug.withDebugValues {
         InternalDebug.spanBatchSizeSendTriggerPoint = 2
-
-        val worker = mock<Worker>()
-        tracer.worker = worker
-
         spanFactory.createCustomSpan("BatchSize1.1", SpanOptions.startTime(2L)).end(20L)
         spanFactory.createCustomSpan("BatchSize1.2", SpanOptions.startTime(3L)).end(30L)
 
@@ -65,11 +69,38 @@ class TracerTest {
     @Test
     fun emptyBatch() = InternalDebug.withDebugValues {
         InternalDebug.workerSleepMs = 0L
-
-        val worker = mock<Worker>()
-        tracer.worker = worker
-
         val batch = tracer.collectNextBatch()
         assertEquals(0, batch?.size) // we expect an empty batch, not null
     }
+
+    @Test
+    fun emptySpanEndCallback() {
+        tracer.spanEndCallbacks = mutableListOf()
+        InternalDebug.spanBatchSizeSendTriggerPoint = 1
+        spanFactory.createCustomSpan("BatchSize1.1", SpanOptions.startTime(2L)).end(20L)
+        verify(worker, times(1)).wake()
+    }
+
+    @Test
+    fun spanEndCallbackReturnFalse() {
+        tracer.spanEndCallbacks = mutableListOf(spanEndCallback1, spanEndCallback2)
+        InternalDebug.spanBatchSizeSendTriggerPoint = 1
+        val span = spanFactory.createCustomSpan("BatchSize1.1", SpanOptions.startTime(2L)).apply {
+            end()
+        }
+        assertNull(span.attributes["bugsnag.span.callbacks_duration"])
+        verify(worker, times(0)).wake()
+    }
+
+    @Test
+    fun spanEndCallbackDuration() {
+        InternalDebug.spanBatchSizeSendTriggerPoint = 1
+       val span = spanFactory.createCustomSpan("BatchSize1.1", SpanOptions.startTime(2L)).apply {
+            end()
+       }
+
+        assertNotNull(span.attributes["bugsnag.span.callbacks_duration"])
+        verify(worker, times(1)).wake()
+    }
+
 }

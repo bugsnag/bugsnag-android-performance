@@ -91,3 +91,8 @@ Then('every span integer attribute {string} matches the regex {string}') do |att
   spans = spans_from_request_list(Maze::Server.list_for('traces'))
   spans.map { |span| Maze::check.match(regex, span['attributes'].find { |a| a['key'] == attribute }['value']['intValue']) }
 end
+
+Then('the trace payload field {string} long attribute {string} exists') do |field, attribute|
+  value = get_attribute_value field, attribute, 'longValue'
+  Maze.check.not_nil value
+end
