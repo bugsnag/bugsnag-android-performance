@@ -34,7 +34,7 @@ public class PerformanceConfiguration private constructor(public val context: Co
     public var logger: Logger? = null
 
     @JvmSynthetic
-    internal val spanEndCallbacks: MutableList<SpanEndCallback> = ArrayList()
+    internal var spanEndCallbacks: MutableList<SpanEndCallback> = ArrayList()
 
     /**
      * Activity classes that are considered part of the AppStart and therefore will not

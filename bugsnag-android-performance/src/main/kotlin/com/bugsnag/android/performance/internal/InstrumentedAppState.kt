@@ -54,7 +54,7 @@ public class InstrumentedAppState {
         attach(configuration.application)
 
         val bootstrapSpanProcessor = spanProcessor
-        val tracer = Tracer()
+        val tracer = Tracer(configuration.spanEndCallbacks)
 
         configureLifecycleCallbacks(configuration)
         app.registerComponentCallbacks(PerformanceComponentCallbacks(tracer))

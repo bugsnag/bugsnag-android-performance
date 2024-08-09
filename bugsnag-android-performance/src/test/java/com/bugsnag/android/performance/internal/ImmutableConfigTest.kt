@@ -7,6 +7,8 @@ import android.content.pm.PackageManager
 import com.bugsnag.android.performance.AutoInstrument
 import com.bugsnag.android.performance.Logger
 import com.bugsnag.android.performance.PerformanceConfiguration
+import com.bugsnag.android.performance.Span
+import com.bugsnag.android.performance.SpanEndCallback
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotSame
@@ -175,6 +177,45 @@ class ImmutableConfigTest {
         ImmutableConfig(perfConfig)
 
         verify(logger).w(startsWith("Invalid configuration"))
+    }
+
+    @Test
+    fun EditSpandEndCallbacks() {
+        val perfConfig = PerformanceConfiguration(mockedContext(), TEST_API_KEY).apply {
+            endpoint = "https://test.com/testing"
+            releaseStage = "staging"
+            enabledReleaseStages = setOf("staging", "production")
+            autoInstrumentAppStarts = false
+            autoInstrumentActivities = AutoInstrument.START_ONLY
+            versionCode = 543L
+            appVersion = "9.8.1"
+            tracePropagationUrls = emptySet<Pattern>()
+            spanEndCallbacks = mutableListOf<SpanEndCallback>()
+        }
+
+        val spanEndCallback1 = SpanEndCallback { span: Span ->
+            span as SpanImpl
+            span.setAttribute("Test Number", 1111)
+            true
+        }
+        val spanEndCallback2 = SpanEndCallback { span: Span ->
+            span as SpanImpl
+            span.setAttribute("Test Number", 2222)
+            true
+        }
+        val spanEndCallback3 = SpanEndCallback { span: Span ->
+            span as SpanImpl
+            span.setAttribute("Test Number", 3333)
+            true
+        }
+
+        perfConfig.addOnSpanEndCallback(spanEndCallback1)
+        perfConfig.addOnSpanEndCallback(spanEndCallback2)
+        perfConfig.removeOnSpanEndCallback(spanEndCallback2)
+        perfConfig.addOnSpanEndCallback(spanEndCallback3)
+
+        assertEquals(perfConfig.spanEndCallbacks.size, 2)
+        assertEquals(perfConfig.spanEndCallbacks.first(), spanEndCallback1)
     }
 
     private fun mockedContext(): Context {
