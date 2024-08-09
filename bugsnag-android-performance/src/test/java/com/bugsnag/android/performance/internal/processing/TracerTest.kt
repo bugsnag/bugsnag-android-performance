@@ -25,10 +25,9 @@ class TracerTest {
     private val spanEndCallback2 = SpanEndCallback { false }
     private val worker = mock<Worker>()
 
-
     @Before
     fun createTracer() {
-        tracer = Tracer()
+        tracer = Tracer(emptyArray())
         tracer.worker = worker
         spanFactory = SpanFactory(tracer)
         tracer.spanEndCallbacks = mutableListOf(spanEndCallback1)
@@ -95,12 +94,11 @@ class TracerTest {
     @Test
     fun spanEndCallbackDuration() {
         InternalDebug.spanBatchSizeSendTriggerPoint = 1
-       val span = spanFactory.createCustomSpan("BatchSize1.1", SpanOptions.startTime(2L)).apply {
+        val span = spanFactory.createCustomSpan("BatchSize1.1", SpanOptions.startTime(2L)).apply {
             end()
-       }
+        }
 
         assertNotNull(span.attributes["bugsnag.span.callbacks_duration"])
         verify(worker, times(1)).wake()
     }
-
 }

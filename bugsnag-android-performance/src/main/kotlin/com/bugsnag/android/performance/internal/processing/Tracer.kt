@@ -9,7 +9,7 @@ import com.bugsnag.android.performance.internal.Sampler
 import com.bugsnag.android.performance.internal.SpanImpl
 import com.bugsnag.android.performance.internal.Worker
 
-internal class Tracer : BatchingSpanProcessor() {
+internal class Tracer(spanEndCallbacks: Array<SpanEndCallback>) : BatchingSpanProcessor() {
 
     private var lastBatchSendTime = SystemClock.elapsedRealtime()
 
@@ -17,7 +17,7 @@ internal class Tracer : BatchingSpanProcessor() {
 
     internal var worker: Worker? = null
 
-    internal var spanEndCallbacks: MutableList<SpanEndCallback> = ArrayList()
+    internal var spanEndCallbacks: MutableList<SpanEndCallback> = spanEndCallbacks.toMutableList()
 
     /**
      * Returns the next batch of spans to be sent, or `null` if the batch is not "ready" to be sent.
