@@ -30,7 +30,7 @@ public class SpanImpl internal constructor(
 
     public val attributes: Attributes = Attributes()
 
-    internal var isEnded: Boolean = false
+    internal var isSealed: Boolean = false
 
     /**
      * Internally SpanImpl objects can be chained together as a fast linked-list structure
@@ -83,7 +83,6 @@ public class SpanImpl internal constructor(
             processor.onEnd(this)
             NotifierIntegration.onSpanEnded(this)
             if (makeContext) SpanContext.detach(this)
-            isEnded = true
         }
     }
 
@@ -95,13 +94,12 @@ public class SpanImpl internal constructor(
         if (endTime.compareAndSet(NO_END_TIME, DISCARDED)) {
             NotifierIntegration.onSpanEnded(this)
             if (makeContext) SpanContext.detach(this)
-            isEnded = true
         }
     }
 
-    override fun end(): Unit =  end(SystemClock.elapsedRealtimeNanos())
+    override fun end(): Unit = end(SystemClock.elapsedRealtimeNanos())
 
-    override fun isEnded(): Boolean = endTime.get() != NO_END_TIME && isEnded
+    override fun isEnded(): Boolean = endTime.get() != NO_END_TIME
 
     internal fun toJson(json: JsonWriter) {
         json.obj {
@@ -151,61 +149,61 @@ public class SpanImpl internal constructor(
     }
 
     override fun setAttribute(name: String, value: String?) {
-        if (!isEnded()) {
+        if (!isSealed) {
             attributes[name] = value
         }
     }
 
     override fun setAttribute(name: String, value: Long) {
-        if (!isEnded()) {
+        if (!isSealed) {
             attributes[name] = value
         }
     }
 
     override fun setAttribute(name: String, value: Int) {
-        if (!isEnded()) {
+        if (!isSealed) {
             attributes[name] = value
         }
     }
 
     override fun setAttribute(name: String, value: Double) {
-        if (!isEnded()) {
+        if (!isSealed) {
             attributes[name] = value
         }
     }
 
     override fun setAttribute(name: String, value: Boolean) {
-        if (!isEnded()) {
+        if (!isSealed) {
             attributes[name] = value
         }
     }
 
     override fun setAttribute(name: String, value: Array<String>?) {
-        if (!isEnded()) {
+        if (!isSealed) {
             attributes[name] = value
         }
     }
 
     override fun setAttribute(name: String, value: Collection<Any>?) {
-        if (!isEnded()) {
+        if (!isSealed) {
             attributes[name] = value
         }
     }
 
     override fun setAttribute(name: String, value: IntArray?) {
-        if (!isEnded()) {
+        if (!isSealed) {
             attributes[name] = value
         }
     }
 
     override fun setAttribute(name: String, value: LongArray?) {
-        if (!isEnded()) {
+        if (!isSealed) {
             attributes[name] = value
         }
     }
 
     override fun setAttribute(name: String, value: DoubleArray?) {
-        if (!isEnded()) {
+        if (!isSealed) {
             attributes[name] = value
         }
     }
