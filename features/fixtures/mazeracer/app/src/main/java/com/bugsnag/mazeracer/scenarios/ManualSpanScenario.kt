@@ -10,6 +10,10 @@ class ManualSpanScenario(
     config: PerformanceConfiguration,
     scenarioMetadata: String,
 ) : Scenario(config, scenarioMetadata) {
+    init {
+        config.serviceName = "manual.span.service"
+    }
+
     override fun startScenario() {
         config.addOnSpanEndCallback { span ->
             span as SpanImpl
