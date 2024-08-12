@@ -1,6 +1,7 @@
 package com.bugsnag.android.performance.internal.processing
 
 import android.os.SystemClock
+import androidx.annotation.VisibleForTesting
 import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.SpanEndCallback
 import com.bugsnag.android.performance.internal.InternalDebug
@@ -17,7 +18,8 @@ internal class Tracer(spanEndCallbacks: Array<SpanEndCallback>) : BatchingSpanPr
 
     internal var worker: Worker? = null
 
-    internal var spanEndCallbacks: MutableList<SpanEndCallback> = spanEndCallbacks.toMutableList()
+    @VisibleForTesting
+    internal val spanEndCallbacks: Array<SpanEndCallback> = spanEndCallbacks
 
     /**
      * Returns the next batch of spans to be sent, or `null` if the batch is not "ready" to be sent.

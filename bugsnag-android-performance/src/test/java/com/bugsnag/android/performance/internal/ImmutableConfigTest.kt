@@ -180,7 +180,7 @@ class ImmutableConfigTest {
     }
 
     @Test
-    fun EditSpandEndCallbacks() {
+    fun addRemoveSpanEndCallbacks() {
         val perfConfig = PerformanceConfiguration(mockedContext(), TEST_API_KEY).apply {
             endpoint = "https://test.com/testing"
             releaseStage = "staging"
@@ -190,32 +190,26 @@ class ImmutableConfigTest {
             versionCode = 543L
             appVersion = "9.8.1"
             tracePropagationUrls = emptySet<Pattern>()
-            spanEndCallbacks = mutableListOf<SpanEndCallback>()
         }
 
-        val spanEndCallback1 = SpanEndCallback { span: Span ->
-            span as SpanImpl
-            span.setAttribute("Test Number", 1111)
-            true
-        }
-        val spanEndCallback2 = SpanEndCallback { span: Span ->
-            span as SpanImpl
-            span.setAttribute("Test Number", 2222)
-            true
-        }
-        val spanEndCallback3 = SpanEndCallback { span: Span ->
-            span as SpanImpl
-            span.setAttribute("Test Number", 3333)
-            true
-        }
+        val spanEndCallback1 = DummyCallback()
+        val spanEndCallback2 = DummyCallback()
+        val spanEndCallback3 = DummyCallback()
 
         perfConfig.addOnSpanEndCallback(spanEndCallback1)
         perfConfig.addOnSpanEndCallback(spanEndCallback2)
-        perfConfig.removeOnSpanEndCallback(spanEndCallback2)
         perfConfig.addOnSpanEndCallback(spanEndCallback3)
+        perfConfig.removeOnSpanEndCallback(spanEndCallback2)
 
-        assertEquals(perfConfig.spanEndCallbacks.size, 2)
-        assertEquals(perfConfig.spanEndCallbacks.first(), spanEndCallback1)
+        assertEquals(2, perfConfig.spanEndCallbacks.size)
+        assertSame(spanEndCallback1, perfConfig.spanEndCallbacks[0])
+        assertSame(spanEndCallback3, perfConfig.spanEndCallbacks[1])
+    }
+
+    private class DummyCallback : SpanEndCallback {
+        override fun onSpanEnd(span: Span): Boolean {
+            return true
+        }
     }
 
     private fun mockedContext(): Context {
