@@ -83,7 +83,6 @@ public class SpanImpl internal constructor(
             processor.onEnd(this)
             NotifierIntegration.onSpanEnded(this)
             if (makeContext) SpanContext.detach(this)
-            isEnded = true
         }
     }
 
@@ -95,7 +94,6 @@ public class SpanImpl internal constructor(
         if (endTime.compareAndSet(NO_END_TIME, DISCARDED)) {
             NotifierIntegration.onSpanEnded(this)
             if (makeContext) SpanContext.detach(this)
-            isEnded = true
         }
     }
 
