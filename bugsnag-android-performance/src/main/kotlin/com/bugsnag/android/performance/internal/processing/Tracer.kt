@@ -53,7 +53,7 @@ internal class Tracer(spanEndCallbacks: Array<SpanEndCallback>) : BatchingSpanPr
         if (span !is SpanImpl) return
 
         if (sampler.shouldKeepSpan(span) && callbacksKeepSpan(span)) {
-            span.isEnded = true
+            span.isSealed = true
             val batchSize = addToBatch(span)
             if (batchSize >= InternalDebug.spanBatchSizeSendTriggerPoint) {
                 worker?.wake()
