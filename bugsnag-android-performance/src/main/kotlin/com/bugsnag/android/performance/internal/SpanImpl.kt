@@ -99,7 +99,7 @@ public class SpanImpl internal constructor(
         }
     }
 
-    override fun end(): Unit =  end(SystemClock.elapsedRealtimeNanos())
+    override fun end(): Unit = end(SystemClock.elapsedRealtimeNanos())
 
     override fun isEnded(): Boolean = endTime.get() != NO_END_TIME
 
