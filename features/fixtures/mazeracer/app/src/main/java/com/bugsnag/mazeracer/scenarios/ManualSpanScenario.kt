@@ -15,7 +15,6 @@ class ManualSpanScenario(
 
     override fun startScenario() {
         config.addOnSpanEndCallback { span ->
-            span
             span.setAttribute("bigNumber", 1234L)
             span.setAttribute("list", listOf("string1", "string2", "string3"))
             true
