@@ -30,6 +30,8 @@ public class SpanImpl internal constructor(
 
     public val attributes: Attributes = Attributes()
 
+    internal var isSealed: Boolean = false
+
     /**
      * Internally SpanImpl objects can be chained together as a fast linked-list structure
      * (nicknamed [SpanChain]) allowing us a lock-free / allocation-free batching structure.
@@ -147,61 +149,61 @@ public class SpanImpl internal constructor(
     }
 
     override fun setAttribute(name: String, value: String?) {
-        if (!isEnded()) {
+        if (!isSealed) {
             attributes[name] = value
         }
     }
 
     override fun setAttribute(name: String, value: Long) {
-        if (!isEnded()) {
+        if (!isSealed) {
             attributes[name] = value
         }
     }
 
     override fun setAttribute(name: String, value: Int) {
-        if (!isEnded()) {
+        if (!isSealed) {
             attributes[name] = value
         }
     }
 
     override fun setAttribute(name: String, value: Double) {
-        if (!isEnded()) {
+        if (!isSealed) {
             attributes[name] = value
         }
     }
 
     override fun setAttribute(name: String, value: Boolean) {
-        if (!isEnded()) {
+        if (!isSealed) {
             attributes[name] = value
         }
     }
 
     override fun setAttribute(name: String, value: Array<String>?) {
-        if (!isEnded()) {
+        if (!isSealed) {
             attributes[name] = value
         }
     }
 
     override fun setAttribute(name: String, value: Collection<Any>?) {
-        if (!isEnded()) {
+        if (!isSealed) {
             attributes[name] = value
         }
     }
 
     override fun setAttribute(name: String, value: IntArray?) {
-        if (!isEnded()) {
+        if (!isSealed) {
             attributes[name] = value
         }
     }
 
     override fun setAttribute(name: String, value: LongArray?) {
-        if (!isEnded()) {
+        if (!isSealed) {
             attributes[name] = value
         }
     }
 
     override fun setAttribute(name: String, value: DoubleArray?) {
-        if (!isEnded()) {
+        if (!isSealed) {
             attributes[name] = value
         }
     }

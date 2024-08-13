@@ -7,6 +7,8 @@ import android.content.pm.PackageManager
 import com.bugsnag.android.performance.AutoInstrument
 import com.bugsnag.android.performance.Logger
 import com.bugsnag.android.performance.PerformanceConfiguration
+import com.bugsnag.android.performance.Span
+import com.bugsnag.android.performance.SpanEndCallback
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotSame
@@ -175,6 +177,39 @@ class ImmutableConfigTest {
         ImmutableConfig(perfConfig)
 
         verify(logger).w(startsWith("Invalid configuration"))
+    }
+
+    @Test
+    fun addRemoveSpanEndCallbacks() {
+        val perfConfig = PerformanceConfiguration(mockedContext(), TEST_API_KEY).apply {
+            endpoint = "https://test.com/testing"
+            releaseStage = "staging"
+            enabledReleaseStages = setOf("staging", "production")
+            autoInstrumentAppStarts = false
+            autoInstrumentActivities = AutoInstrument.START_ONLY
+            versionCode = 543L
+            appVersion = "9.8.1"
+            tracePropagationUrls = emptySet<Pattern>()
+        }
+
+        val spanEndCallback1 = DummyCallback()
+        val spanEndCallback2 = DummyCallback()
+        val spanEndCallback3 = DummyCallback()
+
+        perfConfig.addOnSpanEndCallback(spanEndCallback1)
+        perfConfig.addOnSpanEndCallback(spanEndCallback2)
+        perfConfig.addOnSpanEndCallback(spanEndCallback3)
+        perfConfig.removeOnSpanEndCallback(spanEndCallback2)
+
+        assertEquals(2, perfConfig.spanEndCallbacks.size)
+        assertSame(spanEndCallback1, perfConfig.spanEndCallbacks[0])
+        assertSame(spanEndCallback3, perfConfig.spanEndCallbacks[1])
+    }
+
+    private class DummyCallback : SpanEndCallback {
+        override fun onSpanEnd(span: Span): Boolean {
+            return true
+        }
     }
 
     private fun mockedContext(): Context {
