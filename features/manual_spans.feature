@@ -43,10 +43,22 @@ Feature: Manual creation of spans
     * the trace payload field "resourceSpans.0.resource" string attribute "service.name" equals "manual.span.service"
     * the trace payload field "resourceSpans.0.resource" string attribute "telemetry.sdk.name" equals "bugsnag.performance.android"
     * the trace payload field "resourceSpans.0.resource" string attribute "telemetry.sdk.version" matches the regex "[0-9]+\.[0-9]+\.[0-9]+"
-    * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0" integer attribute "bugsnag.span.callbacks_duration" is greater than 0
-    * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0" integer attribute "bigNumber" equals 1234
-    * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0" array attributes "list" exists
 
+    * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0" integer attribute "bugsnag.span.callbacks_duration" is greater than 0
+    * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0" string attribute "string" equals "test name"
+    * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0" integer attribute "longNumber" equals 1234
+    * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0" integer attribute "intNumber" equals 5678
+    * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0" double attribute "doubleNumber" equals 12.34
+    * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0" boolean attribute "boolean" is false
+    * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0" string array attribute "stringCollection" equals the array:
+      | string1 |
+      | string2 |
+      | string3 |
+    * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0" integer array attribute "intArray" equals the array:
+      | 10 |
+      | 20 |
+      | 30 |
+      | 40 |
 
   Scenario: Spans can be logged before start
     Given I run "PreStartSpansScenario"
