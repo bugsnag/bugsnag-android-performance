@@ -14,7 +14,7 @@ import java.io.Closeable
  *
  * @see BugsnagPerformance.startSpan
  */
-public interface Span : SpanContext, Closeable {
+public interface Span : SpanContext, Closeable, HasAttributes {
     /**
      * End this with a specified timestamp relative to [SystemClock.elapsedRealtimeNanos]. If this
      * span has already been closed this will have no effect.
