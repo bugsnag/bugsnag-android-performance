@@ -2,7 +2,6 @@ package com.bugsnag.mazeracer.scenarios
 
 import com.bugsnag.android.performance.BugsnagPerformance
 import com.bugsnag.android.performance.PerformanceConfiguration
-import com.bugsnag.android.performance.internal.SpanImpl
 import com.bugsnag.android.performance.measureSpan
 import com.bugsnag.mazeracer.Scenario
 
