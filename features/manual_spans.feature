@@ -50,7 +50,10 @@ Feature: Manual creation of spans
     * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0" integer attribute "intNumber" equals 5678
     * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0" double attribute "doubleNumber" equals 12.34
     * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0" boolean attribute "boolean" is false
-    * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0" array attributes "stringCollection" exists
+    * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0" string array attribute "stringCollection" equals the array:
+      | string1 |
+      | string2 |
+      | string3 |
     * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0" integer array attribute "intArray" equals the array:
       | 10 |
       | 20 |
