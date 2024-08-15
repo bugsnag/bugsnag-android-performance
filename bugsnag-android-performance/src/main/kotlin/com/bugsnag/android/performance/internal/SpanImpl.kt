@@ -117,7 +117,7 @@ public class SpanImpl internal constructor(
             }
 
             if (attributes.size > 0) {
-                name("attributes").value(attributes)
+                name("attributes").value(attributes, name)
             }
         }
     }
