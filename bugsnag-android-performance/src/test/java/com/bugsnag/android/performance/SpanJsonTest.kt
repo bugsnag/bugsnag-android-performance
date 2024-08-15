@@ -1,19 +1,30 @@
 package com.bugsnag.android.performance
 
 import android.util.JsonWriter
+import com.bugsnag.android.performance.BugsnagPerformance.startSpan
 import com.bugsnag.android.performance.internal.BugsnagClock
+import com.bugsnag.android.performance.internal.NoopLogger
 import com.bugsnag.android.performance.internal.SpanCategory
 import com.bugsnag.android.performance.internal.SpanImpl
 import com.bugsnag.android.performance.test.NoopSpanProcessor
 import com.bugsnag.android.performance.test.assertJsonEquals
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.ArgumentMatchers.startsWith
+import org.mockito.Mockito.mock
+import org.mockito.Mockito.verify
 import org.robolectric.RobolectricTestRunner
 import java.io.StringWriter
 import java.util.UUID
 
 @RunWith(RobolectricTestRunner::class)
 class SpanJsonTest {
+    @Before
+    fun setupLogger() {
+        Logger.delegate = NoopLogger
+    }
+
     @Test
     fun testJsonEncoding() {
         val currentTime = System.currentTimeMillis()
@@ -182,5 +193,57 @@ class SpanJsonTest {
             """.trimIndent(),
             json,
         )
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    @Test
+    fun testJsonEncodingWithNull() {
+        val logger = mock<Logger>()
+        Logger.delegate = logger
+        val currentTime = System.currentTimeMillis()
+
+        val span = SpanImpl(
+            "test span",
+            SpanCategory.CUSTOM,
+            SpanKind.INTERNAL,
+            0L,
+            UUID.fromString("4ee26661-4650-4c7f-a35f-00f007cd24e7"),
+            0xdecafbad,
+            123L,
+            NoopSpanProcessor,
+            false,
+        )
+        span.setAttribute("null object", listOf<Any?>(null) as Collection<Any>)
+        span.end(currentTime)
+        StringWriter()
+            .apply { use { sw -> JsonWriter(sw).use { jsonw -> span.toJson(jsonw) } } }
+            .toString()
+        verify(logger).w(startsWith("Unexpected value in attribute 'null object' attribute of span 'test span'"))
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    @Test
+    fun testJsonEncodingWithInvalidType() {
+        val logger = mock<Logger>()
+        Logger.delegate = logger
+        val currentTime = System.currentTimeMillis()
+
+        val span = SpanImpl(
+            "test span",
+            SpanCategory.CUSTOM,
+            SpanKind.INTERNAL,
+            0L,
+            UUID.fromString("4ee26661-4650-4c7f-a35f-00f007cd24e7"),
+            0xdecafbad,
+            123L,
+            NoopSpanProcessor,
+            false,
+        )
+        span.setAttribute("invalid type", listOf<Any>(startSpan("hehehe")))
+        span.end(currentTime)
+        StringWriter()
+            .apply { use { sw -> JsonWriter(sw).use { jsonw -> span.toJson(jsonw) } } }
+            .toString()
+        verify(logger).w(startsWith("Unexpected value in attribute 'invalid type' attribute of span 'test span'"))
     }
 }
