@@ -3,21 +3,22 @@
 package com.bugsnag.android.performance.internal
 
 import android.util.JsonWriter
+import com.bugsnag.android.performance.Logger
 
-internal fun JsonWriter.value(attributes: Attributes): JsonWriter {
+internal fun JsonWriter.value(attributes: Attributes, spanName: String? = null): JsonWriter {
     return array {
         attributes.entries.forEach { (key, value) ->
             obj {
                 name("key").value(key)
 
                 name("value")
-                toAttributeJson(value, this)
+                toAttributeJson(value, this, spanName, key)
             }
         }
     }
 }
 
-private fun toAttributeJson(value: Any, json: JsonWriter) {
+private fun toAttributeJson(value: Any?, json: JsonWriter, spanName: String?, key: String) {
     json.obj {
         when (value) {
             is String -> json.name("stringValue").value(value)
@@ -28,22 +29,22 @@ private fun toAttributeJson(value: Any, json: JsonWriter) {
             is Long, is Int, is Short, is Byte -> {
                 json.name("intValue").value(value.toString())
             }
-            is Collection<*> -> writeArray(json, value.iterator())
-            is Array<*> -> writeArray(json, value.iterator())
+
+            is Collection<*> -> writeArray(json, value.iterator(), spanName, key)
+            is Array<*> -> writeArray(json, value.iterator(), spanName, key)
             is IntArray -> writeIntArray(json, value)
             is LongArray -> writeLongArray(json, value)
             is DoubleArray -> writeDoubleArray(json, value)
+            else -> Logger.w("Unexpected value in attribute $key attribute of span $spanName")
         }
     }
 }
 
-private fun writeArray(json: JsonWriter, value: Iterator<Any?>) {
+private fun writeArray(json: JsonWriter, value: Iterator<Any?>, spanName: String?, key: String) {
     json.name("arrayValue").obj {
         json.name("values").array {
             value.forEach { item ->
-                item?.let {
-                    toAttributeJson(item, json)
-                }
+                toAttributeJson(item, json, spanName, key)
             }
         }
     }
