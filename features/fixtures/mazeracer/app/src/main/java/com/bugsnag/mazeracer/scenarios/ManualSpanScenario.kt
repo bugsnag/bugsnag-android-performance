@@ -15,8 +15,13 @@ class ManualSpanScenario(
 
     override fun startScenario() {
         config.addOnSpanEndCallback { span ->
-            span.setAttribute("bigNumber", 1234L)
-            span.setAttribute("list", listOf("string1", "string2", "string3"))
+            span.setAttribute("string", "test name")
+            span.setAttribute("longNumber", 1234L)
+            span.setAttribute("intNumber", 5678)
+            span.setAttribute("doubleNumber", 12.34)
+            span.setAttribute("boolean", false)
+            span.setAttribute("stringCollection", listOf("string1", "string2", "string3"))
+            span.setAttribute("intArray", intArrayOf(10, 20, 30, 40))
             true
         }
         BugsnagPerformance.start(config)
