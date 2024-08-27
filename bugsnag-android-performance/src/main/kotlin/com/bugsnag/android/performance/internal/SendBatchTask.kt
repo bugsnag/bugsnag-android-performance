@@ -1,7 +1,6 @@
 package com.bugsnag.android.performance.internal
 
 import androidx.annotation.VisibleForTesting
-import com.bugsnag.android.performance.Attributes
 import com.bugsnag.android.performance.Logger
 import com.bugsnag.android.performance.internal.processing.Tracer
 

@@ -1,13 +1,20 @@
 package com.bugsnag.mazeracer
 
 import android.app.Activity
+import android.app.Application
 import android.content.Intent
+import android.os.Handler
+import android.os.Looper
 import com.bugsnag.android.performance.PerformanceConfiguration
 
 abstract class Scenario(
     val config: PerformanceConfiguration,
     val scenarioMetadata: String,
 ) {
+
+    protected val mainHandler = Handler(Looper.getMainLooper())
+    protected val application get() = context.applicationContext as Application
+
     lateinit var context: Activity
 
     abstract fun startScenario()
@@ -25,11 +32,20 @@ abstract class Scenario(
         context.startActivityForResult(intent, MainActivity.REQUEST_CODE_FINISH_ON_RETURN)
     }
 
+    fun runAndFlush(scenario: () -> Unit) {
+        scenario()
+
+        // background the app to flush the span queue
+        mainHandler.post {
+            context.finish()
+        }
+    }
+
     companion object Factory {
         fun load(
             config: PerformanceConfiguration,
             scenarioName: String,
-            scenarioMetadata: String
+            scenarioMetadata: String,
         ): Scenario {
             try {
                 log("Class.forName(\"com.bugsnag.mazeracer.scenarios.$scenarioName\")")
@@ -37,7 +53,7 @@ abstract class Scenario(
                 log("$scenarioName.getConstructor")
                 val constructor = scenarioClass.getConstructor(
                     PerformanceConfiguration::class.java,
-                    String::class.java
+                    String::class.java,
                 )
 
                 log("$scenarioName.newInstance($config, $scenarioMetadata)")
@@ -47,7 +63,7 @@ abstract class Scenario(
             } catch (nsme: NoSuchMethodException) {
                 throw IllegalArgumentException(
                     "$scenarioName does not have a constructor(PerformanceConfiguration, String)",
-                    nsme
+                    nsme,
                 )
             }
         }

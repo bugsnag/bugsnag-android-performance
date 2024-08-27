@@ -4,7 +4,6 @@ import android.os.SystemClock
 import android.util.JsonWriter
 import androidx.annotation.FloatRange
 import androidx.annotation.RestrictTo
-import com.bugsnag.android.performance.Attributes
 import com.bugsnag.android.performance.HasAttributes
 import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.SpanContext
@@ -15,7 +14,7 @@ import java.util.Random
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicLong
 
-@Suppress("LongParameterList")
+@Suppress("LongParameterList", "TooManyFunctions")
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 public class SpanImpl internal constructor(
     name: String,
@@ -29,7 +28,9 @@ public class SpanImpl internal constructor(
     private val makeContext: Boolean,
 ) : Span, HasAttributes {
 
-    override val attributes: Attributes = Attributes()
+    public val attributes: Attributes = Attributes()
+
+    internal var isSealed: Boolean = false
 
     /**
      * Internally SpanImpl objects can be chained together as a fast linked-list structure
@@ -44,7 +45,7 @@ public class SpanImpl internal constructor(
     /**
      * The name of this `Span`
      */
-    internal var name: String = name
+    public var name: String = name
         set(value) {
             if (!isEnded()) {
                 field = value
@@ -115,8 +116,8 @@ public class SpanImpl internal constructor(
                 name("parentSpanId").value(parentSpanId.toHexString())
             }
 
-            if (attributes.isNotEmpty()) {
-                name("attributes").value(attributes)
+            if (attributes.size > 0) {
+                name("attributes").value(attributes, name)
             }
         }
     }
@@ -144,6 +145,66 @@ public class SpanImpl internal constructor(
             else append(", endTime=").append(endTime)
 
             append(')')
+        }
+    }
+
+    override fun setAttribute(name: String, value: String?) {
+        if (!isSealed) {
+            attributes[name] = value
+        }
+    }
+
+    override fun setAttribute(name: String, value: Long) {
+        if (!isSealed) {
+            attributes[name] = value
+        }
+    }
+
+    override fun setAttribute(name: String, value: Int) {
+        if (!isSealed) {
+            attributes[name] = value
+        }
+    }
+
+    override fun setAttribute(name: String, value: Double) {
+        if (!isSealed) {
+            attributes[name] = value
+        }
+    }
+
+    override fun setAttribute(name: String, value: Boolean) {
+        if (!isSealed) {
+            attributes[name] = value
+        }
+    }
+
+    override fun setAttribute(name: String, value: Array<String>?) {
+        if (!isSealed) {
+            attributes[name] = value
+        }
+    }
+
+    override fun setAttribute(name: String, value: Collection<Any>?) {
+        if (!isSealed) {
+            attributes[name] = value
+        }
+    }
+
+    override fun setAttribute(name: String, value: IntArray?) {
+        if (!isSealed) {
+            attributes[name] = value
+        }
+    }
+
+    override fun setAttribute(name: String, value: LongArray?) {
+        if (!isSealed) {
+            attributes[name] = value
+        }
+    }
+
+    override fun setAttribute(name: String, value: DoubleArray?) {
+        if (!isSealed) {
+            attributes[name] = value
         }
     }
 

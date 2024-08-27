@@ -32,8 +32,9 @@ import java.net.URL
  * @see [start]
  */
 public object BugsnagPerformance {
-    public const val VERSION: String = "1.5.0"
+    public const val VERSION: String = "1.6.0"
 
+    @get:JvmName("getInstrumentedAppState\$internal")
     internal val instrumentedAppState = InstrumentedAppState()
 
     private var isStarted = false

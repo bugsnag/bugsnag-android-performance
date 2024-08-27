@@ -3,7 +3,6 @@ package com.bugsnag.android.performance.internal
 import android.os.SystemClock
 import android.util.JsonWriter
 import androidx.annotation.VisibleForTesting
-import com.bugsnag.android.performance.Attributes
 import java.io.ByteArrayOutputStream
 import java.security.MessageDigest
 import java.util.TreeMap
@@ -125,10 +124,10 @@ internal data class TracePayload(
             resourceAttributes: Attributes,
             spans: Collection<SpanImpl>,
         ) {
-            if (resourceAttributes.isEmpty() && spans.isEmpty()) return
+            if (resourceAttributes.size == 0 && spans.isEmpty()) return
 
             obj {
-                if (resourceAttributes.isNotEmpty()) {
+                if (resourceAttributes.size > 0) {
                     name("resource").obj {
                         name("attributes").value(resourceAttributes)
                     }

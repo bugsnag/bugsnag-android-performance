@@ -19,12 +19,11 @@ class NetworkRequestAttributesTest {
     fun setResponseCode() {
         val expectedCodes = intArrayOf(100, 200, 400, 404, 500)
         for (code in expectedCodes) {
-            val span = spanFactory.newSpan(processor = NoopSpanProcessor)
+            val span = spanFactory.newSpan(processor = NoopSpanProcessor, endTime = null)
             NetworkRequestAttributes.setResponseCode(span, code)
 
             // Integer attributes are stored as Long, not Int
-            val statusCodeAttr =
-                span.attributes.find { it.first == "http.status_code" }!!.second as Long
+            val statusCodeAttr = span.attributes["http.status_code"] as Long
 
             assertEquals(code, statusCodeAttr.toInt())
         }
@@ -33,11 +32,10 @@ class NetworkRequestAttributesTest {
     @Test
     fun setRequestContentLength() {
         val requestBodySize = 1024L
-        val span = spanFactory.newSpan(processor = NoopSpanProcessor)
+        val span = spanFactory.newSpan(processor = NoopSpanProcessor, endTime = null)
         NetworkRequestAttributes.setRequestContentLength(span, requestBodySize)
 
-        val requestLength = span.attributes
-            .find { it.first == "http.request_content_length" }!!.second as Long
+        val requestLength = span.attributes["http.request_content_length"] as Long
 
         assertEquals(requestBodySize, requestLength)
     }
@@ -45,42 +43,39 @@ class NetworkRequestAttributesTest {
     @Test
     fun setUncompressedRequestContentLength() {
         val requestBodySize = 1024L
-        val span = spanFactory.newSpan(processor = NoopSpanProcessor)
+        val span = spanFactory.newSpan(processor = NoopSpanProcessor, endTime = null)
         NetworkRequestAttributes.setUncompressedRequestContentLength(span, requestBodySize)
 
-        val requestLength = span.attributes
-            .find { it.first == "http.request_content_length_uncompressed" }!!.second as Long
+        val requestLength = span.attributes["http.request_content_length_uncompressed"] as Long
 
         assertEquals(requestBodySize, requestLength)
     }
 
     @Test
     fun setResponseContentLength() {
-        val span = spanFactory.newSpan(processor = NoopSpanProcessor)
+        val span = spanFactory.newSpan(processor = NoopSpanProcessor, endTime = null)
         NetworkRequestAttributes.setResponseContentLength(span, Long.MAX_VALUE)
 
-        val responseLength = span.attributes
-            .find { it.first == "http.response_content_length" }!!.second as Long
+        val responseLength = span.attributes["http.response_content_length"] as Long
 
         assertEquals(Long.MAX_VALUE, responseLength)
     }
 
     @Test
     fun setUncompressedResponseContentLength() {
-        val span = spanFactory.newSpan(processor = NoopSpanProcessor)
+        val span = spanFactory.newSpan(processor = NoopSpanProcessor, endTime = null)
         NetworkRequestAttributes.setUncompressedResponseContentLength(span, Long.MAX_VALUE)
 
-        val responseLength = span.attributes
-            .find { it.first == "http.response_content_length_uncompressed" }!!.second as Long
+        val responseLength = span.attributes["http.response_content_length_uncompressed"] as Long
 
         assertEquals(Long.MAX_VALUE, responseLength)
     }
 
     @Test
     fun setHttpFlavor() {
-        val span = spanFactory.newSpan(processor = NoopSpanProcessor)
+        val span = spanFactory.newSpan(processor = NoopSpanProcessor, endTime = null)
         NetworkRequestAttributes.setHttpFlavor(span, "1.1")
-        val flavor = span.attributes.find { it.first == "http.flavor" }!!.second as String
+        val flavor = span.attributes["http.flavor"] as String
         assertEquals("1.1", flavor)
     }
 

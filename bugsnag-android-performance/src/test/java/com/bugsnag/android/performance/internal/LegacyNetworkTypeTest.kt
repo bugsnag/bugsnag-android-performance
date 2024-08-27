@@ -62,6 +62,7 @@ class LegacyNetworkTypeTest {
     }
 
     private fun newNetworkInfo(type: Int, subType: String?): android.net.NetworkInfo =
+        @Suppress("OVERRIDE_DEPRECATION")
         object : android.net.NetworkInfo(type, 0, null, null) {
             override fun isConnectedOrConnecting(): Boolean = true
             override fun getType(): Int = type

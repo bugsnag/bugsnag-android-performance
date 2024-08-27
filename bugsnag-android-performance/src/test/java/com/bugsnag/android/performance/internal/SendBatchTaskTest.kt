@@ -1,6 +1,5 @@
 package com.bugsnag.android.performance.internal
 
-import com.bugsnag.android.performance.Attributes
 import com.bugsnag.android.performance.Logger
 import com.bugsnag.android.performance.internal.processing.Tracer
 import com.bugsnag.android.performance.test.NoopSpanProcessor

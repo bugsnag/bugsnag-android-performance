@@ -3,7 +3,6 @@ package com.bugsnag.android.performance.internal
 
 import android.content.Context
 import androidx.annotation.RestrictTo
-import com.bugsnag.android.performance.Attributes
 import com.bugsnag.android.performance.Logger
 import org.json.JSONObject
 import java.io.File
