@@ -20,3 +20,4 @@ maze_output
 # Misc
 .DS_Store
 .cxx/
+Gemfile.lock
