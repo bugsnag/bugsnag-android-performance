@@ -33,6 +33,8 @@ public class PerformanceConfiguration private constructor(public val context: Co
 
     public var logger: Logger? = null
 
+    public var samplingProbability: Double? = null
+
     @JvmSynthetic
     internal val spanEndCallbacks: MutableList<SpanEndCallback> = ArrayList()
 

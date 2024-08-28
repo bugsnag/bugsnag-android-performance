@@ -40,6 +40,7 @@ class HttpDeliveryTest {
             "http://localhost",
             "0123456789abcdef0123456789abcdef",
             connectivity,
+            false,
         )
 
         val spans = spanFactory.newSpans(5, spanProcessor)
@@ -70,6 +71,7 @@ class HttpDeliveryTest {
             "http://localhost",
             "0123456789abcdef0123456789abcdef",
             connectivity,
+            false,
         ) {
             override fun openConnection(): HttpURLConnection = connection
         }
@@ -110,6 +112,7 @@ class HttpDeliveryTest {
             "http://localhost",
             "0123456789abcdef0123456789abcdef",
             connectivity,
+            false,
         ) {
             override fun openConnection(): HttpURLConnection = connection
         }

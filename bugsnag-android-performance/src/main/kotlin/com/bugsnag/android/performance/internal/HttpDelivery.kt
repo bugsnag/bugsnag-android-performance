@@ -10,9 +10,10 @@ internal open class HttpDelivery(
     private val endpoint: String,
     private val apiKey: String,
     private val connectivity: Connectivity,
+    private val hasFixedProbability:Boolean,
 ) : Delivery {
     private val initialProbabilityRequest =
-        TracePayload.createTracePayload(apiKey, emptyList(), Attributes())
+        TracePayload.createTracePayload(apiKey, emptyList(), Attributes(), hasFixedProbability)
 
     override var newProbabilityCallback: NewProbabilityCallback? = null
 
@@ -20,7 +21,7 @@ internal open class HttpDelivery(
         spans: Collection<SpanImpl>,
         resourceAttributes: Attributes,
     ): DeliveryResult {
-        return deliver(TracePayload.createTracePayload(apiKey, spans, resourceAttributes))
+        return deliver(TracePayload.createTracePayload(apiKey, spans, resourceAttributes, hasFixedProbability))
     }
 
     override fun deliver(tracePayload: TracePayload): DeliveryResult {

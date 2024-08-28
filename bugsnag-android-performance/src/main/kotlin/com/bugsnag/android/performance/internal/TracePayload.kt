@@ -46,13 +46,15 @@ internal data class TracePayload(
             apiKey: String,
             spans: Collection<SpanImpl>,
             resourceAttributes: Attributes,
+            hasFixedProbability: Boolean,
         ): TracePayload {
             val payloadBytes = encodeSpanPayload(spans, resourceAttributes)
             val timestamp =
                 if (spans.isNotEmpty()) spans.maxOf { it.endTime.get() }
                 else SystemClock.elapsedRealtimeNanos()
-
-            val headers = mapOf("Bugsnag-Span-Sampling" to calculateSpanSamplingHeader(spans))
+            val headers =
+                if (!hasFixedProbability) mapOf("Bugsnag-Span-Sampling" to calculateSpanSamplingHeader(spans))
+                else emptyMap()
             return createTracePayload(apiKey, payloadBytes, headers, timestamp)
         }
 

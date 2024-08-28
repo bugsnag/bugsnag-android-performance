@@ -28,6 +28,7 @@ internal data class ImmutableConfig(
     val doNotAutoInstrument: Collection<Class<*>>,
     val tracePropagationUrls: Collection<Pattern>,
     val spanEndCallbacks: Array<SpanEndCallback>,
+    val samplingProbability: Double?,
 ) {
     val isReleaseStageEnabled =
         enabledReleaseStages == null || enabledReleaseStages.contains(releaseStage)
@@ -51,6 +52,7 @@ internal data class ImmutableConfig(
         configuration.doNotAutoInstrument,
         configuration.tracePropagationUrls.toSet(),
         configuration.spanEndCallbacks.toTypedArray(),
+        configuration.samplingProbability,
     )
 
     companion object {

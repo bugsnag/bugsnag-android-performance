@@ -189,3 +189,17 @@ Feature: Server responses P value
     Then I invoke "sendNextSpan"
     And I wait to receive 1 trace
     Then a span name equals "span 3"
+
+
+  Scenario: Fixed sampling probability 1.0
+    Given I run "FixedSamplingProbabilityScenario" configured as "1.0"
+    And I enter unmanaged traces mode
+    And I should receive no sampling request
+    And I wait to receive 1 trace
+    And the trace "Bugsnag-Span-Sampling" header is not present
+    Then a span name equals "span"
+
+  Scenario: Fixed sampling probability 0.0
+    Given I run "FixedSamplingProbabilityScenario" configured as "0.0"
+    And I should receive no sampling request
+    Then I should receive no traces
