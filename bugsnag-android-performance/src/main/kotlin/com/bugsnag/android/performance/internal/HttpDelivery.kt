@@ -10,7 +10,7 @@ internal open class HttpDelivery(
     private val endpoint: String,
     private val apiKey: String,
     private val connectivity: Connectivity,
-    private val hasFixedProbability:Boolean,
+    private val hasFixedProbability: Boolean,
 ) : Delivery {
     private val initialProbabilityRequest =
         TracePayload.createTracePayload(apiKey, emptyList(), Attributes(), hasFixedProbability)
