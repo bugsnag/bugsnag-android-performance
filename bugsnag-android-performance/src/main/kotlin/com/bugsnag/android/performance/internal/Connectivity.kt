@@ -150,7 +150,7 @@ internal open class ConnectivityApi24(
     private val tm: TelephonyManager? = context.getTelephonyManager()
 
     override var connectivityStatus: ConnectivityStatus =
-        networkCapabilitiesToStatus(cm.getNetworkCapabilities(cm.activeNetwork))
+        networkCapabilitiesToStatus(cm.safeGetNetworkCapabilities(cm.activeNetwork))
         protected set(newStatus) {
             if (field != newStatus) {
                 field = newStatus
@@ -263,7 +263,7 @@ internal open class ConnectivityApi24(
             return
         }
 
-        val capabilities = cm.getNetworkCapabilities(activeNetwork) ?: return
+        val capabilities = cm.safeGetNetworkCapabilities(activeNetwork) ?: return
         connectivityStatus = networkCapabilitiesToStatus(capabilities)
     }
 

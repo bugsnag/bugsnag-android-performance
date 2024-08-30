@@ -7,8 +7,12 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.ApplicationInfo
 import android.net.ConnectivityManager
+import android.net.Network
+import android.net.NetworkCapabilities
+import android.os.Build
 import android.os.RemoteException
 import android.telephony.TelephonyManager
+import androidx.annotation.RequiresApi
 import com.bugsnag.android.performance.Logger
 
 internal const val RELEASE_STAGE_DEVELOPMENT = "development"
@@ -56,6 +60,18 @@ private inline fun <reified T> Context.safeGetSystemService(name: String): T? {
     return try {
         getSystemService(name) as? T
     } catch (exc: RuntimeException) {
+        null
+    }
+}
+
+/**
+ * work around https://issuetracker.google.com/issues/175055271 on Android 11
+ */
+@RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+internal fun ConnectivityManager.safeGetNetworkCapabilities(network: Network?): NetworkCapabilities? {
+    return try {
+        getNetworkCapabilities(network)
+    } catch (exc: SecurityException) {
         null
     }
 }
