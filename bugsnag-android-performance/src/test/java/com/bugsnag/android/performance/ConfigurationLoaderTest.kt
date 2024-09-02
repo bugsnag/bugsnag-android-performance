@@ -40,7 +40,7 @@ class ConfigurationLoaderTest {
         val config = PerformanceConfiguration.loadFromMetaData(mock(), metadataBundle, null)
 
         assertEquals(bugsnagApiKey, config.apiKey)
-        assertEquals("https://otlp.bugsnag.com/v1/traces", config.endpoint)
+        assertEquals("https://$bugsnagApiKey.otlp.bugsnag.com/v1/traces", config.endpoint)
         assertTrue("expected autoInstrumentAppStarts = true", config.autoInstrumentAppStarts)
         assertEquals(AutoInstrument.FULL, config.autoInstrumentActivities)
         assertEquals(bugsnagReleaseStage, config.releaseStage)

@@ -15,7 +15,7 @@ public class PerformanceConfiguration private constructor(public val context: Co
 
     public var apiKey: String = ""
 
-    public var endpoint: String = "https://otlp.bugsnag.com/v1/traces"
+    public var endpoint: String = ""
 
     public var autoInstrumentAppStarts: Boolean = true
 
@@ -121,7 +121,11 @@ public class PerformanceConfiguration private constructor(public val context: Co
         ): PerformanceConfiguration {
             return PerformanceConfiguration(ctx).apply {
                 (apiKeyOverride ?: data?.getString(API_KEY, data.getString(BSG_API_KEY)))
-                    ?.also { apiKey = it }
+                    ?.also {
+                        apiKey = it
+                        endpoint = "https://${apiKey}.otlp.bugsnag.com/v1/traces"
+                    }
+
 
                 data?.getString(ENDPOINT_KEY)
                     ?.also { endpoint = it }
