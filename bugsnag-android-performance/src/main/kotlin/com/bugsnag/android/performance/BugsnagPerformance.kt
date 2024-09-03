@@ -125,6 +125,7 @@ public object BugsnagPerformance {
                 "PerformanceConfiguration.apiKey may not be null"
             },
             connectivity,
+            configuration.samplingProbability != null,
         )
 
         val persistence = Persistence(application)
@@ -133,16 +134,20 @@ public object BugsnagPerformance {
         val workerTasks = ArrayList<Task>()
 
         if (configuration.isReleaseStageEnabled) {
-            val sampler = ProbabilitySampler(1.0)
+            val sampler: ProbabilitySampler
+            if (configuration.samplingProbability == null) {
+                sampler = ProbabilitySampler(1.0)
 
-            val samplerTask = SamplerTask(
-                delivery,
-                sampler,
-                persistence.persistentState,
-            )
-
-            delivery.newProbabilityCallback = samplerTask
-            workerTasks.add(samplerTask)
+                val samplerTask = SamplerTask(
+                    delivery,
+                    sampler,
+                    persistence.persistentState,
+                )
+                delivery.newProbabilityCallback = samplerTask
+                workerTasks.add(samplerTask)
+            } else {
+                sampler = ProbabilitySampler(configuration.samplingProbability)
+            }
 
             tracer.sampler = sampler
         } else {
