@@ -1,8 +1,8 @@
 package com.bugsnag.android.performance.internal
 
-import com.bugsnag.android.performance.HasAttributes
+import com.bugsnag.android.performance.Span
 
-public interface MetricSource<T> {
-    public fun createStartMetrics(): T
-    public fun endMetrics(startMetrics: T, attributes: HasAttributes)
+internal interface MetricSource<T> {
+    fun createStartMetrics(): T
+    fun endMetrics(startMetrics: T, span: Span)
 }

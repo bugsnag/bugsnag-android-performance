@@ -9,7 +9,9 @@ import android.os.HandlerThread
 import android.view.Choreographer
 import android.view.Window
 import android.view.Window.OnFrameMetricsAvailableListener
-import com.bugsnag.android.performance.HasAttributes
+import com.bugsnag.android.performance.BugsnagPerformance
+import com.bugsnag.android.performance.Span
+import com.bugsnag.android.performance.SpanOptions
 import com.bugsnag.android.performance.internal.MetricSource
 import java.util.WeakHashMap
 
@@ -29,24 +31,35 @@ internal class FramerateMetricsSource : ActivityLifecycleCallbacks,
         return metricsContainer.snapshot()
     }
 
-    override fun endMetrics(startMetrics: FramerateMetricsSnapshot, attributes: HasAttributes) {
+    override fun endMetrics(startMetrics: FramerateMetricsSnapshot, span: Span) {
         val currentMetrics = metricsContainer.snapshot()
 
         if (currentMetrics.totalFrameCount > startMetrics.totalFrameCount) {
-            attributes.setAttribute(
+            span.setAttribute(
                 "bugsnag.framerate.total_slow_frames",
                 currentMetrics.slowFrameCount - startMetrics.slowFrameCount,
             )
 
-            attributes.setAttribute(
+            span.setAttribute(
                 "bugsnag.framerate.total_frozen_frames",
                 currentMetrics.frozenFrameCount - startMetrics.frozenFrameCount,
             )
 
-            attributes.setAttribute(
+            span.setAttribute(
                 "bugsnag.framerate.total_frames",
                 currentMetrics.totalFrameCount - startMetrics.totalFrameCount,
             )
+
+            startMetrics.forEachFrozenFrameUntil(currentMetrics) { start, end ->
+                BugsnagPerformance.startSpan(
+                    "FrozenFrame",
+                    SpanOptions
+                        .within(span)
+                        .startTime(start)
+                        .setFirstClass(false)
+                        .makeCurrentContext(false),
+                ).end(end)
+            }
         }
     }
 

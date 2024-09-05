@@ -1,11 +1,11 @@
 package com.bugsnag.android.performance.internal.framerate
 
 import android.os.Build
+import android.os.SystemClock
 import android.view.Choreographer
 import android.view.FrameMetrics
 import android.view.Window
 import androidx.annotation.RequiresApi
-import kotlin.math.max
 
 @RequiresApi(Build.VERSION_CODES.N)
 internal abstract class FramerateCollector(
@@ -19,9 +19,12 @@ internal abstract class FramerateCollector(
         frameMetrics: FrameMetrics,
         dropCountSinceLastInvocation: Int,
     ) {
-        val frameStartTime = max(previousFrameTime, frameMetrics.frameStart)
-        // early-exit if this appears to be a duplicate frame
-        if (frameStartTime == previousFrameTime) {
+        val frameStartTime = frameMetrics.frameStart
+        // early-exit if this appears to be a duplicate frame, or the first frame
+        if (frameStartTime <= previousFrameTime) {
+            return
+        } else if (frameMetrics.isFirstFrame) {
+            previousFrameTime = frameStartTime
             return
         }
 
@@ -32,16 +35,27 @@ internal abstract class FramerateCollector(
         val deadline = frameMetrics.deadline
 
         // we allow for a 5% overrun when considering "slow" frames
-        val adjustedDeadline: Long = (deadline * 1.05).toLong()
+        val adjustedDeadline: Long = (deadline * SLOW_FRAME_ADJUSTMENT).toLong()
 
         if (totalDuration >= FROZEN_FRAME_TIME) {
-            metricsContainer.frozenFrameCount++
+            val spanStartTime = frameTimestampToClockTime(frameStartTime)
+            metricsContainer.addFrozenFrame(spanStartTime - totalDuration, spanStartTime)
         } else if (totalDuration >= adjustedDeadline) {
             metricsContainer.slowFrameCount++
         }
 
         metricsContainer.totalFrameCount += dropCountSinceLastInvocation + 1
-        previousFrameTime = frameStartTime
+        previousFrameTime = frameStartTime + totalDuration
+    }
+
+    /**
+     * Convert a frame start time from FrameMetrics to a timestamp relative to
+     * SystemClock.elapsedRealtimeNanos
+     */
+    private fun frameTimestampToClockTime(vsyncTime: Long): Long {
+        val nanoTime = System.nanoTime()
+        val elapsedRealtimeNanos = SystemClock.elapsedRealtimeNanos()
+        return (vsyncTime - nanoTime) + elapsedRealtimeNanos
     }
 
     open val FrameMetrics.totalDuration: Long
@@ -52,14 +66,22 @@ internal abstract class FramerateCollector(
                 + getMetric(FrameMetrics.DRAW_DURATION)
                 + getMetric(FrameMetrics.SYNC_DURATION))
 
+    open val FrameMetrics.isFirstFrame: Boolean
+        get() = getMetric(FrameMetrics.FIRST_DRAW_FRAME) != 0L
+
     abstract val FrameMetrics.deadline: Long
     abstract val FrameMetrics.frameStart: Long
 
     internal companion object {
         /**
-         * Deadline for frozen frames, in nanoseconds
+         * Deadline for frozen frames, 700 milliseconds expressed as nanoseconds
          */
-        const val FROZEN_FRAME_TIME = 700 * 1_000_000L
+        const val FROZEN_FRAME_TIME = 700L * 1_000_000L
+
+        /**
+         * Multiplier for the expected frame deadlines
+         */
+        const val SLOW_FRAME_ADJUSTMENT = 1.05
     }
 }
 
@@ -76,7 +98,7 @@ internal open class FramerateCollector24(
         get() {
             // based heavily on
             // https://cs.android.com/androidx/platform/frameworks/support/+/androidx-main:metrics/metrics-performance/src/main/java/androidx/metrics/performance/JankStatsApi16Impl.kt;l=265
-            val currentWindow = window ?: return 60f
+            val currentWindow = window
 
             @Suppress("DEPRECATION")
             var refreshRate = currentWindow.windowManager.defaultDisplay.refreshRate

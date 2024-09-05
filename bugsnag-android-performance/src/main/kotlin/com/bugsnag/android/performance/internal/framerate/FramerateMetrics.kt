@@ -1,12 +1,63 @@
 package com.bugsnag.android.performance.internal.framerate
 
-internal data class FramerateMetricsSnapshot(
+internal class FramerateMetricsSnapshot(
     val slowFrameCount: Long,
     val frozenFrameCount: Long,
     val totalFrameCount: Long,
-)
+    val frozenFrames: TimestampPairBuffer,
+    val firstFrozenFrameIndex: Int,
+) {
+    fun forEachFrozenFrameUntil(end: FramerateMetricsSnapshot, consumer: (Long, Long) -> Unit) {
+        var buffer: TimestampPairBuffer? = frozenFrames
+        var bufferIndex = firstFrozenFrameIndex
+        while (buffer != null) {
+            val endIndex =
+                if (buffer === end.frozenFrames) end.firstFrozenFrameIndex
+                else buffer.timestamps.size
 
-internal data class FramerateMetricsContainer(
+            for (index in bufferIndex until endIndex step 2) {
+                consumer(buffer.timestamps[index], buffer.timestamps[index + 1])
+            }
+
+            if (buffer === end.frozenFrames) {
+                break
+            }
+
+            buffer = buffer.next
+            bufferIndex = 0
+        }
+    }
+}
+
+/**
+ * A LinkedList of LongArrays that we can quickly and easily store timestamp pairs (start/end) in.
+ * These can then be used to construct Spans (such as those for frozen frames) once off the
+ * hot-path. The forward-only nature of the chain makes them GC eligible when appropriate without
+ * having to track "open" snapshot groups.
+ */
+internal class TimestampPairBuffer(size: Int = DEFAULT_BUFFER_SIZE) {
+    var index = 0
+        private set
+
+    val timestamps: LongArray = LongArray(size)
+    var next: TimestampPairBuffer? = null
+
+    fun add(start: Long, end: Long): Boolean {
+        if (index >= timestamps.size) {
+            return false
+        }
+
+        timestamps[index++] = start
+        timestamps[index++] = end
+        return true
+    }
+
+    companion object {
+        const val DEFAULT_BUFFER_SIZE = 64
+    }
+}
+
+internal class FramerateMetricsContainer(
     @Volatile
     var totalMetricsCount: Long = 0L,
     @Volatile
@@ -16,6 +67,18 @@ internal data class FramerateMetricsContainer(
     @Volatile
     var totalFrameCount: Long = 0L,
 ) {
+    var frozenFrames: TimestampPairBuffer = TimestampPairBuffer()
+
+    fun addFrozenFrame(start: Long, end: Long) {
+        while (!frozenFrames.add(start, end)) {
+            val newFrozenFrameBuffer = TimestampPairBuffer()
+            frozenFrames.next = newFrozenFrameBuffer
+            frozenFrames = newFrozenFrameBuffer
+        }
+
+        frozenFrameCount++
+    }
+
     fun snapshot(): FramerateMetricsSnapshot {
         while (true) {
             val totalMetricsSnapshot = this.totalMetricsCount
@@ -34,6 +97,8 @@ internal data class FramerateMetricsContainer(
                     slowFrameSnapshot,
                     frozenFrameSnapshot,
                     totalFrameSnapshot,
+                    frozenFrames,
+                    frozenFrames.index,
                 )
             }
         }

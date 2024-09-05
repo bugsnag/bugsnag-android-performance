@@ -15,13 +15,13 @@ import java.util.UUID
 internal typealias AttributeSource = (target: HasAttributes) -> Unit
 
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
-public class SpanFactory(
+public class SpanFactory internal constructor(
     public var spanProcessor: SpanProcessor,
     public val spanAttributeSource: AttributeSource = {},
     metricSources: Array<MetricSource<*>> = emptyArray(),
 ) {
     @Suppress("UNCHECKED_CAST")
-    public val metricSources: Array<MetricSource<Any>> = metricSources as Array<MetricSource<Any>>
+    internal val metricSources: Array<MetricSource<Any>> = metricSources as Array<MetricSource<Any>>
     public var networkRequestCallback: NetworkRequestInstrumentationCallback? = null
 
     public fun createCustomSpan(
