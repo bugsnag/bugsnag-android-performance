@@ -21,7 +21,7 @@ internal abstract class FramerateCollector(
     ) {
         val frameStartTime = frameMetrics.frameStart
         // early-exit if this appears to be a duplicate frame, or the first frame
-        if (frameStartTime <= previousFrameTime) {
+        if (frameStartTime < previousFrameTime) {
             return
         } else if (frameMetrics.isFirstFrame) {
             previousFrameTime = frameStartTime
@@ -73,19 +73,27 @@ internal abstract class FramerateCollector(
     abstract val FrameMetrics.frameStart: Long
 
     internal companion object {
+        const val NANOS_IN_MS = 1_000_000L
+
+        const val ONE_SECOND_MS = 1000L
+
         /**
          * Deadline for frozen frames, 700 milliseconds expressed as nanoseconds
          */
-        const val FROZEN_FRAME_TIME = 700L * 1_000_000L
+        const val FROZEN_FRAME_TIME = 700L * NANOS_IN_MS
 
         /**
          * Multiplier for the expected frame deadlines
          */
         const val SLOW_FRAME_ADJUSTMENT = 1.05
+
+        const val FPS_MIN = 30f
+        const val FPS_60 = 60f
+        const val FPS_MAX = 200f
     }
 }
 
-@RequiresApi(24)
+@RequiresApi(Build.VERSION_CODES.N)
 internal open class FramerateCollector24(
     private val window: Window,
     private val choreographer: Choreographer,
@@ -100,20 +108,20 @@ internal open class FramerateCollector24(
             // https://cs.android.com/androidx/platform/frameworks/support/+/androidx-main:metrics/metrics-performance/src/main/java/androidx/metrics/performance/JankStatsApi16Impl.kt;l=265
             val currentWindow = window
 
-            @Suppress("DEPRECATION")
+            @Suppress("DEPRECATION") // windowManager.defaultDisplay
             var refreshRate = currentWindow.windowManager.defaultDisplay.refreshRate
-            if (refreshRate < 30f || refreshRate > 200f) {
-                refreshRate = 60f
+            if (refreshRate < FPS_MIN || refreshRate > FPS_MAX) {
+                refreshRate = FPS_60
             }
 
             return refreshRate
         }
 
     override val FrameMetrics.deadline: Long
-        get() = ((1000L * 1_000_000L) / currentRefreshRate).toLong()
+        get() = ((ONE_SECOND_MS * NANOS_IN_MS) / currentRefreshRate).toLong()
 }
 
-@RequiresApi(26)
+@RequiresApi(Build.VERSION_CODES.O)
 internal open class FramerateCollector26(
     window: Window,
     choreographer: Choreographer,
@@ -123,7 +131,7 @@ internal open class FramerateCollector26(
         get() = getMetric(FrameMetrics.INTENDED_VSYNC_TIMESTAMP)
 }
 
-@RequiresApi(31)
+@RequiresApi(Build.VERSION_CODES.S)
 internal class FramerateCollector31(
     metricsContainer: FramerateMetricsContainer,
 ) : FramerateCollector(metricsContainer) {

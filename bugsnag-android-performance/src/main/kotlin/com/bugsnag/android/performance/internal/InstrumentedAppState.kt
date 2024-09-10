@@ -5,7 +5,6 @@ import android.os.Build
 import androidx.annotation.RestrictTo
 import com.bugsnag.android.performance.AutoInstrument
 import com.bugsnag.android.performance.SpanContext
-import com.bugsnag.android.performance.internal.framerate.FramerateCollector
 import com.bugsnag.android.performance.internal.framerate.FramerateMetricsSource
 import com.bugsnag.android.performance.internal.instrumentation.AbstractActivityLifecycleInstrumentation
 import com.bugsnag.android.performance.internal.instrumentation.ActivityLifecycleInstrumentation
@@ -24,12 +23,14 @@ public class InstrumentedAppState {
 
     public val spanTracker: SpanTracker = SpanTracker()
 
-    internal val framerateMetrics = FramerateMetricsSource()
+    internal val framerateMetrics: FramerateMetricsSource? =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) FramerateMetricsSource()
+        else null
 
     public val spanFactory: SpanFactory = SpanFactory(
         spanProcessor,
         defaultAttributeSource,
-        arrayOf(framerateMetrics),
+        listOfNotNull(framerateMetrics),
     )
 
     internal val startupTracker: AppStartTracker = AppStartTracker(spanTracker, spanFactory)
@@ -50,7 +51,7 @@ public class InstrumentedAppState {
 
         app = application
         app.registerActivityLifecycleCallbacks(activityInstrumentation)
-        app.registerActivityLifecycleCallbacks(framerateMetrics)
+        framerateMetrics?.let { app.registerActivityLifecycleCallbacks(it) }
 
         ForegroundState.addForegroundChangedCallback { inForeground ->
             defaultAttributeSource.update {

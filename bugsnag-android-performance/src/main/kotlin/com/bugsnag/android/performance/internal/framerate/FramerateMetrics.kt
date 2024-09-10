@@ -7,7 +7,10 @@ internal class FramerateMetricsSnapshot(
     val frozenFrames: TimestampPairBuffer,
     val firstFrozenFrameIndex: Int,
 ) {
-    fun forEachFrozenFrameUntil(end: FramerateMetricsSnapshot, consumer: (Long, Long) -> Unit) {
+    inline fun forEachFrozenFrameUntil(
+        end: FramerateMetricsSnapshot,
+        consumer: (Long, Long) -> Unit,
+    ) {
         var buffer: TimestampPairBuffer? = frozenFrames
         var bufferIndex = firstFrozenFrameIndex
         while (buffer != null) {
@@ -15,8 +18,10 @@ internal class FramerateMetricsSnapshot(
                 if (buffer === end.frozenFrames) end.firstFrozenFrameIndex
                 else buffer.timestamps.size
 
-            for (index in bufferIndex until endIndex step 2) {
+            var index = bufferIndex
+            while (index < endIndex) {
                 consumer(buffer.timestamps[index], buffer.timestamps[index + 1])
+                index += 2
             }
 
             if (buffer === end.frozenFrames) {
@@ -57,16 +62,19 @@ internal class TimestampPairBuffer(size: Int = DEFAULT_BUFFER_SIZE) {
     }
 }
 
-internal class FramerateMetricsContainer(
+internal class FramerateMetricsContainer {
     @Volatile
-    var totalMetricsCount: Long = 0L,
+    var totalMetricsCount: Long = 0L
+
     @Volatile
-    var slowFrameCount: Long = 0L,
+    var slowFrameCount: Long = 0L
+
     @Volatile
-    var frozenFrameCount: Long = 0L,
+    var frozenFrameCount: Long = 0L
+
     @Volatile
-    var totalFrameCount: Long = 0L,
-) {
+    var totalFrameCount: Long = 0L
+
     var frozenFrames: TimestampPairBuffer = TimestampPairBuffer()
 
     fun addFrozenFrame(start: Long, end: Long) {

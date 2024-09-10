@@ -9,12 +9,14 @@ import android.os.HandlerThread
 import android.view.Choreographer
 import android.view.Window
 import android.view.Window.OnFrameMetricsAvailableListener
+import androidx.annotation.RequiresApi
 import com.bugsnag.android.performance.BugsnagPerformance
 import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.SpanOptions
 import com.bugsnag.android.performance.internal.MetricSource
 import java.util.WeakHashMap
 
+@RequiresApi(Build.VERSION_CODES.N)
 internal class FramerateMetricsSource : ActivityLifecycleCallbacks,
     MetricSource<FramerateMetricsSnapshot> {
 
@@ -64,17 +66,12 @@ internal class FramerateMetricsSource : ActivityLifecycleCallbacks,
     }
 
     private fun createFrameMetricsAvailableListener(window: Window): OnFrameMetricsAvailableListener? =
-        if (Build.VERSION.SDK_INT >= 31) FramerateCollector31(metricsContainer)
-        else if (Build.VERSION.SDK_INT >= 26) FramerateCollector26(
-            window,
-            Choreographer.getInstance(),
-            metricsContainer,
-        )
-        else if (Build.VERSION.SDK_INT >= 24) FramerateCollector24(
-            window,
-            Choreographer.getInstance(),
-            metricsContainer,
-        )
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
+            FramerateCollector31(metricsContainer)
+        else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+            FramerateCollector26(window, Choreographer.getInstance(), metricsContainer)
+        else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
+            FramerateCollector24(window, Choreographer.getInstance(), metricsContainer)
         else null
 
     override fun onActivityStarted(activity: Activity) {
