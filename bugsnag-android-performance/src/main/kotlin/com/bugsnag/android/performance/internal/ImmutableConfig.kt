@@ -11,6 +11,8 @@ import com.bugsnag.android.performance.PerformanceConfiguration
 import com.bugsnag.android.performance.SpanEndCallback
 import java.util.regex.Pattern
 
+internal const val DEFAULT_ENDPOINT = "https://otlp.bugsnag.com/v1/traces"
+
 internal data class ImmutableConfig(
     val application: Application,
     val apiKey: String,
@@ -36,7 +38,8 @@ internal data class ImmutableConfig(
     constructor(configuration: PerformanceConfiguration) : this(
         configuration.context.applicationContext as Application,
         configuration.apiKey.also { validateApiKey(it) },
-        configuration.endpoint,
+        configuration.endpoint.takeUnless { it == DEFAULT_ENDPOINT }
+            ?: "https://${configuration.apiKey}.otlp.bugsnag.com/v1/traces",
         configuration.autoInstrumentAppStarts,
         configuration.autoInstrumentActivities,
         configuration.serviceName ?: configuration.context.packageName,

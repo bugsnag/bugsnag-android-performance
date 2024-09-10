@@ -58,6 +58,17 @@ class ImmutableConfigTest {
     }
 
     @Test
+    fun defaultEndpointHasApiKey() {
+        val perfConfig = PerformanceConfiguration(mockedContext(), TEST_API_KEY)
+        val immutableConfig = ImmutableConfig(perfConfig)
+
+        assertEquals(
+            "https://$TEST_API_KEY.otlp.bugsnag.com/v1/traces",
+            immutableConfig.endpoint,
+        )
+    }
+
+    @Test
     fun immutableEnabledReleaseStages() {
         val releaseStages = mutableSetOf("staging")
         val perfConfig = PerformanceConfiguration(mockedContext(), TEST_API_KEY)

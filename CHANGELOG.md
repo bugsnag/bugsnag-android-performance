@@ -5,6 +5,11 @@
 * Avoid crashing on Android 11 due to https://issuetracker.google.com/issues/175055271.
   [#276](https://github.com/bugsnag/bugsnag-android-performance/pull/276)
 
+### Changes
+
+* Use API key subdomain as default Performance endpoint.
+  [#277](https://github.com/bugsnag/bugsnag-android-performance/pull/277)
+
 ## 1.6.0 (2024-08-27)
 
 ### Enhancements

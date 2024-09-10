@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Bundle
 import androidx.annotation.VisibleForTesting
+import com.bugsnag.android.performance.internal.DEFAULT_ENDPOINT
 import java.util.regex.Pattern
 
 public class PerformanceConfiguration private constructor(public val context: Context) {
@@ -15,7 +16,7 @@ public class PerformanceConfiguration private constructor(public val context: Co
 
     public var apiKey: String = ""
 
-    public var endpoint: String = "https://otlp.bugsnag.com/v1/traces"
+    public var endpoint: String = DEFAULT_ENDPOINT
 
     public var autoInstrumentAppStarts: Boolean = true
 
