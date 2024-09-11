@@ -21,7 +21,7 @@ internal class FramerateMetricsSource : ActivityLifecycleCallbacks,
     MetricSource<FramerateMetricsSnapshot> {
 
     private val frameMetricsListeners = WeakHashMap<Activity, OnFrameMetricsAvailableListener>()
-    private val thread = HandlerThread("Bugsnag Framerate Metrics")
+    private val thread = HandlerThread("Bugsnag FrameMetrics thread")
     private val handler: Handler by lazy {
         thread.start()
         Handler(thread.looper)
