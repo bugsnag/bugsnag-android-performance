@@ -14,9 +14,9 @@ import com.bugsnag.android.performance.BugsnagPerformance
 import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.SpanOptions
 import com.bugsnag.android.performance.internal.MetricSource
+import com.bugsnag.android.performance.internal.SpanImpl
 import java.util.WeakHashMap
 
-@RequiresApi(Build.VERSION_CODES.N)
 internal class FramerateMetricsSource : ActivityLifecycleCallbacks,
     MetricSource<FramerateMetricsSnapshot> {
 
@@ -37,20 +37,13 @@ internal class FramerateMetricsSource : ActivityLifecycleCallbacks,
         val currentMetrics = metricsContainer.snapshot()
 
         if (currentMetrics.totalFrameCount > startMetrics.totalFrameCount) {
-            span.setAttribute(
-                "bugsnag.framerate.total_slow_frames",
-                currentMetrics.slowFrameCount - startMetrics.slowFrameCount,
-            )
-
-            span.setAttribute(
-                "bugsnag.framerate.total_frozen_frames",
-                currentMetrics.frozenFrameCount - startMetrics.frozenFrameCount,
-            )
-
-            span.setAttribute(
-                "bugsnag.framerate.total_frames",
-                currentMetrics.totalFrameCount - startMetrics.totalFrameCount,
-            )
+            val attributes = (span as SpanImpl).attributes
+            attributes["bugsnag.framerate.total_slow_frames"] =
+                currentMetrics.slowFrameCount - startMetrics.slowFrameCount
+            attributes["bugsnag.framerate.total_frozen_frames"] =
+                currentMetrics.frozenFrameCount - startMetrics.frozenFrameCount
+            attributes["bugsnag.framerate.total_frames"] =
+                currentMetrics.totalFrameCount - startMetrics.totalFrameCount
 
             startMetrics.forEachFrozenFrameUntil(currentMetrics) { start, end ->
                 BugsnagPerformance.startSpan(
@@ -74,6 +67,7 @@ internal class FramerateMetricsSource : ActivityLifecycleCallbacks,
             FramerateCollector24(window, Choreographer.getInstance(), metricsContainer)
         else null
 
+    @RequiresApi(Build.VERSION_CODES.N)
     override fun onActivityStarted(activity: Activity) {
         val window = activity.window ?: return
         val frameMetricsAvailableListener = createFrameMetricsAvailableListener(window) ?: return
@@ -81,6 +75,7 @@ internal class FramerateMetricsSource : ActivityLifecycleCallbacks,
         frameMetricsListeners[activity] = frameMetricsAvailableListener
     }
 
+    @RequiresApi(Build.VERSION_CODES.N)
     override fun onActivityStopped(activity: Activity) {
         val listener = frameMetricsListeners.remove(activity) ?: return
         try {

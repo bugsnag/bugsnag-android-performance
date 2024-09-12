@@ -39,7 +39,7 @@ class SpanJsonTest {
             123L,
             NoopSpanProcessor,
             false,
-            emptyArray(),
+            null,
         )
 
         span.setAttribute("fps.average", 61.9)
@@ -213,7 +213,7 @@ class SpanJsonTest {
             123L,
             NoopSpanProcessor,
             false,
-            emptyArray(),
+            null,
         )
         span.setAttribute("null object", listOf<Any?>(null) as Collection<Any>)
         span.end(currentTime)
@@ -240,7 +240,7 @@ class SpanJsonTest {
             123L,
             NoopSpanProcessor,
             false,
-            emptyArray(),
+            null,
         )
         span.setAttribute("invalid type", listOf<Any>(TestSpanFactory()))
         span.end(currentTime)

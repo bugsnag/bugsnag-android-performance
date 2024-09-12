@@ -34,7 +34,7 @@ class TestSpanFactory {
             parentSpanId,
             processor,
             true,
-            emptyArray(),
+            null,
         ).apply { if (endTime != null) end(endTime(startTime)) }
     }
 

@@ -7,6 +7,7 @@
     <ID>DestructuringDeclarationWithTooManyEntries:ActivityLifecycleInstrumentationTest.kt$ActivityLifecycleInstrumentationTest$val (create, viewLoad, start, resume) = spans</ID>
     <ID>LongMethod:BugsnagPerformance.kt$BugsnagPerformance$private fun startUnderLock(configuration: ImmutableConfig)</ID>
     <ID>LongMethod:SpanJsonTest.kt$SpanJsonTest$@Test fun testJsonEncoding()</ID>
+    <ID>LongParameterList:SpanFactory.kt$SpanFactory$( name: String, kind: SpanKind, category: SpanCategory, options: SpanOptions, isFirstClass: Boolean?, spanProcessor: SpanProcessor, )</ID>
     <ID>MagicNumber:Encodings.kt$0xff</ID>
     <ID>MagicNumber:Encodings.kt$16</ID>
     <ID>MagicNumber:Encodings.kt$24</ID>
