@@ -64,6 +64,20 @@ Then("the {string} span field {string} equals the stored value {string}") do |sp
   Maze.check.equal(Maze::Store.values[stored_key], value)
 end
 
+Then('the {string} span integer attribute {string} is greater than {int}') do |span_name, attribute, expected|
+  spans = spans_from_request_list(Maze::Server.list_for('traces'))
+  found_spans = spans.find_all { |span| span['name'].eql?(span_name) }
+  raise Test::Unit::AssertionFailedError.new "No spans were found with the name #{span_name}" if found_spans.empty?
+  raise Test::Unit::AssertionFailedError.new "found #{found_spans.size} spans named #{span_name}, expected exactly one" unless found_spans.size == 1
+
+  attributes = found_spans.first['attributes']
+  attribute = attributes.find { |a| a['key'] == attribute }
+  value = attribute&.dig 'value', 'intValue'
+
+  Maze.check.operator value.to_i, :>, expected,
+                        "The span '#{span_name}' attribute '#{attribute}' (#{value}) is not greater than '#{expected}'"
+end
+
 When("I relaunch the app after shutdown") do
   max_attempts = 20
   attempts = 0

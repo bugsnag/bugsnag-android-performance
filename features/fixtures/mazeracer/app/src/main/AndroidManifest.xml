@@ -30,6 +30,7 @@
 
         <activity android:name=".ActivityViewLoadActivity" />
         <activity android:name=".NestedSpansActivity" />
+        <activity android:name=".AnimatedActivity" />
 
         <receiver
             android:name=".MazeRacerAlarmReceiver"
