@@ -11,6 +11,6 @@ Feature: Rendering / Frame Metrics
   * the "Slow Animation" span field "spanId" is stored as the value "slow_animation_spanId"
   * the "FrozenFrame" span field "parentSpanId" equals the stored value "slow_animation_spanId"
 
-  * the "Slow Animation" span integer attribute "bugsnag.framerate.total_slow_frames" is greater than 0
-  * the "Slow Animation" span integer attribute "bugsnag.framerate.total_frozen_frames" is greater than 0
-  * the "Slow Animation" span integer attribute "bugsnag.framerate.total_frames" is greater than 0
+  * the "Slow Animation" span integer attribute "bugsnag.rendering.total_slow_frames" is greater than 0
+  * the "Slow Animation" span integer attribute "bugsnag.rendering.total_frozen_frames" is greater than 0
+  * the "Slow Animation" span integer attribute "bugsnag.rendering.total_frames" is greater than 0

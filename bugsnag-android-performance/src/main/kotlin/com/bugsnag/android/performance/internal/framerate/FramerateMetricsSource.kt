@@ -38,11 +38,11 @@ internal class FramerateMetricsSource : ActivityLifecycleCallbacks,
 
         if (currentMetrics.totalFrameCount > startMetrics.totalFrameCount) {
             val attributes = (span as SpanImpl).attributes
-            attributes["bugsnag.framerate.total_slow_frames"] =
+            attributes["bugsnag.rendering.total_slow_frames"] =
                 currentMetrics.slowFrameCount - startMetrics.slowFrameCount
-            attributes["bugsnag.framerate.total_frozen_frames"] =
+            attributes["bugsnag.rendering.total_frozen_frames"] =
                 currentMetrics.frozenFrameCount - startMetrics.frozenFrameCount
-            attributes["bugsnag.framerate.total_frames"] =
+            attributes["bugsnag.rendering.total_frames"] =
                 currentMetrics.totalFrameCount - startMetrics.totalFrameCount
 
             startMetrics.forEachFrozenFrameUntil(currentMetrics) { start, end ->
