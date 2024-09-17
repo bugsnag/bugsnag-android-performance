@@ -16,7 +16,6 @@ import java.util.UUID
 
 @RunWith(RobolectricTestRunner::class)
 class RetryDeliveryTest {
-
     @Test
     @Suppress("LongMethod")
     fun testSuccess() {
@@ -39,6 +38,7 @@ class RetryDeliveryTest {
                     0L,
                     NoopSpanProcessor,
                     false,
+                    null,
                 ),
             ),
             attributes,
@@ -59,6 +59,7 @@ class RetryDeliveryTest {
                     0L,
                     NoopSpanProcessor,
                     false,
+                    null,
                 ),
             ),
             attributes,
@@ -79,6 +80,7 @@ class RetryDeliveryTest {
                     0L,
                     NoopSpanProcessor,
                     false,
+                    null,
                 ),
             ),
             attributes,
@@ -109,6 +111,7 @@ class RetryDeliveryTest {
                     0L,
                     NoopSpanProcessor,
                     false,
+                    null,
                 ),
             ),
             attributes,
@@ -140,6 +143,7 @@ class RetryDeliveryTest {
                     0L,
                     NoopSpanProcessor,
                     false,
+                    null,
                 ),
             ),
             attributes,

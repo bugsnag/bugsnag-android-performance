@@ -24,6 +24,7 @@ class SpanPayloadEncodingTest {
             0L,
             NoopSpanProcessor,
             false,
+            null,
         )
         span1.end(1L)
         val span2 = SpanImpl(
@@ -36,6 +37,7 @@ class SpanPayloadEncodingTest {
             0L,
             NoopSpanProcessor,
             false,
+            null,
         )
         span2.end(11L)
         val spans = listOf(span1, span2)
@@ -47,6 +49,7 @@ class SpanPayloadEncodingTest {
                 attrs["telemetry.sdk.name"] = "bugsnag.performance.android"
                 attrs["telemetry.sdk.version"] = "0.0.0"
             },
+            null,
         )
 
         assertTraceDataValid(content)

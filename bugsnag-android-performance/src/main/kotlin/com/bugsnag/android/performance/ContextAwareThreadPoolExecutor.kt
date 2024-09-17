@@ -17,7 +17,7 @@ public class ContextAwareThreadPoolExecutor : ThreadPoolExecutor {
         maximumPoolSize: Int,
         keepAliveTime: Long,
         unit: TimeUnit?,
-        workQueue: BlockingQueue<Runnable>?
+        workQueue: BlockingQueue<Runnable>?,
     ) : super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue)
 
     public constructor(
@@ -26,7 +26,7 @@ public class ContextAwareThreadPoolExecutor : ThreadPoolExecutor {
         keepAliveTime: Long,
         unit: TimeUnit?,
         workQueue: BlockingQueue<Runnable>?,
-        threadFactory: ThreadFactory?
+        threadFactory: ThreadFactory?,
     ) : super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, threadFactory)
 
     public constructor(
@@ -35,7 +35,7 @@ public class ContextAwareThreadPoolExecutor : ThreadPoolExecutor {
         keepAliveTime: Long,
         unit: TimeUnit?,
         workQueue: BlockingQueue<Runnable>?,
-        handler: RejectedExecutionHandler?
+        handler: RejectedExecutionHandler?,
     ) : super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, handler)
 
     @Suppress("LongParameterList")
@@ -46,7 +46,7 @@ public class ContextAwareThreadPoolExecutor : ThreadPoolExecutor {
         unit: TimeUnit?,
         workQueue: BlockingQueue<Runnable>?,
         threadFactory: ThreadFactory?,
-        handler: RejectedExecutionHandler?
+        handler: RejectedExecutionHandler?,
     ) : super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, threadFactory, handler)
 
     override fun execute(command: Runnable?) {

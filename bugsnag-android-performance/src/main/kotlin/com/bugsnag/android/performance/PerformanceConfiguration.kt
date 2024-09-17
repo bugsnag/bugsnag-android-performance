@@ -5,11 +5,10 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Bundle
 import androidx.annotation.VisibleForTesting
-import com.bugsnag.android.performance.internal.DEFAULT_ENDPOINT
+import com.bugsnag.android.performance.internal.processing.DEFAULT_ENDPOINT
 import java.util.regex.Pattern
 
 public class PerformanceConfiguration private constructor(public val context: Context) {
-
     public constructor(context: Context, apiKey: String) : this(context) {
         this.apiKey = apiKey
     }
@@ -59,6 +58,21 @@ public class PerformanceConfiguration private constructor(public val context: Co
 
     public var tracePropagationUrls: Collection<Pattern> = HashSet()
 
+    public var attributeStringValueLimit: Int = 1024
+        set(value) {
+            field = if (value !in 1..10000) 1024 else value
+        }
+
+    public var attributeArrayLengthLimit: Int = 1000
+        set(value) {
+            field = if (value !in 1..10000) 1000 else value
+        }
+
+    public var attributeCountLimit: Int = 128
+        set(value) {
+            field = if (value !in 1..1000) 128 else value
+        }
+
     public fun addOnSpanEndCallback(spanEndCallback: SpanEndCallback) {
         spanEndCallbacks.add(spanEndCallback)
     }
@@ -69,22 +83,24 @@ public class PerformanceConfiguration private constructor(public val context: Co
 
     override fun toString(): String =
         "PerformanceConfiguration(" +
-                "context=$context, " +
-                "apiKey=$apiKey, " +
-                "endpoint='$endpoint', " +
-                "autoInstrumentAppStarts=$autoInstrumentAppStarts, " +
-                "autoInstrumentActivities=$autoInstrumentActivities, " +
-                "releaseStage=$releaseStage, " +
-                "versionCode=$versionCode, " +
-                "appVersion=$appVersion, " +
-                "enabledReleaseStages=$enabledReleaseStages " +
-                "doNotEndAppStart=$doNotEndAppStart " +
-                "doNotAutoInstrument=$doNotAutoInstrument " +
-                "tracePropagationUrls=$tracePropagationUrls " +
-                ")"
+            "context=$context, " +
+            "apiKey=$apiKey, " +
+            "endpoint='$endpoint', " +
+            "autoInstrumentAppStarts=$autoInstrumentAppStarts, " +
+            "autoInstrumentActivities=$autoInstrumentActivities, " +
+            "releaseStage=$releaseStage, " +
+            "versionCode=$versionCode, " +
+            "appVersion=$appVersion, " +
+            "enabledReleaseStages=$enabledReleaseStages, " +
+            "doNotEndAppStart=$doNotEndAppStart, " +
+            "doNotAutoInstrument=$doNotAutoInstrument, " +
+            "tracePropagationUrls=$tracePropagationUrls, " +
+            "attributeStringValueLimit=$attributeStringValueLimit, " +
+            "attributeArrayLengthLimit=$attributeArrayLengthLimit, " +
+            "attributeCountLimit=$attributeCountLimit" +
+            ")"
 
     public companion object Loader {
-
         // mandatory
         private const val BUGSNAG_NS = "com.bugsnag.android"
         private const val BUGSNAG_PERF_NS = "com.bugsnag.performance.android"

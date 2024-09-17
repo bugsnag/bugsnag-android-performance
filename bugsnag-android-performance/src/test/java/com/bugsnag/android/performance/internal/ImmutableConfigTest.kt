@@ -9,6 +9,7 @@ import com.bugsnag.android.performance.Logger
 import com.bugsnag.android.performance.PerformanceConfiguration
 import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.SpanEndCallback
+import com.bugsnag.android.performance.internal.processing.ImmutableConfig
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotSame

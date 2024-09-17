@@ -1,6 +1,5 @@
 package com.bugsnag.android.performance.internal
 
-
 import android.content.Context
 import androidx.annotation.RestrictTo
 import com.bugsnag.android.performance.Logger
@@ -26,7 +25,6 @@ public class DeviceIdFilePersistence(
     private val file: File,
     private val deviceIdGenerator: () -> UUID,
 ) {
-
     /**
      * Loads the device ID from its file system location.
      * If no value is present then a UUID will be generated and persisted.

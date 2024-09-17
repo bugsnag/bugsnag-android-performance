@@ -2,6 +2,7 @@ package com.bugsnag.android.performance.internal
 
 import androidx.annotation.VisibleForTesting
 import com.bugsnag.android.performance.Logger
+import com.bugsnag.android.performance.internal.processing.AttributeLimits
 import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
@@ -11,9 +12,16 @@ internal open class HttpDelivery(
     private val apiKey: String,
     private val connectivity: Connectivity,
     private val hasFixedProbability: Boolean,
+    private val attributeLimits: AttributeLimits?,
 ) : Delivery {
     private val initialProbabilityRequest =
-        TracePayload.createTracePayload(apiKey, emptyList(), Attributes(), hasFixedProbability)
+        TracePayload.createTracePayload(
+            apiKey,
+            emptyList(),
+            Attributes(),
+            hasFixedProbability,
+            null,
+        )
 
     override var newProbabilityCallback: NewProbabilityCallback? = null
 
@@ -21,7 +29,15 @@ internal open class HttpDelivery(
         spans: Collection<SpanImpl>,
         resourceAttributes: Attributes,
     ): DeliveryResult {
-        return deliver(TracePayload.createTracePayload(apiKey, spans, resourceAttributes, hasFixedProbability))
+        return deliver(
+            TracePayload.createTracePayload(
+                apiKey,
+                spans,
+                resourceAttributes,
+                hasFixedProbability,
+                attributeLimits,
+            ),
+        )
     }
 
     override fun deliver(tracePayload: TracePayload): DeliveryResult {
@@ -83,8 +99,8 @@ internal open class HttpDelivery(
                 // try and parse this and call setFixedLengthStreamingMode instead of
                 // just setRequestProperty
                 value.toIntOrNull()?.let { setFixedLengthStreamingMode(it) }
-                // if Content-Length isn't an int set it as a normal header
-                // so we don't unexpectedly loose anything
+                    // if Content-Length isn't an int set it as a normal header
+                    // so we don't unexpectedly loose anything
                     ?: setRequestProperty(name, value)
             } else {
                 setRequestProperty(name, value)
