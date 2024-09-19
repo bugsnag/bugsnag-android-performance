@@ -7,7 +7,6 @@ internal class AppStartTracker(
     private val spanTracker: SpanTracker,
     private val spanFactory: SpanFactory,
 ) : Handler.Callback {
-
     /**
      * Track whether this is a full Cold start or not. This is `false` by default and is set
      * to `true`

@@ -15,7 +15,10 @@ public class Attributes {
 
     public val keys: Set<String> get() = content.keys.toSet()
 
-    public operator fun set(name: String, value: String?) {
+    public operator fun set(
+        name: String,
+        value: String?,
+    ) {
         if (value != null) {
             content[name] = value
         } else {
@@ -23,20 +26,37 @@ public class Attributes {
         }
     }
 
-    public operator fun set(name: String, value: Long) {
+    public operator fun set(
+        name: String,
+        value: Long,
+    ) {
         content[name] = value
     }
 
-    public operator fun set(name: String, value: Int) {
+    public operator fun set(
+        name: String,
+        value: Int,
+    ) {
         content[name] = value.toLong()
     }
 
-    public operator fun set(name: String, value: Double) {
+    public operator fun set(
+        name: String,
+        value: Double,
+    ) {
         content[name] = value
     }
 
-    public operator fun set(name: String, value: Boolean) {
+    public operator fun set(
+        name: String,
+        value: Boolean,
+    ) {
         content[name] = value
+    }
+
+    @JvmSynthetic
+    internal operator fun contains(name: String): Boolean {
+        return content.containsKey(name)
     }
 
     @JvmSynthetic
@@ -48,7 +68,10 @@ public class Attributes {
         content.remove(name)
     }
 
-    public operator fun set(name: String, value: Array<String>?) {
+    public operator fun set(
+        name: String,
+        value: Array<String>?,
+    ) {
         if (value != null) {
             content[name] = value
         } else {
@@ -56,7 +79,10 @@ public class Attributes {
         }
     }
 
-    public operator fun set(name: String, value: Collection<Any>?) {
+    public operator fun set(
+        name: String,
+        value: Collection<Any>?,
+    ) {
         if (value != null) {
             content[name] = value
         } else {
@@ -64,7 +90,10 @@ public class Attributes {
         }
     }
 
-    public operator fun set(name: String, value: IntArray?) {
+    public operator fun set(
+        name: String,
+        value: IntArray?,
+    ) {
         if (value != null) {
             content[name] = value
         } else {
@@ -72,7 +101,10 @@ public class Attributes {
         }
     }
 
-    public operator fun set(name: String, value: LongArray?) {
+    public operator fun set(
+        name: String,
+        value: LongArray?,
+    ) {
         if (value != null) {
             content[name] = value
         } else {
@@ -80,7 +112,10 @@ public class Attributes {
         }
     }
 
-    public operator fun set(name: String, value: DoubleArray?) {
+    public operator fun set(
+        name: String,
+        value: DoubleArray?,
+    ) {
         if (value != null) {
             content[name] = value
         } else {

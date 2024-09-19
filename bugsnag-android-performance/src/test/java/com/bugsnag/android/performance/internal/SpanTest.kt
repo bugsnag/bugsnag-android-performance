@@ -33,17 +33,19 @@ class SpanTest {
     @Test
     fun idempotentEnd() {
         val mockSpanProcessor = mock<SpanProcessor>()
-        val span = SpanImpl(
-            "test span",
-            SpanCategory.CUSTOM,
-            SpanKind.INTERNAL,
-            0L,
-            UUID.fromString("4ee26661-4650-4c7f-a35f-00f007cd24e7"),
-            0xdecafbad,
-            0L,
-            mockSpanProcessor,
-            false,
-        )
+        val span =
+            SpanImpl(
+                "test span",
+                SpanCategory.CUSTOM,
+                SpanKind.INTERNAL,
+                0L,
+                UUID.fromString("4ee26661-4650-4c7f-a35f-00f007cd24e7"),
+                0xdecafbad,
+                0L,
+                mockSpanProcessor,
+                false,
+                null,
+            )
 
         span.end()
 
@@ -64,15 +66,17 @@ class SpanTest {
         assertTrue(span.startTime < span.endTime.get())
     }
 
-    private fun createTestSpan() = SpanImpl(
-        "Test/test span",
-        SpanCategory.CUSTOM,
-        SpanKind.INTERNAL,
-        0L,
-        UUID.fromString("4ee26661-4650-4c7f-a35f-00f007cd24e7"),
-        0xdecafbad,
-        0L,
-        NoopSpanProcessor,
-        false,
-    )
+    private fun createTestSpan() =
+        SpanImpl(
+            "Test/test span",
+            SpanCategory.CUSTOM,
+            SpanKind.INTERNAL,
+            0L,
+            UUID.fromString("4ee26661-4650-4c7f-a35f-00f007cd24e7"),
+            0xdecafbad,
+            0L,
+            NoopSpanProcessor,
+            false,
+            null,
+        )
 }

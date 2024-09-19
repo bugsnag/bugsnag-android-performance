@@ -11,6 +11,8 @@
   [#277](https://github.com/bugsnag/bugsnag-android-performance/pull/277)
 * Trace Propagation URLs and service name can be configured in `AndroidManifest.xml`
   [#281](https://github.com/bugsnag/bugsnag-android-performance/pull/281)
+* Added configurable limit to number of span attributes per span.
+  [#280](https://github.com/bugsnag/bugsnag-android-performance/pull/280)
 
 ## 1.6.0 (2024-08-27)
 

@@ -22,6 +22,10 @@
     <ID>MagicNumber:InternalDebug.kt$InternalDebug$24L</ID>
     <ID>MagicNumber:InternalDebug.kt$InternalDebug$30000L</ID>
     <ID>MagicNumber:InternalDebug.kt$InternalDebug$60</ID>
+    <ID>MagicNumber:PerformanceConfiguration.kt$PerformanceConfiguration$1000</ID>
+    <ID>MagicNumber:PerformanceConfiguration.kt$PerformanceConfiguration$10000</ID>
+    <ID>MagicNumber:PerformanceConfiguration.kt$PerformanceConfiguration$1024</ID>
+    <ID>MagicNumber:PerformanceConfiguration.kt$PerformanceConfiguration$128</ID>
     <ID>MagicNumber:Persistence.kt$RetryQueue$19</ID>
     <ID>MagicNumber:Persistence.kt$TraceFileDecoder$1024</ID>
     <ID>MagicNumber:SpanKind.kt$SpanKind.CLIENT$3</ID>
@@ -53,6 +57,7 @@
     <ID>TooManyFunctions:Attributes.kt$Attributes</ID>
     <ID>TooManyFunctions:BugsnagPerformance.kt$BugsnagPerformance$BugsnagPerformance</ID>
     <ID>TooManyFunctions:Connectivity.kt$ConnectivityApi24 : NetworkCallbackConnectivity</ID>
+    <ID>TooManyFunctions:JsonTraceWriter.kt$JsonTraceWriter : Closeable</ID>
     <ID>TooManyFunctions:SpanTracker.kt$SpanTracker</ID>
   </CurrentIssues>
 </SmellBaseline>

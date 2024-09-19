@@ -2,6 +2,7 @@ package com.bugsnag.android.performance.internal
 
 import android.os.Build
 import com.bugsnag.android.performance.BugsnagPerformance
+import com.bugsnag.android.performance.internal.processing.ImmutableConfig
 
 internal fun createResourceAttributes(configuration: ImmutableConfig): Attributes {
     val resourceAttributes = Attributes()

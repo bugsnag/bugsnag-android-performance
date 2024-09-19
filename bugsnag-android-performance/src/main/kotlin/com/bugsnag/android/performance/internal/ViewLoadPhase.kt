@@ -7,7 +7,8 @@ import com.bugsnag.android.performance.ViewType
 public enum class ViewLoadPhase(private val phaseName: String) {
     CREATE("Create"),
     START("Start"),
-    RESUME("Resume");
+    RESUME("Resume"),
+    ;
 
     internal fun phaseNameFor(viewType: ViewType): String {
         return viewType.spanName + phaseName
