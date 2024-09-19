@@ -78,6 +78,14 @@ class ConfigurationLoaderTest {
         assertEquals(releaseStage, config.releaseStage)
         assertEquals(versionCode.toLong(), config.versionCode)
         assertEquals(setOf("staging", "development", "production"), config.enabledReleaseStages)
+        assertEquals(
+            listOf(
+                ".*\\.example\\.com",
+                "example\\.com",
+            ),
+            config.tracePropagationUrls.map { it.pattern() },
+        )
+        assertEquals("my.service.name", config.serviceName)
     }
 
     private fun Bundle.populatePerformanceNS() {
@@ -90,6 +98,12 @@ class ConfigurationLoaderTest {
         putString("com.bugsnag.performance.android.ENABLED_RELEASE_STAGES", enabledReturnStage)
 
         putBoolean("com.bugsnag.performance.android.AUTO_INSTRUMENT_APP_STARTS", false)
+
+        putString(
+            "com.bugsnag.performance.android.TRACE_PROPAGATION_URLS",
+            ".*\\.example\\.com,example\\.com",
+        )
+        putString("com.bugsnag.performance.android.SERVICE_NAME", "my.service.name")
     }
 
     private fun Bundle.populateBugsnagNS() {

@@ -9,6 +9,8 @@
 
 * Use API key subdomain as default Performance endpoint.
   [#277](https://github.com/bugsnag/bugsnag-android-performance/pull/277)
+* Trace Propagation URLs and service name can be configured in `AndroidManifest.xml`
+  [#281](https://github.com/bugsnag/bugsnag-android-performance/pull/281)
 
 ## 1.6.0 (2024-08-27)
 
