@@ -3,6 +3,7 @@
   <ManuallySuppressedIssues/>
   <CurrentIssues>
     <ID>ComplexMethod:Connectivity.kt$ConnectivityApi24$private fun nameForDataNetworkType(dataNetworkType: Int): String</ID>
+    <ID>ComplexMethod:PerformanceConfiguration.kt$PerformanceConfiguration.Loader$@JvmSynthetic @VisibleForTesting internal fun loadFromMetaData( ctx: Context, data: Bundle?, apiKeyOverride: String?, ): PerformanceConfiguration</ID>
     <ID>ComplexMethod:SpanOptions.kt$SpanOptions$override fun equals(other: Any?): Boolean</ID>
     <ID>DestructuringDeclarationWithTooManyEntries:ActivityLifecycleInstrumentationTest.kt$ActivityLifecycleInstrumentationTest$val (create, viewLoad, start, resume) = spans</ID>
     <ID>LongMethod:BugsnagPerformance.kt$BugsnagPerformance$private fun startUnderLock(configuration: ImmutableConfig)</ID>
@@ -37,6 +38,7 @@
     <ID>SwallowedException:HttpDelivery.kt$HttpDelivery$e: IOException</ID>
     <ID>SwallowedException:ImmutableConfig.kt$ImmutableConfig.Companion$ex: RuntimeException</ID>
     <ID>SwallowedException:Module.kt$Module.Loader$ex: Exception</ID>
+    <ID>SwallowedException:PerformanceConfiguration.kt$PerformanceConfiguration.Loader$pse: PatternSyntaxException</ID>
     <ID>TooGenericExceptionCaught:BugsnagClock.kt$BugsnagClock$ex: Exception</ID>
     <ID>TooGenericExceptionCaught:Connectivity.kt$ConnectivityApi24$e: Exception</ID>
     <ID>TooGenericExceptionCaught:ContextExtensions.kt$exc: RuntimeException</ID>
