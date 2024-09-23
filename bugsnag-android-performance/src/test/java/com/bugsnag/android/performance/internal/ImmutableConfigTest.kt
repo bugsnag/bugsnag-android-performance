@@ -9,6 +9,7 @@ import com.bugsnag.android.performance.Logger
 import com.bugsnag.android.performance.PerformanceConfiguration
 import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.SpanEndCallback
+import com.bugsnag.android.performance.internal.processing.ImmutableConfig
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotSame
@@ -55,6 +56,17 @@ class ImmutableConfigTest {
         assertEquals(perfConfig.versionCode, immutableConfig.versionCode)
         assertEquals(perfConfig.appVersion, immutableConfig.appVersion)
         assertEquals(perfConfig.tracePropagationUrls, immutableConfig.tracePropagationUrls)
+    }
+
+    @Test
+    fun defaultEndpointHasApiKey() {
+        val perfConfig = PerformanceConfiguration(mockedContext(), TEST_API_KEY)
+        val immutableConfig = ImmutableConfig(perfConfig)
+
+        assertEquals(
+            "https://$TEST_API_KEY.otlp.bugsnag.com/v1/traces",
+            immutableConfig.endpoint,
+        )
     }
 
     @Test

@@ -10,7 +10,6 @@ import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
 
 internal open class BatchingSpanProcessor : SpanProcessor {
-
     private val batch = AtomicReference<SpanChain?>(null)
 
     /**
@@ -20,13 +19,13 @@ internal open class BatchingSpanProcessor : SpanProcessor {
      * may cause spurious [Worker.wake] calls when the batch is currently being collected and
      * added to at the same time, but this is safe and handled by [Worker.wake].
      */
-    private val _batchSize = AtomicInteger(0)
+    private val batchSize = AtomicInteger(0)
 
     /**
      * The estimated number of spans in [batch]. This value may have changed by the time it is
      * returned from this property.
      */
-    val currentBatchSize: Int get() = _batchSize.get()
+    val currentBatchSize: Int get() = batchSize.get()
 
     /**
      * Takes the current batch of spans to be sent (which may be empty). After calling this the
@@ -37,7 +36,7 @@ internal open class BatchingSpanProcessor : SpanProcessor {
         // unlinkTo separates the chain, allowing any free-floating Spans eligible for GC
         val batch = nextBatchChain.unlinkTo(ArrayList(currentBatchSize))
         // reduce the tracked batchSize by the number of Spans in this batch
-        _batchSize.addAndGet(-batch.size)
+        batchSize.addAndGet(-batch.size)
         // reverse the batch in place, since the linked list is stored "backwards"
         batch.reverse()
 
@@ -56,7 +55,7 @@ internal open class BatchingSpanProcessor : SpanProcessor {
             }
         }
 
-        return _batchSize.incrementAndGet()
+        return batchSize.incrementAndGet()
     }
 
     override fun onEnd(span: Span) {

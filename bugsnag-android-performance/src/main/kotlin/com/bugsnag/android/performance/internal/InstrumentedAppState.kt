@@ -10,6 +10,7 @@ import com.bugsnag.android.performance.internal.instrumentation.ActivityLifecycl
 import com.bugsnag.android.performance.internal.instrumentation.ForegroundState
 import com.bugsnag.android.performance.internal.instrumentation.LegacyActivityInstrumentation
 import com.bugsnag.android.performance.internal.processing.ForwardingSpanProcessor
+import com.bugsnag.android.performance.internal.processing.ImmutableConfig
 import com.bugsnag.android.performance.internal.processing.Tracer
 import java.util.regex.Pattern
 
@@ -61,6 +62,7 @@ public class InstrumentedAppState {
 
         spanProcessor = tracer
         spanFactory.spanProcessor = tracer
+        spanFactory.attributeLimits = configuration
         spanFactory.networkRequestCallback = configuration.networkRequestCallback
 
         tracePropagationUrls = configuration.tracePropagationUrls

@@ -39,7 +39,6 @@ internal class Worker(
     startupTasks: List<Runnable>,
     private val tasks: List<Task>,
 ) : Runnable {
-
     private var startupTasks: List<Runnable>? = startupTasks
 
     private val lock = ReentrantLock(false)

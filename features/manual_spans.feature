@@ -90,3 +90,11 @@ Feature: Manual creation of spans
     And I wait for 1 span
     Then a span name equals "BackgroundSpan"
     * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0" boolean attribute "bugsnag.app.in_foreground" is false
+
+  Scenario: Span attributes are limited based on config
+    Given I run "AttributeLimitsScenario"
+    And I wait for 1 span
+    Then a span name equals "Custom Span"
+    * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0" string array attribute "arrayAttribute" equals the array:
+      | this is a *** 68 CHARS TRUNCATED |
+    * every span string attribute "droppedAttribute" does not exist

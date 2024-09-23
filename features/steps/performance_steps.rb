@@ -64,6 +64,11 @@ Then("the {string} span field {string} equals the stored value {string}") do |sp
   Maze.check.equal(Maze::Store.values[stored_key], value)
 end
 
+Then('every span string attribute {string} does not exist') do |attribute|
+  spans = spans_from_request_list(Maze::Server.list_for('traces'))
+  spans.map { |span| Maze.check.nil span['attributes'].find { |a| a['key'] == attribute } }
+end
+
 When("I relaunch the app after shutdown") do
   max_attempts = 20
   attempts = 0

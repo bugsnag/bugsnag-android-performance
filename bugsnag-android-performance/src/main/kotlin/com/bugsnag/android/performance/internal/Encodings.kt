@@ -30,7 +30,6 @@ public fun StringBuilder.appendHexUUID(uuid: UUID): StringBuilder {
         .appendHexLong(uuid.leastSignificantBits)
 }
 
-
 internal fun UUID.toHexString(): String {
     return StringBuilder(UUID_ID_STRING_LENGTH)
         .appendHexUUID(this)

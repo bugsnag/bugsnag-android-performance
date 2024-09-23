@@ -2,6 +2,7 @@ package com.bugsnag.android.performance.internal
 
 import android.app.Application
 import com.bugsnag.android.performance.AutoInstrument
+import com.bugsnag.android.performance.internal.processing.ImmutableConfig
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -36,6 +37,10 @@ class ResourceAttributesTest {
             emptySet(),
             emptySet(),
             emptyArray(),
+            null,
+            1024,
+            1000,
+            100,
         )
 
         val attributes = createResourceAttributes(configuration)
@@ -75,6 +80,10 @@ class ResourceAttributesTest {
             emptySet(),
             emptySet(),
             emptyArray(),
+            null,
+            1024,
+            1000,
+            100,
         )
 
         val attributes = createResourceAttributes(configuration)

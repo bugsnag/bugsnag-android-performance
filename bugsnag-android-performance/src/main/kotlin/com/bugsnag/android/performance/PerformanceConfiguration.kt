@@ -5,17 +5,17 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Bundle
 import androidx.annotation.VisibleForTesting
+import com.bugsnag.android.performance.internal.processing.DEFAULT_ENDPOINT
 import java.util.regex.Pattern
 
 public class PerformanceConfiguration private constructor(public val context: Context) {
-
     public constructor(context: Context, apiKey: String) : this(context) {
         this.apiKey = apiKey
     }
 
     public var apiKey: String = ""
 
-    public var endpoint: String = "https://otlp.bugsnag.com/v1/traces"
+    public var endpoint: String = DEFAULT_ENDPOINT
 
     public var autoInstrumentAppStarts: Boolean = true
 
@@ -32,6 +32,8 @@ public class PerformanceConfiguration private constructor(public val context: Co
     public var serviceName: String? = null
 
     public var logger: Logger? = null
+
+    public var samplingProbability: Double? = null
 
     @JvmSynthetic
     internal val spanEndCallbacks: MutableList<SpanEndCallback> = ArrayList()
@@ -56,24 +58,49 @@ public class PerformanceConfiguration private constructor(public val context: Co
 
     public var tracePropagationUrls: Collection<Pattern> = HashSet()
 
+    public var attributeStringValueLimit: Int = 1024
+        set(value) {
+            field = if (value !in 1..10000) 1024 else value
+        }
+
+    public var attributeArrayLengthLimit: Int = 1000
+        set(value) {
+            field = if (value !in 1..10000) 1000 else value
+        }
+
+    public var attributeCountLimit: Int = 128
+        set(value) {
+            field = if (value !in 1..1000) 128 else value
+        }
+
+    public fun addOnSpanEndCallback(spanEndCallback: SpanEndCallback) {
+        spanEndCallbacks.add(spanEndCallback)
+    }
+
+    public fun removeOnSpanEndCallback(spanEndCallback: SpanEndCallback) {
+        spanEndCallbacks.remove(spanEndCallback)
+    }
+
     override fun toString(): String =
         "PerformanceConfiguration(" +
-                "context=$context, " +
-                "apiKey=$apiKey, " +
-                "endpoint='$endpoint', " +
-                "autoInstrumentAppStarts=$autoInstrumentAppStarts, " +
-                "autoInstrumentActivities=$autoInstrumentActivities, " +
-                "releaseStage=$releaseStage, " +
-                "versionCode=$versionCode, " +
-                "appVersion=$appVersion, " +
-                "enabledReleaseStages=$enabledReleaseStages " +
-                "doNotEndAppStart=$doNotEndAppStart " +
-                "doNotAutoInstrument=$doNotAutoInstrument " +
-                "tracePropagationUrls=$tracePropagationUrls " +
-                ")"
+            "context=$context, " +
+            "apiKey=$apiKey, " +
+            "endpoint='$endpoint', " +
+            "autoInstrumentAppStarts=$autoInstrumentAppStarts, " +
+            "autoInstrumentActivities=$autoInstrumentActivities, " +
+            "releaseStage=$releaseStage, " +
+            "versionCode=$versionCode, " +
+            "appVersion=$appVersion, " +
+            "enabledReleaseStages=$enabledReleaseStages, " +
+            "doNotEndAppStart=$doNotEndAppStart, " +
+            "doNotAutoInstrument=$doNotAutoInstrument, " +
+            "tracePropagationUrls=$tracePropagationUrls, " +
+            "attributeStringValueLimit=$attributeStringValueLimit, " +
+            "attributeArrayLengthLimit=$attributeArrayLengthLimit, " +
+            "attributeCountLimit=$attributeCountLimit" +
+            ")"
 
     public companion object Loader {
-
         // mandatory
         private const val BUGSNAG_NS = "com.bugsnag.android"
         private const val BUGSNAG_PERF_NS = "com.bugsnag.performance.android"
@@ -88,6 +115,8 @@ public class PerformanceConfiguration private constructor(public val context: Co
         private const val ENABLED_RELEASE_STAGES = "$BUGSNAG_PERF_NS.ENABLED_RELEASE_STAGES"
         private const val VERSION_CODE_KEY = "$BUGSNAG_PERF_NS.VERSION_CODE"
         private const val APP_VERSION_KEY = "$BUGSNAG_PERF_NS.APP_VERSION"
+        private const val TRACE_PROPAGATION_URLS_KEY = "$BUGSNAG_PERF_NS.TRACE_PROPAGATION_URLS"
+        private const val SERVICE_NAME_KEY = "$BUGSNAG_PERF_NS.SERVICE_NAME"
 
         // Bugsnag Notifier keys that we can read
         private const val BSG_API_KEY = "$BUGSNAG_NS.API_KEY"
@@ -119,43 +148,54 @@ public class PerformanceConfiguration private constructor(public val context: Co
             data: Bundle?,
             apiKeyOverride: String?,
         ): PerformanceConfiguration {
-            return PerformanceConfiguration(ctx).apply {
-                (apiKeyOverride ?: data?.getString(API_KEY, data.getString(BSG_API_KEY)))
-                    ?.also { apiKey = it }
+            val config = PerformanceConfiguration(ctx)
 
-                data?.getString(ENDPOINT_KEY)
-                    ?.also { endpoint = it }
-                data?.getBoolean(AUTO_INSTRUMENT_APP_STARTS_KEY, autoInstrumentAppStarts)
-                    ?.also { autoInstrumentAppStarts = it }
-                data?.getString(AUTO_INSTRUMENT_ACTIVITIES_KEY)
-                    ?.also { autoInstrumentActivities = AutoInstrument.valueOf(it) }
+            (apiKeyOverride ?: data?.getString(API_KEY, data.getString(BSG_API_KEY)))
+                ?.also { config.apiKey = it }
+
+            if (data != null) {
+                data.getString(ENDPOINT_KEY)
+                    ?.also { config.endpoint = it }
+
+                config.autoInstrumentAppStarts = data.getBoolean(
+                    AUTO_INSTRUMENT_APP_STARTS_KEY,
+                    config.autoInstrumentAppStarts,
+                )
+
+                data.getString(AUTO_INSTRUMENT_ACTIVITIES_KEY)
+                    ?.also { config.autoInstrumentActivities = AutoInstrument.valueOf(it) }
 
                 // releaseStage / enabledReleaseStage
-                data?.getString(RELEASE_STAGE_KEY, data.getString(BSG_RELEASE_STAGE_KEY))
-                    ?.also { releaseStage = it }
-                data?.getString(ENABLED_RELEASE_STAGES, data.getString(BSG_ENABLED_RELEASE_STAGES))
-                    ?.also { enabledReleaseStages = it.splitToSequence(',').toSet() }
+                data.getString(RELEASE_STAGE_KEY, data.getString(BSG_RELEASE_STAGE_KEY))
+                    ?.also { config.releaseStage = it }
+                data.getString(ENABLED_RELEASE_STAGES, data.getString(BSG_ENABLED_RELEASE_STAGES))
+                    ?.also { config.enabledReleaseStages = it.splitToSequence(',').toSet() }
 
-                if (data?.containsKey(VERSION_CODE_KEY) == true) {
-                    versionCode = data.getInt(VERSION_CODE_KEY).toLong()
-                } else if (data?.containsKey(BSG_VERSION_CODE_KEY) == true) {
-                    versionCode = data.getInt(BSG_VERSION_CODE_KEY).toLong()
+                if (data.containsKey(VERSION_CODE_KEY)) {
+                    config.versionCode = data.getInt(VERSION_CODE_KEY).toLong()
+                } else if (data.containsKey(BSG_VERSION_CODE_KEY)) {
+                    config.versionCode = data.getInt(BSG_VERSION_CODE_KEY).toLong()
                 }
 
-                if (data?.containsKey(APP_VERSION_KEY) == true) {
-                    appVersion = data.getString(APP_VERSION_KEY)
-                } else if (data?.containsKey(BSG_APP_VERSION_KEY) == true) {
-                    appVersion = data.getString(BSG_APP_VERSION_KEY)
+                if (data.containsKey(APP_VERSION_KEY)) {
+                    config.appVersion = data.getString(APP_VERSION_KEY)
+                } else if (data.containsKey(BSG_APP_VERSION_KEY)) {
+                    config.appVersion = data.getString(BSG_APP_VERSION_KEY)
                 }
+
+                if (data.containsKey(TRACE_PROPAGATION_URLS_KEY)) {
+                    config.tracePropagationUrls = data.getString(TRACE_PROPAGATION_URLS_KEY)
+                        ?.splitToSequence(',')
+                        ?.map { it.toPattern() }
+                        ?.toList()
+                        .orEmpty()
+                }
+
+                data.getString(SERVICE_NAME_KEY)
+                    ?.also { config.serviceName = it }
             }
+
+            return config
         }
-    }
-
-    public fun addOnSpanEndCallback(spanEndCallback: SpanEndCallback) {
-        spanEndCallbacks.add(spanEndCallback)
-    }
-
-    public fun removeOnSpanEndCallback(spanEndCallback: SpanEndCallback) {
-        spanEndCallbacks.remove(spanEndCallback)
     }
 }

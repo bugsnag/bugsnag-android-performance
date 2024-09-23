@@ -9,7 +9,6 @@ import com.bugsnag.android.performance.BugsnagPerformance.start
 import com.bugsnag.android.performance.internal.Connectivity
 import com.bugsnag.android.performance.internal.DiscardingSampler
 import com.bugsnag.android.performance.internal.HttpDelivery
-import com.bugsnag.android.performance.internal.ImmutableConfig
 import com.bugsnag.android.performance.internal.InstrumentedAppState
 import com.bugsnag.android.performance.internal.LoadDeviceId
 import com.bugsnag.android.performance.internal.Module
@@ -24,6 +23,7 @@ import com.bugsnag.android.performance.internal.Worker
 import com.bugsnag.android.performance.internal.createResourceAttributes
 import com.bugsnag.android.performance.internal.integration.NotifierIntegration
 import com.bugsnag.android.performance.internal.isInForeground
+import com.bugsnag.android.performance.internal.processing.ImmutableConfig
 import java.net.URL
 
 /**
@@ -32,7 +32,7 @@ import java.net.URL
  * @see [start]
  */
 public object BugsnagPerformance {
-    public const val VERSION: String = "1.6.0"
+    public const val VERSION: String = "1.7.0"
 
     @get:JvmName("getInstrumentedAppState\$internal")
     internal val instrumentedAppState = InstrumentedAppState()
@@ -55,7 +55,10 @@ public object BugsnagPerformance {
     }
 
     @JvmStatic
-    public fun start(context: Context, apiKey: String) {
+    public fun start(
+        context: Context,
+        apiKey: String,
+    ) {
         start(PerformanceConfiguration.load(context, apiKey))
     }
 
@@ -125,6 +128,8 @@ public object BugsnagPerformance {
                 "PerformanceConfiguration.apiKey may not be null"
             },
             connectivity,
+            configuration.samplingProbability != null,
+            configuration,
         )
 
         val persistence = Persistence(application)
@@ -133,16 +138,20 @@ public object BugsnagPerformance {
         val workerTasks = ArrayList<Task>()
 
         if (configuration.isReleaseStageEnabled) {
-            val sampler = ProbabilitySampler(1.0)
+            val sampler: ProbabilitySampler
+            if (configuration.samplingProbability == null) {
+                sampler = ProbabilitySampler(1.0)
 
-            val samplerTask = SamplerTask(
-                delivery,
-                sampler,
-                persistence.persistentState,
-            )
-
-            delivery.newProbabilityCallback = samplerTask
-            workerTasks.add(samplerTask)
+                val samplerTask = SamplerTask(
+                    delivery,
+                    sampler,
+                    persistence.persistentState,
+                )
+                delivery.newProbabilityCallback = samplerTask
+                workerTasks.add(samplerTask)
+            } else {
+                sampler = ProbabilitySampler(configuration.samplingProbability)
+            }
 
             tracer.sampler = sampler
         } else {
@@ -154,7 +163,8 @@ public object BugsnagPerformance {
         workerTasks.add(RetryDeliveryTask(persistence.retryQueue, httpDelivery, connectivity))
 
         val bsgWorker = Worker(
-            startupTasks = listOf(
+            startupTasks =
+            listOf(
                 LoadDeviceId(application, resourceAttributes),
             ),
             tasks = workerTasks,
@@ -186,8 +196,10 @@ public object BugsnagPerformance {
      */
     @JvmStatic
     @JvmOverloads
-    public fun startSpan(name: String, options: SpanOptions = SpanOptions.DEFAULTS): Span =
-        spanFactory.createCustomSpan(name, options)
+    public fun startSpan(
+        name: String,
+        options: SpanOptions = SpanOptions.DEFAULTS,
+    ): Span = spanFactory.createCustomSpan(name, options)
 
     /**
      * Open a network span for a given url and HTTP [verb] to measure the time taken for an HTTP request.
@@ -249,7 +261,10 @@ public object BugsnagPerformance {
      */
     @JvmStatic
     @JvmOverloads
-    public fun endViewLoadSpan(activity: Activity, endTime: Long = SystemClock.elapsedRealtimeNanos()) {
+    public fun endViewLoadSpan(
+        activity: Activity,
+        endTime: Long = SystemClock.elapsedRealtimeNanos(),
+    ) {
         instrumentedAppState.spanTracker.endSpan(activity, endTime = endTime)
     }
 
@@ -301,6 +316,9 @@ public object BugsnagPerformance {
  * @param block the block of code to measure the execution time
  * @see [BugsnagPerformance.startSpan]
  */
-public inline fun <R> measureSpan(name: String, block: () -> R): R {
+public inline fun <R> measureSpan(
+    name: String,
+    block: () -> R,
+): R {
     return BugsnagPerformance.startSpan(name).use { block() }
 }

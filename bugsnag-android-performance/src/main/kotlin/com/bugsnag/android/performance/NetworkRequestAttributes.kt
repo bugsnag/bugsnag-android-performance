@@ -15,7 +15,7 @@ public object NetworkRequestAttributes {
      */
     @JvmStatic
     public fun setResponseCode(span: Span, statusCode: Int) {
-        (span as? SpanImpl)?.setAttribute("http.status_code", statusCode)
+        (span as? SpanImpl)?.attributes?.set("http.status_code", statusCode)
     }
 
     /**
@@ -26,7 +26,7 @@ public object NetworkRequestAttributes {
      */
     @JvmStatic
     public fun setRequestContentLength(span: Span, contentLength: Long) {
-        (span as? SpanImpl)?.setAttribute("http.request_content_length", contentLength)
+        (span as? SpanImpl)?.attributes?.set("http.request_content_length", contentLength)
     }
 
     /**
@@ -37,7 +37,7 @@ public object NetworkRequestAttributes {
      */
     @JvmStatic
     public fun setUncompressedRequestContentLength(span: Span, contentLength: Long) {
-        (span as? SpanImpl)?.setAttribute("http.request_content_length_uncompressed", contentLength)
+        (span as? SpanImpl)?.attributes?.set("http.request_content_length_uncompressed", contentLength)
     }
 
     /**
@@ -48,7 +48,7 @@ public object NetworkRequestAttributes {
      */
     @JvmStatic
     public fun setResponseContentLength(span: Span, contentLength: Long) {
-        (span as? SpanImpl)?.setAttribute("http.response_content_length", contentLength)
+        (span as? SpanImpl)?.attributes?.set("http.response_content_length", contentLength)
     }
 
     /**
@@ -59,7 +59,7 @@ public object NetworkRequestAttributes {
      */
     @JvmStatic
     public fun setUncompressedResponseContentLength(span: Span, contentLength: Long) {
-        (span as? SpanImpl)?.setAttribute(
+        (span as? SpanImpl)?.attributes?.set(
             "http.response_content_length_uncompressed",
             contentLength,
         )
@@ -76,6 +76,6 @@ public object NetworkRequestAttributes {
      */
     @JvmStatic
     public fun setHttpFlavor(span: Span, httpFlavor: String) {
-        (span as? SpanImpl)?.setAttribute("http.flavor", httpFlavor)
+        (span as? SpanImpl)?.attributes?.set("http.flavor", httpFlavor)
     }
 }

@@ -5,7 +5,6 @@ package com.bugsnag.android.performance
  * attributes directly without needing to access the [attributes] property.
  */
 public interface HasAttributes {
-
     /**
      * Set or clear a string attribute. Passing `null` will remove the attribute.
      *

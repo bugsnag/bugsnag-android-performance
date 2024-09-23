@@ -25,5 +25,5 @@ public enum class AutoInstrument {
      * Full auto instrumentation should be carried out, both opening and closing of the spans
      * for the given setting. This is the default setting.
      */
-    FULL
+    FULL,
 }

@@ -4,11 +4,11 @@ import com.bugsnag.android.performance.Logger
 
 internal class RetryDelivery(
     private val retryQueue: RetryQueue,
-    private val delivery: Delivery
+    private val delivery: Delivery,
 ) : Delivery by delivery {
     override fun deliver(
         spans: Collection<SpanImpl>,
-        resourceAttributes: Attributes
+        resourceAttributes: Attributes,
     ): DeliveryResult {
         if (spans.isEmpty()) {
             return DeliveryResult.Success
