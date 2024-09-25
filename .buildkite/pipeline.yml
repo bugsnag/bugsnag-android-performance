@@ -78,7 +78,7 @@ steps:
       test-collector#v1.10.2:
         files: "reports/TEST-*.xml"
         format: "junit"
-        branch: "^master|next$$"
+        branch: "^main|next$$"
     concurrency: 25
     concurrency_group: 'bitbar'
     concurrency_method: eager

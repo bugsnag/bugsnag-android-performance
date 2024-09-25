@@ -21,6 +21,7 @@ x-common-environment: &common-environment
   MAZE_ASPECTO_REPEATER_API_KEY:
   MAZE_REPEATER_API_KEY:
   TEST_FIXTURE_SYMBOL_DIR:
+  MAZE_NO_FAIL_FAST:
 
 services:
   android-common:
