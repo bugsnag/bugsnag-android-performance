@@ -28,7 +28,8 @@ internal abstract class FramerateCollector(
             return
         }
 
-        // count the number of times onFrameMetricsAvailable is called - this *must* be done first
+        // count the number of times onFrameMetricsAvailable is called - this must be the first
+        // change (per frame) in the metricsContainer as we use it in optimistic read checks
         metricsContainer.totalMetricsCount++
 
         val totalDuration = frameMetrics.totalDuration
@@ -38,8 +39,8 @@ internal abstract class FramerateCollector(
         val adjustedDeadline: Long = (deadline * SLOW_FRAME_ADJUSTMENT).toLong()
 
         if (totalDuration >= FROZEN_FRAME_TIME) {
-            val spanStartTime = frameTimestampToClockTime(frameStartTime)
-            metricsContainer.addFrozenFrame(spanStartTime - totalDuration, spanStartTime)
+            val frameEndTime = frameTimestampToClockTime(frameStartTime)
+            metricsContainer.addFrozenFrame(frameEndTime - totalDuration, frameEndTime)
         } else if (totalDuration >= adjustedDeadline) {
             metricsContainer.slowFrameCount++
         }
@@ -104,7 +105,7 @@ internal open class FramerateCollector24(
 
     private val currentRefreshRate: Float
         get() {
-            // based heavily on
+            // avoid faulty return values (including 0), based heavily on
             // https://cs.android.com/androidx/platform/frameworks/support/+/androidx-main:metrics/metrics-performance/src/main/java/androidx/metrics/performance/JankStatsApi16Impl.kt;l=265
             val currentWindow = window
 

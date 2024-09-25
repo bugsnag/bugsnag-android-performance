@@ -86,7 +86,7 @@ internal class FramerateMetricsSource : ActivityLifecycleCallbacks,
         try {
             activity.window.removeOnFrameMetricsAvailableListener(listener)
         } catch (_: RuntimeException) {
-            // this possible (as a NullPointerException) when the activity has no listeners
+            // this is possible (as a NullPointerException) when the activity has no listeners
             // it's unlikely, but we don't want to crash the app if it does ever happen
         }
     }

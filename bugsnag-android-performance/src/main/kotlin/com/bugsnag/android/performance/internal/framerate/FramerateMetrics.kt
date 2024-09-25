@@ -89,8 +89,8 @@ internal class FramerateMetricsContainer {
 
     fun snapshot(): FramerateMetricsSnapshot {
         while (true) {
+            // always capture the totalMetricsCount *first*
             val totalMetricsSnapshot = this.totalMetricsCount
-            // always capture the totalFrameCount *first*
             val totalFrameSnapshot = this.totalFrameCount
             val slowFrameSnapshot = this.slowFrameCount
             val frozenFrameSnapshot = this.frozenFrameCount
