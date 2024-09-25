@@ -86,6 +86,9 @@ class ConfigurationLoaderTest {
             config.tracePropagationUrls.map { it.pattern() },
         )
         assertEquals("my.service.name", config.serviceName)
+        assertEquals(123, config.attributeStringValueLimit)
+        assertEquals(234, config.attributeArrayLengthLimit)
+        assertEquals(345, config.attributeCountLimit)
     }
 
     private fun Bundle.populatePerformanceNS() {
@@ -104,6 +107,10 @@ class ConfigurationLoaderTest {
             ".*\\.example\\.com,example\\.com",
         )
         putString("com.bugsnag.performance.android.SERVICE_NAME", "my.service.name")
+
+        putInt("com.bugsnag.performance.android.ATTRIBUTE_STRING_VALUE_LIMIT", 123)
+        putInt("com.bugsnag.performance.android.ATTRIBUTE_ARRAY_LENGTH_LIMIT", 234)
+        putInt("com.bugsnag.performance.android.ATTRIBUTE_COUNT_LIMIT", 345)
     }
 
     private fun Bundle.populateBugsnagNS() {

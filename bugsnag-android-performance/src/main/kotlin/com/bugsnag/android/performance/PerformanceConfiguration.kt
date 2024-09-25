@@ -36,7 +36,7 @@ public class PerformanceConfiguration private constructor(public val context: Co
     public var samplingProbability: Double? = null
 
     @JvmSynthetic
-    internal val spanEndCallbacks: MutableList<SpanEndCallback> = ArrayList()
+    internal val spanEndCallbacks: MutableList<OnSpanEndCallback> = ArrayList()
 
     /**
      * Activity classes that are considered part of the AppStart and therefore will not
@@ -73,12 +73,12 @@ public class PerformanceConfiguration private constructor(public val context: Co
             field = if (value !in 1..1000) 128 else value
         }
 
-    public fun addOnSpanEndCallback(spanEndCallback: SpanEndCallback) {
-        spanEndCallbacks.add(spanEndCallback)
+    public fun addOnSpanEndCallback(onSpanEndCallback: OnSpanEndCallback) {
+        spanEndCallbacks.add(onSpanEndCallback)
     }
 
-    public fun removeOnSpanEndCallback(spanEndCallback: SpanEndCallback) {
-        spanEndCallbacks.remove(spanEndCallback)
+    public fun removeOnSpanEndCallback(onSpanEndCallback: OnSpanEndCallback) {
+        spanEndCallbacks.remove(onSpanEndCallback)
     }
 
     override fun toString(): String =
@@ -117,6 +117,11 @@ public class PerformanceConfiguration private constructor(public val context: Co
         private const val APP_VERSION_KEY = "$BUGSNAG_PERF_NS.APP_VERSION"
         private const val TRACE_PROPAGATION_URLS_KEY = "$BUGSNAG_PERF_NS.TRACE_PROPAGATION_URLS"
         private const val SERVICE_NAME_KEY = "$BUGSNAG_PERF_NS.SERVICE_NAME"
+        private const val ATTRIBUTE_STRING_VALUE_LIMIT_KEY =
+            "$BUGSNAG_PERF_NS.ATTRIBUTE_STRING_VALUE_LIMIT"
+        private const val ATTRIBUTE_ARRAY_LENGTH_LIMIT_KEY =
+            "$BUGSNAG_PERF_NS.ATTRIBUTE_ARRAY_LENGTH_LIMIT"
+        private const val ATTRIBUTE_COUNT_LIMIT_KEY = "$BUGSNAG_PERF_NS.ATTRIBUTE_COUNT_LIMIT"
 
         // Bugsnag Notifier keys that we can read
         private const val BSG_API_KEY = "$BUGSNAG_NS.API_KEY"
@@ -170,6 +175,13 @@ public class PerformanceConfiguration private constructor(public val context: Co
                     ?.also { config.releaseStage = it }
                 data.getString(ENABLED_RELEASE_STAGES, data.getString(BSG_ENABLED_RELEASE_STAGES))
                     ?.also { config.enabledReleaseStages = it.splitToSequence(',').toSet() }
+
+                config.attributeStringValueLimit =
+                    data.getInt(ATTRIBUTE_STRING_VALUE_LIMIT_KEY, config.attributeStringValueLimit)
+                config.attributeArrayLengthLimit =
+                    data.getInt(ATTRIBUTE_ARRAY_LENGTH_LIMIT_KEY, config.attributeArrayLengthLimit)
+                config.attributeCountLimit =
+                    data.getInt(ATTRIBUTE_COUNT_LIMIT_KEY, config.attributeCountLimit)
 
                 if (data.containsKey(VERSION_CODE_KEY)) {
                     config.versionCode = data.getInt(VERSION_CODE_KEY).toLong()

@@ -3,7 +3,7 @@ package com.bugsnag.android.performance.internal.processing
 import android.os.SystemClock
 import androidx.annotation.VisibleForTesting
 import com.bugsnag.android.performance.Span
-import com.bugsnag.android.performance.SpanEndCallback
+import com.bugsnag.android.performance.OnSpanEndCallback
 import com.bugsnag.android.performance.internal.InternalDebug
 import com.bugsnag.android.performance.internal.ProbabilitySampler
 import com.bugsnag.android.performance.internal.Sampler
@@ -12,7 +12,7 @@ import com.bugsnag.android.performance.internal.Worker
 
 internal class Tracer(
     @get:VisibleForTesting
-    internal val spanEndCallbacks: Array<SpanEndCallback>,
+    internal val spanEndCallbacks: Array<OnSpanEndCallback>,
 ) : BatchingSpanProcessor() {
     private var lastBatchSendTime = SystemClock.elapsedRealtime()
     internal var sampler: Sampler = ProbabilitySampler(1.0)
