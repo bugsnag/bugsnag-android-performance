@@ -18,8 +18,14 @@ internal typealias AttributeSource = (target: HasAttributes) -> Unit
 public class SpanFactory(
     public var spanProcessor: SpanProcessor,
     public val spanAttributeSource: AttributeSource = {},
+    metricSources: List<MetricSource<*>> = emptyList(),
 ) {
+    @Suppress("UNCHECKED_CAST")
+    internal val metricSources: Array<MetricSource<Any>> =
+        metricSources.toTypedArray() as Array<MetricSource<Any>>
+
     public var networkRequestCallback: NetworkRequestInstrumentationCallback? = null
+
     public fun createCustomSpan(
         name: String,
         options: SpanOptions = SpanOptions.DEFAULTS,
@@ -185,6 +191,7 @@ public class SpanFactory(
             parentSpanId = parentContext?.spanId ?: 0L,
             processor = spanProcessor,
             makeContext = options.makeContext,
+            metricSources = metricSources,
         )
 
         spanAttributeSource(span)

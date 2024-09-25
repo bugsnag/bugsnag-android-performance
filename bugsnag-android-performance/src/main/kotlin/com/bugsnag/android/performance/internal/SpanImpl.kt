@@ -8,6 +8,7 @@ import com.bugsnag.android.performance.HasAttributes
 import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.SpanContext
 import com.bugsnag.android.performance.SpanKind
+import com.bugsnag.android.performance.SpanOptions
 import com.bugsnag.android.performance.internal.integration.NotifierIntegration
 import java.security.SecureRandom
 import java.util.Random
@@ -26,9 +27,12 @@ public class SpanImpl internal constructor(
     public val parentSpanId: Long,
     private val processor: SpanProcessor,
     private val makeContext: Boolean,
+    private val metricSources: Array<MetricSource<Any>>,
 ) : Span, HasAttributes {
 
     public val attributes: Attributes = Attributes()
+    public val metrics: Array<Any?> =
+        Array(metricSources.size) { metricSources[it].createStartMetrics() }
 
     internal var isSealed: Boolean = false
 
@@ -80,6 +84,10 @@ public class SpanImpl internal constructor(
 
     override fun end(endTime: Long) {
         if (this.endTime.compareAndSet(NO_END_TIME, endTime)) {
+            metrics.forEachIndexed { index, startToken ->
+                startToken?.let { metricSources[index].endMetrics(it, this) }
+            }
+
             processor.onEnd(this)
             NotifierIntegration.onSpanEnded(this)
             if (makeContext) SpanContext.detach(this)

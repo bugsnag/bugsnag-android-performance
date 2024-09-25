@@ -34,8 +34,8 @@ class TestSpanFactory {
             parentSpanId,
             processor,
             true,
-        )
-            .apply { if (endTime != null) end(endTime(startTime)) }
+            emptyArray(),
+        ).apply { if (endTime != null) end(endTime(startTime)) }
     }
 
     fun newSpans(

@@ -88,5 +88,6 @@ class NotifierIntegrationTest {
         0L,
         NoopSpanProcessor,
         makeContext,
+        emptyArray(),
     )
 }

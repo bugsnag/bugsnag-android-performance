@@ -43,6 +43,7 @@ class SpanTest {
             0L,
             mockSpanProcessor,
             false,
+            emptyArray(),
         )
 
         span.end()
@@ -74,5 +75,6 @@ class SpanTest {
         0L,
         NoopSpanProcessor,
         false,
+        emptyArray(),
     )
 }
