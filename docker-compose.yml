@@ -4,6 +4,7 @@ version: '3.6'
 x-common-environment: &common-environment
   DEBUG:
   BUILDKITE:
+  BUILDKITE_ANALYTICS_TOKEN:
   BUILDKITE_BRANCH:
   BUILDKITE_BUILD_CREATOR:
   BUILDKITE_BUILD_NUMBER:
