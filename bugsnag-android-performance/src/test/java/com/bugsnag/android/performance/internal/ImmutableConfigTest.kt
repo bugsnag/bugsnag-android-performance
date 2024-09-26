@@ -6,9 +6,9 @@ import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import com.bugsnag.android.performance.AutoInstrument
 import com.bugsnag.android.performance.Logger
+import com.bugsnag.android.performance.OnSpanEndCallback
 import com.bugsnag.android.performance.PerformanceConfiguration
 import com.bugsnag.android.performance.Span
-import com.bugsnag.android.performance.SpanEndCallback
 import com.bugsnag.android.performance.internal.processing.ImmutableConfig
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
@@ -218,7 +218,7 @@ class ImmutableConfigTest {
         assertSame(spanEndCallback3, perfConfig.spanEndCallbacks[1])
     }
 
-    private class DummyCallback : SpanEndCallback {
+    private class DummyCallback : OnSpanEndCallback {
         override fun onSpanEnd(span: Span): Boolean {
             return true
         }
