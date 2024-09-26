@@ -38,11 +38,13 @@ internal abstract class FramerateCollector(
         // we allow for a 5% overrun when considering "slow" frames
         val adjustedDeadline: Long = (deadline * SLOW_FRAME_ADJUSTMENT).toLong()
 
-        if (totalDuration >= FROZEN_FRAME_TIME) {
-            val frameEndTime = frameTimestampToClockTime(frameStartTime)
-            metricsContainer.addFrozenFrame(frameEndTime - totalDuration, frameEndTime)
-        } else if (totalDuration >= adjustedDeadline) {
-            metricsContainer.slowFrameCount++
+        if (totalDuration >= adjustedDeadline) {
+            if (totalDuration >= FROZEN_FRAME_TIME) {
+                val frameEndTime = frameTimestampToClockTime(frameStartTime)
+                metricsContainer.addFrozenFrame(frameEndTime - totalDuration, frameEndTime)
+            } else {
+                metricsContainer.slowFrameCount++
+            }
         }
 
         metricsContainer.totalFrameCount += dropCountSinceLastInvocation + 1
