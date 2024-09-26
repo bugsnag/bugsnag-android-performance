@@ -23,15 +23,7 @@ public class InstrumentedAppState {
 
     public val spanTracker: SpanTracker = SpanTracker()
 
-    internal val framerateMetrics: FramerateMetricsSource? =
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) FramerateMetricsSource()
-        else null
-
-    public val spanFactory: SpanFactory = SpanFactory(
-        spanProcessor,
-        defaultAttributeSource,
-        listOfNotNull(framerateMetrics),
-    )
+    public val spanFactory: SpanFactory = SpanFactory(spanProcessor, defaultAttributeSource)
 
     internal val startupTracker: AppStartTracker = AppStartTracker(spanTracker, spanFactory)
 
@@ -51,7 +43,12 @@ public class InstrumentedAppState {
 
         app = application
         app.registerActivityLifecycleCallbacks(activityInstrumentation)
-        framerateMetrics?.let { app.registerActivityLifecycleCallbacks(it) }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            val framerateMetricsSource = FramerateMetricsSource()
+            spanFactory.framerateMetricsSource = framerateMetricsSource
+            app.registerActivityLifecycleCallbacks(framerateMetricsSource)
+        }
 
         ForegroundState.addForegroundChangedCallback { inForeground ->
             defaultAttributeSource.update {
