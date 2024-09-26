@@ -5,6 +5,6 @@ package com.bugsnag.android.performance
  * can modify the attributes of a span or cause it to be discarded between the time [Span.end] is called
  * and when the span is enqueued for delivery.
  */
-public fun interface SpanEndCallback {
+public fun interface OnSpanEndCallback {
     public fun onSpanEnd(span: Span): Boolean
 }

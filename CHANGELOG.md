@@ -1,3 +1,10 @@
+## 1.8.0 (2024-09-26)
+
+### Changes
+
+* Attribute limits can now be configured in the `AndroidManifest.xml`
+  [#284](https://github.com/bugsnag/bugsnag-android-performance/pull/284)
+
 ## 1.7.0 (2024-09-23)
 
 ### Bug fixes

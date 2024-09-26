@@ -8,7 +8,7 @@ import com.bugsnag.android.performance.AutoInstrument
 import com.bugsnag.android.performance.Logger
 import com.bugsnag.android.performance.NetworkRequestInstrumentationCallback
 import com.bugsnag.android.performance.PerformanceConfiguration
-import com.bugsnag.android.performance.SpanEndCallback
+import com.bugsnag.android.performance.OnSpanEndCallback
 import com.bugsnag.android.performance.internal.DebugLogger
 import com.bugsnag.android.performance.internal.NoopLogger
 import com.bugsnag.android.performance.internal.RELEASE_STAGE_PRODUCTION
@@ -33,7 +33,7 @@ internal data class ImmutableConfig(
     val doNotEndAppStart: Collection<Class<out Activity>>,
     val doNotAutoInstrument: Collection<Class<*>>,
     val tracePropagationUrls: Collection<Pattern>,
-    val spanEndCallbacks: Array<SpanEndCallback>,
+    val spanEndCallbacks: Array<OnSpanEndCallback>,
     val samplingProbability: Double?,
     override val attributeStringValueLimit: Int,
     override val attributeArrayLengthLimit: Int,
