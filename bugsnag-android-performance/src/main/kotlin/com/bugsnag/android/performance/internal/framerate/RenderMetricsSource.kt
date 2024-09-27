@@ -17,23 +17,23 @@ import com.bugsnag.android.performance.internal.MetricSource
 import com.bugsnag.android.performance.internal.SpanImpl
 import java.util.WeakHashMap
 
-internal class FramerateMetricsSource : ActivityLifecycleCallbacks,
-    MetricSource<FramerateMetricsSnapshot> {
+internal class RenderMetricsSource : ActivityLifecycleCallbacks,
+    MetricSource<RenderMetricsSnapshot> {
 
     private val frameMetricsListeners = WeakHashMap<Activity, OnFrameMetricsAvailableListener>()
-    private val thread = HandlerThread("Bugsnag FrameMetrics thread")
+    private val thread = HandlerThread("Bugsnag Render Metrics thread")
     private val handler: Handler by lazy {
         thread.start()
         Handler(thread.looper)
     }
 
-    private val metricsContainer = FramerateMetricsContainer()
+    private val metricsContainer = RenderMetricsContainer()
 
-    override fun createStartMetrics(): FramerateMetricsSnapshot {
+    override fun createStartMetrics(): RenderMetricsSnapshot {
         return metricsContainer.snapshot()
     }
 
-    override fun endMetrics(startMetrics: FramerateMetricsSnapshot, span: Span) {
+    override fun endMetrics(startMetrics: RenderMetricsSnapshot, span: Span) {
         val currentMetrics = metricsContainer.snapshot()
 
         if (currentMetrics.totalFrameCount > startMetrics.totalFrameCount) {
@@ -60,11 +60,11 @@ internal class FramerateMetricsSource : ActivityLifecycleCallbacks,
 
     private fun createFrameMetricsAvailableListener(window: Window): OnFrameMetricsAvailableListener? =
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
-            FramerateCollector31(metricsContainer)
+            RenderMetricsCollector31(metricsContainer)
         else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-            FramerateCollector26(window, Choreographer.getInstance(), metricsContainer)
+            RenderMetricsCollector26(window, Choreographer.getInstance(), metricsContainer)
         else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
-            FramerateCollector24(window, Choreographer.getInstance(), metricsContainer)
+            RenderMetricsCollector24(window, Choreographer.getInstance(), metricsContainer)
         else null
 
     @RequiresApi(Build.VERSION_CODES.N)

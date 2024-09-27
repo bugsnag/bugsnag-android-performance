@@ -9,7 +9,7 @@ import com.bugsnag.android.performance.SpanContext
 import com.bugsnag.android.performance.SpanKind
 import com.bugsnag.android.performance.SpanOptions
 import com.bugsnag.android.performance.ViewType
-import com.bugsnag.android.performance.internal.framerate.FramerateMetricsSnapshot
+import com.bugsnag.android.performance.internal.framerate.RenderMetricsSnapshot
 import com.bugsnag.android.performance.internal.integration.NotifierIntegration
 import com.bugsnag.android.performance.internal.processing.AttributeLimits
 import java.util.UUID
@@ -25,7 +25,7 @@ public class SpanFactory(
     public var networkRequestCallback: NetworkRequestInstrumentationCallback? = null
 
     internal var attributeLimits: AttributeLimits? = null
-    internal var framerateMetricsSource: MetricSource<FramerateMetricsSnapshot>? = null
+    internal var framerateMetricsSource: MetricSource<RenderMetricsSnapshot>? = null
 
     public fun createCustomSpan(
         name: String,

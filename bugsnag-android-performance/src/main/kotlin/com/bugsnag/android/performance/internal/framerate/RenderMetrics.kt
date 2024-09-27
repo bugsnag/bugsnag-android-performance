@@ -1,13 +1,13 @@
 package com.bugsnag.android.performance.internal.framerate
 
-internal class FramerateMetricsSnapshot(
+internal class RenderMetricsSnapshot(
     val slowFrameCount: Long,
     val frozenFrameCount: Long,
     val totalFrameCount: Long,
     val frozenFrame: FrozenFrame?,
 ) {
     inline fun forEachFrozenFrameUntil(
-        end: FramerateMetricsSnapshot,
+        end: RenderMetricsSnapshot,
         consumer: (Long, Long) -> Unit,
     ) {
         if (end.totalFrameCount <= totalFrameCount) {
@@ -18,8 +18,13 @@ internal class FramerateMetricsSnapshot(
         val endFrame = end.frozenFrame
         // we skip the "first" frozen frame, as it would have ended before the snapshot was taken
         var currentFrame: FrozenFrame? = frozenFrame?.next
-        while (currentFrame != null && currentFrame !== endFrame) {
+        while (currentFrame != null) {
             consumer(currentFrame.startTimestamp, currentFrame.endTimestamp)
+
+            if (currentFrame === endFrame) {
+                break
+            }
+
             currentFrame = currentFrame.next
         }
     }
@@ -39,7 +44,7 @@ internal class FrozenFrame(
     var next: FrozenFrame? = null
 }
 
-internal class FramerateMetricsContainer {
+internal class RenderMetricsContainer {
     @Volatile
     private var totalMetricsCount: Long = 0L
         private set
@@ -59,11 +64,11 @@ internal class FramerateMetricsContainer {
     private var latestFrozenFrame: FrozenFrame? = null
 
     /**
-     * Update this [FramerateCollector] with data from a new frame. [newMetrics] is expected to
+     * Update this [RenderMetricsCollector] with data from a new frame. [newMetrics] is expected to
      * call [countSlowFrame] and [countFrozenFrame] for the new frame data, and then return the
      * actual number of frames that were rendered since the last call to [update].
      */
-    inline fun update(newMetrics: FramerateMetricsContainer.() -> Int) {
+    inline fun update(newMetrics: RenderMetricsContainer.() -> Int) {
         totalMetricsCount++
         totalFrameCount += newMetrics()
     }
@@ -86,7 +91,7 @@ internal class FramerateMetricsContainer {
         frozenFrameCount++
     }
 
-    fun snapshot(): FramerateMetricsSnapshot {
+    fun snapshot(): RenderMetricsSnapshot {
         while (true) {
             // always capture the totalMetricsCount *first*
             val totalMetricsSnapshot = this.totalMetricsCount
@@ -100,7 +105,7 @@ internal class FramerateMetricsContainer {
                 totalMetricsSnapshot == this.totalMetricsCount
             ) {
                 // exit the loop if everything appear stable
-                return FramerateMetricsSnapshot(
+                return RenderMetricsSnapshot(
                     slowFrameSnapshot,
                     frozenFrameSnapshot,
                     totalFrameSnapshot,

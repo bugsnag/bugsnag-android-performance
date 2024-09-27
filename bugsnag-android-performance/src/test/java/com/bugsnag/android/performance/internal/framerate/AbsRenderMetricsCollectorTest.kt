@@ -12,26 +12,26 @@ import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 
-abstract class AbsFramerateCollectorTest {
+abstract class AbsRenderMetricsCollectorTest {
     protected lateinit var window: Window
     protected lateinit var choreographer: Choreographer
-    private lateinit var metricsContainer: FramerateMetricsContainer
-    private lateinit var framerateCollector: FramerateCollector
+    private lateinit var metricsContainer: RenderMetricsContainer
+    private lateinit var renderMetricsCollector: RenderMetricsCollector
 
-    internal abstract fun createFramerateCollector(metricsContainer: FramerateMetricsContainer): FramerateCollector
+    internal abstract fun createFramerateCollector(metricsContainer: RenderMetricsContainer): RenderMetricsCollector
     internal abstract fun notifyFrame(
         startTimeMs: Long,
         durationMs: Long,
         deadlineMs: Long,
-        collector: FramerateCollector,
+        collector: RenderMetricsCollector,
     )
 
     @Before
     open fun setUp() {
         window = mock<Window>()
         choreographer = mock<Choreographer>()
-        metricsContainer = FramerateMetricsContainer()
-        framerateCollector = createFramerateCollector(metricsContainer)
+        metricsContainer = RenderMetricsContainer()
+        renderMetricsCollector = createFramerateCollector(metricsContainer)
     }
 
     @Test
@@ -41,7 +41,7 @@ abstract class AbsFramerateCollectorTest {
         var time = 100L
         val frameDuration = 16L
         repeat(totalFrameCount) {
-            notifyFrame(time, frameDuration, frameDuration, framerateCollector)
+            notifyFrame(time, frameDuration, frameDuration, renderMetricsCollector)
             time += frameDuration
         }
 
@@ -65,7 +65,7 @@ abstract class AbsFramerateCollectorTest {
                     frameDeadline
                 }
 
-            notifyFrame(time, frameDuration, frameDeadline, framerateCollector)
+            notifyFrame(time, frameDuration, frameDeadline, renderMetricsCollector)
             time += frameDuration
         }
 
@@ -88,7 +88,7 @@ abstract class AbsFramerateCollectorTest {
                     frameDeadline
                 }
 
-            notifyFrame(time, frameDuration, frameDeadline, framerateCollector)
+            notifyFrame(time, frameDuration, frameDeadline, renderMetricsCollector)
             time += frameDuration
         }
 
@@ -99,7 +99,7 @@ abstract class AbsFramerateCollectorTest {
 }
 
 @Suppress("DEPRECATION") // windowManager.defaultDisplay
-open class FramerateCollector24Test : AbsFramerateCollectorTest() {
+open class RenderMetricsCollector24Test : AbsRenderMetricsCollectorTest() {
     private lateinit var windowManager: WindowManager
     private lateinit var display: Display
 
@@ -117,10 +117,10 @@ open class FramerateCollector24Test : AbsFramerateCollectorTest() {
         whenever(window.windowManager).doReturn(windowManager)
     }
 
-    override fun createFramerateCollector(metricsContainer: FramerateMetricsContainer): FramerateCollector {
+    override fun createFramerateCollector(metricsContainer: RenderMetricsContainer): RenderMetricsCollector {
         // since we run against a stub Choreographer - there is no mLastFrameTimeNanos field
         // so instead we override the reflection for unit testing
-        return object : FramerateCollector24(window, choreographer, metricsContainer) {
+        return object : RenderMetricsCollector24(window, choreographer, metricsContainer) {
             override val FrameMetrics.frameStart: Long
                 get() = lastFrameStart
         }
@@ -130,9 +130,9 @@ open class FramerateCollector24Test : AbsFramerateCollectorTest() {
         startTimeMs: Long,
         durationMs: Long,
         deadlineMs: Long,
-        collector: FramerateCollector,
+        collector: RenderMetricsCollector,
     ) {
-        lastFrameStart = startTimeMs * FramerateCollector.NANOS_IN_MS
+        lastFrameStart = startTimeMs * RenderMetricsCollector.NANOS_IN_MS
         whenever(window.windowManager.defaultDisplay.refreshRate)
             .doReturn((1000L / deadlineMs).toFloat())
 
@@ -144,38 +144,38 @@ open class FramerateCollector24Test : AbsFramerateCollectorTest() {
     protected open fun createFrameMetrics(startTimeMs: Long, durationMs: Long) =
         mock<FrameMetrics> {
             whenever(it.getMetric(FrameMetrics.DRAW_DURATION))
-                .doReturn(durationMs * FramerateCollector.NANOS_IN_MS)
+                .doReturn(durationMs * RenderMetricsCollector.NANOS_IN_MS)
         }
 }
 
-class FramerateCollector26Test : FramerateCollector24Test() {
+class RenderMetricsCollector26Test : RenderMetricsCollector24Test() {
     override fun createFrameMetrics(startTimeMs: Long, durationMs: Long) =
         mock<FrameMetrics> {
             whenever(it.getMetric(FrameMetrics.DRAW_DURATION))
-                .doReturn(durationMs * FramerateCollector.NANOS_IN_MS)
+                .doReturn(durationMs * RenderMetricsCollector.NANOS_IN_MS)
             whenever(it.getMetric(FrameMetrics.INTENDED_VSYNC_TIMESTAMP))
-                .doReturn(startTimeMs * FramerateCollector.NANOS_IN_MS)
+                .doReturn(startTimeMs * RenderMetricsCollector.NANOS_IN_MS)
         }
 }
 
-class FramerateCollector31Test : AbsFramerateCollectorTest() {
-    override fun createFramerateCollector(metricsContainer: FramerateMetricsContainer): FramerateCollector {
-        return FramerateCollector31(metricsContainer)
+class RenderMetricsCollector31Test : AbsRenderMetricsCollectorTest() {
+    override fun createFramerateCollector(metricsContainer: RenderMetricsContainer): RenderMetricsCollector {
+        return RenderMetricsCollector31(metricsContainer)
     }
 
     override fun notifyFrame(
         startTimeMs: Long,
         durationMs: Long,
         deadlineMs: Long,
-        collector: FramerateCollector,
+        collector: RenderMetricsCollector,
     ) {
         val metrics = mock<FrameMetrics> {
             whenever(it.getMetric(FrameMetrics.INTENDED_VSYNC_TIMESTAMP))
-                .doReturn(startTimeMs * FramerateCollector.NANOS_IN_MS)
+                .doReturn(startTimeMs * RenderMetricsCollector.NANOS_IN_MS)
             whenever(it.getMetric(FrameMetrics.DRAW_DURATION))
-                .doReturn(durationMs * FramerateCollector.NANOS_IN_MS)
+                .doReturn(durationMs * RenderMetricsCollector.NANOS_IN_MS)
             whenever(it.getMetric(FrameMetrics.DEADLINE))
-                .doReturn(deadlineMs * FramerateCollector.NANOS_IN_MS)
+                .doReturn(deadlineMs * RenderMetricsCollector.NANOS_IN_MS)
         }
 
         collector.onFrameMetricsAvailable(window, metrics, 0)

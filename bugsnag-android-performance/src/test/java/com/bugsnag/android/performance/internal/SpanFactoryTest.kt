@@ -2,8 +2,7 @@ package com.bugsnag.android.performance.internal
 
 import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.SpanOptions
-import com.bugsnag.android.performance.internal.framerate.FramerateMetricsSnapshot
-import com.bugsnag.android.performance.internal.framerate.TimestampPairBuffer
+import com.bugsnag.android.performance.internal.framerate.RenderMetricsSnapshot
 import com.bugsnag.android.performance.test.NoopSpanProcessor
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
@@ -16,22 +15,21 @@ class SpanFactoryTest {
      */
     private val baseOptions = SpanOptions.startTime(1L)
 
-    private lateinit var frameMetrics: MetricSource<FramerateMetricsSnapshot>
+    private lateinit var frameMetrics: MetricSource<RenderMetricsSnapshot>
 
     private lateinit var spanFactory: SpanFactory
 
     @Before
     fun setup() {
-        frameMetrics = object : MetricSource<FramerateMetricsSnapshot> {
-            private val timestampPairBuffer = TimestampPairBuffer()
+        frameMetrics = object : MetricSource<RenderMetricsSnapshot> {
             var counter = 0L
 
-            override fun createStartMetrics(): FramerateMetricsSnapshot {
+            override fun createStartMetrics(): RenderMetricsSnapshot {
                 counter++
-                return FramerateMetricsSnapshot(counter, counter, counter, timestampPairBuffer, 0)
+                return RenderMetricsSnapshot(counter, counter, counter, null)
             }
 
-            override fun endMetrics(startMetrics: FramerateMetricsSnapshot, span: Span) = Unit
+            override fun endMetrics(startMetrics: RenderMetricsSnapshot, span: Span) = Unit
         }
 
         spanFactory = SpanFactory(NoopSpanProcessor)

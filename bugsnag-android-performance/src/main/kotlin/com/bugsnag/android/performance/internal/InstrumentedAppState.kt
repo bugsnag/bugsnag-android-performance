@@ -5,7 +5,7 @@ import android.os.Build
 import androidx.annotation.RestrictTo
 import com.bugsnag.android.performance.AutoInstrument
 import com.bugsnag.android.performance.SpanContext
-import com.bugsnag.android.performance.internal.framerate.FramerateMetricsSource
+import com.bugsnag.android.performance.internal.framerate.RenderMetricsSource
 import com.bugsnag.android.performance.internal.instrumentation.AbstractActivityLifecycleInstrumentation
 import com.bugsnag.android.performance.internal.instrumentation.ActivityLifecycleInstrumentation
 import com.bugsnag.android.performance.internal.instrumentation.ForegroundState
@@ -37,7 +37,7 @@ public class InstrumentedAppState {
     public lateinit var app: Application
         private set
 
-    private var framerateMetricsSource: FramerateMetricsSource? = null
+    private var renderMetricsSource: RenderMetricsSource? = null
 
     internal fun attach(application: Application) {
         if (this::app.isInitialized) {
@@ -48,9 +48,9 @@ public class InstrumentedAppState {
         app.registerActivityLifecycleCallbacks(activityInstrumentation)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            framerateMetricsSource = FramerateMetricsSource()
-            spanFactory.framerateMetricsSource = framerateMetricsSource
-            app.registerActivityLifecycleCallbacks(framerateMetricsSource)
+            renderMetricsSource = RenderMetricsSource()
+            spanFactory.framerateMetricsSource = renderMetricsSource
+            app.registerActivityLifecycleCallbacks(renderMetricsSource)
         }
 
         ForegroundState.addForegroundChangedCallback { inForeground ->
@@ -93,10 +93,10 @@ public class InstrumentedAppState {
             (bootstrapSpanProcessor as? ForwardingSpanProcessor)?.discard()
         }
 
-        if (!configuration.autoInstrumentRendering && framerateMetricsSource != null) {
+        if (!configuration.autoInstrumentRendering && renderMetricsSource != null) {
             spanFactory.framerateMetricsSource = null
-            app.unregisterActivityLifecycleCallbacks(framerateMetricsSource)
-            framerateMetricsSource = null
+            app.unregisterActivityLifecycleCallbacks(renderMetricsSource)
+            renderMetricsSource = null
         }
 
         return tracer

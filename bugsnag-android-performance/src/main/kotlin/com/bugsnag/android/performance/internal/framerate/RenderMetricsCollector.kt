@@ -8,8 +8,8 @@ import android.view.Window
 import androidx.annotation.RequiresApi
 
 @RequiresApi(Build.VERSION_CODES.N)
-internal abstract class FramerateCollector(
-    private val metricsContainer: FramerateMetricsContainer,
+internal abstract class RenderMetricsCollector(
+    private val metricsContainer: RenderMetricsContainer,
 ) : Window.OnFrameMetricsAvailableListener {
 
     private var previousFrameTime: Long = 0L
@@ -97,11 +97,11 @@ internal abstract class FramerateCollector(
 }
 
 @RequiresApi(Build.VERSION_CODES.N)
-internal open class FramerateCollector24(
+internal open class RenderMetricsCollector24(
     private val window: Window,
     private val choreographer: Choreographer,
-    metricsContainer: FramerateMetricsContainer,
-) : FramerateCollector(metricsContainer) {
+    metricsContainer: RenderMetricsContainer,
+) : RenderMetricsCollector(metricsContainer) {
     override val FrameMetrics.frameStart: Long
         get() = choreographer.lastFrameTimeNanos ?: -1
 
@@ -125,19 +125,19 @@ internal open class FramerateCollector24(
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
-internal open class FramerateCollector26(
+internal open class RenderMetricsCollector26(
     window: Window,
     choreographer: Choreographer,
-    metricsContainer: FramerateMetricsContainer,
-) : FramerateCollector24(window, choreographer, metricsContainer) {
+    metricsContainer: RenderMetricsContainer,
+) : RenderMetricsCollector24(window, choreographer, metricsContainer) {
     override val FrameMetrics.frameStart: Long
         get() = getMetric(FrameMetrics.INTENDED_VSYNC_TIMESTAMP)
 }
 
 @RequiresApi(Build.VERSION_CODES.S)
-internal class FramerateCollector31(
-    metricsContainer: FramerateMetricsContainer,
-) : FramerateCollector(metricsContainer) {
+internal class RenderMetricsCollector31(
+    metricsContainer: RenderMetricsContainer,
+) : RenderMetricsCollector(metricsContainer) {
     override val FrameMetrics.deadline: Long
         get() = getMetric(FrameMetrics.DEADLINE)
     override val FrameMetrics.frameStart: Long

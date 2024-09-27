@@ -5,23 +5,23 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-class FramerateMetricsContainerTest {
+class RenderMetricsContainerTest {
     @Test
     fun countFrozenFrames() {
-        val container = FramerateMetricsContainer()
+        val container = RenderMetricsContainer()
         // add some frames before the start snapshot
-        container.countFrozenFrame(1L, 2L)
-        container.countFrozenFrame(3L, 4L)
+        container.update { 1.also { container.countFrozenFrame(1L, 2L) } }
+        container.update { 1.also { container.countFrozenFrame(3L, 4L) } }
 
         val snapshot1 = container.snapshot()
         for (i in 10L..500L step 2) {
-            container.countFrozenFrame(i, i + 1)
+            container.update { 1.also { container.countFrozenFrame(i, i + 1) } }
         }
         val snapshot2 = container.snapshot()
 
         // add some extra frames after the end snapshot
-        container.countFrozenFrame(1000L, 1001L)
-        container.countFrozenFrame(1002L, 1003L)
+        container.update { 1.also { container.countFrozenFrame(1000L, 1001L) } }
+        container.update { 1.also { container.countFrozenFrame(1002L, 1003L) } }
 
         val timestamps = frozenFramePairs(snapshot1, snapshot2)
 
@@ -40,9 +40,9 @@ class FramerateMetricsContainerTest {
 
     @Test
     fun noFrozenFrames() {
-        val container = FramerateMetricsContainer()
-        container.countFrozenFrame(1L, 2L)
-        container.countFrozenFrame(3L, 4L)
+        val container = RenderMetricsContainer()
+        container.update { 1.also { container.countFrozenFrame(1L, 2L) } }
+        container.update { 1.also { container.countFrozenFrame(3L, 4L) } }
 
         val snapshot1 = container.snapshot()
         val snapshot2 = container.snapshot()
@@ -52,8 +52,8 @@ class FramerateMetricsContainerTest {
     }
 
     private fun frozenFramePairs(
-        snapshot1: FramerateMetricsSnapshot,
-        snapshot2: FramerateMetricsSnapshot,
+        snapshot1: RenderMetricsSnapshot,
+        snapshot2: RenderMetricsSnapshot,
     ): Set<Pair<Long, Long>> {
         val timestamps = HashSet<Pair<Long, Long>>()
         snapshot1.forEachFrozenFrameUntil(snapshot2) { start, end ->
