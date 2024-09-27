@@ -4,6 +4,7 @@ version: '3.6'
 x-common-environment: &common-environment
   DEBUG:
   BUILDKITE:
+  BUILDKITE_ANALYTICS_TOKEN:
   BUILDKITE_BRANCH:
   BUILDKITE_BUILD_CREATOR:
   BUILDKITE_BUILD_NUMBER:
@@ -20,6 +21,7 @@ x-common-environment: &common-environment
   MAZE_ASPECTO_REPEATER_API_KEY:
   MAZE_REPEATER_API_KEY:
   TEST_FIXTURE_SYMBOL_DIR:
+  MAZE_NO_FAIL_FAST:
 
 services:
   android-common:
@@ -51,6 +53,7 @@ services:
       - ./features/:/app/features/
       - ./maze_output:/app/maze_output
       - /var/run/docker.sock:/var/run/docker.sock
+      - ./reports/:/app/reports/
 
 networks:
   default:
