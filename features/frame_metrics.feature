@@ -1,6 +1,6 @@
 Feature: Rendering / Frame Metrics
 
-  Scenario: Slow & Frozen Frames are reported
+Scenario: Slow & Frozen Frames are reported
   When I run "FrameMetricsScenario"
   * I wait to receive a trace
 
@@ -14,3 +14,13 @@ Feature: Rendering / Frame Metrics
   * the "Slow Animation" span integer attribute "bugsnag.rendering.total_slow_frames" is greater than 0
   * the "Slow Animation" span integer attribute "bugsnag.rendering.total_frozen_frames" is greater than 0
   * the "Slow Animation" span integer attribute "bugsnag.rendering.total_frames" is greater than 0
+
+Scenario: Rending Instrumentation can be turned off
+  When I run "FrameMetricsScenario" configured as "disableInstrumentation"
+  * I wait to receive a trace
+
+  * a span name equals "Slow Animation"
+
+  * the "Slow Animation" span has no "bugsnag.rendering.total_slow_frames" attribute
+  * the "Slow Animation" span has no "bugsnag.rendering.total_frozen_frames" attribute
+  * the "Slow Animation" span has no "bugsnag.rendering.total_frames" attribute
