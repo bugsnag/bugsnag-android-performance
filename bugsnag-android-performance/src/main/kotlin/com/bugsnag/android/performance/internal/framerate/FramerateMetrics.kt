@@ -4,85 +4,84 @@ internal class FramerateMetricsSnapshot(
     val slowFrameCount: Long,
     val frozenFrameCount: Long,
     val totalFrameCount: Long,
-    val frozenFrames: TimestampPairBuffer,
-    val firstFrozenFrameIndex: Int,
+    val frozenFrame: FrozenFrame?,
 ) {
     inline fun forEachFrozenFrameUntil(
         end: FramerateMetricsSnapshot,
         consumer: (Long, Long) -> Unit,
     ) {
-        var buffer: TimestampPairBuffer? = frozenFrames
-        var bufferIndex = firstFrozenFrameIndex
-        while (buffer != null) {
-            val endIndex =
-                if (buffer === end.frozenFrames) end.firstFrozenFrameIndex
-                else buffer.timestamps.size
+        if (end.totalFrameCount <= totalFrameCount) {
+            // early exit, the "end" snapshot is before or the same as the "start" snapshot (this)
+            return
+        }
 
-            var index = bufferIndex
-            while (index < endIndex) {
-                consumer(buffer.timestamps[index], buffer.timestamps[index + 1])
-                index += 2
-            }
-
-            if (buffer === end.frozenFrames) {
-                break
-            }
-
-            buffer = buffer.next
-            bufferIndex = 0
+        val endFrame = end.frozenFrame
+        // we skip the "first" frozen frame, as it would have ended before the snapshot was taken
+        var currentFrame: FrozenFrame? = frozenFrame?.next
+        while (currentFrame != null && currentFrame !== endFrame) {
+            consumer(currentFrame.startTimestamp, currentFrame.endTimestamp)
+            currentFrame = currentFrame.next
         }
     }
 }
 
-/**
- * A LinkedList of LongArrays that we can quickly and easily store timestamp pairs (start/end) in.
- * These can then be used to construct Spans (such as those for frozen frames) once off the
- * hot-path. The forward-only nature of the chain makes them GC eligible when appropriate without
- * having to track "open" snapshot groups.
- */
-internal class TimestampPairBuffer(size: Int = DEFAULT_BUFFER_SIZE) {
-    var index = 0
-        private set
-
-    val timestamps: LongArray = LongArray(size)
-    var next: TimestampPairBuffer? = null
-
-    fun add(start: Long, end: Long): Boolean {
-        if (index >= timestamps.size) {
-            return false
-        }
-
-        timestamps[index++] = start
-        timestamps[index++] = end
-        return true
-    }
-
-    companion object {
-        const val DEFAULT_BUFFER_SIZE = 64
-    }
+internal class FrozenFrame(
+    val startTimestamp: Long,
+    val endTimestamp: Long,
+) {
+    /**
+     * FrozenFrames form a singly linked list that allow snapshots to keep track of only the
+     * "latest" frozen frame, and then follow the links forward to an "ending" snapshot
+     * to find all of the frozen frames that happened within a given time window.
+     *
+     * The forward-only, single-link nature of this list makes any "old" frozen frames GC eligible.
+     */
+    var next: FrozenFrame? = null
 }
 
 internal class FramerateMetricsContainer {
     @Volatile
-    var totalMetricsCount: Long = 0L
+    private var totalMetricsCount: Long = 0L
+        private set
 
     @Volatile
     var slowFrameCount: Long = 0L
+        private set
 
     @Volatile
     var frozenFrameCount: Long = 0L
+        private set
 
     @Volatile
     var totalFrameCount: Long = 0L
+        private set
 
-    var frozenFrames: TimestampPairBuffer = TimestampPairBuffer()
+    private var latestFrozenFrame: FrozenFrame? = null
 
-    fun addFrozenFrame(start: Long, end: Long) {
-        while (!frozenFrames.add(start, end)) {
-            val newFrozenFrameBuffer = TimestampPairBuffer()
-            frozenFrames.next = newFrozenFrameBuffer
-            frozenFrames = newFrozenFrameBuffer
-        }
+    /**
+     * Update this [FramerateCollector] with data from a new frame. [newMetrics] is expected to
+     * call [countSlowFrame] and [countFrozenFrame] for the new frame data, and then return the
+     * actual number of frames that were rendered since the last call to [update].
+     */
+    inline fun update(newMetrics: FramerateMetricsContainer.() -> Int) {
+        totalMetricsCount++
+        totalFrameCount += newMetrics()
+    }
+
+    /**
+     * Count a single slow frame, typically called from [update]
+     */
+    fun countSlowFrame() {
+        slowFrameCount++
+    }
+
+    /**
+     * Count a single frozen frame and its expected start/end time, typically called from [update]
+     */
+    fun countFrozenFrame(start: Long, end: Long) {
+        val newFrozenFrame = FrozenFrame(start, end)
+        latestFrozenFrame?.next = newFrozenFrame
+        latestFrozenFrame = newFrozenFrame
 
         frozenFrameCount++
     }
@@ -105,8 +104,7 @@ internal class FramerateMetricsContainer {
                     slowFrameSnapshot,
                     frozenFrameSnapshot,
                     totalFrameSnapshot,
-                    frozenFrames,
-                    frozenFrames.index,
+                    latestFrozenFrame,
                 )
             }
         }

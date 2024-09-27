@@ -30,25 +30,25 @@ internal abstract class FramerateCollector(
 
         // count the number of times onFrameMetricsAvailable is called - this must be the first
         // change (per frame) in the metricsContainer as we use it in optimistic read checks
-        metricsContainer.totalMetricsCount++
+        metricsContainer.update {
+            val totalDuration = frameMetrics.totalDuration
+            val deadline = frameMetrics.deadline
 
-        val totalDuration = frameMetrics.totalDuration
-        val deadline = frameMetrics.deadline
-
-        // we allow for a 5% overrun when considering "slow" frames
-        val adjustedDeadline: Long = (deadline * SLOW_FRAME_ADJUSTMENT).toLong()
+            // we allow for a 5% overrun when considering "slow" frames
+            val adjustedDeadline: Long = (deadline * SLOW_FRAME_ADJUSTMENT).toLong()
 
         if (totalDuration >= adjustedDeadline) {
             if (totalDuration >= FROZEN_FRAME_TIME) {
                 val frameEndTime = frameTimestampToClockTime(frameStartTime)
-                metricsContainer.addFrozenFrame(frameEndTime - totalDuration, frameEndTime)
+                countFrozenFrame(frameEndTime - totalDuration, frameEndTime)
             } else {
-                metricsContainer.slowFrameCount++
+                countSlowFrame()
             }
         }
 
-        metricsContainer.totalFrameCount += dropCountSinceLastInvocation + 1
-        previousFrameTime = frameStartTime + totalDuration
+            previousFrameTime = frameStartTime + totalDuration
+            return@update dropCountSinceLastInvocation + 1
+        }
     }
 
     /**

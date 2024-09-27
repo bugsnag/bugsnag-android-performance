@@ -7,21 +7,21 @@ import org.junit.Test
 
 class FramerateMetricsContainerTest {
     @Test
-    fun addFrozenFrames() {
+    fun countFrozenFrames() {
         val container = FramerateMetricsContainer()
         // add some frames before the start snapshot
-        container.addFrozenFrame(1L, 2L)
-        container.addFrozenFrame(3L, 4L)
+        container.countFrozenFrame(1L, 2L)
+        container.countFrozenFrame(3L, 4L)
 
         val snapshot1 = container.snapshot()
         for (i in 10L..500L step 2) {
-            container.addFrozenFrame(i, i + 1)
+            container.countFrozenFrame(i, i + 1)
         }
         val snapshot2 = container.snapshot()
 
         // add some extra frames after the end snapshot
-        container.addFrozenFrame(1000L, 1001L)
-        container.addFrozenFrame(1002L, 1003L)
+        container.countFrozenFrame(1000L, 1001L)
+        container.countFrozenFrame(1002L, 1003L)
 
         val timestamps = frozenFramePairs(snapshot1, snapshot2)
 
@@ -41,8 +41,8 @@ class FramerateMetricsContainerTest {
     @Test
     fun noFrozenFrames() {
         val container = FramerateMetricsContainer()
-        container.addFrozenFrame(1L, 2L)
-        container.addFrozenFrame(3L, 4L)
+        container.countFrozenFrame(1L, 2L)
+        container.countFrozenFrame(3L, 4L)
 
         val snapshot1 = container.snapshot()
         val snapshot2 = container.snapshot()
