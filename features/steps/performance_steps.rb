@@ -78,6 +78,11 @@ Then('the {string} span integer attribute {string} is greater than {int}') do |s
                         "The span '#{span_name}' attribute '#{attribute}' (#{value}) is not greater than '#{expected}'"
 end
 
+Then('every span string attribute {string} does not exist') do |attribute|
+  spans = spans_from_request_list(Maze::Server.list_for('traces'))
+  spans.map { |span| Maze.check.nil span['attributes'].find { |a| a['key'] == attribute } }
+end
+
 When("I relaunch the app after shutdown") do
   max_attempts = 20
   attempts = 0

@@ -21,7 +21,7 @@ internal fun SpanFactory.createViewLoadSpan(
 
     val tag = fragment.tag
     if (tag != null) {
-        span.setAttribute("bugsnag.view.fragment_tag", tag)
+        span.attributes["bugsnag.view.fragment_tag"] = tag
     }
 
     return span

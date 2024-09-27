@@ -1,8 +1,9 @@
 package com.bugsnag.android.performance.internal
 
 import android.os.SystemClock
-import android.util.JsonWriter
 import androidx.annotation.VisibleForTesting
+import com.bugsnag.android.performance.internal.processing.AttributeLimits
+import com.bugsnag.android.performance.internal.processing.JsonTraceWriter
 import java.io.ByteArrayOutputStream
 import java.security.MessageDigest
 import java.util.TreeMap
@@ -47,14 +48,21 @@ internal data class TracePayload(
             spans: Collection<SpanImpl>,
             resourceAttributes: Attributes,
             hasFixedProbability: Boolean,
+            attributeLimits: AttributeLimits?,
         ): TracePayload {
-            val payloadBytes = encodeSpanPayload(spans, resourceAttributes)
+            val payloadBytes = encodeSpanPayload(spans, resourceAttributes, attributeLimits)
             val timestamp =
-                if (spans.isNotEmpty()) spans.maxOf { it.endTime.get() }
-                else SystemClock.elapsedRealtimeNanos()
+                if (spans.isNotEmpty()) {
+                    spans.maxOf { it.endTime.get() }
+                } else {
+                    SystemClock.elapsedRealtimeNanos()
+                }
             val headers =
-                if (!hasFixedProbability) mapOf("Bugsnag-Span-Sampling" to calculateSpanSamplingHeader(spans))
-                else emptyMap()
+                if (!hasFixedProbability) {
+                    mapOf("Bugsnag-Span-Sampling" to calculateSpanSamplingHeader(spans))
+                } else {
+                    emptyMap()
+                }
             return createTracePayload(apiKey, payloadBytes, headers, timestamp)
         }
 
@@ -109,9 +117,10 @@ internal data class TracePayload(
         internal fun encodeSpanPayload(
             spans: Collection<SpanImpl>,
             resourceAttributes: Attributes,
+            attributeLimits: AttributeLimits?,
         ): ByteArray {
             val buffer = ByteArrayOutputStream()
-            JsonWriter(buffer.writer()).use { json ->
+            JsonTraceWriter(buffer.writer(), attributeLimits).use { json ->
                 json.obj {
                     name("resourceSpans").array {
                         encodeResourceSpans(resourceAttributes, spans)
@@ -122,7 +131,7 @@ internal data class TracePayload(
             return buffer.toByteArray()
         }
 
-        private fun JsonWriter.encodeResourceSpans(
+        private fun JsonTraceWriter.encodeResourceSpans(
             resourceAttributes: Attributes,
             spans: Collection<SpanImpl>,
         ) {

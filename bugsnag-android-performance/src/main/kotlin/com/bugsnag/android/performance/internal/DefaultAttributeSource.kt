@@ -1,6 +1,5 @@
 package com.bugsnag.android.performance.internal
 
-import com.bugsnag.android.performance.HasAttributes
 import java.util.concurrent.atomic.AtomicReference
 
 internal class DefaultAttributeSource : AttributeSource {
@@ -29,16 +28,16 @@ internal class DefaultAttributeSource : AttributeSource {
         }
     }
 
-    override fun invoke(target: HasAttributes) {
+    override fun invoke(target: SpanImpl) {
         val defaultAttributes = currentDefaultAttributes.get()
-        target.setAttribute("net.host.connection.type", defaultAttributes.networkType.otelName)
+        target.attributes["net.host.connection.type"] = defaultAttributes.networkType.otelName
 
         defaultAttributes.networkSubType?.let { networkSubtype ->
-            target.setAttribute("net.host.connection.subtype", networkSubtype)
+            target.attributes["net.host.connection.subtype"] = networkSubtype
         }
 
         defaultAttributes.isInForeground?.let { inForeground ->
-            target.setAttribute("bugsnag.app.in_foreground", inForeground)
+            target.attributes["bugsnag.app.in_foreground"] = inForeground
         }
     }
 }

@@ -32,12 +32,19 @@ public abstract class AbstractStartupProvider : ContentProvider() {
         return null
     }
 
-    final override fun insert(uri: Uri, values: ContentValues?): Uri? {
+    final override fun insert(
+        uri: Uri,
+        values: ContentValues?,
+    ): Uri? {
         checkPrivilegeEscalation()
         return null
     }
 
-    final override fun delete(uri: Uri, selection: String?, selectionArgs: Array<out String>?): Int {
+    final override fun delete(
+        uri: Uri,
+        selection: String?,
+        selectionArgs: Array<out String>?,
+    ): Int {
         checkPrivilegeEscalation()
         return 0
     }

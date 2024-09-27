@@ -1,4 +1,11 @@
-## TBD
+## 1.8.0 (2024-09-26)
+
+### Changes
+
+* Attribute limits can now be configured in the `AndroidManifest.xml`
+  [#284](https://github.com/bugsnag/bugsnag-android-performance/pull/284)
+
+## 1.7.0 (2024-09-23)
 
 ### Bug fixes
 
@@ -9,6 +16,10 @@
 
 * Use API key subdomain as default Performance endpoint.
   [#277](https://github.com/bugsnag/bugsnag-android-performance/pull/277)
+* Trace Propagation URLs and service name can be configured in `AndroidManifest.xml`
+  [#281](https://github.com/bugsnag/bugsnag-android-performance/pull/281)
+* Added configurable limit to number of span attributes per span.
+  [#280](https://github.com/bugsnag/bugsnag-android-performance/pull/280)
 
 ## 1.6.0 (2024-08-27)
 

@@ -49,6 +49,7 @@ class SpanPayloadEncodingTest {
                 attrs["telemetry.sdk.name"] = "bugsnag.performance.android"
                 attrs["telemetry.sdk.version"] = "0.0.0"
             },
+            null,
         )
 
         assertTraceDataValid(content)

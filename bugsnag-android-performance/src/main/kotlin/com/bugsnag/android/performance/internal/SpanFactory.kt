@@ -3,7 +3,6 @@ package com.bugsnag.android.performance.internal
 import android.app.Activity
 import android.os.SystemClock
 import androidx.annotation.RestrictTo
-import com.bugsnag.android.performance.HasAttributes
 import com.bugsnag.android.performance.NetworkRequestInfo
 import com.bugsnag.android.performance.NetworkRequestInstrumentationCallback
 import com.bugsnag.android.performance.SpanContext
@@ -12,9 +11,10 @@ import com.bugsnag.android.performance.SpanOptions
 import com.bugsnag.android.performance.ViewType
 import com.bugsnag.android.performance.internal.framerate.FramerateMetricsSnapshot
 import com.bugsnag.android.performance.internal.integration.NotifierIntegration
+import com.bugsnag.android.performance.internal.processing.AttributeLimits
 import java.util.UUID
 
-internal typealias AttributeSource = (target: HasAttributes) -> Unit
+internal typealias AttributeSource = (target: SpanImpl) -> Unit
 
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 public class SpanFactory(
@@ -23,6 +23,8 @@ public class SpanFactory(
 ) {
 
     public var networkRequestCallback: NetworkRequestInstrumentationCallback? = null
+
+    internal var attributeLimits: AttributeLimits? = null
     internal var framerateMetricsSource: MetricSource<FramerateMetricsSnapshot>? = null
 
     public fun createCustomSpan(
@@ -214,6 +216,7 @@ public class SpanFactory(
             parentSpanId = parent?.spanId ?: 0L,
             processor = spanProcessor,
             makeContext = makeContext,
+            attributeLimits = attributeLimits,
             // framerateMetrics are only recorded on firstClass spans
             framerateMetricsSource = framerateMetricsSource?.takeIf { isFirstClass == true },
         )

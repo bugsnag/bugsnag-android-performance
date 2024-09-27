@@ -3,6 +3,7 @@
   <ManuallySuppressedIssues/>
   <CurrentIssues>
     <ID>ComplexMethod:Connectivity.kt$ConnectivityApi24$private fun nameForDataNetworkType(dataNetworkType: Int): String</ID>
+    <ID>ComplexMethod:PerformanceConfiguration.kt$PerformanceConfiguration.Loader$@JvmSynthetic @VisibleForTesting internal fun loadFromMetaData( ctx: Context, data: Bundle?, apiKeyOverride: String?, ): PerformanceConfiguration</ID>
     <ID>ComplexMethod:SpanOptions.kt$SpanOptions$override fun equals(other: Any?): Boolean</ID>
     <ID>DestructuringDeclarationWithTooManyEntries:ActivityLifecycleInstrumentationTest.kt$ActivityLifecycleInstrumentationTest$val (create, viewLoad, start, resume) = spans</ID>
     <ID>LongMethod:BugsnagPerformance.kt$BugsnagPerformance$private fun startUnderLock(configuration: ImmutableConfig)</ID>
@@ -22,6 +23,10 @@
     <ID>MagicNumber:InternalDebug.kt$InternalDebug$24L</ID>
     <ID>MagicNumber:InternalDebug.kt$InternalDebug$30000L</ID>
     <ID>MagicNumber:InternalDebug.kt$InternalDebug$60</ID>
+    <ID>MagicNumber:PerformanceConfiguration.kt$PerformanceConfiguration$1000</ID>
+    <ID>MagicNumber:PerformanceConfiguration.kt$PerformanceConfiguration$10000</ID>
+    <ID>MagicNumber:PerformanceConfiguration.kt$PerformanceConfiguration$1024</ID>
+    <ID>MagicNumber:PerformanceConfiguration.kt$PerformanceConfiguration$128</ID>
     <ID>MagicNumber:Persistence.kt$RetryQueue$19</ID>
     <ID>MagicNumber:Persistence.kt$TraceFileDecoder$1024</ID>
     <ID>MagicNumber:SpanKind.kt$SpanKind.CLIENT$3</ID>
@@ -38,6 +43,7 @@
     <ID>SwallowedException:HttpDelivery.kt$HttpDelivery$e: IOException</ID>
     <ID>SwallowedException:ImmutableConfig.kt$ImmutableConfig.Companion$ex: RuntimeException</ID>
     <ID>SwallowedException:Module.kt$Module.Loader$ex: Exception</ID>
+    <ID>SwallowedException:PerformanceConfiguration.kt$PerformanceConfiguration.Loader$pse: PatternSyntaxException</ID>
     <ID>TooGenericExceptionCaught:BugsnagClock.kt$BugsnagClock$ex: Exception</ID>
     <ID>TooGenericExceptionCaught:Connectivity.kt$ConnectivityApi24$e: Exception</ID>
     <ID>TooGenericExceptionCaught:ContextExtensions.kt$exc: RuntimeException</ID>
@@ -52,6 +58,7 @@
     <ID>TooManyFunctions:Attributes.kt$Attributes</ID>
     <ID>TooManyFunctions:BugsnagPerformance.kt$BugsnagPerformance$BugsnagPerformance</ID>
     <ID>TooManyFunctions:Connectivity.kt$ConnectivityApi24 : NetworkCallbackConnectivity</ID>
+    <ID>TooManyFunctions:JsonTraceWriter.kt$JsonTraceWriter : Closeable</ID>
     <ID>TooManyFunctions:SpanTracker.kt$SpanTracker</ID>
   </CurrentIssues>
 </SmellBaseline>

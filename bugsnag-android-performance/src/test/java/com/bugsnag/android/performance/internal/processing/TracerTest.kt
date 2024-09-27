@@ -1,6 +1,6 @@
 package com.bugsnag.android.performance.internal.processing
 
-import com.bugsnag.android.performance.SpanEndCallback
+import com.bugsnag.android.performance.OnSpanEndCallback
 import com.bugsnag.android.performance.SpanOptions
 import com.bugsnag.android.performance.internal.InternalDebug
 import com.bugsnag.android.performance.internal.SpanFactory
@@ -20,8 +20,8 @@ import org.robolectric.RobolectricTestRunner
 class TracerTest {
     private lateinit var tracer: Tracer
     private lateinit var spanFactory: SpanFactory
-    private val spanEndCallback1 = SpanEndCallback { true }
-    private val spanEndCallback2 = SpanEndCallback { false }
+    private val spanEndCallback1 = OnSpanEndCallback { true }
+    private val spanEndCallback2 = OnSpanEndCallback { false }
     private val worker = mock<Worker>()
 
     @Test
@@ -103,7 +103,7 @@ class TracerTest {
         verify(worker, times(1)).wake()
     }
 
-    private fun createTracer(spanEndCallbacks: Array<SpanEndCallback>) {
+    private fun createTracer(spanEndCallbacks: Array<OnSpanEndCallback>) {
         tracer = Tracer(spanEndCallbacks)
         tracer.worker = worker
     }

@@ -1,7 +1,6 @@
 package com.bugsnag.android.performance.internal
 
 import android.os.SystemClock
-import android.util.JsonWriter
 import androidx.annotation.FloatRange
 import androidx.annotation.RestrictTo
 import com.bugsnag.android.performance.HasAttributes
@@ -10,6 +9,8 @@ import com.bugsnag.android.performance.SpanContext
 import com.bugsnag.android.performance.SpanKind
 import com.bugsnag.android.performance.internal.framerate.FramerateMetricsSnapshot
 import com.bugsnag.android.performance.internal.integration.NotifierIntegration
+import com.bugsnag.android.performance.internal.processing.AttributeLimits
+import com.bugsnag.android.performance.internal.processing.JsonTraceWriter
 import java.security.SecureRandom
 import java.util.Random
 import java.util.UUID
@@ -27,9 +28,9 @@ public class SpanImpl internal constructor(
     public val parentSpanId: Long,
     private val processor: SpanProcessor,
     private val makeContext: Boolean,
+    private val attributeLimits: AttributeLimits?,
     private val framerateMetricsSource: MetricSource<FramerateMetricsSnapshot>?,
 ) : Span, HasAttributes {
-
     public val attributes: Attributes = Attributes()
 
     internal val startFrameMetrics = framerateMetricsSource?.createStartMetrics()
@@ -65,10 +66,15 @@ public class SpanImpl internal constructor(
 
     @get:FloatRange(from = 0.0, to = 1.0)
     internal var samplingProbability: Double = 1.0
-        set(@FloatRange(from = 0.0, to = 1.0) value) {
+        set(
+        @FloatRange(from = 0.0, to = 1.0) value
+        ) {
             field = value.coerceIn(0.0, 1.0)
             attributes["bugsnag.sampling.p"] = field
         }
+
+    internal var droppedAttributesCount: Int = 0
+    private var customAttributesCount: Int = 0
 
     init {
         samplingProbability = 1.0
@@ -107,8 +113,8 @@ public class SpanImpl internal constructor(
 
     override fun isEnded(): Boolean = endTime.get() != NO_END_TIME
 
-    internal fun toJson(json: JsonWriter) {
-        json.obj {
+    internal fun toJson(json: JsonTraceWriter) {
+        json.writeSpan(this) {
             name("name").value(name)
             name("kind").value(kind.otelOrdinal)
             name("spanId").value(spanId.toHexString())
@@ -123,7 +129,11 @@ public class SpanImpl internal constructor(
             }
 
             if (attributes.size > 0) {
-                name("attributes").value(attributes, name)
+                name("attributes").value(attributes)
+            }
+
+            if (droppedAttributesCount > 0) {
+                name("droppedAttributesCount").value(droppedAttributesCount)
             }
         }
     }
@@ -147,15 +157,21 @@ public class SpanImpl internal constructor(
 
             append(", startTime=").append(startTime)
 
-            if (endTime.get() == NO_END_TIME) append(", no endTime")
-            else append(", endTime=").append(endTime)
+            if (endTime.get() == NO_END_TIME) {
+                append(", no endTime")
+            } else {
+                append(", endTime=").append(endTime)
+            }
 
             append(')')
         }
     }
 
-    override fun setAttribute(name: String, value: String?) {
-        if (!isSealed) {
+    override fun setAttribute(
+        name: String,
+        value: String?,
+    ) {
+        setAttributeImpl(name) {
             attributes[name] = value
         }
     }
@@ -166,51 +182,92 @@ public class SpanImpl internal constructor(
         }
     }
 
-    override fun setAttribute(name: String, value: Int) {
-        if (!isSealed) {
+    override fun setAttribute(
+        name: String,
+        value: Int,
+    ) {
+        setAttributeImpl(name) {
             attributes[name] = value
         }
     }
 
-    override fun setAttribute(name: String, value: Double) {
-        if (!isSealed) {
+    override fun setAttribute(
+        name: String,
+        value: Double,
+    ) {
+        setAttributeImpl(name) {
             attributes[name] = value
         }
     }
 
-    override fun setAttribute(name: String, value: Boolean) {
-        if (!isSealed) {
+    override fun setAttribute(
+        name: String,
+        value: Boolean,
+    ) {
+        setAttributeImpl(name) {
             attributes[name] = value
         }
     }
 
-    override fun setAttribute(name: String, value: Array<String>?) {
-        if (!isSealed) {
+    override fun setAttribute(
+        name: String,
+        value: Array<String>?,
+    ) {
+        setAttributeImpl(name) {
             attributes[name] = value
         }
     }
 
-    override fun setAttribute(name: String, value: Collection<Any>?) {
-        if (!isSealed) {
+    override fun setAttribute(
+        name: String,
+        value: Collection<Any>?,
+    ) {
+        setAttributeImpl(name) {
             attributes[name] = value
         }
     }
 
-    override fun setAttribute(name: String, value: IntArray?) {
-        if (!isSealed) {
+    override fun setAttribute(
+        name: String,
+        value: IntArray?,
+    ) {
+        setAttributeImpl(name) {
             attributes[name] = value
         }
     }
 
-    override fun setAttribute(name: String, value: LongArray?) {
-        if (!isSealed) {
+    override fun setAttribute(
+        name: String,
+        value: LongArray?,
+    ) {
+        setAttributeImpl(name) {
             attributes[name] = value
         }
     }
 
-    override fun setAttribute(name: String, value: DoubleArray?) {
-        if (!isSealed) {
+    override fun setAttribute(
+        name: String,
+        value: DoubleArray?,
+    ) {
+        setAttributeImpl(name) {
             attributes[name] = value
+        }
+    }
+
+    private inline fun setAttributeImpl(
+        name: String,
+        setter: () -> Unit,
+    ) {
+        val attributeCountLimit = attributeLimits?.attributeCountLimit ?: Int.MAX_VALUE
+        if (!isSealed) {
+            if (name in attributes) {
+                setter()
+            } else if (customAttributesCount < attributeCountLimit) {
+                setter()
+                customAttributesCount++
+            } else {
+                droppedAttributesCount++
+            }
         }
     }
 
@@ -234,8 +291,7 @@ public class SpanImpl internal constructor(
         return result
     }
 
-    public fun isSampled(): Boolean =
-        samplingValue <= samplingProbability
+    public fun isSampled(): Boolean = samplingValue <= samplingProbability
 
     public companion object {
         private const val INVALID_ID = 0L

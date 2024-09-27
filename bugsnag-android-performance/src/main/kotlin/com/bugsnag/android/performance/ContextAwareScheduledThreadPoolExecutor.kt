@@ -12,22 +12,22 @@ import java.util.concurrent.TimeUnit
  * Sets the current [SpanContext] within a task to the [SpanContext] that was active
  * when the task was scheduled.
  */
-public class ContextAwareScheduledThreadPoolExecutor: ScheduledThreadPoolExecutor {
+public class ContextAwareScheduledThreadPoolExecutor : ScheduledThreadPoolExecutor {
     public constructor(corePoolSize: Int) : super(corePoolSize)
     public constructor(corePoolSize: Int, threadFactory: ThreadFactory?) : super(
         corePoolSize,
-        threadFactory
+        threadFactory,
     )
 
     public constructor(corePoolSize: Int, handler: RejectedExecutionHandler?) : super(
         corePoolSize,
-        handler
+        handler,
     )
 
     public constructor(
         corePoolSize: Int,
         threadFactory: ThreadFactory?,
-        handler: RejectedExecutionHandler?
+        handler: RejectedExecutionHandler?,
     ) : super(corePoolSize, threadFactory, handler)
 
     override fun schedule(command: Runnable?, delay: Long, unit: TimeUnit?): ScheduledFuture<*> {
@@ -37,7 +37,7 @@ public class ContextAwareScheduledThreadPoolExecutor: ScheduledThreadPoolExecuto
     override fun <V : Any?> schedule(
         callable: Callable<V>?,
         delay: Long,
-        unit: TimeUnit?
+        unit: TimeUnit?,
     ): ScheduledFuture<V> {
         return super.schedule(callable?.let { SpanContext.current.wrap(it) }, delay, unit)
     }
@@ -46,7 +46,7 @@ public class ContextAwareScheduledThreadPoolExecutor: ScheduledThreadPoolExecuto
         command: Runnable?,
         initialDelay: Long,
         delay: Long,
-        unit: TimeUnit?
+        unit: TimeUnit?,
     ): ScheduledFuture<*> {
         return super.scheduleWithFixedDelay(command?.let { SpanContext.current.wrap(it) }, initialDelay, delay, unit)
     }
@@ -55,7 +55,7 @@ public class ContextAwareScheduledThreadPoolExecutor: ScheduledThreadPoolExecuto
         command: Runnable?,
         initialDelay: Long,
         period: Long,
-        unit: TimeUnit?
+        unit: TimeUnit?,
     ): ScheduledFuture<*> {
         return super.scheduleAtFixedRate(command?.let { SpanContext.current.wrap(it) }, initialDelay, period, unit)
     }

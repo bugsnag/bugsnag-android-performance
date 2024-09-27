@@ -1,4 +1,4 @@
-package com.bugsnag.android.performance.internal
+package com.bugsnag.android.performance.internal.processing
 
 import android.app.Activity
 import android.app.Application
@@ -8,7 +8,11 @@ import com.bugsnag.android.performance.AutoInstrument
 import com.bugsnag.android.performance.Logger
 import com.bugsnag.android.performance.NetworkRequestInstrumentationCallback
 import com.bugsnag.android.performance.PerformanceConfiguration
-import com.bugsnag.android.performance.SpanEndCallback
+import com.bugsnag.android.performance.OnSpanEndCallback
+import com.bugsnag.android.performance.internal.DebugLogger
+import com.bugsnag.android.performance.internal.NoopLogger
+import com.bugsnag.android.performance.internal.RELEASE_STAGE_PRODUCTION
+import com.bugsnag.android.performance.internal.releaseStage
 import java.util.regex.Pattern
 
 internal const val DEFAULT_ENDPOINT = "https://otlp.bugsnag.com/v1/traces"
@@ -29,9 +33,12 @@ internal data class ImmutableConfig(
     val doNotEndAppStart: Collection<Class<out Activity>>,
     val doNotAutoInstrument: Collection<Class<*>>,
     val tracePropagationUrls: Collection<Pattern>,
-    val spanEndCallbacks: Array<SpanEndCallback>,
+    val spanEndCallbacks: Array<OnSpanEndCallback>,
     val samplingProbability: Double?,
-) {
+    override val attributeStringValueLimit: Int,
+    override val attributeArrayLengthLimit: Int,
+    override val attributeCountLimit: Int,
+) : AttributeLimits {
     val isReleaseStageEnabled =
         enabledReleaseStages == null || enabledReleaseStages.contains(releaseStage)
 
@@ -48,22 +55,28 @@ internal data class ImmutableConfig(
         configuration.versionCode ?: versionCodeFor(configuration.context),
         configuration.appVersion ?: versionNameFor(configuration.context),
         configuration.logger
-            ?: if (getReleaseStage(configuration) == RELEASE_STAGE_PRODUCTION) NoopLogger
-            else DebugLogger,
+            ?: if (getReleaseStage(configuration) == RELEASE_STAGE_PRODUCTION) {
+                NoopLogger
+            } else {
+                DebugLogger
+            },
         configuration.networkRequestCallback,
         configuration.doNotEndAppStart,
         configuration.doNotAutoInstrument,
         configuration.tracePropagationUrls.toSet(),
         configuration.spanEndCallbacks.toTypedArray(),
         configuration.samplingProbability,
+        configuration.attributeStringValueLimit,
+        configuration.attributeArrayLengthLimit,
+        configuration.attributeCountLimit,
     )
 
     companion object {
         private const val VALID_API_KEY_LENGTH = 32
 
         private fun validateApiKey(apiKey: String) {
-            if (apiKey.length != VALID_API_KEY_LENGTH
-                || !apiKey.all { it.isDigit() || it in 'a'..'f' }
+            if (apiKey.length != VALID_API_KEY_LENGTH ||
+                !apiKey.all { it.isDigit() || it in 'a'..'f' }
             ) {
                 Logger.w("Invalid configuration. apiKey should be a 32-character hexademical string, got '$apiKey'")
             }
