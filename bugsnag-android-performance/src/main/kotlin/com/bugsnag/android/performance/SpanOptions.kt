@@ -23,12 +23,15 @@ public class SpanOptions private constructor(
     parentContext: SpanContext?,
     public val makeContext: Boolean,
     isFirstClass: Boolean,
+    instrumentRendering: Boolean,
 ) {
     private val _startTime: Long = startTime
 
     private val _isFirstClass: Boolean = isFirstClass
 
     private val _parentContext: SpanContext? = parentContext
+
+    private val _instrumentRendering: Boolean = instrumentRendering
 
     /**
      * Return the time (relative to [SystemClock.elapsedRealtimeNanos]) that new `Span`s will
@@ -48,6 +51,9 @@ public class SpanOptions private constructor(
             if (isOptionSet(OPT_PARENT_CONTEXT)) _parentContext
             else SpanContext.current
 
+    public val instrumentRendering: Boolean?
+        get() = _instrumentRendering.takeIf { isOptionSet(OPT_INSTRUMENT_RENDERING) }
+
     /**
      * Override the start time of new `Span`s created with these `SpanOptions`. This is useful when
      * the start time is reported from an external system.
@@ -60,6 +66,7 @@ public class SpanOptions private constructor(
         _parentContext,
         makeContext,
         _isFirstClass,
+        _instrumentRendering,
     )
 
     public fun within(parentContext: SpanContext?): SpanOptions = SpanOptions(
@@ -68,6 +75,7 @@ public class SpanOptions private constructor(
         parentContext,
         makeContext,
         _isFirstClass,
+        _instrumentRendering,
     )
 
     public fun makeCurrentContext(makeContext: Boolean): SpanOptions = SpanOptions(
@@ -76,6 +84,7 @@ public class SpanOptions private constructor(
         _parentContext,
         makeContext,
         _isFirstClass,
+        _instrumentRendering,
     )
 
     public fun setFirstClass(isFirstClass: Boolean): SpanOptions = SpanOptions(
@@ -84,6 +93,16 @@ public class SpanOptions private constructor(
         _parentContext,
         makeContext,
         isFirstClass,
+        _instrumentRendering,
+    )
+
+    public fun withRenderingMetrics(instrumentRendering: Boolean): SpanOptions = SpanOptions(
+        optionsSet or OPT_INSTRUMENT_RENDERING,
+        _startTime,
+        _parentContext,
+        makeContext,
+        _isFirstClass,
+        instrumentRendering,
     )
 
     override fun equals(other: Any?): Boolean {
@@ -107,6 +126,11 @@ public class SpanOptions private constructor(
             && this.isFirstClass != other.isFirstClass
         ) return false
 
+        @Suppress("RedundantIf")
+        if ((isOptionSet(OPT_INSTRUMENT_RENDERING) || other.isOptionSet(OPT_INSTRUMENT_RENDERING))
+            && this.instrumentRendering != other.instrumentRendering
+        ) return false
+
         return true
     }
 
@@ -115,6 +139,7 @@ public class SpanOptions private constructor(
         result = 31 * result + (parentContext?.hashCode() ?: 0)
         result = 31 * result + makeContext.hashCode()
         result = 31 * result + _isFirstClass.hashCode()
+        result = 31 * result + _instrumentRendering.hashCode()
         return result
     }
 
@@ -143,6 +168,10 @@ public class SpanOptions private constructor(
             append("isFirstClass=").append(_isFirstClass).append(',')
         }
 
+        if (isOptionSet(OPT_INSTRUMENT_RENDERING)) {
+            append("instrumentRendering=").append(instrumentRendering).append(',')
+        }
+
         // if we are here, the last character will always be ',' - replace it with ']'
         setCharAt(lastIndex, ']')
     }
@@ -156,6 +185,7 @@ public class SpanOptions private constructor(
         private const val OPT_PARENT_CONTEXT = 2
         private const val OPT_MAKE_CONTEXT = 4
         private const val OPT_IS_FIRST_CLASS = 8
+        private const val OPT_INSTRUMENT_RENDERING = 16
 
         /**
          * The default set of `SpanOptions` with no overrides set. Use this as a starting-point to
@@ -163,7 +193,14 @@ public class SpanOptions private constructor(
          */
         @JvmField
         public val DEFAULTS: SpanOptions =
-            SpanOptions(OPT_NONE, 0, null, makeContext = true, isFirstClass = false)
+            SpanOptions(
+                OPT_NONE,
+                0,
+                null,
+                makeContext = true,
+                isFirstClass = false,
+                instrumentRendering = true,
+            )
 
         @JvmName("createWithStartTime")
         @JvmStatic
@@ -183,5 +220,9 @@ public class SpanOptions private constructor(
         public fun setFirstClass(isFirstClass: Boolean): SpanOptions =
             DEFAULTS.setFirstClass(isFirstClass)
 
+        @JvmName("createWithRenderingMetrics")
+        @JvmStatic
+        public fun withRenderingMetrics(instrumentRendering: Boolean): SpanOptions =
+            DEFAULTS.withRenderingMetrics(instrumentRendering)
     }
 }

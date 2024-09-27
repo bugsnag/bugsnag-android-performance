@@ -78,6 +78,18 @@ Then('the {string} span integer attribute {string} is greater than {int}') do |s
                         "The span '#{span_name}' attribute '#{attribute}' (#{value}) is not greater than '#{expected}'"
 end
 
+Then('the {string} span has no {string} attribute') do |span_name, attribute|
+  spans = spans_from_request_list(Maze::Server.list_for('traces'))
+  found_spans = spans.find_all { |span| span['name'].eql?(span_name) }
+  raise Test::Unit::AssertionFailedError.new "No spans were found with the name #{span_name}" if found_spans.empty?
+  raise Test::Unit::AssertionFailedError.new "found #{found_spans.size} spans named #{span_name}, expected exactly one" unless found_spans.size == 1
+
+  attributes = found_spans.first['attributes']
+  attribute = attributes.find { |a| a['key'] == attribute }
+
+  Maze.check.nil(attribute)
+end
+
 Then('every span string attribute {string} does not exist') do |attribute|
   spans = spans_from_request_list(Maze::Server.list_for('traces'))
   spans.map { |span| Maze.check.nil span['attributes'].find { |a| a['key'] == attribute } }

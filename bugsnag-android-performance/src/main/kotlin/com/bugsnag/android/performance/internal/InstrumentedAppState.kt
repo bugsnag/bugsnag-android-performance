@@ -37,6 +37,8 @@ public class InstrumentedAppState {
     public lateinit var app: Application
         private set
 
+    private var framerateMetricsSource: FramerateMetricsSource? = null
+
     internal fun attach(application: Application) {
         if (this::app.isInitialized) {
             return
@@ -46,7 +48,7 @@ public class InstrumentedAppState {
         app.registerActivityLifecycleCallbacks(activityInstrumentation)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            val framerateMetricsSource = FramerateMetricsSource()
+            framerateMetricsSource = FramerateMetricsSource()
             spanFactory.framerateMetricsSource = framerateMetricsSource
             app.registerActivityLifecycleCallbacks(framerateMetricsSource)
         }
@@ -89,6 +91,12 @@ public class InstrumentedAppState {
             SpanContext.contextStack.clear()
 
             (bootstrapSpanProcessor as? ForwardingSpanProcessor)?.discard()
+        }
+
+        if (!configuration.autoInstrumentRendering && framerateMetricsSource != null) {
+            spanFactory.framerateMetricsSource = null
+            app.unregisterActivityLifecycleCallbacks(framerateMetricsSource)
+            framerateMetricsSource = null
         }
 
         return tracer

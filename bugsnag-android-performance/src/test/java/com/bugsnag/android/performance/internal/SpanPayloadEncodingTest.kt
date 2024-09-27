@@ -25,6 +25,7 @@ class SpanPayloadEncodingTest {
             NoopSpanProcessor,
             false,
             null,
+            null,
         )
         span1.end(1L)
         val span2 = SpanImpl(
@@ -37,6 +38,7 @@ class SpanPayloadEncodingTest {
             0L,
             NoopSpanProcessor,
             false,
+            null,
             null,
         )
         span2.end(11L)

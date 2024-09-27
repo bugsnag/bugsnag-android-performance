@@ -9,6 +9,12 @@ import com.bugsnag.mazeracer.Scenario
 class FrameMetricsScenario(config: PerformanceConfiguration, scenarioMetadata: String) :
     Scenario(config, scenarioMetadata) {
 
+    init {
+        if (scenarioMetadata.contains("disableInstrumentation")) {
+            config.autoInstrumentRendering = false
+        }
+    }
+
     override fun startScenario() {
         BugsnagPerformance.start(config)
         startActivityAndFinish(Intent(context, AnimatedActivity::class.java))

@@ -39,6 +39,7 @@ class ImmutableConfigTest {
             enabledReleaseStages = setOf("staging", "production")
             autoInstrumentAppStarts = false
             autoInstrumentActivities = AutoInstrument.START_ONLY
+            autoInstrumentRendering = false
             versionCode = 543L
             appVersion = "9.8.1"
             tracePropagationUrls = emptySet<Pattern>()
@@ -50,6 +51,7 @@ class ImmutableConfigTest {
         assertEquals(perfConfig.apiKey, immutableConfig.apiKey)
         assertEquals(perfConfig.endpoint, immutableConfig.endpoint)
         assertEquals(perfConfig.autoInstrumentAppStarts, immutableConfig.autoInstrumentAppStarts)
+        assertEquals(perfConfig.autoInstrumentRendering, immutableConfig.autoInstrumentRendering)
         assertEquals(TEST_PACKAGE_NAME, immutableConfig.serviceName)
         assertEquals(perfConfig.releaseStage, immutableConfig.releaseStage)
         assertEquals(perfConfig.enabledReleaseStages, immutableConfig.enabledReleaseStages)

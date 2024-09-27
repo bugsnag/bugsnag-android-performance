@@ -40,6 +40,7 @@ public class SpanFactory(
             options.parentContext,
             options.isFirstClass != false,
             options.makeContext,
+            options.instrumentRendering,
             spanProcessor,
         )
     }
@@ -62,6 +63,7 @@ public class SpanFactory(
                 options.parentContext,
                 options.isFirstClass,
                 options.makeContext,
+                options.instrumentRendering,
                 spanProcessor,
             )
             span.attributes["http.url"] = resultUrl
@@ -97,6 +99,7 @@ public class SpanFactory(
             options.parentContext,
             options.isFirstClass,
             options.makeContext,
+            options.instrumentRendering,
             spanProcessor,
         )
 
@@ -129,6 +132,7 @@ public class SpanFactory(
             options.parentContext,
             options.isFirstClass,
             options.makeContext,
+            options.instrumentRendering,
             spanProcessor,
         )
 
@@ -166,6 +170,7 @@ public class SpanFactory(
             null,
             isFirstClass = true,
             makeContext = true,
+            instrumentRendering = true,
             spanProcessor,
         )
 
@@ -185,8 +190,9 @@ public class SpanFactory(
             SpanCategory.APP_START_PHASE,
             SystemClock.elapsedRealtimeNanos(),
             appStartContext,
-            isFirstClass = true,
+            isFirstClass = false,
             makeContext = true,
+            instrumentRendering = false,
             spanProcessor,
         )
 
@@ -203,6 +209,7 @@ public class SpanFactory(
         parentContext: SpanContext?,
         isFirstClass: Boolean?,
         makeContext: Boolean,
+        instrumentRendering: Boolean?,
         spanProcessor: SpanProcessor,
     ): SpanImpl {
         val parent = parentContext?.takeIf { it.traceId.isValidTraceId() }
@@ -218,7 +225,8 @@ public class SpanFactory(
             makeContext = makeContext,
             attributeLimits = attributeLimits,
             // framerateMetrics are only recorded on firstClass spans
-            framerateMetricsSource = framerateMetricsSource?.takeIf { isFirstClass == true },
+            framerateMetricsSource = framerateMetricsSource
+                ?.takeIf { renderingMetricsEnabled(isFirstClass, instrumentRendering) }
         )
 
         if (isFirstClass != null) {
@@ -231,6 +239,9 @@ public class SpanFactory(
 
         return span
     }
+
+    private fun renderingMetricsEnabled(isFirstClass: Boolean?, instrumentRendering: Boolean?) =
+        (isFirstClass == true && instrumentRendering != false) || instrumentRendering == true
 
     private fun UUID.isValidTraceId() = mostSignificantBits != 0L || leastSignificantBits != 0L
 }
