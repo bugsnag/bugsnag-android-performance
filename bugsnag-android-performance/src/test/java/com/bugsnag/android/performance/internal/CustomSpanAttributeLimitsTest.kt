@@ -22,6 +22,7 @@ class CustomSpanAttributeLimitsTest {
                 NoopSpanProcessor,
                 false,
                 TestAttributeLimits(attributeCountLimit = 1),
+                null,
             )
 
         spanImpl.attributes["system.attribute"] = "value"
