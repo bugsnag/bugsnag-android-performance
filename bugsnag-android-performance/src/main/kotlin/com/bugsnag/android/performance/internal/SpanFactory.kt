@@ -1,6 +1,7 @@
 package com.bugsnag.android.performance.internal
 
 import android.app.Activity
+import android.os.SystemClock
 import androidx.annotation.RestrictTo
 import com.bugsnag.android.performance.NetworkRequestInfo
 import com.bugsnag.android.performance.NetworkRequestInstrumentationCallback
@@ -8,6 +9,7 @@ import com.bugsnag.android.performance.SpanContext
 import com.bugsnag.android.performance.SpanKind
 import com.bugsnag.android.performance.SpanOptions
 import com.bugsnag.android.performance.ViewType
+import com.bugsnag.android.performance.internal.framerate.FramerateMetricsSnapshot
 import com.bugsnag.android.performance.internal.integration.NotifierIntegration
 import com.bugsnag.android.performance.internal.processing.AttributeLimits
 import java.util.UUID
@@ -19,18 +21,28 @@ public class SpanFactory(
     public var spanProcessor: SpanProcessor,
     public val spanAttributeSource: AttributeSource = {},
 ) {
+
     public var networkRequestCallback: NetworkRequestInstrumentationCallback? = null
+
     internal var attributeLimits: AttributeLimits? = null
+    internal var framerateMetricsSource: MetricSource<FramerateMetricsSnapshot>? = null
 
     public fun createCustomSpan(
         name: String,
         options: SpanOptions = SpanOptions.DEFAULTS,
         spanProcessor: SpanProcessor = this.spanProcessor,
     ): SpanImpl {
-        val isFirstClass = options.isFirstClass != false
-        val span = createSpan(name, SpanKind.INTERNAL, SpanCategory.CUSTOM, options, spanProcessor)
-        span.attributes["bugsnag.span.first_class"] = isFirstClass
-        return span
+        return createSpan(
+            name,
+            SpanKind.INTERNAL,
+            SpanCategory.CUSTOM,
+            options.startTime,
+            options.parentContext,
+            options.isFirstClass != false,
+            options.makeContext,
+            options.instrumentRendering,
+            spanProcessor,
+        )
     }
 
     public fun createNetworkSpan(
@@ -47,7 +59,11 @@ public class SpanFactory(
                 "[HTTP/$verbUpper]",
                 SpanKind.CLIENT,
                 SpanCategory.NETWORK,
-                options,
+                options.startTime,
+                options.parentContext,
+                options.isFirstClass,
+                options.makeContext,
+                options.instrumentRendering,
                 spanProcessor,
             )
             span.attributes["http.url"] = resultUrl
@@ -79,7 +95,11 @@ public class SpanFactory(
             "[ViewLoad/${viewType.spanName}]$viewName",
             SpanKind.INTERNAL,
             SpanCategory.VIEW_LOAD,
-            options,
+            options.startTime,
+            options.parentContext,
+            options.isFirstClass,
+            options.makeContext,
+            options.instrumentRendering,
             spanProcessor,
         )
 
@@ -108,7 +128,11 @@ public class SpanFactory(
             "[ViewLoadPhase/$phaseName]$viewName",
             SpanKind.INTERNAL,
             SpanCategory.VIEW_LOAD_PHASE,
-            options,
+            options.startTime,
+            options.parentContext,
+            options.isFirstClass,
+            options.makeContext,
+            options.instrumentRendering,
             spanProcessor,
         )
 
@@ -142,7 +166,11 @@ public class SpanFactory(
             "[AppStart/Android$startType]",
             SpanKind.INTERNAL,
             SpanCategory.APP_START,
-            SpanOptions.within(null),
+            SystemClock.elapsedRealtimeNanos(),
+            null,
+            isFirstClass = true,
+            makeContext = true,
+            instrumentRendering = true,
             spanProcessor,
         )
 
@@ -160,7 +188,11 @@ public class SpanFactory(
             "[AppStartPhase/${phase.phaseName}]",
             SpanKind.INTERNAL,
             SpanCategory.APP_START_PHASE,
-            SpanOptions.within(appStartContext),
+            SystemClock.elapsedRealtimeNanos(),
+            appStartContext,
+            isFirstClass = false,
+            makeContext = true,
+            instrumentRendering = false,
             spanProcessor,
         )
 
@@ -173,22 +205,33 @@ public class SpanFactory(
         name: String,
         kind: SpanKind,
         category: SpanCategory,
-        options: SpanOptions,
+        startTime: Long,
+        parentContext: SpanContext?,
+        isFirstClass: Boolean?,
+        makeContext: Boolean,
+        instrumentRendering: Boolean?,
         spanProcessor: SpanProcessor,
     ): SpanImpl {
-        val parentContext = options.parentContext?.takeIf { it.traceId.isValidTraceId() }
+        val parent = parentContext?.takeIf { it.traceId.isValidTraceId() }
 
         val span = SpanImpl(
             name = name,
             kind = kind,
             category = category,
-            startTime = options.startTime,
-            traceId = parentContext?.traceId ?: UUID.randomUUID(),
-            parentSpanId = parentContext?.spanId ?: 0L,
+            startTime = startTime,
+            traceId = parent?.traceId ?: UUID.randomUUID(),
+            parentSpanId = parent?.spanId ?: 0L,
             processor = spanProcessor,
-            makeContext = options.makeContext,
+            makeContext = makeContext,
             attributeLimits = attributeLimits,
+            // framerateMetrics are only recorded on firstClass spans
+            framerateMetricsSource = framerateMetricsSource
+                ?.takeIf { renderingMetricsEnabled(isFirstClass, instrumentRendering) }
         )
+
+        if (isFirstClass != null) {
+            span.attributes["bugsnag.span.first_class"] = isFirstClass
+        }
 
         spanAttributeSource(span)
 
@@ -196,6 +239,9 @@ public class SpanFactory(
 
         return span
     }
+
+    private fun renderingMetricsEnabled(isFirstClass: Boolean?, instrumentRendering: Boolean?) =
+        (isFirstClass == true && instrumentRendering != false) || instrumentRendering == true
 
     private fun UUID.isValidTraceId() = mostSignificantBits != 0L || leastSignificantBits != 0L
 }

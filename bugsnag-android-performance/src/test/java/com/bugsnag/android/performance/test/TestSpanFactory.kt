@@ -35,8 +35,8 @@ class TestSpanFactory {
             processor,
             true,
             null,
-        )
-            .apply { if (endTime != null) end(endTime(startTime)) }
+            null,
+        ).apply { if (endTime != null) end(endTime(startTime)) }
     }
 
     fun newSpans(

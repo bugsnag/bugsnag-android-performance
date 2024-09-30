@@ -29,19 +29,19 @@ class SpanJsonTest {
     fun testJsonEncoding() {
         val currentTime = System.currentTimeMillis()
 
-        val span =
-            SpanImpl(
-                "test span",
-                SpanCategory.CUSTOM,
-                SpanKind.INTERNAL,
-                0L,
-                UUID.fromString("4ee26661-4650-4c7f-a35f-00f007cd24e7"),
-                0xdecafbad,
-                123L,
-                NoopSpanProcessor,
-                false,
-                null,
-            )
+        val span = SpanImpl(
+            "test span",
+            SpanCategory.CUSTOM,
+            SpanKind.INTERNAL,
+            0L,
+            UUID.fromString("4ee26661-4650-4c7f-a35f-00f007cd24e7"),
+            0xdecafbad,
+            123L,
+            NoopSpanProcessor,
+            false,
+            null,
+            null,
+        )
 
         span.setAttribute("fps.average", 61.9)
         span.setAttribute("frameTime.minimum", 1)
@@ -205,19 +205,19 @@ class SpanJsonTest {
         Logger.delegate = logger
         val currentTime = System.currentTimeMillis()
 
-        val span =
-            SpanImpl(
-                "test span",
-                SpanCategory.CUSTOM,
-                SpanKind.INTERNAL,
-                0L,
-                UUID.fromString("4ee26661-4650-4c7f-a35f-00f007cd24e7"),
-                0xdecafbad,
-                123L,
-                NoopSpanProcessor,
-                false,
-                null,
-            )
+        val span = SpanImpl(
+            "test span",
+            SpanCategory.CUSTOM,
+            SpanKind.INTERNAL,
+            0L,
+            UUID.fromString("4ee26661-4650-4c7f-a35f-00f007cd24e7"),
+            0xdecafbad,
+            123L,
+            NoopSpanProcessor,
+            false,
+            null,
+            null,
+        )
         span.setAttribute("null object", listOf<Any?>(null) as Collection<Any>)
         span.end(currentTime)
         StringWriter()
@@ -233,19 +233,19 @@ class SpanJsonTest {
         Logger.delegate = logger
         val currentTime = System.currentTimeMillis()
 
-        val span =
-            SpanImpl(
-                "test span",
-                SpanCategory.CUSTOM,
-                SpanKind.INTERNAL,
-                0L,
-                UUID.fromString("4ee26661-4650-4c7f-a35f-00f007cd24e7"),
-                0xdecafbad,
-                123L,
-                NoopSpanProcessor,
-                false,
-                null,
-            )
+        val span = SpanImpl(
+            "test span",
+            SpanCategory.CUSTOM,
+            SpanKind.INTERNAL,
+            0L,
+            UUID.fromString("4ee26661-4650-4c7f-a35f-00f007cd24e7"),
+            0xdecafbad,
+            123L,
+            NoopSpanProcessor,
+            false,
+            null,
+            null,
+        )
         span.setAttribute("invalid type", listOf<Any>(TestSpanFactory()))
         span.end(currentTime)
         StringWriter()
