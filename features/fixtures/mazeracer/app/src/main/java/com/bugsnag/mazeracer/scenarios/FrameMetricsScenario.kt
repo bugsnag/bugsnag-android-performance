@@ -12,6 +12,8 @@ class FrameMetricsScenario(config: PerformanceConfiguration, scenarioMetadata: S
     init {
         if (scenarioMetadata.contains("disableInstrumentation")) {
             config.autoInstrumentRendering = false
+        } else {
+            config.autoInstrumentRendering = true
         }
     }
 

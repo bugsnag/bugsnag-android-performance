@@ -21,7 +21,7 @@ public class PerformanceConfiguration private constructor(public val context: Co
 
     public var autoInstrumentActivities: AutoInstrument = AutoInstrument.FULL
 
-    public var autoInstrumentRendering: Boolean = true
+    public var autoInstrumentRendering: Boolean = false
 
     public var releaseStage: String? = null
 

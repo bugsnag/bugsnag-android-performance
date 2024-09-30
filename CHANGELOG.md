@@ -1,3 +1,10 @@
+## TBD
+
+### Changes
+
+* Slow & Frozen frame metrics can optionally be reported (`PerformanceConfiguration.autoInstrumentRendering`)
+  [#290](https://github.com/bugsnag/bugsnag-android-performance/pull/290)
+
 ## 1.8.0 (2024-09-26)
 
 ### Changes
