@@ -21,6 +21,8 @@ public class PerformanceConfiguration private constructor(public val context: Co
 
     public var autoInstrumentActivities: AutoInstrument = AutoInstrument.FULL
 
+    public var autoInstrumentRendering: Boolean = false
+
     public var releaseStage: String? = null
 
     public var enabledReleaseStages: Set<String>? = null
@@ -88,6 +90,7 @@ public class PerformanceConfiguration private constructor(public val context: Co
             "endpoint='$endpoint', " +
             "autoInstrumentAppStarts=$autoInstrumentAppStarts, " +
             "autoInstrumentActivities=$autoInstrumentActivities, " +
+            "autoInstrumentRendering=$autoInstrumentRendering, " +
             "releaseStage=$releaseStage, " +
             "versionCode=$versionCode, " +
             "appVersion=$appVersion, " +

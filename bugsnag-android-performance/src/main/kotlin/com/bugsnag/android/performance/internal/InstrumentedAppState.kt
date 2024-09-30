@@ -5,6 +5,7 @@ import android.os.Build
 import androidx.annotation.RestrictTo
 import com.bugsnag.android.performance.AutoInstrument
 import com.bugsnag.android.performance.SpanContext
+import com.bugsnag.android.performance.internal.framerate.FramerateMetricsSource
 import com.bugsnag.android.performance.internal.instrumentation.AbstractActivityLifecycleInstrumentation
 import com.bugsnag.android.performance.internal.instrumentation.ActivityLifecycleInstrumentation
 import com.bugsnag.android.performance.internal.instrumentation.ForegroundState
@@ -36,6 +37,8 @@ public class InstrumentedAppState {
     public lateinit var app: Application
         private set
 
+    private var framerateMetricsSource: FramerateMetricsSource? = null
+
     internal fun attach(application: Application) {
         if (this::app.isInitialized) {
             return
@@ -43,6 +46,12 @@ public class InstrumentedAppState {
 
         app = application
         app.registerActivityLifecycleCallbacks(activityInstrumentation)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            framerateMetricsSource = FramerateMetricsSource()
+            spanFactory.framerateMetricsSource = framerateMetricsSource
+            app.registerActivityLifecycleCallbacks(framerateMetricsSource)
+        }
 
         ForegroundState.addForegroundChangedCallback { inForeground ->
             defaultAttributeSource.update {
@@ -70,7 +79,10 @@ public class InstrumentedAppState {
         if (configuration.autoInstrumentAppStarts) {
             // redirect existing spanProcessor -> new Tracer
             (bootstrapSpanProcessor as? ForwardingSpanProcessor)?.forwardTo(spanProcessor)
-            autoInstrumentationCache.configure(configuration.doNotEndAppStart, configuration.doNotAutoInstrument)
+            autoInstrumentationCache.configure(
+                configuration.doNotEndAppStart,
+                configuration.doNotAutoInstrument,
+            )
         } else {
             // clear the contextStack to ensure that any new spans don't associate with
             // the discarded spans, this doesn't work if not on the main thread but
@@ -79,6 +91,12 @@ public class InstrumentedAppState {
             SpanContext.contextStack.clear()
 
             (bootstrapSpanProcessor as? ForwardingSpanProcessor)?.discard()
+        }
+
+        if (!configuration.autoInstrumentRendering && framerateMetricsSource != null) {
+            spanFactory.framerateMetricsSource = null
+            app.unregisterActivityLifecycleCallbacks(framerateMetricsSource)
+            framerateMetricsSource = null
         }
 
         return tracer
