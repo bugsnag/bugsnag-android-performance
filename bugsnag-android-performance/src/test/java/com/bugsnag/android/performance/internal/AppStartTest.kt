@@ -51,14 +51,14 @@ class AppStartTest {
         assertEquals("[AppStartPhase/Framework]", frameworkStart.name)
         // start and end time are in nanoseconds, not milliseconds
         assertEquals(100_000_000L, frameworkStart.startTime)
-        assertEquals(200_000_000L, frameworkStart.endTime.get())
+        assertEquals(200_000_000L, frameworkStart.endTime)
         assertEquals(SpanKind.INTERNAL, frameworkStart.kind)
         assertTrue(frameworkStart.isEnded())
 
         assertEquals("[AppStart/AndroidCold]", appStart.name)
         // start and end time are in nanoseconds, not milliseconds
         assertEquals(100_000_000L, appStart.startTime)
-        assertEquals(400_000_000L, appStart.endTime.get())
+        assertEquals(400_000_000L, appStart.endTime)
         assertEquals(SpanKind.INTERNAL, appStart.kind)
         assertTrue(appStart.isEnded())
     }
@@ -84,7 +84,7 @@ class AppStartTest {
         assertEquals("[AppStart/AndroidWarm]", appStart.name)
         // start and end time are in nanoseconds, not milliseconds
         assertEquals(500_000_000L, appStart.startTime)
-        assertEquals(600_000_000L, appStart.endTime.get())
+        assertEquals(600_000_000L, appStart.endTime)
         assertEquals(SpanKind.INTERNAL, appStart.kind)
         assertTrue(appStart.isEnded())
     }
@@ -112,7 +112,7 @@ class AppStartTest {
         assertEquals("[AppStartPhase/Framework]", frameworkStart.name)
         // start and end time are in nanoseconds, not milliseconds
         assertEquals(100_000_000L, frameworkStart.startTime)
-        assertEquals(200_000_000L, frameworkStart.endTime.get())
+        assertEquals(200_000_000L, frameworkStart.endTime)
         assertEquals(SpanKind.INTERNAL, frameworkStart.kind)
         assertTrue(frameworkStart.isEnded())
     }

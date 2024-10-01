@@ -394,7 +394,7 @@ public class SpanTracker {
 
         fun markLeaked(fallbackEndTime: Long = SystemClock.elapsedRealtimeNanos()): Boolean {
             // this span has not leaked, ignore and return
-            if (span.endTime.get() != NO_END_TIME) {
+            if (!span.isOpen()) {
                 return false
             }
 

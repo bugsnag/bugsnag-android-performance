@@ -91,7 +91,7 @@ class SpanPayloadEncodingTest {
                               "spanId": "00000000decafbad",
                               "traceId": "4ee2666146504c7fa35f00f007cd24e7",
                               "startTimeUnixNano": "${BugsnagClock.elapsedNanosToUnixTime(span1.startTime)}",
-                              "endTimeUnixNano": "${BugsnagClock.elapsedNanosToUnixTime(span1.endTime.get())}",
+                              "endTimeUnixNano": "${BugsnagClock.elapsedNanosToUnixTime(span1.endTime)}",
                               "attributes": [
                                 {
                                     "key": "bugsnag.sampling.p",
@@ -105,7 +105,7 @@ class SpanPayloadEncodingTest {
                               "spanId": "00000000baddecaf",
                               "traceId": "4ee2666146504c7fa35f00f007cd24e7",
                               "startTimeUnixNano": "${BugsnagClock.elapsedNanosToUnixTime(span2.startTime)}",
-                              "endTimeUnixNano": "${BugsnagClock.elapsedNanosToUnixTime(span2.endTime.get())}",
+                              "endTimeUnixNano": "${BugsnagClock.elapsedNanosToUnixTime(span2.endTime)}",
                               "attributes": [
                                 {
                                     "key": "bugsnag.sampling.p",
