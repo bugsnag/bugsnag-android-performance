@@ -3,6 +3,7 @@ package com.bugsnag.android.performance.internal
 import com.bugsnag.android.performance.SpanKind
 import com.bugsnag.android.performance.test.NoopSpanProcessor
 import com.bugsnag.android.performance.test.TestAttributeLimits
+import com.bugsnag.android.performance.test.TestTimeoutExecutor
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import java.util.UUID
@@ -19,10 +20,11 @@ class CustomSpanAttributeLimitsTest {
                 UUID.randomUUID(),
                 1L,
                 0L,
-                NoopSpanProcessor,
                 false,
                 TestAttributeLimits(attributeCountLimit = 1),
                 null,
+                TestTimeoutExecutor(),
+                NoopSpanProcessor,
             )
 
         spanImpl.attributes["system.attribute"] = "value"

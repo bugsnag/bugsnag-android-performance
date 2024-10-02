@@ -11,6 +11,8 @@ import com.bugsnag.android.performance.internal.framerate.FramerateMetricsSnapsh
 import com.bugsnag.android.performance.internal.integration.NotifierIntegration
 import com.bugsnag.android.performance.internal.processing.AttributeLimits
 import com.bugsnag.android.performance.internal.processing.JsonTraceWriter
+import com.bugsnag.android.performance.internal.processing.Timeout
+import com.bugsnag.android.performance.internal.processing.TimeoutExecutor
 import java.security.SecureRandom
 import java.util.Random
 import java.util.UUID
@@ -27,12 +29,24 @@ public class SpanImpl internal constructor(
     override val traceId: UUID,
     override val spanId: Long = nextSpanId(),
     public val parentSpanId: Long,
-    private val processor: SpanProcessor,
     private val makeContext: Boolean,
     private val attributeLimits: AttributeLimits?,
     private val framerateMetricsSource: MetricSource<FramerateMetricsSnapshot>?,
+    private val timeoutExecutor: TimeoutExecutor,
+    private val processor: SpanProcessor,
 ) : Span, HasAttributes {
+
     public val attributes: Attributes = Attributes()
+
+    /**
+     * The name of this `Span`
+     */
+    public var name: String = name
+        set(value) {
+            if (!isEnded()) {
+                field = value
+            }
+        }
 
     internal val startFrameMetrics = framerateMetricsSource?.createStartMetrics()
 
@@ -51,18 +65,6 @@ public class SpanImpl internal constructor(
     @JvmSynthetic
     internal var next: SpanImpl? = null
 
-    /**
-     * The name of this `Span`
-     */
-    public var name: String = name
-        set(value) {
-            if (!isEnded()) {
-                field = value
-            }
-        }
-
-    private val state = SpanState()
-
     internal val samplingValue: Double
 
     @get:FloatRange(from = 0.0, to = 1.0)
@@ -75,13 +77,16 @@ public class SpanImpl internal constructor(
         }
 
     internal var droppedAttributesCount: Int = 0
+
     private var customAttributesCount: Int = 0
+
+    private val state = SpanState()
+
+    private lateinit var conditions: MutableSet<Condition>
 
     init {
         samplingProbability = 1.0
-    }
 
-    init {
         category.category?.let { attributes["bugsnag.span.category"] = it }
         samplingValue = samplingValueFor(traceId)
 
@@ -92,11 +97,17 @@ public class SpanImpl internal constructor(
     override fun end(endTime: Long) {
         if (state.end(endTime)) {
             startFrameMetrics?.let { framerateMetricsSource?.endMetrics(it, this) }
-
-            processor.onEnd(this)
-            NotifierIntegration.onSpanEnded(this)
             if (makeContext) SpanContext.detach(this)
+            NotifierIntegration.onSpanEnded(this)
+
+            if (!isBlocked()) {
+                sendForProcessing()
+            }
         }
+    }
+
+    private fun sendForProcessing() {
+        processor.onEnd(this)
     }
 
     /**
@@ -110,9 +121,31 @@ public class SpanImpl internal constructor(
         }
     }
 
+    public fun block(timeoutMs: Long): Condition? {
+        if (state.block()) {
+            synchronized(this) {
+                if (!this::conditions.isInitialized) {
+                    this.conditions = HashSet()
+                }
+
+                val condition = Condition(this, SystemClock.elapsedRealtime() + timeoutMs)
+                timeoutExecutor.scheduleTimeout(condition)
+                conditions.add(condition)
+                return condition
+            }
+        }
+
+        return null
+    }
+
     override fun end(): Unit = end(SystemClock.elapsedRealtimeNanos())
 
     override fun isEnded(): Boolean = !state.isOpen
+
+    public fun isSampled(): Boolean = samplingValue <= samplingProbability
+    public fun isOpen(): Boolean = state.isOpen
+    public fun isBlocked(): Boolean =
+        state.isBlocked || (this::conditions.isInitialized && this.conditions.isNotEmpty())
 
     internal fun toJson(json: JsonTraceWriter) {
         json.writeSpan(this) {
@@ -292,9 +325,6 @@ public class SpanImpl internal constructor(
         return result
     }
 
-    public fun isSampled(): Boolean = samplingValue <= samplingProbability
-    public fun isOpen(): Boolean = state.isOpen
-
     public companion object {
         private const val INVALID_ID = 0L
 
@@ -319,6 +349,44 @@ public class SpanImpl internal constructor(
             }
         }
     }
+
+    public class Condition internal constructor(
+        private val span: SpanImpl,
+        override val target: Long,
+    ) : Timeout {
+        private var isValid = true
+
+        public fun close(endTime: Long = SystemClock.elapsedRealtimeNanos()) {
+            span.state.endTime = max(endTime, span.state.endTime)
+            releaseCondition()
+        }
+
+        override fun run() {
+            cancel()
+        }
+
+        public fun cancel() {
+            releaseCondition()
+        }
+
+        private fun releaseCondition() {
+            synchronized(span) {
+                if (!isValid) {
+                    return
+                }
+
+                isValid = false
+
+                span.conditions.remove(this)
+                span.timeoutExecutor.cancelTimeout(this)
+
+                if (span.conditions.isEmpty()) {
+                    // the last condition was cancelled, so the Span is now considered ended
+                    span.sendForProcessing()
+                }
+            }
+        }
+    }
 }
 
 /**
@@ -330,9 +398,15 @@ public class SpanImpl internal constructor(
 internal value class SpanState private constructor(private val state: AtomicLong) {
     constructor() : this(AtomicLong(NO_END_TIME))
 
-    val isOpen: Boolean get() = state.get() == NO_END_TIME
+    val isOpen: Boolean get() = state.get().let { it == NO_END_TIME || it == BLOCKED }
     val isBlocked: Boolean get() = state.get() == BLOCKED
-    val endTime: Long get() = max(state.get(), 0L)
+    var endTime: Long
+        get() = max(state.get(), 0L)
+        set(value) {
+            if (value >= 0L) {
+                state.set(value)
+            }
+        }
 
     fun end(endTime: Long): Boolean {
         while (true) {
@@ -359,6 +433,18 @@ internal value class SpanState private constructor(private val state: AtomicLong
                 }
 
                 else -> return s == DISCARDED
+            }
+        }
+    }
+
+    fun block(): Boolean {
+        while (true) {
+            when (val s = state.get()) {
+                NO_END_TIME -> if (state.compareAndSet(s, BLOCKED)) {
+                    return true
+                }
+
+                else -> return s == BLOCKED
             }
         }
     }

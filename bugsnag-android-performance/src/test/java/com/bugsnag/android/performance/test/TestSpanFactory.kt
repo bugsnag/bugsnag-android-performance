@@ -12,6 +12,8 @@ import java.util.UUID
 class TestSpanFactory {
     private var spanCount = 1L
 
+    internal val timeoutExecutor = TestTimeoutExecutor()
+
     @Suppress("LongParameterList")
     fun newSpan(
         name: String = "Test/Span$spanCount",
@@ -32,10 +34,11 @@ class TestSpanFactory {
             traceId,
             spanId,
             parentSpanId,
-            processor,
             true,
             null,
             null,
+            timeoutExecutor,
+            processor,
         ).apply { if (endTime != null) end(endTime(startTime)) }
     }
 

@@ -70,9 +70,11 @@ public class InstrumentedAppState {
         app.registerComponentCallbacks(PerformanceComponentCallbacks(tracer))
 
         spanProcessor = tracer
-        spanFactory.spanProcessor = tracer
-        spanFactory.attributeLimits = configuration
-        spanFactory.networkRequestCallback = configuration.networkRequestCallback
+        spanFactory.configure(
+            tracer,
+            configuration,
+            configuration.networkRequestCallback,
+        )
 
         tracePropagationUrls = configuration.tracePropagationUrls
 
