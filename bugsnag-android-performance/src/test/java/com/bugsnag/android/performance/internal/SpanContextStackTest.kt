@@ -22,8 +22,8 @@ class SpanContextStackTest {
 
         val child = spanFactory.newSpan(
             endTime = null,
-            parentSpanId = parent.spanId,
             traceId = parent.traceId,
+            parentSpanId = parent.spanId,
             processor = NoopSpanProcessor,
         )
         stack.attach(child)
@@ -41,8 +41,8 @@ class SpanContextStackTest {
 
         var child: SpanImpl? = spanFactory.newSpan(
             endTime = null,
-            parentSpanId = parent.spanId,
             traceId = parent.traceId,
+            parentSpanId = parent.spanId,
             processor = NoopSpanProcessor,
         )
         stack.attach(child!!)
@@ -55,5 +55,43 @@ class SpanContextStackTest {
         System.gc()
 
         assertSame(parent, stack.top)
+    }
+
+    @Test
+    fun findReturnsTop() {
+        val stack = SpanContextStack()
+        val baseViewLoad = spanFactory.newSpan(
+            endTime = null,
+            spanCategory = SpanCategory.VIEW_LOAD,
+            processor = NoopSpanProcessor,
+        )
+        stack.attach(baseViewLoad)
+
+        val viewLoadPhase = spanFactory.newSpan(
+            parentSpanId = baseViewLoad.spanId,
+            endTime = null,
+            spanCategory = SpanCategory.VIEW_LOAD_PHASE,
+            processor = NoopSpanProcessor,
+        )
+        stack.attach(viewLoadPhase)
+
+        val childViewLoad = spanFactory.newSpan(
+            parentSpanId = viewLoadPhase.spanId,
+            endTime = null,
+            spanCategory = SpanCategory.VIEW_LOAD,
+            processor = NoopSpanProcessor,
+        )
+        stack.attach(childViewLoad)
+
+        val childViewLoadPhase = spanFactory.newSpan(
+            parentSpanId = childViewLoad.spanId,
+            endTime = null,
+            spanCategory = SpanCategory.VIEW_LOAD_PHASE,
+            processor = NoopSpanProcessor,
+        )
+        stack.attach(childViewLoadPhase)
+
+        val currentViewLoad = stack.findSpan { it.category == SpanCategory.VIEW_LOAD }
+        assertSame(childViewLoad, currentViewLoad)
     }
 }

@@ -70,10 +70,13 @@ class SpanBlockingTest {
         assertTrue(spanProcessor.isEmpty())
         assertEquals(123L, span.endTime)
 
+        condition2?.upgrade()
         condition2!!.close(321L)
+        condition2.close(987L) // this should be ignored
         assertEquals(321L, span.endTime)
         assertTrue(spanProcessor.isEmpty())
 
+        condition1?.upgrade()
         condition1!!.close(456L)
         assertEquals(456L, span.endTime)
         assertTrue(spanProcessor.isNotEmpty())

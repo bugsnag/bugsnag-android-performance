@@ -64,7 +64,7 @@ class SpanTest {
     @Test
     fun spanAsClosable() {
         val span = createTestSpan().apply { use { sleep(1L) } }
-        assertNotEquals(SpanImpl.NO_END_TIME, span.endTime)
+        assertNotEquals(SpanState.NO_END_TIME, span.endTime)
         assertTrue(span.startTime < span.endTime)
     }
 

@@ -167,11 +167,11 @@ class SpanTrackerTest {
     }
 
     private fun createSpan(name: String): SpanImpl {
-        return spanFactory.newSpan(name, processor = NoopSpanProcessor, endTime = null)
+        return spanFactory.newSpan(name, endTime = null, processor = NoopSpanProcessor)
     }
 
     private fun createSpan(): SpanImpl {
-        return spanFactory.newSpan(processor = NoopSpanProcessor, endTime = null)
+        return spanFactory.newSpan(endTime = null, processor = NoopSpanProcessor)
     }
 
     private fun assertTrackerSpans(

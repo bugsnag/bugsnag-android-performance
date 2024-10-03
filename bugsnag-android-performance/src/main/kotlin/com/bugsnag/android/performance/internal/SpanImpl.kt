@@ -82,7 +82,7 @@ public class SpanImpl internal constructor(
 
     private val state = SpanState()
 
-    private lateinit var conditions: MutableSet<Condition>
+    private lateinit var conditions: MutableSet<ConditionImpl>
 
     init {
         samplingProbability = 1.0
@@ -128,7 +128,7 @@ public class SpanImpl internal constructor(
                     this.conditions = HashSet()
                 }
 
-                val condition = Condition(this, SystemClock.elapsedRealtime() + timeoutMs)
+                val condition = ConditionImpl(this, SystemClock.elapsedRealtime() + timeoutMs)
                 timeoutExecutor.scheduleTimeout(condition)
                 conditions.add(condition)
                 return condition
@@ -328,9 +328,6 @@ public class SpanImpl internal constructor(
     public companion object {
         private const val INVALID_ID = 0L
 
-        internal const val NO_END_TIME: Long = -1L
-        internal const val DISCARDED: Long = -2L
-
         private val spanIdRandom = Random(SecureRandom().nextLong())
 
         private fun nextSpanId(): Long {
@@ -350,26 +347,84 @@ public class SpanImpl internal constructor(
         }
     }
 
-    public class Condition internal constructor(
+    /**
+     * Represents a possible "block" to a Span being ended naturally. Any conditions that are active
+     * when [SpanImpl.end] is called will prevent the span from being batched and processed, until
+     * all of the [Condition]s are either cancelled, timed-out, or closed. A condition is considered
+     * "inactive" until it is [upgrade]ed, at which point the [Condition.close] will cause the span
+     * end-time to be adjusted.
+     *
+     * These are a way to deal with cases where a span "might have child spans at some point in the
+     * future, where the parent span end time should match the last of these children".
+     */
+    public interface Condition {
+        /**
+         * Close this [Condition] possibly releasing the underlying Span for batching and
+         * processing. The Span end time may be adjusted to [endTime] if it is strictly after the
+         * existing Span end time.
+         */
+        public fun close(endTime: Long = SystemClock.elapsedRealtimeNanos())
+
+        /**
+         * Attempt to upgrade this [Condition]. A Condition may only be upgraded only be upgraded
+         * once, and must still be valid (not closed, or cancelled) in order to be upgraded.
+         *
+         * @return the [SpanContext] that the [Condition] was upgraded to, or `null` if this
+         * [Condition] cannot be upgraded
+         */
+        public fun upgrade(): SpanContext?
+
+        /**
+         * Cancel this [Condition] possibly releasing the underlying Span for batching and
+         * processing. This function has the same effect as the [Condition] passing its timeout.
+         * The [Span] this condition is blocking will not be altered by this function.
+         */
+        public fun cancel()
+    }
+
+    private class ConditionImpl(
         private val span: SpanImpl,
         override val target: Long,
-    ) : Timeout {
+    ) : Condition, Timeout {
         private var isValid = true
+        private var isUpgraded = false
 
-        public fun close(endTime: Long = SystemClock.elapsedRealtimeNanos()) {
-            span.state.endTime = max(endTime, span.state.endTime)
-            releaseCondition()
+        override fun close(endTime: Long) {
+            releaseCondition {
+                if (isUpgraded) {
+                    span.state.endTime = max(endTime, span.state.endTime)
+                }
+            }
+        }
+
+        override fun upgrade(): SpanContext? {
+            synchronized(span) {
+                if (!isValid) {
+                    return null
+                }
+
+                span.timeoutExecutor.cancelTimeout(this)
+                isUpgraded = true
+
+                return span
+            }
         }
 
         override fun run() {
             cancel()
         }
 
-        public fun cancel() {
-            releaseCondition()
+        override fun cancel() {
+            synchronized(span) {
+                // an upgraded condition cannot be cancelled
+                if (isUpgraded) {
+                    return
+                }
+                releaseCondition()
+            }
         }
 
-        private fun releaseCondition() {
+        private inline fun releaseCondition(completeRelease: () -> Unit = {}) {
             synchronized(span) {
                 if (!isValid) {
                     return
@@ -380,11 +435,17 @@ public class SpanImpl internal constructor(
                 span.conditions.remove(this)
                 span.timeoutExecutor.cancelTimeout(this)
 
+                completeRelease()
+
                 if (span.conditions.isEmpty()) {
                     // the last condition was cancelled, so the Span is now considered ended
                     span.sendForProcessing()
                 }
             }
+        }
+
+        override fun toString(): String {
+            return "Condition[isValid=$isValid, isUpgraded=$isUpgraded, span=$span]"
         }
     }
 }

@@ -23,12 +23,13 @@ class TestSpanFactory {
         traceId: UUID = UUID(0L, spanCount),
         spanId: Long = spanCount,
         parentSpanId: Long = 0L,
+        spanCategory: SpanCategory = SpanCategory.CUSTOM,
         processor: SpanProcessor,
     ): SpanImpl {
         spanCount++
         return SpanImpl(
             name,
-            SpanCategory.CUSTOM,
+            spanCategory,
             kind,
             startTime,
             traceId,
