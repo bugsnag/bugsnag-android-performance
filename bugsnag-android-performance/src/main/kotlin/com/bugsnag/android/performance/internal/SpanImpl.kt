@@ -107,7 +107,9 @@ public class SpanImpl internal constructor(
     }
 
     private fun sendForProcessing() {
-        processor.onEnd(this)
+        if (!state.isDiscarded) {
+            processor.onEnd(this)
+        }
     }
 
     /**
@@ -116,6 +118,15 @@ public class SpanImpl internal constructor(
      */
     public fun discard() {
         if (state.discard()) {
+            synchronized(this) {
+                // ensure all of the conditions are released if discarded
+                if (this::conditions.isInitialized) {
+                    conditions.forEach { condition ->
+                        condition.cancel()
+                    }
+                }
+            }
+
             NotifierIntegration.onSpanEnded(this)
             if (makeContext) SpanContext.detach(this)
         }
@@ -461,6 +472,7 @@ internal value class SpanState private constructor(private val state: AtomicLong
 
     val isOpen: Boolean get() = state.get().let { it == NO_END_TIME || it == BLOCKED }
     val isBlocked: Boolean get() = state.get() == BLOCKED
+    val isDiscarded: Boolean get() = state.get() == DISCARDED
     var endTime: Long
         get() = max(state.get(), 0L)
         set(value) {

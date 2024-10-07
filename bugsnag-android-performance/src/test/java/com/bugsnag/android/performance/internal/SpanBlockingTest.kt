@@ -5,6 +5,7 @@ import com.bugsnag.android.performance.test.TestSpanFactory
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -111,5 +112,30 @@ class SpanBlockingTest {
         assertFalse(span.isBlocked())
         assertTrue(spanProcessor.isNotEmpty())
         assertSame(span, spanProcessor.toList().single())
+    }
+
+    @Test
+    fun discardBlockedSpan() {
+        val span = spanFactory.newSpan("Test", endTime = null, processor = spanProcessor)
+        assertTrue(span.isOpen())
+        assertFalse(span.isBlocked())
+
+        val condition1 = span.block(1000L)
+        assertNotNull(condition1)
+        assertFalse(span.isEnded())
+        assertTrue(span.isBlocked())
+        assertTrue(spanProcessor.isEmpty())
+
+        span.discard()
+        assertFalse(span.isOpen())
+        assertFalse(span.isBlocked())
+        assertTrue(spanProcessor.isEmpty())
+
+        assertNull(condition1!!.upgrade())
+
+        condition1.close()
+        assertFalse(span.isOpen())
+        assertFalse(span.isBlocked())
+        assertTrue(spanProcessor.isEmpty())
     }
 }

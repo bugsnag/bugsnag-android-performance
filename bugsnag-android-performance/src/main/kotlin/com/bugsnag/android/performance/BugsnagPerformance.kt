@@ -25,6 +25,7 @@ import com.bugsnag.android.performance.internal.integration.NotifierIntegration
 import com.bugsnag.android.performance.internal.isInForeground
 import com.bugsnag.android.performance.internal.processing.ImmutableConfig
 import java.net.URL
+import java.util.ServiceLoader
 
 /**
  * Primary access to the Bugsnag Performance SDK.
@@ -187,6 +188,7 @@ public object BugsnagPerformance {
         val moduleLoader = Module.Loader(instrumentedAppState)
         moduleLoader.loadModule("com.bugsnag.android.performance.AppCompatModule")
         moduleLoader.loadModule("com.bugsnag.android.performance.okhttp.OkhttpModule")
+        moduleLoader.loadModule("com.bugsnag.android.performance.compose.ComposeModule")
     }
 
     /**
