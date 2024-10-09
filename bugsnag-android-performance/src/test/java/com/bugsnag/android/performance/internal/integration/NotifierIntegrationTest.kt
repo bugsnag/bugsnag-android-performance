@@ -7,6 +7,7 @@ import com.bugsnag.android.performance.SpanKind
 import com.bugsnag.android.performance.internal.SpanCategory
 import com.bugsnag.android.performance.internal.SpanImpl
 import com.bugsnag.android.performance.test.NoopSpanProcessor
+import com.bugsnag.android.performance.test.TestTimeoutExecutor
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -86,9 +87,10 @@ class NotifierIntegrationTest {
         traceId,
         spanId,
         0L,
-        NoopSpanProcessor,
         makeContext,
         null,
         null,
+        TestTimeoutExecutor(),
+        NoopSpanProcessor,
     )
 }

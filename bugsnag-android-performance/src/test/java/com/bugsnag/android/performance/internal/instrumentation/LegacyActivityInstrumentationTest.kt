@@ -69,7 +69,7 @@ class LegacyActivityInstrumentationTest {
         assertEquals("[ViewLoad/Activity]Activity", viewLoad.name)
         assertEquals(SpanCategory.VIEW_LOAD, viewLoad.category)
         assertEquals(100_000_000L, viewLoad.startTime)
-        assertEquals(102_000_000L, viewLoad.endTime.get())
+        assertEquals(102_000_000L, viewLoad.endTime)
     }
 
     @Test
@@ -108,7 +108,7 @@ class LegacyActivityInstrumentationTest {
         assertEquals("[ViewLoad/Activity]Activity", viewLoad.name)
         assertEquals(SpanCategory.VIEW_LOAD, viewLoad.category)
         assertEquals(100_000_000L, viewLoad.startTime)
-        assertEquals(101_000_000L, viewLoad.endTime.get())
+        assertEquals(101_000_000L, viewLoad.endTime)
     }
 
     @Test

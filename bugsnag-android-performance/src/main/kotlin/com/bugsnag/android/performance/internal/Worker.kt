@@ -1,6 +1,9 @@
 package com.bugsnag.android.performance.internal
 
 import com.bugsnag.android.performance.Logger
+import com.bugsnag.android.performance.internal.processing.Timeout
+import com.bugsnag.android.performance.internal.processing.TimeoutExecutor
+import java.util.concurrent.DelayQueue
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
@@ -38,11 +41,12 @@ internal class Worker(
      */
     startupTasks: List<Runnable>,
     private val tasks: List<Task>,
-) : Runnable {
+) : TimeoutExecutor, Runnable {
     private var startupTasks: List<Runnable>? = startupTasks
 
     private val lock = ReentrantLock(false)
     private val wakeWorker = lock.newCondition()
+    private val timeouts = DelayQueue<Timeout>()
 
     /**
      * This avoids us having to do all of the work under `lock` allowing `wake` to be called between
@@ -85,13 +89,23 @@ internal class Worker(
         }
     }
 
+    override fun scheduleTimeout(timeout: Timeout) {
+        timeouts.add(timeout)
+    }
+
+    override fun cancelTimeout(timeout: Timeout) {
+        timeouts.remove(timeout)
+    }
+
     override fun run() {
         runStartupTasks()
 
         attachTasks()
         try {
             while (running) {
-                val shouldWaitForWork = runTasks()
+                runScheduledTimeouts()
+
+                val shouldWaitForWork = runFixedTasks()
 
                 if (shouldWaitForWork) {
                     waitForWorkOrWakeup()
@@ -138,7 +152,7 @@ internal class Worker(
         }
     }
 
-    private fun runTasks(): Boolean {
+    private fun runFixedTasks(): Boolean {
         var shouldWaitForWork = true
 
         for (task in tasks) {
@@ -153,6 +167,20 @@ internal class Worker(
         }
 
         return shouldWaitForWork
+    }
+
+    private fun runScheduledTimeouts() {
+        var timeout = timeouts.poll()
+
+        while (timeout != null) {
+            try {
+                timeout.run()
+            } catch (ex: Exception) {
+                Logger.w("unhandled exception in timeout: $timeout", ex)
+            } finally {
+                timeout = timeouts.poll()
+            }
+        }
     }
 
     private fun waitForWorkOrWakeup() {
