@@ -76,6 +76,8 @@ Feature: Manual creation of spans
 #    Then a span name equals "Span 1"
 #    * a span name equals "Span 2"
 
+  # Skip pending PLAT-11356
+  @skip
   Scenario: Send on App backgrounded
     Given I run "AppBackgroundedScenario"
     And I send the app to the background for 5 seconds
