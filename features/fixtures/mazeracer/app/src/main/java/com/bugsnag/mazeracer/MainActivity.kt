@@ -178,9 +178,7 @@ class MainActivity : AppCompatActivity() {
                     val action = command.getString("action")
 
                     if (action == "noop") {
-                        lastCommandUuid = null
-                        clearStoredCommandUUID()
-                        log("noop - clearing command uuid, doing nothing and looping around for another poll()")
+                        log("noop - looping around for another poll()")
                         // immediately loop around
                         continue
                     }
