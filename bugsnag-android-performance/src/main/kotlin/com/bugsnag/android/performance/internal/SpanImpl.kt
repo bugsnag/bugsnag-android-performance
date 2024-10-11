@@ -133,8 +133,8 @@ public class SpanImpl internal constructor(
     }
 
     public fun block(timeoutMs: Long): Condition? {
-        if (state.block()) {
-            synchronized(this) {
+        synchronized(this) {
+            if (state.block() || this::conditions.isInitialized) {
                 if (!this::conditions.isInitialized) {
                     this.conditions = HashSet()
                 }
@@ -391,6 +391,25 @@ public class SpanImpl internal constructor(
          * The [Span] this condition is blocking will not be altered by this function.
          */
         public fun cancel()
+
+        /**
+         * Wrap a span in a span which also closes this `Condition` when it ends. This does not
+         * upgrade or change the `Condition` in any way, the `Condition` should already be
+         * [upgrade]ed when this function is called.
+         */
+        public fun wrap(span: Span): Span {
+            return object : Span by span {
+                override fun end(endTime: Long) {
+                    span.end(endTime)
+                    this@Condition.close(endTime)
+                }
+
+                override fun end() {
+                    span.end()
+                    this@Condition.close()
+                }
+            }
+        }
     }
 
     private class ConditionImpl(
