@@ -10,7 +10,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.material3.Text
 import com.bugsnag.android.performance.compose.MeasuredComposable
 
-private const val ON_SCREEN_TIME_MS = 300L
+private const val ON_SCREEN_TIME_MS = 1000L
 
 class ComposeViewLoadActivity : AppCompatActivity() {
     private val handler = Handler(Looper.getMainLooper())

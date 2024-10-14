@@ -13,7 +13,7 @@ import androidx.fragment.app.Fragment
 import com.bugsnag.android.performance.AutoInstrument
 import com.bugsnag.android.performance.BugsnagPerformance
 
-private const val ON_SCREEN_TIME_MS = 300L
+private const val ON_SCREEN_TIME_MS = 1000L
 
 class ActivityViewLoadActivity : AppCompatActivity() {
     private val handler = Handler(Looper.getMainLooper())
