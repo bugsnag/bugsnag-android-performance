@@ -21,9 +21,11 @@ Feature: Server responses
     # 400 - Payload rejected
     Then I set the HTTP status code for the next request to 400
     And I invoke "sendNextSpan"
-    And I wait to receive 2 traces
-    Then a span name equals "span 1"
-    And a span name equals "span 2"
+    And I wait to receive 1 traces
+    Then a span name equals "span 2"
+    # Verify that the trace is not retried
+    And I discard the oldest trace
+    And I should receive no traces
 
   Scenario: No P update: fail-permanent
     Given I load scenario "GenerateSpansScenario"
