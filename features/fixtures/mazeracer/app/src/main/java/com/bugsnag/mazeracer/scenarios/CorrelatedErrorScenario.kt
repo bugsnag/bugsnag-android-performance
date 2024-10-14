@@ -10,7 +10,6 @@ class CorrelatedErrorScenario(
     config: PerformanceConfiguration,
     scenarioMetadata: String,
 ) : Scenario(config, scenarioMetadata) {
-
     init {
         InternalDebug.spanBatchSizeSendTriggerPoint = 1
         BugsnagPerformance.start(config)

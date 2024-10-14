@@ -19,9 +19,10 @@ class ActivityViewLoadActivity : AppCompatActivity() {
     private val handler = Handler(Looper.getMainLooper())
 
     private val autoInstrument: AutoInstrument
-        get() = intent.getStringExtra(AUTO_INSTRUMENT_EXTRA)
-            ?.let { AutoInstrument.valueOf(it) }
-            ?: AutoInstrument.OFF
+        get() =
+            intent.getStringExtra(AUTO_INSTRUMENT_EXTRA)
+                ?.let { AutoInstrument.valueOf(it) }
+                ?: AutoInstrument.OFF
 
     override fun onCreate(savedInstanceState: Bundle?) {
         if (autoInstrument == AutoInstrument.OFF) {

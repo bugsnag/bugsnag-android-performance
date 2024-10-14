@@ -18,7 +18,6 @@ import kotlinx.coroutines.withContext
 const val DELAY_TIME = 50L
 
 class NestedSpansActivity : AppCompatActivity(), CoroutineScope by BugsnagPerformanceScope() {
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_view_load)
