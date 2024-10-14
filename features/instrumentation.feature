@@ -245,3 +245,13 @@ Feature: Automatic creation of spans
       | bugsnag.phase         | stringValue | ActivityResume       |
       | bugsnag.view.name     | stringValue | SplashScreenActivity |
 
+  Scenario: Activity ViewLoad spans contain Compose ViewLoad spans
+    Given I run "ComposeLoadInstrumentationScenario"
+    And I wait to receive a trace
+    * a span named "[ViewLoad/Compose]Composable" contains the attributes:
+      | attribute             | type        | value                |
+      | bugsnag.span.category | stringValue | view_load            |
+      | bugsnag.view.type     | stringValue | compose              |
+      | bugsnag.view.name     | stringValue | SplashScreenActivity |
+    * the "[ViewLoad/Activity]ComposeLoadInstrumentationScenario" span field "spanId" is stored as the value "activity_load_span_id"
+    * the "[ViewLoad/Compose]Composable" span field "parentSpanId" equals the stored value "activity_load_span_id"
