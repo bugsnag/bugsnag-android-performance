@@ -1,5 +1,6 @@
 package com.bugsnag.android.performance.internal
 
+import android.os.SystemClock
 import com.bugsnag.android.performance.Logger
 import com.bugsnag.android.performance.internal.processing.Timeout
 import com.bugsnag.android.performance.internal.processing.TimeoutExecutor
@@ -56,6 +57,8 @@ internal class Worker(
      */
     private var wakeIsPending = false
 
+    private var runFixedWork = true
+
     private var runner: Thread? = null
 
     @Volatile
@@ -91,6 +94,8 @@ internal class Worker(
 
     override fun scheduleTimeout(timeout: Timeout) {
         timeouts.add(timeout)
+        runFixedWork = false
+        wake()
     }
 
     override fun cancelTimeout(timeout: Timeout) {
@@ -153,6 +158,11 @@ internal class Worker(
     }
 
     private fun runFixedTasks(): Boolean {
+        if (!runFixedWork) {
+            runFixedWork = true
+            return true
+        }
+
         var shouldWaitForWork = true
 
         for (task in tasks) {
@@ -187,7 +197,14 @@ internal class Worker(
         lock.withLock {
             if (!wakeIsPending) {
                 try {
-                    wakeWorker.await(InternalDebug.workerSleepMs, TimeUnit.MILLISECONDS)
+                    var timeToSleep = InternalDebug.workerSleepMs
+                    val nextTimeout = timeouts.peek()
+                    if (nextTimeout != null) {
+                        val timeUntilTimeout = nextTimeout.target - SystemClock.elapsedRealtime()
+                        timeToSleep = timeUntilTimeout
+                    }
+
+                    wakeWorker.await(timeToSleep, TimeUnit.MILLISECONDS)
                 } catch (ie: InterruptedException) {
                     // ignore these, we treat interrupts as wake-ups
                 }
