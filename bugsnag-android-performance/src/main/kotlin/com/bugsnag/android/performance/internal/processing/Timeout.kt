@@ -1,7 +1,8 @@
 package com.bugsnag.android.performance.internal.processing
 
 import android.os.SystemClock
-
+import com.bugsnag.android.performance.Logger
+import java.util.concurrent.DelayQueue
 import java.util.concurrent.Delayed
 import java.util.concurrent.TimeUnit
 
@@ -38,21 +39,52 @@ internal interface TimeoutExecutor {
     fun cancelTimeout(timeout: Timeout)
 }
 
-internal class CollectingTimeoutExecutor : TimeoutExecutor {
-    private val timeouts = HashSet<Timeout>()
+internal class TimeoutExecutorImpl : Runnable, TimeoutExecutor {
+    @Volatile
+    private var running = false
+
+    private var thread: Thread? = null
+
+    private val timeouts = DelayQueue<Timeout>()
 
     @Synchronized
-    fun drainTo(timeoutExecutor: TimeoutExecutor) {
-        timeouts.forEach(timeoutExecutor::scheduleTimeout)
-        timeouts.clear()
+    fun start() {
+        if (running) {
+            return
+        }
+
+        running = true
+        thread = Thread(this, "Bugsnag Timeouts Thread")
+        thread?.start()
     }
 
     @Synchronized
+    fun stop() {
+        if (!running) {
+            return
+        }
+
+        running = false
+        thread?.interrupt()
+        thread = null
+    }
+
+    override fun run() {
+        while (running) {
+            try {
+                timeouts.take().run()
+            } catch (ie: InterruptedException) {
+                // ignore and continue, the thread may have been stopped
+            } catch (ex: Exception) {
+                Logger.w("unhandled exception in timeout", ex)
+            }
+        }
+    }
+
     override fun scheduleTimeout(timeout: Timeout) {
         timeouts.add(timeout)
     }
 
-    @Synchronized
     override fun cancelTimeout(timeout: Timeout) {
         timeouts.remove(timeout)
     }

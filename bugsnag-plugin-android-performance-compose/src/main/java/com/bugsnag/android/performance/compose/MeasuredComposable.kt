@@ -9,6 +9,7 @@ import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.platform.LocalContext
 import com.bugsnag.android.performance.BugsnagPerformance
 import com.bugsnag.android.performance.SpanContext
 import com.bugsnag.android.performance.SpanOptions
@@ -20,8 +21,10 @@ internal data class ValueContainer<T>(var content: T)
 private val RENDER_SPAN_OPTIONS = SpanOptions.DEFAULTS
     .makeCurrentContext(false)
     .setFirstClass(false)
-private val LocalCompositionSpan =
-    compositionLocalOf<ValueContainer<SpanContext?>> { ValueContainer(SpanContext.current) }
+
+private val LocalCompositionSpan = compositionLocalOf<ValueContainer<SpanContext?>> {
+    ValueContainer(null)
+}
 
 @Composable
 public fun MeasuredComposable(
@@ -29,9 +32,12 @@ public fun MeasuredComposable(
     modifier: Modifier = Modifier,
     content: @Composable BoxScope.() -> Unit,
 ) {
+    val viewLoadCondition = ComposeActivityLifecycleCallbacks.createCondition(LocalContext.current)
     val parentSpanContext: SpanContext? = LocalCompositionSpan.current.content
+        ?: viewLoadCondition?.upgrade()
+
     val alreadyComposed = remember { ValueContainer(false) }
-    val span = if (alreadyComposed.content) {
+    var span = if (alreadyComposed.content) {
         null
     } else {
         BugsnagPerformance.startViewLoadSpan(
@@ -40,6 +46,11 @@ public fun MeasuredComposable(
             SpanOptions.DEFAULTS.within(parentSpanContext),
         )
     }
+
+    if (viewLoadCondition != null && span != null) {
+        span = viewLoadCondition.wrap(span)
+    }
+
     alreadyComposed.content = true
     val spanValue = ValueContainer<SpanContext?>(span)
     CompositionLocalProvider(LocalCompositionSpan provides spanValue) {

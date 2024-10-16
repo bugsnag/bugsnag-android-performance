@@ -13,7 +13,7 @@ internal class SendBatchTask(
     override fun execute(): Boolean {
         val nextBatch = tracer.collectNextBatch() ?: return false
         if (nextBatch.isNotEmpty()) {
-            Logger.d("Sending a batch of ${nextBatch.size} spans to $delivery")
+            Logger.d("Sending a batch of ${nextBatch.size} spans from $tracer to $delivery")
         }
         val result = delivery.deliver(nextBatch, resourceAttributes)
         return nextBatch.isNotEmpty() && result is DeliveryResult.Success

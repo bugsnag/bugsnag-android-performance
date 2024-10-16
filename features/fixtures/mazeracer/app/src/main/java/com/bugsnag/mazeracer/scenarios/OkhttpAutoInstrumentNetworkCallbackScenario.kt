@@ -15,24 +15,26 @@ class OkhttpAutoInstrumentNetworkCallbackScenario(
     scenarioMetadata: String,
 ) : Scenario(config, scenarioMetadata) {
     override fun startScenario() {
-        config.networkRequestCallback = NetworkRequestInstrumentationCallback { reqInfo ->
-            val url = reqInfo.url ?: return@NetworkRequestInstrumentationCallback
-            if (url.startsWith("http://bs-local.com")) {
-                reqInfo.url = null
-            } else if (url == "https://google.com/") {
-                reqInfo.url = null
-            } else if (url.endsWith("/changeme")) {
-                reqInfo.url = url.dropLast(9) + "/changed"
+        config.networkRequestCallback =
+            NetworkRequestInstrumentationCallback { reqInfo ->
+                val url = reqInfo.url ?: return@NetworkRequestInstrumentationCallback
+                if (url.startsWith("http://bs-local.com")) {
+                    reqInfo.url = null
+                } else if (url == "https://google.com/") {
+                    reqInfo.url = null
+                } else if (url.endsWith("/changeme")) {
+                    reqInfo.url = url.dropLast(9) + "/changed"
+                }
             }
-        }
 
         BugsnagPerformance.start(config)
 
         thread {
             runAndFlush {
-                val client = OkHttpClient.Builder()
-                    .eventListenerFactory(BugsnagPerformanceOkhttp)
-                    .build()
+                val client =
+                    OkHttpClient.Builder()
+                        .eventListenerFactory(BugsnagPerformanceOkhttp)
+                        .build()
 
                 makeCall(client, "https://bugsnag.com/")
                 makeCall(client, "https://bugsnag.com/changeme")
@@ -41,7 +43,10 @@ class OkhttpAutoInstrumentNetworkCallbackScenario(
         }
     }
 
-    fun makeCall(client: OkHttpClient, url: String) {
+    fun makeCall(
+        client: OkHttpClient,
+        url: String,
+    ) {
         val request = Request.Builder().url(url).build()
 
         client.newCall(request).execute().use { response ->

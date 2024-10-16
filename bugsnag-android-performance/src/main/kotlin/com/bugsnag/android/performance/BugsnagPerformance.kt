@@ -173,7 +173,6 @@ public object BugsnagPerformance {
 
         // register the Worker with the components that depend on it
         tracer.worker = bsgWorker
-        spanFactory.configureTimeoutExecutor(bsgWorker)
 
         loadModules()
 

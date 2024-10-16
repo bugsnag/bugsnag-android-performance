@@ -12,8 +12,7 @@ class AppStartScenario(
     scenarioMetadata: String,
 ) : Scenario(config, scenarioMetadata) {
     init {
-        InternalDebug.spanBatchSizeSendTriggerPoint = 6
-        InternalDebug.workerSleepMs = 1000L
+        InternalDebug.workerSleepMs = 5000L
     }
 
     override fun startScenario() {

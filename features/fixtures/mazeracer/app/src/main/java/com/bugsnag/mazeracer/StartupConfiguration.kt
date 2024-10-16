@@ -27,15 +27,17 @@ fun Context.readStartupConfig(): PerformanceConfiguration? {
             return null
         }
 
-        val config = PerformanceConfiguration
-            .load(this, prefs.getString("apiKey", "a35a2a72bd230ac0aa0f52715bbdc6aa"))
-            .apply {
-                endpoint = prefs.getString("endpoint", null)!!
-                autoInstrumentAppStarts = prefs.getBoolean("autoInstrumentAppStarts", false)
-                autoInstrumentActivities = AutoInstrument.valueOf(
-                    prefs.getString("autoInstrumentActivities", "OFF")!!
-                )
-            }
+        val config =
+            PerformanceConfiguration
+                .load(this, prefs.getString("apiKey", "a35a2a72bd230ac0aa0f52715bbdc6aa"))
+                .apply {
+                    endpoint = prefs.getString("endpoint", null)!!
+                    autoInstrumentAppStarts = prefs.getBoolean("autoInstrumentAppStarts", false)
+                    autoInstrumentActivities =
+                        AutoInstrument.valueOf(
+                            prefs.getString("autoInstrumentActivities", "OFF")!!,
+                        )
+                }
 
         log("got some config Dave: $config")
 

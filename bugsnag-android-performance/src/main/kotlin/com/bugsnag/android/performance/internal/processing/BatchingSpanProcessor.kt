@@ -33,7 +33,7 @@ internal open class BatchingSpanProcessor : SpanProcessor {
      */
     fun takeBatch(): Collection<SpanImpl> {
         val nextBatchChain = batch.getAndSet(null) ?: return emptyList()
-        // unlinkTo separates the chain, allowing any free-floating Spans eligible for GC
+        // unlinkTo separates the chain, making any free-floating Spans eligible for GC
         val batch = nextBatchChain.unlinkTo(ArrayList(currentBatchSize))
         // reduce the tracked batchSize by the number of Spans in this batch
         batchSize.addAndGet(-batch.size)
@@ -61,5 +61,9 @@ internal open class BatchingSpanProcessor : SpanProcessor {
     override fun onEnd(span: Span) {
         if (span !is SpanImpl) return
         addToBatch(span)
+    }
+
+    override fun toString(): String {
+        return "BatchingSpanProcessor[$currentBatchSize]"
     }
 }

@@ -9,7 +9,7 @@ import com.bugsnag.mazeracer.Scenario
 
 class NestedSpansScenario(
     config: PerformanceConfiguration,
-    scenarioMetadata: String
+    scenarioMetadata: String,
 ) : Scenario(config, scenarioMetadata) {
     init {
         config.autoInstrumentAppStarts = true

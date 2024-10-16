@@ -12,7 +12,10 @@ class MazeRacerAlarmReceiver : BroadcastReceiver() {
         Log.i("MazeRacer", "MazeRacerAlarmReceiver init")
     }
 
-    override fun onReceive(context: Context?, intent: Intent?) {
+    override fun onReceive(
+        context: Context?,
+        intent: Intent?,
+    ) {
         Log.i("MazeRacer", "MazeRacerAlarmReceiver.onReceive()")
         BugsnagPerformance.startSpan("AlarmReceiver", SpanOptions.setFirstClass(true)).use {
             Thread.sleep(250L)

@@ -8,7 +8,7 @@ import com.bugsnag.mazeracer.Scenario
 
 class BatchTimeoutScenario(
     config: PerformanceConfiguration,
-    scenarioMetadata: String
+    scenarioMetadata: String,
 ) : Scenario(config, scenarioMetadata) {
     init {
         InternalDebug.spanBatchSizeSendTriggerPoint = 100

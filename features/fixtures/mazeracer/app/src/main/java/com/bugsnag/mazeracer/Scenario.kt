@@ -11,7 +11,6 @@ abstract class Scenario(
     val config: PerformanceConfiguration,
     val scenarioMetadata: String,
 ) {
-
     protected val mainHandler = Handler(Looper.getMainLooper())
     protected val application get() = context.applicationContext as Application
 
@@ -51,10 +50,11 @@ abstract class Scenario(
                 log("Class.forName(\"com.bugsnag.mazeracer.scenarios.$scenarioName\")")
                 val scenarioClass = Class.forName("com.bugsnag.mazeracer.scenarios.$scenarioName")
                 log("$scenarioName.getConstructor")
-                val constructor = scenarioClass.getConstructor(
-                    PerformanceConfiguration::class.java,
-                    String::class.java,
-                )
+                val constructor =
+                    scenarioClass.getConstructor(
+                        PerformanceConfiguration::class.java,
+                        String::class.java,
+                    )
 
                 log("$scenarioName.newInstance($config, $scenarioMetadata)")
                 return constructor.newInstance(config, scenarioMetadata) as Scenario

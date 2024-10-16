@@ -16,7 +16,7 @@ import com.bugsnag.android.performance.internal.processing.TimeoutExecutor
 import java.security.SecureRandom
 import java.util.Random
 import java.util.UUID
-import java.util.concurrent.atomic.AtomicLong
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.math.max
 
 @Suppress("LongParameterList", "TooManyFunctions")
@@ -52,8 +52,8 @@ public class SpanImpl internal constructor(
 
     internal var isSealed: Boolean = false
 
-    internal val endTime: Long
-        get() = state.endTime
+    internal var endTime: Long = 0L
+        private set
 
     /**
      * Internally SpanImpl objects can be chained together as a fast linked-list structure
@@ -82,7 +82,7 @@ public class SpanImpl internal constructor(
 
     private val state = SpanState()
 
-    private lateinit var conditions: MutableSet<ConditionImpl>
+    private var conditions: MutableSet<ConditionImpl>? = null
 
     init {
         samplingProbability = 1.0
@@ -95,7 +95,9 @@ public class SpanImpl internal constructor(
     }
 
     override fun end(endTime: Long) {
-        if (state.end(endTime)) {
+        if (state.end()) {
+            this.endTime = endTime
+
             startFrameMetrics?.let { framerateMetricsSource?.endMetrics(it, this) }
             if (makeContext) SpanContext.detach(this)
             NotifierIntegration.onSpanEnded(this)
@@ -107,7 +109,7 @@ public class SpanImpl internal constructor(
     }
 
     private fun sendForProcessing() {
-        if (!state.isDiscarded) {
+        if (state.process()) {
             processor.onEnd(this)
         }
     }
@@ -118,12 +120,14 @@ public class SpanImpl internal constructor(
      */
     public fun discard() {
         if (state.discard()) {
-            synchronized(this) {
-                // ensure all of the conditions are released if discarded
-                if (this::conditions.isInitialized) {
-                    conditions.forEach { condition ->
+            if (conditions != null) {
+                synchronized(this) {
+                    // ensure all of the conditions are released if discarded
+                    conditions?.forEach { condition ->
                         condition.cancel()
                     }
+
+                    conditions = null
                 }
             }
 
@@ -133,15 +137,15 @@ public class SpanImpl internal constructor(
     }
 
     public fun block(timeoutMs: Long): Condition? {
-        if (state.block()) {
-            synchronized(this) {
-                if (!this::conditions.isInitialized) {
-                    this.conditions = HashSet()
+        synchronized(this) {
+            if (state.block() || conditions != null) {
+                if (conditions == null) {
+                    conditions = HashSet()
                 }
 
                 val condition = ConditionImpl(this, SystemClock.elapsedRealtime() + timeoutMs)
                 timeoutExecutor.scheduleTimeout(condition)
-                conditions.add(condition)
+                conditions?.add(condition)
                 return condition
             }
         }
@@ -150,13 +154,12 @@ public class SpanImpl internal constructor(
     }
 
     override fun end(): Unit = end(SystemClock.elapsedRealtimeNanos())
+    public fun isSampled(): Boolean = samplingValue <= samplingProbability
 
     override fun isEnded(): Boolean = !state.isOpen
-
-    public fun isSampled(): Boolean = samplingValue <= samplingProbability
     public fun isOpen(): Boolean = state.isOpen
     public fun isBlocked(): Boolean =
-        state.isBlocked || (this::conditions.isInitialized && this.conditions.isNotEmpty())
+        state.isBlocked && (conditions == null || conditions?.isNotEmpty() == true)
 
     internal fun toJson(json: JsonTraceWriter) {
         json.writeSpan(this) {
@@ -167,7 +170,7 @@ public class SpanImpl internal constructor(
             name("startTimeUnixNano")
                 .value(BugsnagClock.elapsedNanosToUnixTime(startTime).toString())
             name("endTimeUnixNano")
-                .value(BugsnagClock.elapsedNanosToUnixTime(state.endTime).toString())
+                .value(BugsnagClock.elapsedNanosToUnixTime(endTime).toString())
 
             if (parentSpanId != 0L) {
                 name("parentSpanId").value(parentSpanId.toHexString())
@@ -205,7 +208,7 @@ public class SpanImpl internal constructor(
             if (state.isOpen) {
                 append(", no endTime")
             } else {
-                append(", endTime=").append(state.endTime)
+                append(", endTime=").append(endTime)
             }
 
             append(')')
@@ -391,6 +394,25 @@ public class SpanImpl internal constructor(
          * The [Span] this condition is blocking will not be altered by this function.
          */
         public fun cancel()
+
+        /**
+         * Wrap a span in a span which also closes this `Condition` when it ends. This does not
+         * upgrade or change the `Condition` in any way, the `Condition` should already be
+         * [upgrade]ed when this function is called.
+         */
+        public fun wrap(span: Span): Span {
+            return object : Span by span {
+                override fun end(endTime: Long) {
+                    span.end(endTime)
+                    this@Condition.close(endTime)
+                }
+
+                override fun end() {
+                    span.end()
+                    this@Condition.close()
+                }
+            }
+        }
     }
 
     private class ConditionImpl(
@@ -403,7 +425,7 @@ public class SpanImpl internal constructor(
         override fun close(endTime: Long) {
             releaseCondition {
                 if (isUpgraded) {
-                    span.state.endTime = max(endTime, span.state.endTime)
+                    span.endTime = max(endTime, span.endTime)
                 }
             }
         }
@@ -443,12 +465,12 @@ public class SpanImpl internal constructor(
 
                 isValid = false
 
-                span.conditions.remove(this)
+                span.conditions?.remove(this)
                 span.timeoutExecutor.cancelTimeout(this)
 
                 completeRelease()
 
-                if (span.conditions.isEmpty()) {
+                if (span.conditions.isNullOrEmpty() && span.isEnded()) {
                     // the last condition was cancelled, so the Span is now considered ended
                     span.sendForProcessing()
                 }
@@ -462,29 +484,38 @@ public class SpanImpl internal constructor(
 }
 
 /**
- * Encapsulation of the span state field. This is implemented as an `AtomicLong` which can
- * either represent the end time of the span, or its various other states (open, discarded,
- * blocked).
+ * Encapsulation of the span state field. This is implemented as an `AtomicInteger` which can
+ * either represent the various states (open, discarded, blocked) of a span.
  */
 @JvmInline
-internal value class SpanState private constructor(private val state: AtomicLong) {
-    constructor() : this(AtomicLong(NO_END_TIME))
+internal value class SpanState private constructor(private val state: AtomicInteger) {
+    constructor() : this(AtomicInteger(OPEN))
 
-    val isOpen: Boolean get() = state.get().let { it == NO_END_TIME || it == BLOCKED }
-    val isBlocked: Boolean get() = state.get() == BLOCKED
+    val isOpen: Boolean get() = state.get().let { it == OPEN || it == OPEN_BLOCKED }
+    val isBlocked: Boolean get() = state.get().let { it == OPEN_BLOCKED || it == ENDED_BLOCKED }
     val isDiscarded: Boolean get() = state.get() == DISCARDED
-    var endTime: Long
-        get() = max(state.get(), 0L)
-        set(value) {
-            if (value >= 0L) {
-                state.set(value)
-            }
-        }
 
-    fun end(endTime: Long): Boolean {
+    fun process(): Boolean {
         while (true) {
             when (val s = state.get()) {
-                NO_END_TIME, BLOCKED -> if (state.compareAndSet(s, endTime)) {
+                // discarded & already processed spans cannot be processed
+                DISCARDED, PROCESSED -> return false
+                else -> if (state.compareAndSet(s, PROCESSED)) {
+                    return true
+                }
+            }
+        }
+    }
+
+
+    fun end(): Boolean {
+        while (true) {
+            when (val s = state.get()) {
+                OPEN -> if (state.compareAndSet(s, ENDED)) {
+                    return true
+                }
+
+                OPEN_BLOCKED -> if (state.compareAndSet(s, ENDED_BLOCKED)) {
                     return true
                 }
 
@@ -501,7 +532,7 @@ internal value class SpanState private constructor(private val state: AtomicLong
     fun discard(): Boolean {
         while (true) {
             when (val s = state.get()) {
-                NO_END_TIME, BLOCKED -> if (state.compareAndSet(s, DISCARDED)) {
+                OPEN, OPEN_BLOCKED -> if (state.compareAndSet(s, DISCARDED)) {
                     return true
                 }
 
@@ -513,25 +544,28 @@ internal value class SpanState private constructor(private val state: AtomicLong
     fun block(): Boolean {
         while (true) {
             when (val s = state.get()) {
-                NO_END_TIME -> if (state.compareAndSet(s, BLOCKED)) {
+                OPEN -> if (state.compareAndSet(s, OPEN_BLOCKED)) {
                     return true
                 }
 
-                else -> return s == BLOCKED
+                else -> return s == OPEN_BLOCKED
             }
         }
     }
 
     override fun toString(): String = when (state.get()) {
-        NO_END_TIME -> "open"
+        OPEN -> "open"
         DISCARDED -> "discarded"
-        BLOCKED -> "blocked"
+        OPEN_BLOCKED -> "blocked"
         else -> "ended"
     }
 
     companion object {
-        internal const val NO_END_TIME: Long = -1L
-        internal const val DISCARDED: Long = -2L
-        internal const val BLOCKED: Long = -3L
+        internal const val OPEN: Int = -1
+        internal const val DISCARDED: Int = -2
+        internal const val OPEN_BLOCKED: Int = -3
+        internal const val ENDED: Int = -4
+        internal const val ENDED_BLOCKED: Int = -5
+        internal const val PROCESSED = -6
     }
 }

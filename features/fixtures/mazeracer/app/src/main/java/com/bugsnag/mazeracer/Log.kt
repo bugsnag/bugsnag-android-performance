@@ -7,7 +7,10 @@ fun log(msg: String) {
     Log.d("BugsnagMazeRacer", msg)
 }
 
-fun log(msg: String, e: Exception) {
+fun log(
+    msg: String,
+    e: Exception,
+) {
     Log.e("BugsnagMazeRacer", msg, e)
 }
 
@@ -18,7 +21,10 @@ object BugsnagLogger : Logger {
         Log.d(TAG, msg)
     }
 
-    override fun d(msg: String, throwable: Throwable) {
+    override fun d(
+        msg: String,
+        throwable: Throwable,
+    ) {
         Log.d(TAG, msg, throwable)
     }
 
@@ -26,7 +32,10 @@ object BugsnagLogger : Logger {
         Log.i(TAG, msg)
     }
 
-    override fun i(msg: String, throwable: Throwable) {
+    override fun i(
+        msg: String,
+        throwable: Throwable,
+    ) {
         Log.i(TAG, msg, throwable)
     }
 
@@ -34,7 +43,10 @@ object BugsnagLogger : Logger {
         Log.w(TAG, msg)
     }
 
-    override fun w(msg: String, throwable: Throwable) {
+    override fun w(
+        msg: String,
+        throwable: Throwable,
+    ) {
         Log.w(TAG, msg, throwable)
     }
 
@@ -42,7 +54,10 @@ object BugsnagLogger : Logger {
         Log.e(TAG, msg)
     }
 
-    override fun e(msg: String, throwable: Throwable) {
+    override fun e(
+        msg: String,
+        throwable: Throwable,
+    ) {
         Log.e(TAG, msg, throwable)
     }
 }
