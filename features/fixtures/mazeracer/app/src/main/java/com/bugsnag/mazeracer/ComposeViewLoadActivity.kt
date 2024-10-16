@@ -35,7 +35,7 @@ class ComposeViewLoadActivity : AppCompatActivity() {
 
     companion object {
         fun intent(context: Context): Intent {
-            return Intent(context, ActivityViewLoadActivity::class.java)
+            return Intent(context, ComposeViewLoadActivity::class.java)
         }
     }
 }

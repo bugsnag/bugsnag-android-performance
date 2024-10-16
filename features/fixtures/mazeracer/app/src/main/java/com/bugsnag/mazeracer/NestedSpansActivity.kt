@@ -17,6 +17,8 @@ import kotlinx.coroutines.withContext
 
 const val DELAY_TIME = 50L
 
+private const val RESUME_CLOSE_TIME = 700L
+
 class NestedSpansActivity : AppCompatActivity(), CoroutineScope by BugsnagPerformanceScope() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,7 +59,9 @@ class NestedSpansActivity : AppCompatActivity(), CoroutineScope by BugsnagPerfor
             // end the custom span
             customRootSpan.end()
 
-            // finish after we end the last span
+            // give any blocked span conditions enough time to cancel
+            delay(RESUME_CLOSE_TIME)
+            // finish - flushing a single batch
             finish()
         }
     }
