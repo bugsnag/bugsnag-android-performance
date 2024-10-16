@@ -73,6 +73,6 @@ internal class Tracer(
     }
 
     override fun toString(): String {
-        return "Tracer@${System.identityHashCode(this).toString(36)}[$currentBatchSize]"
+        return "Tracer[$currentBatchSize]"
     }
 }

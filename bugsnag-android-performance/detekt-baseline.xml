@@ -32,6 +32,7 @@
     <ID>MagicNumber:SpanKind.kt$SpanKind.CONSUMER$5</ID>
     <ID>MagicNumber:SpanKind.kt$SpanKind.PRODUCER$4</ID>
     <ID>ReturnCount:RetryDeliveryTask.kt$RetryDeliveryTask$override fun execute(): Boolean</ID>
+    <ID>ReturnCount:SpanImpl.kt$SpanState$fun end(): Boolean</ID>
     <ID>SwallowedException:BugsnagClock.kt$BugsnagClock$ex: Exception</ID>
     <ID>SwallowedException:Connectivity.kt$ConnectivityApi24$e: Exception</ID>
     <ID>SwallowedException:ContextExtensions.kt$exc: RuntimeException</ID>
@@ -51,6 +52,7 @@
     <ID>TooGenericExceptionCaught:ImmutableConfig.kt$ImmutableConfig.Companion$ex: RuntimeException</ID>
     <ID>TooGenericExceptionCaught:Module.kt$Module.Loader$ex: Exception</ID>
     <ID>TooGenericExceptionCaught:PerformanceConfiguration.kt$PerformanceConfiguration.Loader$exc: Exception</ID>
+    <ID>TooGenericExceptionCaught:Timeout.kt$TimeoutExecutorImpl$ex: Exception</ID>
     <ID>TooGenericExceptionCaught:Worker.kt$Worker$e: Exception</ID>
     <ID>TooGenericExceptionCaught:Worker.kt$Worker$ex: Exception</ID>
     <ID>TooManyFunctions:Attributes.kt$Attributes</ID>
@@ -59,6 +61,5 @@
     <ID>TooManyFunctions:JsonTraceWriter.kt$JsonTraceWriter : Closeable</ID>
     <ID>TooManyFunctions:SpanFactory.kt$SpanFactory</ID>
     <ID>TooManyFunctions:SpanTracker.kt$SpanTracker</ID>
-    <ID>TooManyFunctions:Worker.kt$Worker : TimeoutExecutorRunnable</ID>
   </CurrentIssues>
 </SmellBaseline>
