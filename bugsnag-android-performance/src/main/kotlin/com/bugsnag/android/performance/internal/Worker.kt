@@ -1,10 +1,6 @@
 package com.bugsnag.android.performance.internal
 
-import android.os.SystemClock
 import com.bugsnag.android.performance.Logger
-import com.bugsnag.android.performance.internal.processing.Timeout
-import com.bugsnag.android.performance.internal.processing.TimeoutExecutor
-import java.util.concurrent.DelayQueue
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
@@ -42,12 +38,11 @@ internal class Worker(
      */
     startupTasks: List<Runnable>,
     private val tasks: List<Task>,
-) : TimeoutExecutor, Runnable {
+) : Runnable {
     private var startupTasks: List<Runnable>? = startupTasks
 
     private val lock = ReentrantLock(false)
     private val wakeWorker = lock.newCondition()
-    private val timeouts = DelayQueue<Timeout>()
 
     /**
      * This avoids us having to do all of the work under `lock` allowing `wake` to be called between
@@ -56,8 +51,6 @@ internal class Worker(
      * additional work iteration instead of going to sleep.
      */
     private var wakeIsPending = false
-
-    private var runFixedWork = true
 
     private var runner: Thread? = null
 
@@ -92,24 +85,12 @@ internal class Worker(
         }
     }
 
-    override fun scheduleTimeout(timeout: Timeout) {
-        timeouts.add(timeout)
-        runFixedWork = false
-        wake()
-    }
-
-    override fun cancelTimeout(timeout: Timeout) {
-        timeouts.remove(timeout)
-    }
-
     override fun run() {
         runStartupTasks()
 
         attachTasks()
         try {
             while (running) {
-                runScheduledTimeouts()
-
                 val shouldWaitForWork = runFixedTasks()
 
                 if (shouldWaitForWork) {
@@ -158,11 +139,6 @@ internal class Worker(
     }
 
     private fun runFixedTasks(): Boolean {
-        if (!runFixedWork) {
-            runFixedWork = true
-            return true
-        }
-
         var shouldWaitForWork = true
 
         for (task in tasks) {
@@ -179,32 +155,11 @@ internal class Worker(
         return shouldWaitForWork
     }
 
-    private fun runScheduledTimeouts() {
-        var timeout = timeouts.poll()
-
-        while (timeout != null) {
-            try {
-                timeout.run()
-            } catch (ex: Exception) {
-                Logger.w("unhandled exception in timeout: $timeout", ex)
-            } finally {
-                timeout = timeouts.poll()
-            }
-        }
-    }
-
     private fun waitForWorkOrWakeup() {
         lock.withLock {
             if (!wakeIsPending) {
                 try {
-                    var timeToSleep = InternalDebug.workerSleepMs
-                    val nextTimeout = timeouts.peek()
-                    if (nextTimeout != null) {
-                        val timeUntilTimeout = nextTimeout.target - SystemClock.elapsedRealtime()
-                        timeToSleep = timeUntilTimeout
-                    }
-
-                    wakeWorker.await(timeToSleep, TimeUnit.MILLISECONDS)
+                    wakeWorker.await(InternalDebug.workerSleepMs, TimeUnit.MILLISECONDS)
                 } catch (ie: InterruptedException) {
                     // ignore these, we treat interrupts as wake-ups
                 }

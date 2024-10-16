@@ -2,8 +2,8 @@ package com.bugsnag.android.performance.internal.processing
 
 import android.os.SystemClock
 import androidx.annotation.VisibleForTesting
-import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.OnSpanEndCallback
+import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.internal.InternalDebug
 import com.bugsnag.android.performance.internal.ProbabilitySampler
 import com.bugsnag.android.performance.internal.Sampler
@@ -70,5 +70,9 @@ internal class Tracer(
             span.attributes["bugsnag.span.callbacks_duration"] = duration
         }
         return true
+    }
+
+    override fun toString(): String {
+        return "Tracer@${System.identityHashCode(this).toString(36)}[$currentBatchSize]"
     }
 }
