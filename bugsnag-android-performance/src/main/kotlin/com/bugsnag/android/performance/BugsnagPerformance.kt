@@ -96,7 +96,7 @@ public object BugsnagPerformance {
                 instrumentedAppState.onBugsnagPerformanceStart()
             }
         } else {
-            instrumentedAppState.startupTracker.discardAppStart()
+            instrumentedAppState.startupTracker.disableAppStartTracking()
         }
 
         val application = configuration.application
