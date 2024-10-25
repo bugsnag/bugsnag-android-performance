@@ -15,17 +15,19 @@ internal class AppStartTracker(
 
     internal var isInBackground = true
 
+    private var enabled = true
+
     private val handler = Loopers.newMainHandler(this)
 
     public fun onFirstClassLoadReported() {
         if (processStarted) return
-        val appStart = startAppStartSpan("Cold")
+        processStarted = true
+
+        val appStart = startAppStartSpan("Cold") ?: return
 
         spanTracker.associate(appStartToken, AppStartPhase.FRAMEWORK) {
             spanFactory.createAppStartPhaseSpan(AppStartPhase.FRAMEWORK, appStart)
         }
-
-        processStarted = true
     }
 
     public fun onApplicationCreate() {
@@ -44,10 +46,14 @@ internal class AppStartTracker(
         processStarted = true
     }
 
-    internal fun startAppStartSpan(startType: String): SpanImpl {
-        return spanTracker.associate(appStartToken) {
-            spanFactory.createAppStartSpan(startType)
+    internal fun startAppStartSpan(startType: String): SpanImpl? {
+        if (enabled) {
+            return spanTracker.associate(appStartToken) {
+                spanFactory.createAppStartSpan(startType)
+            }
         }
+
+        return null
     }
 
     private fun onApplicationPostCreated() {
@@ -90,6 +96,14 @@ internal class AppStartTracker(
         }
 
         return true
+    }
+
+    /**
+     * Turn off AppStart tracking and discard any in-flight AppStart spans.
+     */
+    public fun disableAppStartTracking() {
+        enabled = false
+        discardAppStart()
     }
 
     public fun discardAppStart() {

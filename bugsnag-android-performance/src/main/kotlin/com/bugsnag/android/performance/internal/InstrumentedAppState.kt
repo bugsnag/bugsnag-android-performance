@@ -57,6 +57,8 @@ public class InstrumentedAppState {
             defaultAttributeSource.update {
                 it.copy(isInForeground = inForeground)
             }
+
+            startupTracker.isInBackground = !inForeground
         }
     }
 
