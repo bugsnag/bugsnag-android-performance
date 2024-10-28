@@ -19,12 +19,13 @@ class AnimatedActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        span = BugsnagPerformance.startSpan(
-            "Slow Animation",
-            SpanOptions.within(null)
-                .makeCurrentContext(true)
-                .setFirstClass(true),
-        )
+        span =
+            BugsnagPerformance.startSpan(
+                "Slow Animation",
+                SpanOptions.within(null)
+                    .makeCurrentContext(true)
+                    .setFirstClass(true),
+            )
 
         setContentView(
             BadPainterView(this) {
@@ -44,7 +45,6 @@ class AnimatedActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         private val onTestComplete: () -> Unit,
     ) : View(context),
         Runnable {
-
         init {
             layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
         }
