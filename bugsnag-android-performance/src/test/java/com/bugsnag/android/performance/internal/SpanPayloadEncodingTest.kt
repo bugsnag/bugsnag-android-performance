@@ -96,6 +96,10 @@ class SpanPayloadEncodingTest {
                                 {
                                     "key": "bugsnag.sampling.p",
                                     "value": { "doubleValue": 1.0 }
+                                },
+                                {
+                                    "key": "bugsnag.span.category",
+                                    "value": { "stringValue": "custom" }
                                 }
                               ]
                             },
@@ -110,6 +114,10 @@ class SpanPayloadEncodingTest {
                                 {
                                     "key": "bugsnag.sampling.p",
                                     "value": { "doubleValue": 1.0 }
+                                },
+                                {
+                                    "key": "bugsnag.span.category",
+                                    "value": { "stringValue": "custom" }
                                 }
                               ]
                             }

@@ -35,7 +35,7 @@ class CustomSpanAttributeLimitsTest {
         spanImpl.attributes["system.attribute2"] = "more values"
 
         assertEquals(2, spanImpl.droppedAttributesCount)
-        assertEquals(4, spanImpl.attributes.size)
+        assertEquals(5, spanImpl.attributes.size)
 
         assertEquals("value", spanImpl.attributes["system.attribute"])
         assertEquals("more values", spanImpl.attributes["system.attribute2"])

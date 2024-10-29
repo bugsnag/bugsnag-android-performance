@@ -80,6 +80,10 @@ class SpanJsonTest {
                         "value": { "doubleValue": 1.0 }
                     },
                     {
+                        "key": "bugsnag.span.category",
+                        "value": { "stringValue": "custom" }
+                    },
+                    {
                         "key": "fps.average",
                         "value": { "doubleValue": 61.9 }
                     },
