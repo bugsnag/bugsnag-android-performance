@@ -1,3 +1,10 @@
+## TBD
+
+### Bug fixes
+
+* Fixed Warm AppStarts being over reported due to app-backgrounding not being fully reported internally
+  [#299](https://github.com/bugsnag/bugsnag-android-performance/pull/299)
+
 ## 1.9.0 (2024-09-30)
 
 ### Changes

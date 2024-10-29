@@ -25,7 +25,6 @@ import com.bugsnag.android.performance.internal.integration.NotifierIntegration
 import com.bugsnag.android.performance.internal.isInForeground
 import com.bugsnag.android.performance.internal.processing.ImmutableConfig
 import java.net.URL
-import java.util.ServiceLoader
 
 /**
  * Primary access to the Bugsnag Performance SDK.
@@ -97,7 +96,7 @@ public object BugsnagPerformance {
                 instrumentedAppState.onBugsnagPerformanceStart()
             }
         } else {
-            instrumentedAppState.startupTracker.discardAppStart()
+            instrumentedAppState.startupTracker.disableAppStartTracking()
         }
 
         val application = configuration.application

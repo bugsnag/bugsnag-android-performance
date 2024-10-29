@@ -213,5 +213,4 @@ internal class ActivityLifecycleInstrumentation(
     private fun endViewLoadPhase(activity: Activity, phase: ViewLoadPhase) {
         spanTracker.endSpan(activity, phase)
     }
-
 }

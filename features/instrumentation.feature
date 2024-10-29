@@ -101,6 +101,21 @@ Feature: Automatic creation of spans
       | bugsnag.view.type     | stringValue | activity     |
       | bugsnag.view.name     | stringValue | MainActivity |
 
+  Scenario: AppStart instrumentation disabled with ViewLoad enabled
+    Given I run "AppStartDisabledScenario"
+    Then I relaunch the app after shutdown
+    * I load scenario "AppStartDisabledScenario"
+    And I wait to receive a trace
+    * I received no span named "[AppStart/AndroidCold]"
+    * I received no span named "[AppStart/AndroidWarm]"
+    * I received no span named "[AppStart/AndroidHot]"
+    * I received no span named "[AppStartPhase/Framework]"
+    * a span named "[ViewLoad/Activity]MainActivity" contains the attributes:
+      | attribute             | type        | value        |
+      | bugsnag.span.category | stringValue | view_load    |
+      | bugsnag.view.type     | stringValue | activity     |
+      | bugsnag.view.name     | stringValue | MainActivity |
+
   @skip_below_android_10
   Scenario: Activity load breakdown with full ViewLoad instrumentation
     Given I run "ActivityLoadInstrumentationScenario" configured as "FULL"
