@@ -63,14 +63,17 @@ Feature: Nested spans
 
     * a span named "DoStuff" contains the attributes:
                 | attribute                         | type        | value               |
+                | bugsnag.span.category             | stringValue | custom              |
                 | bugsnag.span.first_class          | boolValue   | true                |
 
     * a span named "LoadData" contains the attributes:
                 | attribute                         | type        | value               |
+                | bugsnag.span.category             | stringValue | custom              |
                 | bugsnag.span.first_class          | boolValue   | true                |
 
     * a span named "CustomRoot" contains the attributes:
                 | attribute                         | type        | value               |
+                | bugsnag.span.category             | stringValue | custom              |
                 | bugsnag.span.first_class          | boolValue   | true                |
 
     # Check span parentage (nested under NestedSpansActivity)
