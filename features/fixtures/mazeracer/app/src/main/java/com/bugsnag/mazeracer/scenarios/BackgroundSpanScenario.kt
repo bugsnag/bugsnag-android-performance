@@ -34,7 +34,10 @@ class BackgroundSpanScenario(
                     )
                 }
 
-                override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
+                override fun onActivityCreated(
+                    activity: Activity,
+                    savedInstanceState: Bundle?,
+                ) {
                     Log.i("BackgroundSpan", "onActivityCreated($activity)")
                 }
 
@@ -50,7 +53,10 @@ class BackgroundSpanScenario(
                     Log.i("BackgroundSpan", "onActivityPaused($activity)")
                 }
 
-                override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {
+                override fun onActivitySaveInstanceState(
+                    activity: Activity,
+                    outState: Bundle,
+                ) {
                     Log.i("BackgroundSpan", "onActivitySaveInstanceState($activity)")
                 }
 

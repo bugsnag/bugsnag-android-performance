@@ -37,4 +37,8 @@ internal class ForwardingSpanProcessor : SpanProcessor {
     override fun onEnd(span: Span) {
         backingProcessor.onEnd(span)
     }
+
+    override fun toString(): String {
+        return "ForwardingSpanProcessors[$backingProcessor]"
+    }
 }

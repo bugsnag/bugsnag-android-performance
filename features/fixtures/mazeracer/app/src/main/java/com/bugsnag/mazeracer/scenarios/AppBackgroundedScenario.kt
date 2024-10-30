@@ -10,9 +10,8 @@ import com.bugsnag.mazeracer.Scenario
 
 class AppBackgroundedScenario(
     config: PerformanceConfiguration,
-    scenarioMetadata: String
+    scenarioMetadata: String,
 ) : Scenario(config, scenarioMetadata) {
-
     private val handler = Handler(Looper.getMainLooper())
 
     init {

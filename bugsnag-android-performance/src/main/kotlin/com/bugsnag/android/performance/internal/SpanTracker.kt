@@ -3,10 +3,8 @@ package com.bugsnag.android.performance.internal
 import android.os.SystemClock
 import androidx.annotation.RestrictTo
 import com.bugsnag.android.performance.Span
-import com.bugsnag.android.performance.internal.SpanImpl.Companion.NO_END_TIME
 import java.lang.ref.ReferenceQueue
 import java.lang.ref.WeakReference
-import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.concurrent.read
 import kotlin.concurrent.write
@@ -22,6 +20,8 @@ private const val DEFAULT_SPAN_TRACKER_TABLE_SIZE = 8
  * to reduce collisions
  */
 private const val MAX_BINDING_LIST_DEPTH = 3
+
+private const val NO_AUTO_END_TIME = -1L
 
 /**
  * Container for [Span]s that are associated with other objects, which have their own
@@ -387,18 +387,18 @@ public class SpanTracker {
         var span: SpanImpl,
     ) : WeakReference<Any>(boundObject, referenceQueue) {
         @JvmField
-        var autoEndTime: Long = NO_END_TIME
+        var autoEndTime: Long = NO_AUTO_END_TIME
 
         @JvmField
         var next: SpanBinding? = null
 
         fun markLeaked(fallbackEndTime: Long = SystemClock.elapsedRealtimeNanos()): Boolean {
             // this span has not leaked, ignore and return
-            if (span.endTime.get() != NO_END_TIME) {
+            if (!span.isOpen()) {
                 return false
             }
 
-            if (autoEndTime != NO_END_TIME) {
+            if (autoEndTime != NO_AUTO_END_TIME) {
                 span.end(autoEndTime)
             } else {
                 span.end(fallbackEndTime)
@@ -413,7 +413,7 @@ public class SpanTracker {
          * (discarded)[SpanImpl.discard] (depending which is more appropriate).
          */
         fun sweep() {
-            if (autoEndTime == NO_END_TIME) {
+            if (autoEndTime == NO_AUTO_END_TIME) {
                 span.discard()
             } else {
                 span.end(autoEndTime)

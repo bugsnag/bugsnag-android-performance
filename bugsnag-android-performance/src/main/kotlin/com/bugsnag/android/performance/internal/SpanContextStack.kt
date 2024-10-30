@@ -67,6 +67,16 @@ public value class SpanContextStack(
     }
 
     /**
+     * Return the top Span for a given SpanCategory, exactly the same as:
+     * ```kotlin
+     * findSpan { it.category == spanCategory }
+     * ```
+     */
+    public fun current(spanCategory: SpanCategory): SpanImpl? {
+        return findSpan { it.category == spanCategory }
+    }
+
+    /**
      * Test that no [SpanImpl] objects within the this stack match the given [predicate].
      * Returns `true` if [predicate] only returned `false`, otherwise `false`.
      */

@@ -91,7 +91,7 @@ internal class Worker(
         attachTasks()
         try {
             while (running) {
-                val shouldWaitForWork = runTasks()
+                val shouldWaitForWork = runFixedTasks()
 
                 if (shouldWaitForWork) {
                     waitForWorkOrWakeup()
@@ -138,7 +138,7 @@ internal class Worker(
         }
     }
 
-    private fun runTasks(): Boolean {
+    private fun runFixedTasks(): Boolean {
         var shouldWaitForWork = true
 
         for (task in tasks) {

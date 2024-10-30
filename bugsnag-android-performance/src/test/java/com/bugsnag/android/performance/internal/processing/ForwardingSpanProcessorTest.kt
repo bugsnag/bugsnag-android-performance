@@ -27,7 +27,7 @@ class ForwardingSpanProcessorTest {
         val span1 = spanFactory.newSpan(processor = spanProcessor)
 
         // one "in-flight" span
-        val span2 = spanFactory.newSpan(processor = spanProcessor, endTime = null)
+        val span2 = spanFactory.newSpan(endTime = null, processor = spanProcessor)
 
         // forward the closed span (and any future spans)
         spanProcessor.forwardTo(collectedSpans::add)
