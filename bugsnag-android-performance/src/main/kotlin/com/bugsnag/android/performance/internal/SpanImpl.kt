@@ -86,6 +86,7 @@ public class SpanImpl internal constructor(
 
     init {
         samplingProbability = 1.0
+
         attributes["bugsnag.span.category"] = category.category
         samplingValue = samplingValueFor(traceId)
 
