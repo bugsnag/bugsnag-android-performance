@@ -24,6 +24,8 @@ steps:
     timeout_in_minutes: 10
     agents:
       queue: macos-14
+    env:
+      JAVA_VERSION: '17'
     commands:
       - cd features/fixtures/mazeracer
       - ./gradlew ktlintCheck detekt
@@ -57,6 +59,7 @@ steps:
       - "ANDROID_11"
       - "ANDROID_12"
       - "ANDROID_13"
+      - "ANDROID_14"
     plugins:
       artifacts#v1.9.0:
         download: "build/fixture_url.txt"

@@ -12,6 +12,7 @@ import com.bugsnag.android.performance.ViewType
 import com.bugsnag.android.performance.internal.framerate.FramerateMetricsSnapshot
 import com.bugsnag.android.performance.internal.integration.NotifierIntegration
 import com.bugsnag.android.performance.internal.processing.AttributeLimits
+import com.bugsnag.android.performance.internal.processing.TimeoutExecutorImpl
 import java.util.UUID
 
 internal typealias AttributeSource = (target: SpanImpl) -> Unit
@@ -22,10 +23,24 @@ public class SpanFactory(
     public val spanAttributeSource: AttributeSource = {},
 ) {
 
+    private val timeoutExecutor = TimeoutExecutorImpl()
+
     public var networkRequestCallback: NetworkRequestInstrumentationCallback? = null
 
     internal var attributeLimits: AttributeLimits? = null
     internal var framerateMetricsSource: MetricSource<FramerateMetricsSnapshot>? = null
+
+    internal fun configure(
+        spanProcessor: SpanProcessor,
+        attributeLimits: AttributeLimits,
+        networkRequestCallback: NetworkRequestInstrumentationCallback?,
+    ) {
+        this.spanProcessor = spanProcessor
+        this.attributeLimits = attributeLimits
+        this.networkRequestCallback = networkRequestCallback
+
+        this.timeoutExecutor.start()
+    }
 
     public fun createCustomSpan(
         name: String,
@@ -216,17 +231,18 @@ public class SpanFactory(
 
         val span = SpanImpl(
             name = name,
-            kind = kind,
             category = category,
+            kind = kind,
             startTime = startTime,
             traceId = parent?.traceId ?: UUID.randomUUID(),
             parentSpanId = parent?.spanId ?: 0L,
-            processor = spanProcessor,
             makeContext = makeContext,
             attributeLimits = attributeLimits,
-            // framerateMetrics are only recorded on firstClass spans
             framerateMetricsSource = framerateMetricsSource
-                ?.takeIf { renderingMetricsEnabled(isFirstClass, instrumentRendering) }
+                ?.takeIf { renderingMetricsEnabled(isFirstClass, instrumentRendering) },
+            // framerateMetrics are only recorded on firstClass spans
+            processor = spanProcessor,
+            timeoutExecutor = timeoutExecutor,
         )
 
         if (isFirstClass != null) {

@@ -81,7 +81,11 @@ class MainActivity : AppCompatActivity() {
         log("MainActivity.onResume complete")
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    override fun onActivityResult(
+        requestCode: Int,
+        resultCode: Int,
+        data: Intent?,
+    ) {
         super.onActivityResult(requestCode, resultCode, data)
 
         if (requestCode == REQUEST_CODE_FINISH_ON_RETURN) {
@@ -138,19 +142,24 @@ class MainActivity : AppCompatActivity() {
     }
 
     // As per JSONObject.getString but returns and empty string rather than throwing if not present
-    private fun getStringSafely(jsonObject: JSONObject?, key: String): String {
+    private fun getStringSafely(
+        jsonObject: JSONObject?,
+        key: String,
+    ): String {
         return jsonObject?.optString(key) ?: ""
     }
 
     private fun startBugsnag() {
-        val config = Configuration.load(this).apply {
-            endpoints = EndpointConfiguration(
-                notify = "http://$mazeAddress/notify",
-                sessions = "http://$mazeAddress/session",
-            )
+        val config =
+            Configuration.load(this).apply {
+                endpoints =
+                    EndpointConfiguration(
+                        notify = "http://$mazeAddress/notify",
+                        sessions = "http://$mazeAddress/session",
+                    )
 
-            logger = BugsnagLogger
-        }
+                logger = BugsnagLogger
+            }
         Bugsnag.start(this, config)
     }
 
@@ -178,9 +187,7 @@ class MainActivity : AppCompatActivity() {
                     val action = command.getString("action")
 
                     if (action == "noop") {
-                        lastCommandUuid = null
-                        clearStoredCommandUUID()
-                        log("noop - clearing command uuid, doing nothing and looping around for another poll()")
+                        log("noop - looping around for another poll()")
                         // immediately loop around
                         continue
                     }
@@ -288,7 +295,10 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun prepareConfig(apiKey: String, endpoint: String): PerformanceConfiguration {
+    private fun prepareConfig(
+        apiKey: String,
+        endpoint: String,
+    ): PerformanceConfiguration {
         return PerformanceConfiguration.load(applicationContext, apiKey).also { config ->
             config.endpoint = endpoint
             config.autoInstrumentAppStarts = false
@@ -306,10 +316,11 @@ class MainActivity : AppCompatActivity() {
         val apiKeyField = findViewById<EditText>(R.id.manualApiKey)
 
         val manualMode = apiKeyField.text.isNotEmpty()
-        val apiKey = when {
-            manualMode -> apiKeyField.text.toString()
-            else -> "a35a2a72bd230ac0aa0f52715bbdc6aa"
-        }
+        val apiKey =
+            when {
+                manualMode -> apiKeyField.text.toString()
+                else -> "a35a2a72bd230ac0aa0f52715bbdc6aa"
+            }
 
         if (manualMode) {
             log("Running in manual mode with API key: $apiKey")

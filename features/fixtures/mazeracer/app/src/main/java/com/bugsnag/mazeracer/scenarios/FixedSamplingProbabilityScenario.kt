@@ -8,9 +8,8 @@ import com.bugsnag.mazeracer.Scenario
 
 class FixedSamplingProbabilityScenario(
     config: PerformanceConfiguration,
-    scenarioMetadata: String
+    scenarioMetadata: String,
 ) : Scenario(config, scenarioMetadata) {
-
     init {
         config.samplingProbability = scenarioMetadata.toDoubleOrNull()
         InternalDebug.spanBatchSizeSendTriggerPoint = 1

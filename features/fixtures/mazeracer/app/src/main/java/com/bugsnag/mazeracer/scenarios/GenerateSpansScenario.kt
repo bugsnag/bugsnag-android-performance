@@ -8,9 +8,8 @@ import com.bugsnag.mazeracer.Scenario
 
 class GenerateSpansScenario(
     config: PerformanceConfiguration,
-    scenarioMetadata: String
+    scenarioMetadata: String,
 ) : Scenario(config, scenarioMetadata) {
-
     var spanId = 1
 
     init {

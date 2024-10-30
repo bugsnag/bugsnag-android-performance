@@ -53,7 +53,7 @@ internal data class TracePayload(
             val payloadBytes = encodeSpanPayload(spans, resourceAttributes, attributeLimits)
             val timestamp =
                 if (spans.isNotEmpty()) {
-                    spans.maxOf { it.endTime.get() }
+                    spans.maxOf { it.endTime }
                 } else {
                     SystemClock.elapsedRealtimeNanos()
                 }

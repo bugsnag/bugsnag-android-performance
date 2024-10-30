@@ -39,6 +39,10 @@ public class InstrumentedAppState {
 
     private var framerateMetricsSource: FramerateMetricsSource? = null
 
+    @get:JvmName("getConfig\$internal")
+    internal var config: ImmutableConfig? = null
+        private set
+
     internal fun attach(application: Application) {
         if (this::app.isInitialized) {
             return
@@ -63,6 +67,7 @@ public class InstrumentedAppState {
     }
 
     internal fun configure(configuration: ImmutableConfig): Tracer {
+        config = configuration
         attach(configuration.application)
 
         val bootstrapSpanProcessor = spanProcessor
@@ -72,9 +77,11 @@ public class InstrumentedAppState {
         app.registerComponentCallbacks(PerformanceComponentCallbacks(tracer))
 
         spanProcessor = tracer
-        spanFactory.spanProcessor = tracer
-        spanFactory.attributeLimits = configuration
-        spanFactory.networkRequestCallback = configuration.networkRequestCallback
+        spanFactory.configure(
+            tracer,
+            configuration,
+            configuration.networkRequestCallback,
+        )
 
         tracePropagationUrls = configuration.tracePropagationUrls
 
