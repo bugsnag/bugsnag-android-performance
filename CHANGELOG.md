@@ -1,3 +1,12 @@
+## 1.9.1 (2024-10-30)
+
+### Bug fixes
+
+* Fixed Warm AppStarts being over reported due to app-backgrounding not being fully reported internally
+  [#299](https://github.com/bugsnag/bugsnag-android-performance/pull/299)
+* Custom spans are reported with a "bugsnag.span.category" to match behaviour in our other SDKs
+  [#300](https://github.com/bugsnag/bugsnag-android-performance/pull/300)
+
 ## 1.9.0 (2024-09-30)
 
 ### Changes

@@ -23,6 +23,11 @@ Feature: Manual creation of spans
     * a span string attribute "net.host.connection.type" exists
     * every span bool attribute "bugsnag.app.in_foreground" is true
 
+    * a span named "ManualSpanScenario" contains the attributes:
+      | attribute                         | type        | value               |
+      | bugsnag.span.category             | stringValue | custom              |
+      | bugsnag.span.first_class          | boolValue   | true                |
+
     * the trace payload field "resourceSpans.0.resource" string attribute "host.arch" is one of:
       | x86   |
       | amd64 |

@@ -81,7 +81,7 @@ public class SpanImpl internal constructor(
     }
 
     init {
-        category.category?.let { attributes["bugsnag.span.category"] = it }
+        attributes["bugsnag.span.category"] = category.category
         samplingValue = samplingValueFor(traceId)
 
         // Starting a Span should cause it to become the current context

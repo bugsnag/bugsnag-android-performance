@@ -42,6 +42,13 @@ When('I invoke {string} for {string}') do |function, metadata|
   execute_command 'invoke', function, metadata
 end
 
+Then('I received no span named {string}') do |span_name|
+  spans = spans_from_request_list(Maze::Server.list_for('traces'))
+  named_spans = spans.select { |s| s['name'].eql?(span_name) }
+
+  Maze.check.equal(0, named_spans.size, "found #{named_spans.size} spans named #{span_name}")
+end
+
 Then("the {string} span field {string} is stored as the value {string}") do |span_name, field, key|
   spans = spans_from_request_list(Maze::Server.list_for('traces'))
   named_spans = spans.select { |s| s['name'].eql?(span_name) }
