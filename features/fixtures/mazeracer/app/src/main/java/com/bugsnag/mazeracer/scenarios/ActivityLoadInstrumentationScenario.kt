@@ -13,8 +13,8 @@ class ActivityLoadInstrumentationScenario(
     init {
         config.autoInstrumentActivities =
             scenarioMetadata.takeIf { it.isNotBlank() }
-            ?.let { AutoInstrument.valueOf(it) }
-            ?: AutoInstrument.FULL
+                ?.let { AutoInstrument.valueOf(it) }
+                ?: AutoInstrument.FULL
     }
 
     override fun startScenario() {

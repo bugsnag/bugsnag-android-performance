@@ -22,21 +22,21 @@ class ProbabilitySamplerTest {
     @Test
     fun testSampleSpanProbability1() {
         val sampler = ProbabilitySampler(1.0)
-        var span = spanFactory.newSpan(processor = spanProcessor, traceId = uuidWithUpper(0))
+        var span = spanFactory.newSpan(traceId = uuidWithUpper(0), processor = spanProcessor)
         assertTrue(sampler.shouldKeepSpan(span))
         span = spanFactory.newSpan(
-            processor = spanProcessor,
             traceId = uuidWithUpper(Long.MAX_VALUE shl 1),
+            processor = spanProcessor,
         )
         assertTrue(sampler.shouldKeepSpan(span))
         span = spanFactory.newSpan(
-            processor = spanProcessor,
             traceId = uuidWithUpper(Long.MAX_VALUE),
+            processor = spanProcessor,
         )
         assertTrue(sampler.shouldKeepSpan(span))
         span = spanFactory.newSpan(
-            processor = spanProcessor,
             traceId = uuidWithUpper(1000000000),
+            processor = spanProcessor,
         )
         assertTrue(sampler.shouldKeepSpan(span))
     }
@@ -45,23 +45,23 @@ class ProbabilitySamplerTest {
     fun testSampleSpanProbability0() {
         val sampler = ProbabilitySampler(0.0)
         var span = spanFactory.newSpan(
-            processor = spanProcessor,
             traceId = uuidWithUpper(0),
+            processor = spanProcessor,
         )
         assertTrue(!sampler.shouldKeepSpan(span))
         span = spanFactory.newSpan(
-            processor = spanProcessor,
             traceId = uuidWithUpper(Long.MAX_VALUE shl 1),
+            processor = spanProcessor,
         )
         assertTrue(!sampler.shouldKeepSpan(span))
         span = spanFactory.newSpan(
-            processor = spanProcessor,
             traceId = uuidWithUpper(Long.MAX_VALUE),
+            processor = spanProcessor,
         )
         assertTrue(!sampler.shouldKeepSpan(span))
         span = spanFactory.newSpan(
-            processor = spanProcessor,
             traceId = uuidWithUpper(1000000000),
+            processor = spanProcessor,
         )
         assertTrue(!sampler.shouldKeepSpan(span))
     }
@@ -70,18 +70,18 @@ class ProbabilitySamplerTest {
     fun testSampleSpanProbability0_5() {
         val sampler = ProbabilitySampler(0.5)
         var span = spanFactory.newSpan(
-            processor = spanProcessor,
             traceId = uuidWithUpper(0),
+            processor = spanProcessor,
         )
         assertTrue(sampler.shouldKeepSpan(span))
         span = spanFactory.newSpan(
-            processor = spanProcessor,
             traceId = uuidWithUpper(Long.MAX_VALUE shl 1),
+            processor = spanProcessor,
         )
         assertTrue(!sampler.shouldKeepSpan(span))
         span = spanFactory.newSpan(
-            processor = spanProcessor,
             traceId = uuidWithUpper(Long.MAX_VALUE - 10000),
+            processor = spanProcessor,
         )
         assertTrue(sampler.shouldKeepSpan(span))
     }
@@ -90,18 +90,18 @@ class ProbabilitySamplerTest {
     fun testSampleSpanBatchProbability1() {
         val sampler = ProbabilitySampler(1.0)
         val batch = listOf(
-            spanFactory.newSpan(processor = spanProcessor, traceId = uuidWithUpper(0)),
+            spanFactory.newSpan(traceId = uuidWithUpper(0), processor = spanProcessor),
             spanFactory.newSpan(
-                processor = spanProcessor,
                 traceId = uuidWithUpper(Long.MAX_VALUE shl 1),
+                processor = spanProcessor,
             ),
             spanFactory.newSpan(
-                processor = spanProcessor,
                 traceId = uuidWithUpper(Long.MAX_VALUE),
+                processor = spanProcessor,
             ),
             spanFactory.newSpan(
-                processor = spanProcessor,
                 traceId = uuidWithUpper(1000000000),
+                processor = spanProcessor,
             ),
         )
         val sampled = sampler.sampled(batch)
@@ -112,15 +112,15 @@ class ProbabilitySamplerTest {
     fun testSampleSpanBatchProbability0() {
         val sampler = ProbabilitySampler(0.0)
         val batch = listOf(
-            spanFactory.newSpan(processor = spanProcessor, traceId = uuidWithUpper(0)),
+            spanFactory.newSpan(traceId = uuidWithUpper(0), processor = spanProcessor),
             spanFactory.newSpan(
-                processor = spanProcessor,
                 traceId = uuidWithUpper(Long.MAX_VALUE shl 1),
-            ),
-            spanFactory.newSpan(processor = spanProcessor, traceId = uuidWithUpper(Long.MAX_VALUE)),
-            spanFactory.newSpan(
                 processor = spanProcessor,
+            ),
+            spanFactory.newSpan(traceId = uuidWithUpper(Long.MAX_VALUE), processor = spanProcessor),
+            spanFactory.newSpan(
                 traceId = uuidWithUpper(1000000000),
+                processor = spanProcessor,
             ),
         )
         val sampled = sampler.sampled(batch)
@@ -131,16 +131,16 @@ class ProbabilitySamplerTest {
     fun testSampleSpanBatchProbability0_5() {
         val sampler = ProbabilitySampler(0.5)
         val batch = listOf(
-            spanFactory.newSpan(processor = spanProcessor, traceId = uuidWithUpper(0)),
+            spanFactory.newSpan(traceId = uuidWithUpper(0), processor = spanProcessor),
             spanFactory.newSpan(
-                processor = spanProcessor,
                 traceId = uuidWithUpper(Long.MAX_VALUE shl 1),
+                processor = spanProcessor,
             ),
             spanFactory.newSpan(
-                processor = spanProcessor,
                 traceId = uuidWithUpper(Long.MAX_VALUE - 10000),
+                processor = spanProcessor,
             ),
-            spanFactory.newSpan(processor = spanProcessor, traceId = uuidWithUpper(1000000000)),
+            spanFactory.newSpan(traceId = uuidWithUpper(1000000000), processor = spanProcessor),
         )
         val sampled = sampler.sampled(batch)
         assertEquals(3, sampled.size)
@@ -150,8 +150,8 @@ class ProbabilitySamplerTest {
     fun testSpanReducedProbability() {
         val sampler = ProbabilitySampler(0.25)
         val span = spanFactory.newSpan(
-            processor = spanProcessor,
             traceId = uuidWithUpper(0),
+            processor = spanProcessor,
         )
 
         span.samplingProbability = 1.0
@@ -165,8 +165,8 @@ class ProbabilitySamplerTest {
     fun testSpanIncreaseProbability() {
         val sampler = ProbabilitySampler(1.0)
         val span = spanFactory.newSpan(
-            processor = spanProcessor,
             traceId = uuidWithUpper(0),
+            processor = spanProcessor,
         )
 
         // when the sampler has higher probability, the span samplingProbability should stay the same

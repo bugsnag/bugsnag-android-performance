@@ -88,12 +88,12 @@ class ActivityLifecycleInstrumentationTest {
         assertEquals("[ViewLoad/Activity]Activity", viewLoad.name)
         assertEquals(SpanCategory.VIEW_LOAD, viewLoad.category)
         assertEquals(100_000_000L, viewLoad.startTime)
-        assertEquals(101_000_000L, viewLoad.endTime.get())
+        assertEquals(101_000_000L, viewLoad.endTime)
 
         assertEquals("[ViewLoadPhase/ActivityCreate]Activity", create.name)
         assertEquals(SpanCategory.VIEW_LOAD_PHASE, create.category)
         assertEquals(100_000_000L, create.startTime)
-        assertEquals(100_000_000L, create.endTime.get())
+        assertEquals(100_000_000L, create.endTime)
     }
 
     @Test
@@ -132,17 +132,17 @@ class ActivityLifecycleInstrumentationTest {
         assertEquals("[ViewLoadPhase/ActivityCreate]Activity", create.name)
         assertEquals(SpanCategory.VIEW_LOAD_PHASE, create.category)
         assertEquals(100_000_000L, create.startTime)
-        assertEquals(100_000_000L, create.endTime.get())
+        assertEquals(100_000_000L, create.endTime)
 
         assertEquals("[ViewLoadPhase/ActivityStart]Activity", start.name)
         assertEquals(SpanCategory.VIEW_LOAD_PHASE, start.category)
         assertEquals(101_000_000L, start.startTime)
-        assertEquals(101_000_000L, start.endTime.get())
+        assertEquals(101_000_000L, start.endTime)
 
         assertEquals("[ViewLoadPhase/ActivityResume]Activity", resume.name)
         assertEquals(SpanCategory.VIEW_LOAD_PHASE, resume.category)
         assertEquals(102_000_000L, resume.startTime)
-        assertEquals(102_000_000L, resume.endTime.get())
+        assertEquals(102_000_000L, resume.endTime)
     }
 
     private fun assertViewLoadSpans(spans: List<SpanImpl>) {
@@ -156,21 +156,21 @@ class ActivityLifecycleInstrumentationTest {
         assertEquals("[ViewLoad/Activity]Activity", viewLoad.name)
         assertEquals(SpanCategory.VIEW_LOAD, viewLoad.category)
         assertEquals(100_000_000L, viewLoad.startTime)
-        assertEquals(102_000_000L, viewLoad.endTime.get())
+        assertEquals(102_000_000L, viewLoad.endTime)
 
         assertEquals("[ViewLoadPhase/ActivityCreate]Activity", create.name)
         assertEquals(SpanCategory.VIEW_LOAD_PHASE, create.category)
         assertEquals(100_000_000L, create.startTime)
-        assertEquals(100_000_000L, create.endTime.get())
+        assertEquals(100_000_000L, create.endTime)
 
         assertEquals("[ViewLoadPhase/ActivityStart]Activity", start.name)
         assertEquals(SpanCategory.VIEW_LOAD_PHASE, start.category)
         assertEquals(101_000_000L, start.startTime)
-        assertEquals(101_000_000L, start.endTime.get())
+        assertEquals(101_000_000L, start.endTime)
 
         assertEquals("[ViewLoadPhase/ActivityResume]Activity", resume.name)
         assertEquals(SpanCategory.VIEW_LOAD_PHASE, resume.category)
         assertEquals(102_000_000L, resume.startTime)
-        assertEquals(102_000_000L, resume.endTime.get())
+        assertEquals(102_000_000L, resume.endTime)
     }
 }
