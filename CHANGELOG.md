@@ -1,3 +1,10 @@
+## 1.10.0 (2024-11-12)
+
+### Enhancements
+
+* Formally introduced the `bugsnag-android-performance-compose` module and MeasuredComposable to report the performance of Composables
+  [#299](https://github.com/bugsnag/bugsnag-android-performance/pull/296)
+
 ## 1.9.1 (2024-10-30)
 
 ### Bug fixes
