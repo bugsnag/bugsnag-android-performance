@@ -74,7 +74,6 @@ public class InstrumentedAppState {
         val tracer = Tracer(configuration.spanEndCallbacks)
 
         configureLifecycleCallbacks(configuration)
-        app.registerComponentCallbacks(PerformanceComponentCallbacks(tracer))
 
         spanProcessor = tracer
         spanFactory.configure(
@@ -106,6 +105,12 @@ public class InstrumentedAppState {
             spanFactory.framerateMetricsSource = null
             app.unregisterActivityLifecycleCallbacks(framerateMetricsSource)
             framerateMetricsSource = null
+        }
+
+        ForegroundState.addForegroundChangedCallback { inForeground ->
+            if (!inForeground) {
+                tracer.forceCurrentBatch()
+            }
         }
 
         return tracer
