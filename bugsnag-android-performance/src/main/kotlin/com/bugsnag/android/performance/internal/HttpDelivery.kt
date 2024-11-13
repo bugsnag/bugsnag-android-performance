@@ -1,5 +1,6 @@
 package com.bugsnag.android.performance.internal
 
+import android.net.TrafficStats
 import androidx.annotation.VisibleForTesting
 import com.bugsnag.android.performance.Logger
 import com.bugsnag.android.performance.internal.processing.AttributeLimits
@@ -47,6 +48,7 @@ internal open class HttpDelivery(
             return DeliveryResult.Failed(tracePayload, true)
         }
 
+        TrafficStats.setThreadStatsTag(1)
         return try {
             val connection = openConnection()
             with(connection) {
@@ -69,6 +71,8 @@ internal open class HttpDelivery(
             DeliveryResult.Failed(tracePayload, true)
         } catch (e: Exception) {
             DeliveryResult.Failed(tracePayload, false)
+        } finally {
+            TrafficStats.clearThreadStatsTag()
         }
     }
 

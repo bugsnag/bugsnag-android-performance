@@ -1,3 +1,10 @@
+## TBD
+
+### Bug fixes
+
+* Untagged socket violation when StrictMode is enabled https://github.com/bugsnag/bugsnag-android-performance/issues/297
+  [#306](https://github.com/bugsnag/bugsnag-android-performance/pull/306)
+
 ## 1.9.1 (2024-10-30)
 
 ### Bug fixes
