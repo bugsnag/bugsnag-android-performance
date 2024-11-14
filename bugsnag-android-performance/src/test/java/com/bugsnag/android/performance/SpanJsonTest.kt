@@ -7,6 +7,7 @@ import com.bugsnag.android.performance.internal.SpanImpl
 import com.bugsnag.android.performance.internal.processing.JsonTraceWriter
 import com.bugsnag.android.performance.test.NoopSpanProcessor
 import com.bugsnag.android.performance.test.TestSpanFactory
+import com.bugsnag.android.performance.test.TestTimeoutExecutor
 import com.bugsnag.android.performance.test.assertJsonEquals
 import org.junit.Before
 import org.junit.Test
@@ -37,10 +38,11 @@ class SpanJsonTest {
             UUID.fromString("4ee26661-4650-4c7f-a35f-00f007cd24e7"),
             0xdecafbad,
             123L,
-            NoopSpanProcessor,
             false,
             null,
             null,
+            TestTimeoutExecutor(),
+            NoopSpanProcessor,
         )
 
         span.setAttribute("fps.average", 61.9)
@@ -217,10 +219,11 @@ class SpanJsonTest {
             UUID.fromString("4ee26661-4650-4c7f-a35f-00f007cd24e7"),
             0xdecafbad,
             123L,
-            NoopSpanProcessor,
             false,
             null,
             null,
+            TestTimeoutExecutor(),
+            NoopSpanProcessor,
         )
         span.setAttribute("null object", listOf<Any?>(null) as Collection<Any>)
         span.end(currentTime)
@@ -245,10 +248,11 @@ class SpanJsonTest {
             UUID.fromString("4ee26661-4650-4c7f-a35f-00f007cd24e7"),
             0xdecafbad,
             123L,
-            NoopSpanProcessor,
             false,
             null,
             null,
+            TestTimeoutExecutor(),
+            NoopSpanProcessor,
         )
         span.setAttribute("invalid type", listOf<Any>(TestSpanFactory()))
         span.end(currentTime)

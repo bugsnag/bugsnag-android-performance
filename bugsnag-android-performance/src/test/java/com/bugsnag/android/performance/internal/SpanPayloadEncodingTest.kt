@@ -3,6 +3,7 @@ package com.bugsnag.android.performance.internal
 import com.bugsnag.android.performance.SpanKind
 import com.bugsnag.android.performance.test.NoopSpanProcessor
 import com.bugsnag.android.performance.test.OtelValidator.assertTraceDataValid
+import com.bugsnag.android.performance.test.TestTimeoutExecutor
 import com.bugsnag.android.performance.test.assertJsonEquals
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -22,10 +23,11 @@ class SpanPayloadEncodingTest {
             UUID.fromString("4ee26661-4650-4c7f-a35f-00f007cd24e7"),
             0xdecafbad,
             0L,
-            NoopSpanProcessor,
             false,
             null,
             null,
+            TestTimeoutExecutor(),
+            NoopSpanProcessor,
         )
         span1.end(1L)
         val span2 = SpanImpl(
@@ -36,10 +38,11 @@ class SpanPayloadEncodingTest {
             UUID.fromString("4ee26661-4650-4c7f-a35f-00f007cd24e7"),
             0xbaddecaf,
             0L,
-            NoopSpanProcessor,
             false,
             null,
             null,
+            TestTimeoutExecutor(),
+            NoopSpanProcessor,
         )
         span2.end(11L)
         val spans = listOf(span1, span2)
@@ -91,7 +94,7 @@ class SpanPayloadEncodingTest {
                               "spanId": "00000000decafbad",
                               "traceId": "4ee2666146504c7fa35f00f007cd24e7",
                               "startTimeUnixNano": "${BugsnagClock.elapsedNanosToUnixTime(span1.startTime)}",
-                              "endTimeUnixNano": "${BugsnagClock.elapsedNanosToUnixTime(span1.endTime.get())}",
+                              "endTimeUnixNano": "${BugsnagClock.elapsedNanosToUnixTime(span1.endTime)}",
                               "attributes": [
                                 {
                                     "key": "bugsnag.sampling.p",
@@ -109,7 +112,7 @@ class SpanPayloadEncodingTest {
                               "spanId": "00000000baddecaf",
                               "traceId": "4ee2666146504c7fa35f00f007cd24e7",
                               "startTimeUnixNano": "${BugsnagClock.elapsedNanosToUnixTime(span2.startTime)}",
-                              "endTimeUnixNano": "${BugsnagClock.elapsedNanosToUnixTime(span2.endTime.get())}",
+                              "endTimeUnixNano": "${BugsnagClock.elapsedNanosToUnixTime(span2.endTime)}",
                               "attributes": [
                                 {
                                     "key": "bugsnag.sampling.p",

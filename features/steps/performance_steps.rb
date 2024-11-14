@@ -111,7 +111,7 @@ When("I relaunch the app after shutdown") do
     state = Maze.driver.app_state('com.bugsnag.mazeracer')
     sleep 0.5
   end
-  $logger.warn "App state #{state} instead of #{expected_state} after 10s" unless state == :not_running
+  $logger.warn "App state #{state} instead of not_running after 10s" unless state == :not_running
 
   Maze.driver.activate_app Maze.driver.app_id
 end

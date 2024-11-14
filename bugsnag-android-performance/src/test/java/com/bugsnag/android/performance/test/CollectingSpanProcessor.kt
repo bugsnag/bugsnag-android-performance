@@ -12,6 +12,9 @@ class CollectingSpanProcessor : SpanProcessor {
         spans.clear()
     }
 
+    fun isEmpty() = spans.isEmpty()
+    fun isNotEmpty() = spans.isNotEmpty()
+
     fun toList(): List<SpanImpl> = spans.sortedBy { it.startTime }
 
     override fun onEnd(span: Span) {

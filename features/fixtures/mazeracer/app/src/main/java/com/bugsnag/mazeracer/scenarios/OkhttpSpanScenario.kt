@@ -18,15 +18,17 @@ class OkhttpSpanScenario(
 
         thread {
             runAndFlush {
-                val client = OkHttpClient.Builder()
-                    .eventListenerFactory(BugsnagPerformanceOkhttp.EventListenerFactory)
-                    .build()
-                val request = Request.Builder()
-                    .url(
-                        scenarioMetadata.takeUnless { it.isBlank() }
-                            ?: "https://google.com/?test=true",
-                    )
-                    .build()
+                val client =
+                    OkHttpClient.Builder()
+                        .eventListenerFactory(BugsnagPerformanceOkhttp.EventListenerFactory)
+                        .build()
+                val request =
+                    Request.Builder()
+                        .url(
+                            scenarioMetadata.takeUnless { it.isBlank() }
+                                ?: "https://google.com/?test=true",
+                        )
+                        .build()
 
                 client.newCall(request).execute().use { response ->
                     // Consume and discard the response body.

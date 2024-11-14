@@ -2,6 +2,7 @@ package com.bugsnag.mazeracer
 
 import android.app.Application
 import android.content.Context
+import android.os.StrictMode
 import android.util.Log
 import com.bugsnag.android.performance.BugsnagPerformance
 import com.bugsnag.android.performance.internal.InternalDebug
@@ -23,6 +24,14 @@ class MazeRacerApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
+
+        StrictMode.setThreadPolicy(
+            StrictMode.ThreadPolicy.Builder()
+                .detectNetwork()
+                .penaltyLog()
+                .penaltyDeath()
+                .build(),
+        )
 
         // if there is stored "startup" config then we start BugsnagPerformance before the scenario
         // this is used to test things like app-start instrumentation
