@@ -4,6 +4,8 @@
 
 * Untagged socket violation when StrictMode is enabled https://github.com/bugsnag/bugsnag-android-performance/issues/297
   [#306](https://github.com/bugsnag/bugsnag-android-performance/pull/306)
+* Fixed issue where background apps didn't consistently flush the current batch of spans
+  [#305](https://github.com/bugsnag/bugsnag-android-performance/pull/305)
 
 ## 1.9.1 (2024-10-30)
 
