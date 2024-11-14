@@ -1,4 +1,4 @@
-## TBD
+## 1.10.0 (2024-11-14)
 
 ### Bug fixes
 
@@ -6,6 +6,11 @@
   [#306](https://github.com/bugsnag/bugsnag-android-performance/pull/306)
 * Fixed issue where background apps didn't consistently flush the current batch of spans
   [#305](https://github.com/bugsnag/bugsnag-android-performance/pull/305)
+
+### Enhancements
+
+* Formally introduced the `bugsnag-android-performance-compose` module and MeasuredComposable to report the performance of Composables
+  [#299](https://github.com/bugsnag/bugsnag-android-performance/pull/296)
 
 ## 1.9.1 (2024-10-30)
 
