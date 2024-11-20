@@ -42,7 +42,6 @@ class MainActivity : AppCompatActivity() {
         log("MainActivity.onCreate called")
         requestWindowFeature(Window.FEATURE_NO_TITLE)
         setContentView(R.layout.activity_main)
-        prefs = getPreferences(Context.MODE_PRIVATE)
 
         // Attempt to dismiss any system dialogs (such as "MazeRunner crashed")
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
@@ -51,6 +50,8 @@ class MainActivity : AppCompatActivity() {
             val closeDialog = Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS)
             sendBroadcast(closeDialog)
         }
+
+        prefs = getPreferences(Context.MODE_PRIVATE)
 
         log("Set up clearUserData click handler")
         val clearUserData = findViewById<Button>(R.id.clearUserData)
@@ -282,10 +283,10 @@ class MainActivity : AppCompatActivity() {
                 val errorMessage = urlConnection.errorStream.use { it.reader().readText() }
                 log(
                     "Failed to GET $commandUrl (HTTP ${urlConnection.responseCode} " +
-                        "${urlConnection.responseMessage}):\n" +
-                        "${"-".repeat(errorMessage.width)}\n" +
-                        "$errorMessage\n" +
-                        "-".repeat(errorMessage.width),
+                            "${urlConnection.responseMessage}):\n" +
+                            "${"-".repeat(errorMessage.width)}\n" +
+                            "$errorMessage\n" +
+                            "-".repeat(errorMessage.width),
                 )
             } catch (e: Exception) {
                 log("Failed to retrieve error message from connection", e)
