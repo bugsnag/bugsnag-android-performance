@@ -20,5 +20,7 @@ class MazeRacerAlarmReceiver : BroadcastReceiver() {
         BugsnagPerformance.startSpan("AlarmReceiver", SpanOptions.setFirstClass(true)).use {
             Thread.sleep(250L)
         }
+
+        PerformanceTestUtils.flushBatch()
     }
 }
