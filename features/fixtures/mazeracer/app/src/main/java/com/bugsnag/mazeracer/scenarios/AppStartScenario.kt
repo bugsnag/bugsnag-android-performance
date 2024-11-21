@@ -5,6 +5,8 @@ import com.bugsnag.android.performance.PerformanceConfiguration
 import com.bugsnag.android.performance.internal.InternalDebug
 import com.bugsnag.mazeracer.Scenario
 import com.bugsnag.mazeracer.saveStartupConfig
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlin.system.exitProcess
 
 class AppStartScenario(
@@ -18,10 +20,13 @@ class AppStartScenario(
     override fun startScenario() {
         config.autoInstrumentAppStarts = true
         config.autoInstrumentActivities = AutoInstrument.FULL
-        context.saveStartupConfig(config)
 
-        Thread.sleep(500L)
-        // quit the app
-        exitProcess(0)
+        launch {
+            context.saveStartupConfig(config)
+
+            delay(500L)
+            // quit the app
+            exitProcess(0)
+        }
     }
 }
