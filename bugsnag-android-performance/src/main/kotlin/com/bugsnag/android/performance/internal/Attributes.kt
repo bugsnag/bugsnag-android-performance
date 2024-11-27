@@ -6,7 +6,7 @@ import androidx.annotation.RestrictTo
 public class Attributes {
     private val content = mutableMapOf<String, Any>()
 
-    @get:JvmSynthetic
+    @get:JvmName("getEntries\$internal")
     internal val entries: Collection<Map.Entry<String, Any>>
         inline get() = content.entries
 
