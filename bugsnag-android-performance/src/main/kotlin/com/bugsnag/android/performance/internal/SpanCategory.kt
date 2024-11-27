@@ -2,12 +2,15 @@ package com.bugsnag.android.performance.internal
 
 import androidx.annotation.RestrictTo
 
+@JvmInline
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
-public enum class SpanCategory(public val category: String) {
-    CUSTOM("custom"),
-    VIEW_LOAD("view_load"),
-    VIEW_LOAD_PHASE("view_load_phase"),
-    NETWORK("network"),
-    APP_START("app_start"),
-    APP_START_PHASE("app_start_phase"),
+public value class SpanCategory internal constructor(public val category: String) {
+    public companion object {
+        public val CUSTOM: SpanCategory = SpanCategory("custom")
+        public val VIEW_LOAD: SpanCategory = SpanCategory("view_load")
+        public val VIEW_LOAD_PHASE: SpanCategory = SpanCategory("view_load_phase")
+        public val NETWORK: SpanCategory = SpanCategory("network")
+        public val APP_START: SpanCategory = SpanCategory("app_start")
+        public val APP_START_PHASE: SpanCategory = SpanCategory("app_start_phase")
+    }
 }
