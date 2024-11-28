@@ -25,6 +25,13 @@ class MazeRacerApplication : Application() {
     override fun onCreate() {
         super.onCreate()
 
+        // if there is stored "startup" config then we start BugsnagPerformance before the scenario
+        // this is used to test things like app-start instrumentation
+        readStartupConfig()?.let { config ->
+            InternalDebug.workerSleepMs = 2000L
+            BugsnagPerformance.start(config)
+        }
+
         StrictMode.setThreadPolicy(
             StrictMode.ThreadPolicy.Builder()
                 .detectNetwork()
@@ -32,12 +39,5 @@ class MazeRacerApplication : Application() {
                 .penaltyDeath()
                 .build(),
         )
-
-        // if there is stored "startup" config then we start BugsnagPerformance before the scenario
-        // this is used to test things like app-start instrumentation
-        readStartupConfig()?.let { config ->
-            InternalDebug.workerSleepMs = 2000L
-            BugsnagPerformance.start(config)
-        }
     }
 }

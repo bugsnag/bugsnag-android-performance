@@ -9,7 +9,7 @@ fun log(msg: String) {
 
 fun log(
     msg: String,
-    e: Exception,
+    e: Throwable,
 ) {
     Log.e("BugsnagMazeRacer", msg, e)
 }

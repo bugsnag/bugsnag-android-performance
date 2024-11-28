@@ -32,14 +32,13 @@ internal abstract class AbstractTask : Task {
 
 internal class Worker(
     /**
-     * A list of `Runnable`s that need to be run (once each) before the worker tasks are run.
-     * These are typically IO related startup tasks that need to be completed before any spans
-     * are actually sent.
+     * The initiator function to create and return all of the `Task`s to be run by the `Worker`.
+     * This function will be run on the `Worker` thread.
      */
-    startupTasks: List<Runnable>,
-    private val tasks: List<Task>,
+    private var startup: () -> List<Task> = { emptyList() },
 ) : Runnable {
-    private var startupTasks: List<Runnable>? = startupTasks
+
+    private lateinit var tasks: List<Task>
 
     private val lock = ReentrantLock(false)
     private val wakeWorker = lock.newCondition()
@@ -103,10 +102,10 @@ internal class Worker(
     }
 
     private fun runStartupTasks() {
-        startupTasks?.forEach { it.run() }
+        tasks = startup()
 
-        // release the startup tasks so we don't hog the memory for ever
-        startupTasks = null
+        // release the startup task so we don't hog the memory for ever
+        startup = { emptyList() }
     }
 
     private fun attachTasks() {

@@ -106,69 +106,66 @@ public object BugsnagPerformance {
             it.copy(isInForeground = isInForeground(application))
         }
 
-        val connectivity =
-            Connectivity.newInstance(application) { status ->
-                if (status.hasConnection && this::worker.isInitialized) {
-                    worker.wake()
+        val bsgWorker = Worker {
+            val resourceAttributes = createResourceAttributes(configuration)
+            LoadDeviceId(application, resourceAttributes).run()
+
+            val connectivity =
+                Connectivity.newInstance(application) { status ->
+                    if (status.hasConnection && this::worker.isInitialized) {
+                        worker.wake()
+                    }
+
+                    instrumentedAppState.defaultAttributeSource.update {
+                        it.copy(
+                            networkType = status.networkType,
+                            networkSubType = status.networkSubType,
+                        )
+                    }
                 }
 
-                instrumentedAppState.defaultAttributeSource.update {
-                    it.copy(
-                        networkType = status.networkType,
-                        networkSubType = status.networkSubType,
+            connectivity.registerForNetworkChanges()
+
+            val httpDelivery = HttpDelivery(
+                configuration.endpoint,
+                requireNotNull(configuration.apiKey) {
+                    "PerformanceConfiguration.apiKey may not be null"
+                },
+                connectivity,
+                configuration.samplingProbability != null,
+                configuration,
+            )
+
+            val persistence = Persistence(application)
+            val delivery = RetryDelivery(persistence.retryQueue, httpDelivery)
+
+            val workerTasks = ArrayList<Task>()
+            if (configuration.isReleaseStageEnabled) {
+                val sampler: ProbabilitySampler
+                if (configuration.samplingProbability == null) {
+                    sampler = ProbabilitySampler(1.0)
+
+                    val samplerTask = SamplerTask(
+                        delivery,
+                        sampler,
+                        persistence.persistentState,
                     )
+                    delivery.newProbabilityCallback = samplerTask
+                    workerTasks.add(samplerTask)
+                } else {
+                    sampler = ProbabilitySampler(configuration.samplingProbability)
                 }
-            }
 
-        connectivity.registerForNetworkChanges()
-
-        val httpDelivery = HttpDelivery(
-            configuration.endpoint,
-            requireNotNull(configuration.apiKey) {
-                "PerformanceConfiguration.apiKey may not be null"
-            },
-            connectivity,
-            configuration.samplingProbability != null,
-            configuration,
-        )
-
-        val persistence = Persistence(application)
-        val delivery = RetryDelivery(persistence.retryQueue, httpDelivery)
-
-        val workerTasks = ArrayList<Task>()
-
-        if (configuration.isReleaseStageEnabled) {
-            val sampler: ProbabilitySampler
-            if (configuration.samplingProbability == null) {
-                sampler = ProbabilitySampler(1.0)
-
-                val samplerTask = SamplerTask(
-                    delivery,
-                    sampler,
-                    persistence.persistentState,
-                )
-                delivery.newProbabilityCallback = samplerTask
-                workerTasks.add(samplerTask)
+                tracer.sampler = sampler
             } else {
-                sampler = ProbabilitySampler(configuration.samplingProbability)
+                tracer.sampler = DiscardingSampler
             }
 
-            tracer.sampler = sampler
-        } else {
-            tracer.sampler = DiscardingSampler
+            workerTasks.add(SendBatchTask(delivery, tracer, resourceAttributes))
+            workerTasks.add(RetryDeliveryTask(persistence.retryQueue, httpDelivery, connectivity))
+
+            return@Worker workerTasks
         }
-
-        val resourceAttributes = createResourceAttributes(configuration)
-        workerTasks.add(SendBatchTask(delivery, tracer, resourceAttributes))
-        workerTasks.add(RetryDeliveryTask(persistence.retryQueue, httpDelivery, connectivity))
-
-        val bsgWorker = Worker(
-            startupTasks =
-            listOf(
-                LoadDeviceId(application, resourceAttributes),
-            ),
-            tasks = workerTasks,
-        )
 
         // register the Worker with the components that depend on it
         tracer.worker = bsgWorker

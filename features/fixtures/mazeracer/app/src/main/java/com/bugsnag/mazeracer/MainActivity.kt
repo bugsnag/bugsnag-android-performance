@@ -11,11 +11,16 @@ import android.view.Window
 import android.widget.Button
 import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.coroutineScope
+import androidx.lifecycle.withResumed
 import com.bugsnag.android.Bugsnag
 import com.bugsnag.android.Configuration
 import com.bugsnag.android.EndpointConfiguration
 import com.bugsnag.android.performance.AutoInstrument
 import com.bugsnag.android.performance.PerformanceConfiguration
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.io.File
 import java.io.IOException
@@ -42,7 +47,6 @@ class MainActivity : AppCompatActivity() {
         log("MainActivity.onCreate called")
         requestWindowFeature(Window.FEATURE_NO_TITLE)
         setContentView(R.layout.activity_main)
-        prefs = getPreferences(Context.MODE_PRIVATE)
 
         // Attempt to dismiss any system dialogs (such as "MazeRunner crashed")
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
@@ -55,30 +59,37 @@ class MainActivity : AppCompatActivity() {
         log("Set up clearUserData click handler")
         val clearUserData = findViewById<Button>(R.id.clearUserData)
         clearUserData.setOnClickListener {
-            clearStoredApiKey()
-            val apiKeyField = findViewById<EditText>(R.id.manualApiKey)
-            apiKeyField.text.clear()
-            log("Cleared user data")
+            lifecycle.coroutineScope.launch {
+                withContext(Dispatchers.IO) {
+                    clearStoredApiKey()
+                }
+
+                val apiKeyField = findViewById<EditText>(R.id.manualApiKey)
+                apiKeyField.text.clear()
+                log("Cleared user data")
+            }
         }
 
-        if (apiKeyStored()) {
-            log("Using stored API key")
-            val apiKey = getStoredApiKey()
-            val apiKeyField = findViewById<EditText>(R.id.manualApiKey)
-            apiKeyField.text.clear()
-            apiKeyField.text.append(apiKey)
+        lifecycle.coroutineScope.launch {
+            prefs = withContext(Dispatchers.IO) { getPreferences(Context.MODE_PRIVATE) }
+
+            if (apiKeyStored()) {
+                log("Using stored API key")
+                val apiKey = getStoredApiKey()
+                val apiKeyField = findViewById<EditText>(R.id.manualApiKey)
+                apiKeyField.text.clear()
+                apiKeyField.text.append(apiKey)
+            }
+
+            withResumed {
+                log("MainActivity is resumed - startCommandRunner if ${!polling}")
+                if (!polling) {
+                    startCommandRunner()
+                }
+            }
         }
+
         log("MainActivity.onCreate complete")
-    }
-
-    override fun onResume() {
-        super.onResume()
-        log("MainActivity.onResume called")
-
-        if (!polling) {
-            startCommandRunner()
-        }
-        log("MainActivity.onResume complete")
     }
 
     override fun onActivityResult(
@@ -157,6 +168,11 @@ class MainActivity : AppCompatActivity() {
                         notify = "http://$mazeAddress/notify",
                         sessions = "http://$mazeAddress/session",
                     )
+
+                addOnError { event ->
+                    event.originalError?.let { log("Reporting error", it) }
+                    true
+                }
 
                 logger = BugsnagLogger
             }
@@ -281,11 +297,12 @@ class MainActivity : AppCompatActivity() {
             try {
                 val errorMessage = urlConnection.errorStream.use { it.reader().readText() }
                 log(
-                    "Failed to GET $commandUrl (HTTP ${urlConnection.responseCode} " +
-                        "${urlConnection.responseMessage}):\n" +
-                        "${"-".repeat(errorMessage.width)}\n" +
-                        "$errorMessage\n" +
-                        "-".repeat(errorMessage.width),
+                    """
+                    Failed to GET $commandUrl (HTTP ${urlConnection.responseCode} ${urlConnection.responseMessage}):
+                    ${"-".repeat(errorMessage.width)}
+                    $errorMessage
+                    ${"-".repeat(errorMessage.width)}
+                    """.trimIndent(),
                 )
             } catch (e: Exception) {
                 log("Failed to retrieve error message from connection", e)
