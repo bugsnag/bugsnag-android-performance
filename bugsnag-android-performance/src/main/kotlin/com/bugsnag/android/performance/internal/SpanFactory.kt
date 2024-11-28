@@ -42,6 +42,7 @@ public class SpanFactory(
         this.timeoutExecutor.start()
     }
 
+    @JvmOverloads
     public fun createCustomSpan(
         name: String,
         options: SpanOptions = SpanOptions.DEFAULTS,
