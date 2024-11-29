@@ -115,6 +115,7 @@ steps:
   - label: 'Publish :rocket:'
     if: build.branch == "main"
     depends_on: 'android-common'
+    timeout_in_minutes: 30
     env:
       BUILDKITE_PLUGIN_S3_SECRETS_BUCKET_PREFIX: bugsnag-android-publish
     plugins:
