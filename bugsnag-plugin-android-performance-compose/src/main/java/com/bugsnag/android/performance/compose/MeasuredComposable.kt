@@ -60,7 +60,7 @@ public fun MeasuredComposable(
             modifier = modifier then Modifier.drawWithContent {
                 if (span?.isEnded() != true) {
                     BugsnagPerformanceInternals.spanFactory.createViewLoadPhaseSpan(
-                        "Draw",
+                        name,
                         ViewType.COMPOSE,
                         ViewLoadPhase.DRAW,
                         RENDER_SPAN_OPTIONS.within(span),
