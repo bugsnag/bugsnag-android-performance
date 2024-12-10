@@ -8,6 +8,7 @@ public enum class ViewLoadPhase(private val phaseName: String) {
     CREATE("Create"),
     START("Start"),
     RESUME("Resume"),
+    DRAW("Draw"),
     ;
 
     internal fun phaseNameFor(viewType: ViewType): String {
