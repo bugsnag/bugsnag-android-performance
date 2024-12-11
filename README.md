@@ -10,6 +10,7 @@
 
 [![Documentation](https://img.shields.io/badge/documentation-latest-blue.svg)](https://docs.bugsnag.com/performance/android/)
 [![Build status](https://badge.buildkite.com/fc6d65c0631c533598c57b3cc8ad15e116dc1999bac7bfaf69.svg?branch=main)](https://buildkite.com/bugsnag/bugsnag-android-performance)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/bugsnag/bugsnag-android-performance/badge)](https://scorecard.dev/viewer/?uri=github.com/bugsnag/bugsnag-android-performance)
 
 Monitor the start-up, screen loading and network requests of your app and see the results in your [BugSnag](https://www.bugsnag.com) dashboard.
 
