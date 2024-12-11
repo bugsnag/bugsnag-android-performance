@@ -3,19 +3,22 @@ package com.bugsnag.mazeracer
 import android.content.Context
 import com.bugsnag.android.performance.AutoInstrument
 import com.bugsnag.android.performance.PerformanceConfiguration
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
-fun Context.saveStartupConfig(config: PerformanceConfiguration) {
-    log("saveStartupConfig: $config")
+suspend fun Context.saveStartupConfig(config: PerformanceConfiguration) =
+    withContext(Dispatchers.IO) {
+        log("saveStartupConfig: $config")
 
-    applicationContext.getSharedPreferences("StartupConfig", Context.MODE_PRIVATE)
-        .edit()
-        .putBoolean("configured", true)
-        .putString("apiKey", config.apiKey)
-        .putString("endpoint", config.endpoint)
-        .putBoolean("autoInstrumentAppStarts", config.autoInstrumentAppStarts)
-        .putString("autoInstrumentActivities", config.autoInstrumentActivities.name)
-        .commit()
-}
+        applicationContext.getSharedPreferences("StartupConfig", Context.MODE_PRIVATE)
+            .edit()
+            .putBoolean("configured", true)
+            .putString("apiKey", config.apiKey)
+            .putString("endpoint", config.endpoint)
+            .putBoolean("autoInstrumentAppStarts", config.autoInstrumentAppStarts)
+            .putString("autoInstrumentActivities", config.autoInstrumentActivities.name)
+            .commit()
+    }
 
 fun Context.readStartupConfig(): PerformanceConfiguration? {
     log("readStartupConfig()")
@@ -50,6 +53,6 @@ fun Context.readStartupConfig(): PerformanceConfiguration? {
             .remove("endpoint")
             .remove("autoInstrumentAppStarts")
             .remove("autoInstrumentActivities")
-            .commit()
+            .apply()
     }
 }

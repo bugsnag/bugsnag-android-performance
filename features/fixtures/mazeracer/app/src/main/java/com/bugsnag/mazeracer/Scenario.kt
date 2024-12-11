@@ -6,11 +6,13 @@ import android.content.Intent
 import android.os.Handler
 import android.os.Looper
 import com.bugsnag.android.performance.PerformanceConfiguration
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.MainScope
 
 abstract class Scenario(
     val config: PerformanceConfiguration,
     val scenarioMetadata: String,
-) {
+) : CoroutineScope by MainScope() {
     protected val mainHandler = Handler(Looper.getMainLooper())
     protected val application get() = context.applicationContext as Application
 

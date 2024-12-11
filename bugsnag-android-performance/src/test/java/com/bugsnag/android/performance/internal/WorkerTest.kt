@@ -22,7 +22,7 @@ class WorkerTest {
     fun testWaitAndWake() {
         val count1 = CountingTask(1)
         val count2 = CountingTask(5)
-        val worker = Worker(emptyList(), listOf(count1, count2))
+        val worker = Worker { listOf(count1, count2) }
 
         worker.start()
         try {
@@ -40,7 +40,7 @@ class WorkerTest {
     fun testWaitAndAwake() {
         val count1 = CountingTask(1)
         val count2 = CountingTask(5)
-        val worker = Worker(emptyList(), listOf(count1, count2))
+        val worker = Worker { listOf(count1, count2) }
 
         worker.start()
         try {
@@ -69,8 +69,7 @@ class WorkerTest {
     @Test
     fun testExceptionHandling() {
         val latch = CountDownLatch(1)
-        val worker = Worker(
-            emptyList(),
+        val worker = Worker {
             listOf(
                 object : Task {
                     override fun execute(): Boolean {
@@ -83,8 +82,8 @@ class WorkerTest {
                         return false
                     }
                 },
-            ),
-        )
+            )
+        }
 
         // this test succeeds if the latch releases, as it means that the exception in the first
         // task was correctly handled without blocking the second task
