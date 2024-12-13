@@ -99,9 +99,8 @@ public class SpanImpl internal constructor(
 
     override fun end(endTime: Long) {
         if (state.end()) {
-            this.endTime = endTime
+            markEndTime(endTime)
 
-            startFrameMetrics?.let { framerateMetricsSource?.endMetrics(it, this) }
             if (makeContext) SpanContext.detach(this)
             NotifierIntegration.onSpanEnded(this)
 
@@ -111,7 +110,14 @@ public class SpanImpl internal constructor(
         }
     }
 
-    private fun sendForProcessing() {
+    @JvmName("markEndTime\$internal")
+    internal fun markEndTime(endTime: Long) {
+        this.endTime = endTime
+        startFrameMetrics?.let { framerateMetricsSource?.endMetrics(it, this) }
+    }
+
+    @JvmName("sendForProcessing\$internal")
+    internal fun sendForProcessing() {
         if (state.process()) {
             processor.onEnd(this)
         }
