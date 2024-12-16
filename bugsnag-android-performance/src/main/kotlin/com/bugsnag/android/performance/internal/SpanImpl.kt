@@ -55,6 +55,7 @@ public class SpanImpl internal constructor(
 
     internal var isSealed: Boolean = false
 
+    @get:JvmName("getEndTime\$internal")
     internal var endTime: Long = 0L
         private set
 
