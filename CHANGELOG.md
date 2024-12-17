@@ -1,3 +1,10 @@
+## TBD
+
+### Bug fixes
+
+* Move remaining I/O to the worker thread in `BugsnagPerformance.start` - avoiding StrictMode violations
+  [#310](https://github.com/bugsnag/bugsnag-android-performance/pull/310)
+
 ## 1.10.0 (2024-11-14)
 
 ### Bug fixes
