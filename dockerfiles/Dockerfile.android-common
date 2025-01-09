@@ -1,4 +1,4 @@
-FROM ubuntu:24.04
+FROM ubuntu:24.04@sha256:99c35190e22d294cdace2783ac55effc69d32896daaa265f0bbedbcde4fbe3e5
 
 RUN apt-get update > /dev/null
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y wget maven gnupg1 cppcheck libncurses6 jq clang-format unzip curl git
