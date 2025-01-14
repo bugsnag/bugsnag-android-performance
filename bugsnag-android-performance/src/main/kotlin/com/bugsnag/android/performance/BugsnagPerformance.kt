@@ -96,7 +96,7 @@ public object BugsnagPerformance {
                 instrumentedAppState.onBugsnagPerformanceStart()
             }
         } else {
-            instrumentedAppState.startupTracker.disableAppStartTracking()
+            instrumentedAppState.startInstrumentation.disableAppStartTracking()
         }
 
         val application = configuration.application
@@ -298,7 +298,7 @@ public object BugsnagPerformance {
     @JvmStatic
     public fun reportApplicationClassLoaded() {
         synchronized(this) {
-            instrumentedAppState.startupTracker.onFirstClassLoadReported()
+            instrumentedAppState.startInstrumentation.onFirstClassLoadReported()
         }
     }
 }

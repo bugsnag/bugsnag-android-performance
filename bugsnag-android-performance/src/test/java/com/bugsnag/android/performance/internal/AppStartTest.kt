@@ -4,6 +4,7 @@ import android.os.SystemClock
 import com.bugsnag.android.performance.Logger
 import com.bugsnag.android.performance.SpanContext
 import com.bugsnag.android.performance.SpanKind
+import com.bugsnag.android.performance.internal.instrumentation.AppStartInstrumentation
 import com.bugsnag.android.performance.test.CollectingSpanProcessor
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -20,7 +21,7 @@ import org.robolectric.shadows.ShadowPausedSystemClock
 class AppStartTest {
     private lateinit var spanFactory: SpanFactory
     private lateinit var spanTracker: SpanTracker
-    private lateinit var startupTracker: AppStartTracker
+    private lateinit var startupTracker: AppStartInstrumentation
     private lateinit var spanProcessor: CollectingSpanProcessor
 
     @Before
@@ -33,7 +34,7 @@ class AppStartTest {
         spanProcessor = CollectingSpanProcessor()
         spanFactory = SpanFactory(spanProcessor)
         spanTracker = SpanTracker()
-        startupTracker = AppStartTracker(spanTracker, spanFactory)
+        startupTracker = AppStartInstrumentation(spanTracker, spanFactory)
     }
 
     @Test

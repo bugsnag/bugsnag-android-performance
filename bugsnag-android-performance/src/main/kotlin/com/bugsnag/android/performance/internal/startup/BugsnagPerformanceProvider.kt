@@ -5,7 +5,7 @@ import com.bugsnag.android.performance.BugsnagPerformance
 import com.bugsnag.android.performance.internal.instrumentation.ForegroundState
 
 public class BugsnagPerformanceProvider : AbstractStartupProvider() {
-    private val startupTracker get() = BugsnagPerformance.instrumentedAppState.startupTracker
+    private val startupTracker get() = BugsnagPerformance.instrumentedAppState.startInstrumentation
 
     override fun onCreate(): Boolean {
         (context?.applicationContext as? Application)?.let { app ->

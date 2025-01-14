@@ -2,13 +2,34 @@ package com.bugsnag.android.performance.internal
 
 import android.app.Activity
 import androidx.annotation.RestrictTo
+import com.bugsnag.android.performance.AutoInstrument
 import com.bugsnag.android.performance.DoNotAutoInstrument
 import com.bugsnag.android.performance.DoNotEndAppStart
+import com.bugsnag.android.performance.internal.processing.ImmutableConfig
 
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 public class AutoInstrumentationCache {
     private val appStartActivitiesCache = HashMap<Class<out Activity>, Boolean>()
     private val autoInstrumentCache = HashMap<Class<*>, Boolean>()
+
+    private var instrumentActivityStart: Boolean = true
+    private var instrumentActivityEnd: Boolean = true
+
+    public fun shouldAutoStartSpan(target: Any): Boolean {
+        return when {
+            !isInstrumentationEnabled(target::class.java) -> false
+            target is Activity -> instrumentActivityStart
+            else -> true
+        }
+    }
+
+    public fun shouldAutoEndSpan(target: Any): Boolean {
+        return when {
+            !isInstrumentationEnabled(target::class.java) -> false
+            target is Activity -> instrumentActivityEnd
+            else -> true
+        }
+    }
 
     /**
      * Class does not need instrumentation.
@@ -28,11 +49,10 @@ public class AutoInstrumentationCache {
         }
     }
 
-    public fun configure(
-        appStartActivities: Collection<Class<out Activity>>,
-        autoInstrument: Collection<Class<*>>,
-    ) {
-        appStartActivities.forEach { appStartActivitiesCache[it] = true }
-        autoInstrument.forEach { autoInstrumentCache[it] = false }
+    internal fun configure(configuration: ImmutableConfig) {
+        instrumentActivityStart = configuration.autoInstrumentActivities != AutoInstrument.OFF
+        instrumentActivityEnd = configuration.autoInstrumentActivities == AutoInstrument.FULL
+        configuration.doNotEndAppStart.forEach { appStartActivitiesCache[it] = true }
+        configuration.doNotAutoInstrument.forEach { autoInstrumentCache[it] = false }
     }
 }

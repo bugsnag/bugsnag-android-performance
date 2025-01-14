@@ -2,7 +2,6 @@ package com.bugsnag.android.performance.internal.instrumentation
 
 import android.app.Activity
 import android.os.Bundle
-import com.bugsnag.android.performance.internal.AppStartTracker
 import com.bugsnag.android.performance.internal.AutoInstrumentationCache
 import com.bugsnag.android.performance.internal.Loopers
 import com.bugsnag.android.performance.internal.SpanCategory
@@ -28,8 +27,8 @@ class HotStartTest {
     private lateinit var spanTracker: SpanTracker
     private lateinit var spanProcessor: CollectingSpanProcessor
     private lateinit var spanFactory: SpanFactory
-    private lateinit var appStartTracker: AppStartTracker
-    private lateinit var activityInstrumentation: ActivityLifecycleInstrumentation
+    private lateinit var appStartInstrumentation: AppStartInstrumentation
+    private lateinit var activityInstrumentation: ActivityCallbacks
     private lateinit var lifecycleHelper: ActivityLifecycleHelper
     private lateinit var autoInstrumentationCache: AutoInstrumentationCache
 
@@ -39,11 +38,11 @@ class HotStartTest {
         spanProcessor = CollectingSpanProcessor()
         spanFactory = SpanFactory(spanProcessor)
         autoInstrumentationCache = AutoInstrumentationCache()
-        appStartTracker = AppStartTracker(spanTracker, spanFactory)
-        activityInstrumentation = ActivityLifecycleInstrumentation(
+        appStartInstrumentation = AppStartInstrumentation(spanTracker, spanFactory)
+        activityInstrumentation = ActivityCallbacks(
             spanTracker,
             spanFactory,
-            appStartTracker,
+            appStartInstrumentation,
             autoInstrumentationCache,
         )
         lifecycleHelper = ActivityLifecycleHelper(activityInstrumentation) {

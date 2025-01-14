@@ -32,7 +32,7 @@ class ActivityLifecycleInstrumentationTest {
     private lateinit var spanTracker: SpanTracker
     private lateinit var spanProcessor: CollectingSpanProcessor
     private lateinit var spanFactory: SpanFactory
-    private lateinit var activityInstrumentation: ActivityLifecycleInstrumentation
+    private lateinit var activityInstrumentation: ActivityCallbacks
     private lateinit var lifecycleHelper: ActivityLifecycleHelper
     private lateinit var autoInstrumentationCache: AutoInstrumentationCache
 
@@ -42,7 +42,7 @@ class ActivityLifecycleInstrumentationTest {
         spanProcessor = CollectingSpanProcessor()
         spanFactory = SpanFactory(spanProcessor)
         autoInstrumentationCache = AutoInstrumentationCache()
-        activityInstrumentation = ActivityLifecycleInstrumentation(
+        activityInstrumentation = ActivityCallbacks(
             spanTracker,
             spanFactory,
             mock(),
