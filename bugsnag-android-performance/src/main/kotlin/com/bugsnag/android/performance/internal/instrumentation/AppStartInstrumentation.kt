@@ -1,9 +1,14 @@
-package com.bugsnag.android.performance.internal
+package com.bugsnag.android.performance.internal.instrumentation
 
 import android.os.Handler
 import android.os.Message
+import com.bugsnag.android.performance.internal.AppStartPhase
+import com.bugsnag.android.performance.internal.Loopers
+import com.bugsnag.android.performance.internal.SpanFactory
+import com.bugsnag.android.performance.internal.SpanImpl
+import com.bugsnag.android.performance.internal.SpanTracker
 
-internal class AppStartTracker(
+internal class AppStartInstrumentation(
     private val spanTracker: SpanTracker,
     private val spanFactory: SpanFactory,
 ) : Handler.Callback {
@@ -19,7 +24,7 @@ internal class AppStartTracker(
 
     private val handler = Loopers.newMainHandler(this)
 
-    public fun onFirstClassLoadReported() {
+    fun onFirstClassLoadReported() {
         if (processStarted) return
         processStarted = true
 
@@ -30,12 +35,12 @@ internal class AppStartTracker(
         }
     }
 
-    public fun onApplicationCreate() {
+    fun onApplicationCreate() {
         handler.sendMessageAtFrontOfQueue(handler.obtainMessage(MSG_APP_CLASS_COMPLETE))
         spanTracker.endSpan(appStartToken, AppStartPhase.FRAMEWORK)
     }
 
-    public fun onBugsnagPerformanceStart() {
+    fun onBugsnagPerformanceStart() {
         if (processStarted) return
 
         onApplicationCreate()
@@ -44,6 +49,10 @@ internal class AppStartTracker(
         handler.sendMessageAtFrontOfQueue(handler.obtainMessage(MSG_APP_CLASS_COMPLETE))
 
         processStarted = true
+    }
+
+    fun isAppStartActive(): Boolean {
+        return spanTracker[appStartToken] != null
     }
 
     internal fun startAppStartSpan(startType: String): SpanImpl? {
@@ -63,7 +72,7 @@ internal class AppStartTracker(
         handler.sendEmptyMessageDelayed(MSG_DISCARD_APP_START, APP_START_TIMEOUT_MS)
     }
 
-    public fun onActivityCreate(hasSavedInstanceState: Boolean) {
+    fun onActivityCreate(hasSavedInstanceState: Boolean) {
         if (isInBackground) {
             if (hasSavedInstanceState) {
                 startAppStartSpan("Hot")
@@ -83,7 +92,7 @@ internal class AppStartTracker(
         handler.removeMessages(MSG_DISCARD_APP_START)
     }
 
-    public fun onViewLoadComplete(timestamp: Long) {
+    fun onViewLoadComplete(timestamp: Long) {
         // end the AppStart since the app is now considered "visible"
         spanTracker.endAllSpans(appStartToken, timestamp)
     }
@@ -101,12 +110,12 @@ internal class AppStartTracker(
     /**
      * Turn off AppStart tracking and discard any in-flight AppStart spans.
      */
-    public fun disableAppStartTracking() {
+    fun disableAppStartTracking() {
         enabled = false
         discardAppStart()
     }
 
-    public fun discardAppStart() {
+    fun discardAppStart() {
         spanTracker.discardAllSpans(appStartToken)
     }
 

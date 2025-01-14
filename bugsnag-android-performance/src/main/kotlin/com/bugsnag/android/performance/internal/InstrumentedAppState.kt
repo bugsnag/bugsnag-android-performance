@@ -3,11 +3,12 @@ package com.bugsnag.android.performance.internal
 import android.app.Application
 import android.os.Build
 import androidx.annotation.RestrictTo
-import com.bugsnag.android.performance.AutoInstrument
 import com.bugsnag.android.performance.SpanContext
 import com.bugsnag.android.performance.internal.framerate.FramerateMetricsSource
-import com.bugsnag.android.performance.internal.instrumentation.AbstractActivityLifecycleInstrumentation
-import com.bugsnag.android.performance.internal.instrumentation.ActivityLifecycleInstrumentation
+import com.bugsnag.android.performance.internal.instrumentation.AbstractActivityCallbacks
+import com.bugsnag.android.performance.internal.instrumentation.ActivityCallbacks
+import com.bugsnag.android.performance.internal.instrumentation.ActivityInstrumentation
+import com.bugsnag.android.performance.internal.instrumentation.AppStartInstrumentation
 import com.bugsnag.android.performance.internal.instrumentation.ForegroundState
 import com.bugsnag.android.performance.internal.instrumentation.LegacyActivityInstrumentation
 import com.bugsnag.android.performance.internal.processing.ForwardingSpanProcessor
@@ -26,11 +27,23 @@ public class InstrumentedAppState {
 
     public val spanFactory: SpanFactory = SpanFactory(spanProcessor, defaultAttributeSource)
 
-    internal val startupTracker: AppStartTracker = AppStartTracker(spanTracker, spanFactory)
-
     public val autoInstrumentationCache: AutoInstrumentationCache = AutoInstrumentationCache()
 
-    internal val activityInstrumentation = createActivityInstrumentation()
+    internal val startInstrumentation: AppStartInstrumentation =
+        AppStartInstrumentation(spanTracker, spanFactory)
+
+    internal val activityInstrumentation = ActivityInstrumentation(
+        spanTracker,
+        spanFactory,
+        startInstrumentation,
+        autoInstrumentationCache,
+    )
+
+    private val activityCallbacks = createActivityCallbacks(
+        startInstrumentation,
+        activityInstrumentation,
+        autoInstrumentationCache,
+    )
 
     public var tracePropagationUrls: Collection<Pattern> = emptySet()
 
@@ -49,7 +62,7 @@ public class InstrumentedAppState {
         }
 
         app = application
-        app.registerActivityLifecycleCallbacks(activityInstrumentation)
+        app.registerActivityLifecycleCallbacks(activityCallbacks)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             framerateMetricsSource = FramerateMetricsSource()
@@ -62,7 +75,7 @@ public class InstrumentedAppState {
                 it.copy(isInForeground = inForeground)
             }
 
-            startupTracker.isInBackground = !inForeground
+            startInstrumentation.isInBackground = !inForeground
         }
     }
 
@@ -73,7 +86,7 @@ public class InstrumentedAppState {
         val bootstrapSpanProcessor = spanProcessor
         val tracer = Tracer(configuration.spanEndCallbacks)
 
-        configureLifecycleCallbacks(configuration)
+        autoInstrumentationCache.configure(configuration)
 
         spanProcessor = tracer
         spanFactory.configure(
@@ -87,10 +100,6 @@ public class InstrumentedAppState {
         if (configuration.autoInstrumentAppStarts) {
             // redirect existing spanProcessor -> new Tracer
             (bootstrapSpanProcessor as? ForwardingSpanProcessor)?.forwardTo(spanProcessor)
-            autoInstrumentationCache.configure(
-                configuration.doNotEndAppStart,
-                configuration.doNotAutoInstrument,
-            )
         } else {
             // clear the contextStack to ensure that any new spans don't associate with
             // the discarded spans, this doesn't work if not on the main thread but
@@ -116,32 +125,27 @@ public class InstrumentedAppState {
         return tracer
     }
 
-    private fun createActivityInstrumentation(): AbstractActivityLifecycleInstrumentation {
+    private fun createActivityCallbacks(
+        startInstrumentation: AppStartInstrumentation,
+        activityInstrumentation: ActivityInstrumentation,
+        autoInstrumentationCache: AutoInstrumentationCache,
+    ): AbstractActivityCallbacks {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            ActivityLifecycleInstrumentation(
-                spanTracker,
-                spanFactory,
-                startupTracker,
+            ActivityCallbacks(
+                startInstrumentation,
+                activityInstrumentation,
                 autoInstrumentationCache,
             )
         } else {
             LegacyActivityInstrumentation(
-                spanTracker,
-                spanFactory,
-                startupTracker,
+                startInstrumentation,
+                activityInstrumentation,
                 autoInstrumentationCache,
             )
         }
     }
 
-    private fun configureLifecycleCallbacks(configuration: ImmutableConfig) {
-        activityInstrumentation.apply {
-            openLoadSpans = configuration.autoInstrumentActivities != AutoInstrument.OFF
-            closeLoadSpans = configuration.autoInstrumentActivities == AutoInstrument.FULL
-        }
-    }
-
     public fun onBugsnagPerformanceStart() {
-        startupTracker.onBugsnagPerformanceStart()
+        startInstrumentation.onBugsnagPerformanceStart()
     }
 }
