@@ -1,3 +1,10 @@
+## 1.11.0 (2025-01-20)
+
+### Changes
+
+* Added mechanism for delivering external spans with natively-captured metrics (for initial use with React Native rendering metrics)
+  [#327](https://github.com/bugsnag/bugsnag-android-performance/pull/327)
+
 ## 1.10.1 (2025-01-09)
 
 ### Bug fixes

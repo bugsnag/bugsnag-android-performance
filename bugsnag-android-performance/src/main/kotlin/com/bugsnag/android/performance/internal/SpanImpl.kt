@@ -25,7 +25,10 @@ public class SpanImpl internal constructor(
     name: String,
     internal val category: SpanCategory,
     internal val kind: SpanKind,
+
+    @get:JvmName("getStartTime\$internal")
     internal val startTime: Long,
+
     override val traceId: UUID,
     override val spanId: Long = nextSpanId(),
     public val parentSpanId: Long,
@@ -52,6 +55,7 @@ public class SpanImpl internal constructor(
 
     internal var isSealed: Boolean = false
 
+    @get:JvmName("getEndTime\$internal")
     internal var endTime: Long = 0L
         private set
 
