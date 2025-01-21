@@ -13,7 +13,7 @@ import androidx.annotation.RequiresApi
 import com.bugsnag.android.performance.BugsnagPerformance
 import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.SpanOptions
-import com.bugsnag.android.performance.internal.MetricSource
+import com.bugsnag.android.performance.internal.metrics.MetricSource
 import com.bugsnag.android.performance.internal.SpanImpl
 import java.util.WeakHashMap
 

@@ -11,6 +11,8 @@ import com.bugsnag.android.performance.SpanOptions
 import com.bugsnag.android.performance.ViewType
 import com.bugsnag.android.performance.internal.framerate.FramerateMetricsSnapshot
 import com.bugsnag.android.performance.internal.integration.NotifierIntegration
+import com.bugsnag.android.performance.internal.metrics.MetricSource
+import com.bugsnag.android.performance.internal.metrics.SpanMetricsSnapshot
 import com.bugsnag.android.performance.internal.processing.AttributeLimits
 import com.bugsnag.android.performance.internal.processing.TimeoutExecutorImpl
 import java.util.UUID
@@ -239,9 +241,7 @@ public class SpanFactory(
             parentSpanId = parent?.spanId ?: 0L,
             makeContext = makeContext,
             attributeLimits = attributeLimits,
-            framerateMetricsSource = framerateMetricsSource
-                ?.takeIf { renderingMetricsEnabled(isFirstClass, instrumentRendering) },
-            // framerateMetrics are only recorded on firstClass spans
+            metrics = createSpanMetrics(isFirstClass, instrumentRendering),
             processor = spanProcessor,
             timeoutExecutor = timeoutExecutor,
         )
@@ -257,8 +257,18 @@ public class SpanFactory(
         return span
     }
 
-    private fun renderingMetricsEnabled(isFirstClass: Boolean?, instrumentRendering: Boolean?) =
-        (isFirstClass == true && instrumentRendering != false) || instrumentRendering == true
+    private fun createSpanMetrics(
+        isFirstClass: Boolean?,
+        instrumentRendering: Boolean?,
+    ): SpanMetricsSnapshot? {
+        val localRenderingMetricsSource = framerateMetricsSource ?: return null
+        if (((isFirstClass == true && instrumentRendering != false) || instrumentRendering == true)) {
+            return SpanMetricsSnapshot(localRenderingMetricsSource)
+        }
+
+        return null
+    }
+
 
     private fun UUID.isValidTraceId() = mostSignificantBits != 0L || leastSignificantBits != 0L
 }

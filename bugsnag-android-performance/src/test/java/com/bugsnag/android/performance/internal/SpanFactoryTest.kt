@@ -4,6 +4,7 @@ import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.SpanOptions
 import com.bugsnag.android.performance.internal.framerate.FramerateMetricsSnapshot
 import com.bugsnag.android.performance.internal.framerate.TimestampPairBuffer
+import com.bugsnag.android.performance.internal.metrics.MetricSource
 import com.bugsnag.android.performance.test.NoopSpanProcessor
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
@@ -45,7 +46,7 @@ class SpanFactoryTest {
             spanFactory.createCustomSpan(
                 "First Class",
                 baseOptions.setFirstClass(true),
-            ).startFrameMetrics,
+            ).metrics,
         )
 
         assertNotNull(
@@ -55,7 +56,7 @@ class SpanFactoryTest {
                 baseOptions
                     .setFirstClass(false)
                     .withRenderingMetrics(true),
-            ).startFrameMetrics,
+            ).metrics,
         )
 
         assertNotNull(
@@ -65,7 +66,7 @@ class SpanFactoryTest {
                 baseOptions
                     .setFirstClass(true)
                     .withRenderingMetrics(true),
-            ).startFrameMetrics,
+            ).metrics,
         )
 
         assertNull(
@@ -73,7 +74,7 @@ class SpanFactoryTest {
             spanFactory.createCustomSpan(
                 "Scrolling",
                 baseOptions.setFirstClass(false),
-            ).startFrameMetrics,
+            ).metrics,
         )
 
         assertNull(
@@ -83,7 +84,7 @@ class SpanFactoryTest {
                 baseOptions
                     .setFirstClass(true)
                     .withRenderingMetrics(false),
-            ).startFrameMetrics,
+            ).metrics,
         )
     }
 }
