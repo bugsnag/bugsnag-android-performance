@@ -1,4 +1,4 @@
-package com.bugsnag.android.performance.internal
+package com.bugsnag.android.performance.internal.metrics
 
 import androidx.annotation.RestrictTo
 import com.bugsnag.android.performance.Span

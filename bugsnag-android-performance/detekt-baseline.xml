@@ -32,7 +32,10 @@
     <ID>MagicNumber:SpanKind.kt$SpanKind.CONSUMER$5</ID>
     <ID>MagicNumber:SpanKind.kt$SpanKind.PRODUCER$4</ID>
     <ID>ReturnCount:RetryDeliveryTask.kt$RetryDeliveryTask$override fun execute(): Boolean</ID>
+    <ID>ReturnCount:SpanFactory.kt$SpanFactory$private fun createSpanMetrics( isFirstClass: Boolean?, instrumentRendering: Boolean?, ): SpanMetricsSnapshot?</ID>
+    <ID>ReturnCount:SpanImpl.kt$SpanState$fun block(): Boolean</ID>
     <ID>ReturnCount:SpanImpl.kt$SpanState$fun end(): Boolean</ID>
+    <ID>ReturnCount:SpanImpl.kt$SpanState$fun ending(): Boolean</ID>
     <ID>SwallowedException:BugsnagClock.kt$BugsnagClock$ex: Exception</ID>
     <ID>SwallowedException:Connectivity.kt$ConnectivityApi24$e: Exception</ID>
     <ID>SwallowedException:ContextExtensions.kt$exc: RuntimeException</ID>
