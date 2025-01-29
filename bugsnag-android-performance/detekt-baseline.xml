@@ -52,7 +52,7 @@
     <ID>TooGenericExceptionCaught:ImmutableConfig.kt$ImmutableConfig.Companion$ex: RuntimeException</ID>
     <ID>TooGenericExceptionCaught:Module.kt$Module.Loader$ex: Exception</ID>
     <ID>TooGenericExceptionCaught:PerformanceConfiguration.kt$PerformanceConfiguration.Loader$exc: Exception</ID>
-    <ID>TooGenericExceptionCaught:Timeout.kt$TimeoutExecutorImpl$ex: Exception</ID>
+    <ID>TooGenericExceptionCaught:SpanTaskWorker.kt$SpanTaskWorker$ex: Exception</ID>
     <ID>TooGenericExceptionCaught:Worker.kt$Worker$e: Exception</ID>
     <ID>TooGenericExceptionCaught:Worker.kt$Worker$ex: Exception</ID>
     <ID>TooManyFunctions:Attributes.kt$Attributes</ID>
@@ -61,5 +61,6 @@
     <ID>TooManyFunctions:JsonTraceWriter.kt$JsonTraceWriter : Closeable</ID>
     <ID>TooManyFunctions:SpanFactory.kt$SpanFactory</ID>
     <ID>TooManyFunctions:SpanTracker.kt$SpanTracker</ID>
+    <ID>UseCheckOrError:SpanTaskWorkerTest.kt$SpanTaskWorkerTest.&lt;no name provided>$throw IllegalStateException("oops")</ID>
   </CurrentIssues>
 </SmellBaseline>

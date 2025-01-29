@@ -12,7 +12,7 @@ import com.bugsnag.android.performance.ViewType
 import com.bugsnag.android.performance.internal.framerate.FramerateMetricsSnapshot
 import com.bugsnag.android.performance.internal.integration.NotifierIntegration
 import com.bugsnag.android.performance.internal.processing.AttributeLimits
-import com.bugsnag.android.performance.internal.processing.TimeoutExecutorImpl
+import com.bugsnag.android.performance.internal.processing.SpanTaskWorker
 import java.util.UUID
 
 internal typealias AttributeSource = (target: SpanImpl) -> Unit
@@ -23,7 +23,7 @@ public class SpanFactory(
     public val spanAttributeSource: AttributeSource = {},
 ) {
 
-    private val timeoutExecutor = TimeoutExecutorImpl()
+    private val timeoutExecutor = SpanTaskWorker()
 
     public var networkRequestCallback: NetworkRequestInstrumentationCallback? = null
 
