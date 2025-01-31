@@ -41,7 +41,7 @@ internal class SpanTaskWorker : Runnable, TimeoutExecutor {
         }
 
         running = true
-        thread = Thread(this, "Bugsnag Span Worker")
+        thread = Thread(this, "Bugsnag Span Task Worker")
         thread?.start()
     }
 
