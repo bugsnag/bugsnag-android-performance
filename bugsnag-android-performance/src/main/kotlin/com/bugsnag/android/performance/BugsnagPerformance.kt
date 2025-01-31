@@ -23,6 +23,7 @@ import com.bugsnag.android.performance.internal.Worker
 import com.bugsnag.android.performance.internal.createResourceAttributes
 import com.bugsnag.android.performance.internal.integration.NotifierIntegration
 import com.bugsnag.android.performance.internal.isInForeground
+import com.bugsnag.android.performance.internal.metrics.SystemConfig
 import com.bugsnag.android.performance.internal.processing.ImmutableConfig
 import java.net.URL
 
@@ -109,6 +110,8 @@ public object BugsnagPerformance {
         val bsgWorker = Worker {
             val resourceAttributes = createResourceAttributes(configuration)
             LoadDeviceId(application, resourceAttributes).run()
+
+            SystemConfig.configure()
 
             val connectivity =
                 Connectivity.newInstance(application) { status ->
