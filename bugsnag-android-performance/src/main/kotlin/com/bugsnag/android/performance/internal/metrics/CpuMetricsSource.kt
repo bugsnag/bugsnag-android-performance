@@ -16,13 +16,22 @@ internal class CpuMetricsSource(
 
     private val buffer = FixedRingBuffer(maxSampleCount) { CpuSampleData() }
 
-    private val processSampler = CpuMetricsSampler("/proc/${Process.myPid()}/stat")
+    private val processSampler = CpuMetricsSampler(Process.myPid())
     private var mainThreadStatReader: CpuMetricsSampler? = null
+    private var samplerThreadStatReader: CpuMetricsSampler? = null
 
     init {
         Loopers.onMainThread {
             initMainThreadSampling(Process.myTid())
         }
+    }
+
+    override fun run() {
+        if (samplerThreadStatReader == null) {
+            samplerThreadStatReader = CpuMetricsSampler(Process.myPid(), Process.myTid())
+        }
+
+        super.run()
     }
 
     override fun createStartMetrics(): CpuMetricsSnapshot {
@@ -91,9 +100,7 @@ internal class CpuMetricsSource(
     }
 
     private fun initMainThreadSampling(mainThreadTid: Int) {
-        this.mainThreadStatReader = CpuMetricsSampler(
-            "/proc/${Process.myPid()}/task/$mainThreadTid/stat",
-        )
+        this.mainThreadStatReader = CpuMetricsSampler(Process.myPid(), mainThreadTid)
     }
 
     private class CpuSampleData(
@@ -125,6 +132,9 @@ internal data class CpuMetricsSnapshot(
 ) : LinkedMetricsSnapshot<CpuMetricsSnapshot>()
 
 private class CpuMetricsSampler(statFile: String) {
+    constructor(pid: Int) : this("/proc/$pid/stat")
+    constructor(pid: Int, tid: Int) : this("/proc/$pid/task/$tid/stat")
+
     private val statReader = ProcStatReader(statFile)
 
     private val stat = ProcStatReader.Stat()
