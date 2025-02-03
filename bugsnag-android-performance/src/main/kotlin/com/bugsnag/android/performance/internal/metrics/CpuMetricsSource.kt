@@ -42,6 +42,7 @@ internal class CpuMetricsSource(
         val timestamp = BugsnagClock.currentUnixNanoTime()
         buffer.put { sample ->
             sample.processCpuPct = processSampler.sampleCpuUse()
+            sample.overheadCpuPct = samplerThreadStatReader?.sampleCpuUse() ?: -1.0
             sample.mainCpuPct = mainThreadStatReader?.sampleCpuUse() ?: -1.0
             sample.timestamp = timestamp
         }
@@ -58,15 +59,20 @@ internal class CpuMetricsSource(
                 val sampleCount = buffer.countItemsBetween(from, to)
                 val processCpuSamples = DoubleArray(sampleCount)
                 val mainThreadCpuSamples = DoubleArray(sampleCount)
+                val overheadCpuSamples = DoubleArray(sampleCount)
                 val cpuTimestamps = LongArray(sampleCount)
+
                 var cpuUseTotal = 0.0
                 var cpuUseSampleCount = 0
                 var mainThreadCpuTotal = 0.0
                 var mainThreadSampleCount = 0
+                var overheadCpuTotal = 0.0
+                var overheadSampleCount = 0
 
                 buffer.forEachIndexed(from, to) { index, sample ->
                     processCpuSamples[index] = sample.processCpuPct
                     mainThreadCpuSamples[index] = sample.mainCpuPct
+                    overheadCpuSamples[index] = sample.overheadCpuPct
                     cpuTimestamps[index] = sample.timestamp
 
                     if (sample.processCpuPct != -1.0) {
@@ -78,21 +84,24 @@ internal class CpuMetricsSource(
                         mainThreadCpuTotal += sample.mainCpuPct
                         mainThreadSampleCount++
                     }
+
+                    if (sample.overheadCpuPct != -1.0) {
+                        overheadCpuTotal += sample.overheadCpuPct
+                        overheadSampleCount++
+                    }
                 }
 
-                target.setAttribute("bugsnag.system.cpu_measures_total", processCpuSamples)
-                target.setAttribute("bugsnag.system.cpu_measures_main_thread", mainThreadCpuSamples)
-                target.setAttribute("bugsnag.system.cpu_measures_timestamps", cpuTimestamps)
+                target.attributes["bugsnag.system.cpu_measures_total"] = processCpuSamples
+                target.attributes["bugsnag.system.cpu_measures_main_thread"] = mainThreadCpuSamples
+                target.attributes["bugsnag.system.cpu_measures_overhead"] = overheadCpuSamples
+                target.attributes["bugsnag.system.cpu_measures_timestamps"] = cpuTimestamps
 
-                target.setAttribute(
-                    "bugsnag.metrics.cpu_mean_total",
-                    cpuUseTotal / cpuUseSampleCount,
-                )
-
-                target.setAttribute(
-                    "bugsnag.metrics.cpu_mean_main_thread",
-                    mainThreadCpuTotal / mainThreadSampleCount,
-                )
+                target.attributes["bugsnag.metrics.cpu_mean_total"] =
+                    cpuUseTotal / cpuUseSampleCount
+                target.attributes["bugsnag.metrics.cpu_mean_main_thread"] =
+                    mainThreadCpuTotal / mainThreadSampleCount
+                target.attributes["bugsnag.system.cpu_mean_overhead"] =
+                    overheadCpuTotal / overheadSampleCount
 
                 snapshot.blocking?.cancel()
             }
