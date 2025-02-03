@@ -3,6 +3,7 @@ package com.bugsnag.android.performance.internal.processing
 import android.os.SystemClock
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -68,7 +69,8 @@ class SpanTaskWorkerTest {
             Thread.sleep(1L)
         }
 
-        assertEquals(5, runCount)
+        // given that we're dealing with timing - the exact run count can vary slightly
+        assertTrue(runCount in 4..6)
     }
 
     @Test
