@@ -45,8 +45,8 @@ public class SpanFactory(
 
         this.spanTaskWorker.start()
 
-        val cpuMetricsSource = CpuMetricsSource()
-        this.spanTaskWorker.addSampler(cpuMetricsSource, EVERY_SECOND)
+        val cpuMetricsSource = CpuMetricsSource(samplingDelayMs = ONE_SECOND)
+        this.spanTaskWorker.addSampler(cpuMetricsSource, ONE_SECOND)
         this.cpuMetricsSource = cpuMetricsSource
     }
 
@@ -285,6 +285,6 @@ public class SpanFactory(
     private fun UUID.isValidTraceId() = mostSignificantBits != 0L || leastSignificantBits != 0L
 
     private companion object {
-        const val EVERY_SECOND = 1000L
+        const val ONE_SECOND = 1000L
     }
 }
