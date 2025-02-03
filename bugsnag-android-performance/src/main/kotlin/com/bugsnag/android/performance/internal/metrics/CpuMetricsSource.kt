@@ -5,31 +5,19 @@ import android.os.Process
 import android.os.SystemClock
 import android.system.Os
 import android.system.OsConstants
-import com.bugsnag.android.performance.HasAttributes
-import com.bugsnag.android.performance.Logger
-import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.internal.BugsnagClock
 import com.bugsnag.android.performance.internal.Loopers
-import com.bugsnag.android.performance.internal.SpanImpl
-import com.bugsnag.android.performance.internal.Task
 import com.bugsnag.android.performance.internal.util.FixedRingBuffer
-import java.util.concurrent.atomic.AtomicReference
 
 internal class CpuMetricsSource(
+    samplingDelayMs: Long,
     maxSampleCount: Int = DEFAULT_SAMPLE_COUNT,
-) : MetricSource<CpuMetricsSnapshot>, Runnable {
+) : AbstractSampledMetricsSource<CpuMetricsSnapshot>(samplingDelayMs), Runnable {
 
     private val buffer = FixedRingBuffer(maxSampleCount) { CpuSampleData() }
 
     private val processSampler = CpuMetricsSampler("/proc/${Process.myPid()}/stat")
     private var mainThreadStatReader: CpuMetricsSampler? = null
-
-    /**
-     * Chain/linked-list of CpuSnapshots awaiting the "next" sample, stored as an AtomicReference
-     * in the same way as we deal with [SpanImpl] batching (see [BatchingSpanProcessor]) giving
-     * us a lightweight way to collect spans that are waiting for a sample.
-     */
-    private val awaitingNextSample = AtomicReference<CpuMetricsSnapshot?>(null)
 
     init {
         Loopers.onMainThread {
@@ -41,26 +29,7 @@ internal class CpuMetricsSource(
         return CpuMetricsSnapshot(buffer.currentIndex)
     }
 
-    override fun endMetrics(startMetrics: CpuMetricsSnapshot, span: Span) {
-        startMetrics.target = span
-        startMetrics.blocking = (span as SpanImpl).block(TWO_SECONDS)
-
-        while (true) {
-            val next = awaitingNextSample.get()
-            startMetrics.next = next
-
-            if (awaitingNextSample.compareAndSet(next, startMetrics)) {
-                break
-            }
-        }
-    }
-
-    override fun run() {
-        captureCpuSamples()
-        populatedWaitingTargets()
-    }
-
-    private fun captureCpuSamples() {
+    override fun captureSample() {
         val timestamp = BugsnagClock.currentUnixNanoTime()
         buffer.put { sample ->
             sample.processCpuPct = processSampler.sampleCpuUse()
@@ -69,15 +38,12 @@ internal class CpuMetricsSource(
         }
     }
 
-    private fun populatedWaitingTargets() {
+    override fun populatedWaitingTargets() {
         val endIndex = buffer.currentIndex
-        var nextSnapshot = awaitingNextSample.getAndSet(null)
-
-        while (nextSnapshot != null) {
-            val target = nextSnapshot.target
-
+        takeSnapshotsAwaitingSample().forEach { snapshot ->
+            val target = snapshot.target
             if (target != null) {
-                val from = nextSnapshot.bufferIndex
+                val from = snapshot.bufferIndex
                 val to = endIndex
 
                 val sampleCount = buffer.countItemsBetween(from, to)
@@ -111,18 +77,16 @@ internal class CpuMetricsSource(
 
                 target.setAttribute(
                     "bugsnag.metrics.cpu_mean_total",
-                    cpuUseTotal / cpuUseSampleCount
+                    cpuUseTotal / cpuUseSampleCount,
                 )
 
                 target.setAttribute(
                     "bugsnag.metrics.cpu_mean_main_thread",
-                    mainThreadCpuTotal / mainThreadSampleCount
+                    mainThreadCpuTotal / mainThreadSampleCount,
                 )
 
-                nextSnapshot.blocking?.cancel()
+                snapshot.blocking?.cancel()
             }
-
-            nextSnapshot = nextSnapshot.next
         }
     }
 
@@ -140,6 +104,9 @@ internal class CpuMetricsSource(
         var mainCpuPct: Double = 0.0,
 
         @JvmField
+        var overheadCpuPct: Double = 0.0,
+
+        @JvmField
         var timestamp: Long = 0L,
     )
 
@@ -149,28 +116,15 @@ internal class CpuMetricsSource(
          * sample each second).
          */
         const val DEFAULT_SAMPLE_COUNT = 60 * 10
-
-        const val TWO_SECONDS = 2000L
     }
 }
 
 internal data class CpuMetricsSnapshot(
     @JvmField
     internal val bufferIndex: Int,
-) {
-    @JvmField
-    internal var next: CpuMetricsSnapshot? = null
+) : LinkedMetricsSnapshot<CpuMetricsSnapshot>()
 
-    @JvmField
-    internal var blocking: SpanImpl.Condition? = null
-
-    @JvmField
-    internal var target: HasAttributes? = null
-}
-
-private class CpuMetricsSampler(
-    statFile: String,
-) {
+private class CpuMetricsSampler(statFile: String) {
     private val statReader = ProcStatReader(statFile)
 
     private val stat = ProcStatReader.Stat()
