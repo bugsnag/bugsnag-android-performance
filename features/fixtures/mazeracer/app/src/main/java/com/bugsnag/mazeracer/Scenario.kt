@@ -36,9 +36,8 @@ abstract class Scenario(
     fun runAndFlush(scenario: () -> Unit) {
         scenario()
 
-        // background the app to flush the span queue
         mainHandler.post {
-            context.finish()
+            PerformanceTestUtils.flushBatch()
         }
     }
 
