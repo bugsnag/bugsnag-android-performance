@@ -20,6 +20,12 @@ public class PerformanceTestUtils {
         InstrumentedAppState appState = BugsnagPerformance.INSTANCE.getInstrumentedAppState$internal();
         SpanProcessor processor = appState.getSpanProcessor();
 
+        try {
+            Thread.sleep(1500);
+        } catch(InterruptedException e) {
+            // ignore
+        }
+
         if (processor instanceof Tracer) {
             Tracer tracer = (Tracer) processor;
             tracer.forceCurrentBatch();
