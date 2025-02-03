@@ -1,6 +1,7 @@
 package com.bugsnag.android.performance.internal
 
 import com.bugsnag.android.performance.Span
+import com.bugsnag.android.performance.SpanMetrics
 import com.bugsnag.android.performance.SpanOptions
 import com.bugsnag.android.performance.internal.framerate.FramerateMetricsSnapshot
 import com.bugsnag.android.performance.internal.framerate.TimestampPairBuffer
@@ -20,6 +21,11 @@ class SpanFactoryTest {
     private lateinit var frameMetrics: MetricSource<FramerateMetricsSnapshot>
 
     private lateinit var spanFactory: SpanFactory
+
+    private val spanMetricsWithRendering =
+        SpanMetrics(rendering = true, cpu = false, memory = false)
+    private val spanMetricsWithoutRendering =
+        SpanMetrics(rendering = false, cpu = false, memory = false)
 
     @Before
     fun setup() {
@@ -55,7 +61,7 @@ class SpanFactoryTest {
                 "Scrolling",
                 baseOptions
                     .setFirstClass(false)
-                    .withRenderingMetrics(true),
+                    .withMetrics(spanMetricsWithRendering),
             ).metrics,
         )
 
@@ -65,7 +71,17 @@ class SpanFactoryTest {
                 "Scrolling",
                 baseOptions
                     .setFirstClass(true)
-                    .withRenderingMetrics(true),
+                    .withMetrics(spanMetricsWithRendering),
+            ).metrics,
+        )
+
+        assertNotNull(
+            "setFirstClass(true).withRenderingMetrics(true) should have rendering metrics",
+            spanFactory.createCustomSpan(
+                "Scrolling",
+                baseOptions
+                    .setFirstClass(true)
+                    .withMetrics(null),
             ).metrics,
         )
 
@@ -84,6 +100,16 @@ class SpanFactoryTest {
                 baseOptions
                     .setFirstClass(true)
                     .withRenderingMetrics(false),
+            ).metrics,
+        )
+
+        assertNull(
+            "SpanOptions.setFirstClass(true).withRenderingMetrics(false) should not have rendering metrics",
+            spanFactory.createCustomSpan(
+                "Scrolling",
+                baseOptions
+                    .setFirstClass(true)
+                    .withMetrics(spanMetricsWithoutRendering),
             ).metrics,
         )
     }
