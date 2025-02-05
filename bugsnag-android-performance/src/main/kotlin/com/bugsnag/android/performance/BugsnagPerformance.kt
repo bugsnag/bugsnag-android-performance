@@ -283,7 +283,8 @@ public object BugsnagPerformance {
 
     /**
      * Report that your apps `Application` class has been loaded. This can be manually called from
-     * a static initializer to improve the app start time measurements:
+     * your `Application` static initializer (or earlier if you have a custom `AppComponentFactory`)
+     * to improve the app start time measurements:
      *
      * ```java
      * public class MyApplication extends Application {
@@ -291,9 +292,15 @@ public object BugsnagPerformance {
      *         BugsnagPerformance.reportApplicationClassLoaded()
      * ```
      *
+     * This function marks the start time of the `AppStart` span (if an earlier time has not already
+     * been marked), and only affects cold start times. If this function is not called manually,
+     * cold `AppStart` spans are opened by a `ContentProvider` (typically between the `Application`
+     * object being created, and `Application.onCreate` being invoked).
+     *
      * Kotlin apps can use the `init` block of the `companion object` to achieve the same effect.
      *
-     * This method is safe to call before [start].
+     * This function is typically called before [start] (and is ignored if called after [start]),
+     * and can be safely called multiple times.
      */
     @JvmStatic
     public fun reportApplicationClassLoaded() {
