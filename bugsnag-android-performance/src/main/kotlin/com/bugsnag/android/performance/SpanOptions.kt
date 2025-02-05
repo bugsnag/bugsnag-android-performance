@@ -69,7 +69,7 @@ public class SpanOptions private constructor(
         _parentContext,
         makeContext,
         _isFirstClass,
-        _spanMetrics
+        _spanMetrics,
     )
 
     public fun within(parentContext: SpanContext?): SpanOptions = SpanOptions(
@@ -78,7 +78,7 @@ public class SpanOptions private constructor(
         parentContext,
         makeContext,
         _isFirstClass,
-        _spanMetrics
+        _spanMetrics,
     )
 
     public fun makeCurrentContext(makeContext: Boolean): SpanOptions = SpanOptions(
@@ -87,7 +87,7 @@ public class SpanOptions private constructor(
         _parentContext,
         makeContext,
         _isFirstClass,
-        _spanMetrics
+        _spanMetrics,
     )
 
     public fun setFirstClass(isFirstClass: Boolean): SpanOptions = SpanOptions(
@@ -96,7 +96,7 @@ public class SpanOptions private constructor(
         _parentContext,
         makeContext,
         isFirstClass,
-        _spanMetrics
+        _spanMetrics,
     )
 
     @Deprecated(
@@ -113,18 +113,27 @@ public class SpanOptions private constructor(
                     rendering = instrumentRendering,
                     cpu = _spanMetrics.cpu,
                     memory = _spanMetrics.memory,
-                )
+                ),
             )
         } else withMetrics(SpanMetrics(rendering = instrumentRendering))
     }
 
-    public fun withMetrics(spanMetrics: SpanMetrics?): SpanOptions = SpanOptions(
+    /**
+     * Set the metrics that should be captured with the spans. Adding metrics that have been
+     * disabled via [PerformanceConfiguration.enabledMetrics] will have no effect (as they are
+     * not being captured). Calling this with an explicit `null` (`withMetrics(null)`) will capture
+     * only the default metrics for the span (see [SpanMetrics] for more details).
+     */
+    @JvmOverloads
+    public fun withMetrics(
+        spanMetrics: SpanMetrics? = SpanMetrics(rendering = true, cpu = true, memory = true),
+    ): SpanOptions = SpanOptions(
         optionsSet or OPT_METRICS,
         _startTime,
         _parentContext,
         makeContext,
         _isFirstClass,
-        spanMetrics
+        spanMetrics,
     )
 
     override fun equals(other: Any?): Boolean {
@@ -143,12 +152,10 @@ public class SpanOptions private constructor(
             && this.makeContext != other.makeContext
         ) return false
 
-        @Suppress("RedundantIf")
         if ((isOptionSet(OPT_IS_FIRST_CLASS) || other.isOptionSet(OPT_IS_FIRST_CLASS))
             && this.isFirstClass != other.isFirstClass
         ) return false
 
-        @Suppress("RedundantIf")
         if ((isOptionSet(OPT_METRICS) || other.isOptionSet(OPT_METRICS))
             && this.spanMetrics != other.spanMetrics
         ) return false
@@ -220,7 +227,7 @@ public class SpanOptions private constructor(
                 null,
                 makeContext = true,
                 isFirstClass = false,
-                null
+                null,
             )
 
         @JvmName("createWithStartTime")
