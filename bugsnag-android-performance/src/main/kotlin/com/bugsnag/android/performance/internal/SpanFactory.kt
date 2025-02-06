@@ -11,6 +11,7 @@ import com.bugsnag.android.performance.SpanOptions
 import com.bugsnag.android.performance.ViewType
 import com.bugsnag.android.performance.internal.framerate.FramerateMetricsSnapshot
 import com.bugsnag.android.performance.internal.integration.NotifierIntegration
+import com.bugsnag.android.performance.internal.metrics.CpuMetricsSource
 import com.bugsnag.android.performance.internal.metrics.MetricSource
 import com.bugsnag.android.performance.internal.metrics.SpanMetricsSnapshot
 import com.bugsnag.android.performance.internal.processing.AttributeLimits
@@ -25,12 +26,13 @@ public class SpanFactory(
     public val spanAttributeSource: AttributeSource = {},
 ) {
 
-    private val timeoutExecutor = SpanTaskWorker()
+    private val spanTaskWorker = SpanTaskWorker()
 
     public var networkRequestCallback: NetworkRequestInstrumentationCallback? = null
 
     internal var attributeLimits: AttributeLimits? = null
     internal var framerateMetricsSource: MetricSource<FramerateMetricsSnapshot>? = null
+    internal var cpuMetricsSource: CpuMetricsSource? = null
 
     internal fun configure(
         spanProcessor: SpanProcessor,
@@ -41,7 +43,11 @@ public class SpanFactory(
         this.attributeLimits = attributeLimits
         this.networkRequestCallback = networkRequestCallback
 
-        this.timeoutExecutor.start()
+        this.spanTaskWorker.start()
+
+        val cpuMetricsSource = CpuMetricsSource(samplingDelayMs = ONE_SECOND)
+        this.spanTaskWorker.addSampler(cpuMetricsSource, ONE_SECOND)
+        this.cpuMetricsSource = cpuMetricsSource
     }
 
     @JvmOverloads
@@ -243,7 +249,7 @@ public class SpanFactory(
             attributeLimits = attributeLimits,
             metrics = createSpanMetrics(isFirstClass, instrumentRendering),
             processor = spanProcessor,
-            timeoutExecutor = timeoutExecutor,
+            timeoutExecutor = spanTaskWorker,
         )
 
         if (isFirstClass != null) {
@@ -261,14 +267,24 @@ public class SpanFactory(
         isFirstClass: Boolean?,
         instrumentRendering: Boolean?,
     ): SpanMetricsSnapshot? {
-        val localRenderingMetricsSource = framerateMetricsSource ?: return null
-        if (((isFirstClass == true && instrumentRendering != false) || instrumentRendering == true)) {
-            return SpanMetricsSnapshot(localRenderingMetricsSource)
+        val localRenderingMetricsSource = framerateMetricsSource?.takeIf {
+            ((isFirstClass == true && instrumentRendering != false) || instrumentRendering == true)
         }
 
-        return null
+        val localCpuMetricsSource = cpuMetricsSource?.takeIf {
+            isFirstClass == true
+        }
+
+        return if (localRenderingMetricsSource != null || localCpuMetricsSource != null) {
+            SpanMetricsSnapshot(localRenderingMetricsSource, localCpuMetricsSource)
+        } else {
+            null
+        }
     }
 
-
     private fun UUID.isValidTraceId() = mostSignificantBits != 0L || leastSignificantBits != 0L
+
+    private companion object {
+        const val ONE_SECOND = 1000L
+    }
 }

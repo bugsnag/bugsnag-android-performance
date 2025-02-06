@@ -8,11 +8,16 @@ import com.bugsnag.android.performance.internal.framerate.FramerateMetricsSnapsh
  */
 internal class SpanMetricsSnapshot(
     private val renderingMetricsSource: MetricSource<FramerateMetricsSnapshot>?,
+    private val cpuMetricsSource: MetricSource<CpuMetricsSnapshot>?,
 ) {
     private val renderingMetricsSnapshot: FramerateMetricsSnapshot? =
         renderingMetricsSource?.createStartMetrics()
 
+    private val cpuMetricsCpuMetricsSnapshot: CpuMetricsSnapshot? =
+        cpuMetricsSource?.createStartMetrics()
+
     fun finish(spanImpl: SpanImpl) {
         renderingMetricsSnapshot?.let { renderingMetricsSource?.endMetrics(it, spanImpl) }
+        cpuMetricsCpuMetricsSnapshot?.let { cpuMetricsSource?.endMetrics(it, spanImpl) }
     }
 }
