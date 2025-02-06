@@ -1,3 +1,10 @@
+## TBD
+
+### Changes
+
+* Added LoadingIndicator composable as a way to easily extend ViewLoad end times to interactivity
+  [https://github.com/bugsnag/bugsnag-android-performance/pull/336](https://github.com/bugsnag/bugsnag-android-performance/pull/336)
+
 ## 1.11.0 (2025-01-20)
 
 ### Changes

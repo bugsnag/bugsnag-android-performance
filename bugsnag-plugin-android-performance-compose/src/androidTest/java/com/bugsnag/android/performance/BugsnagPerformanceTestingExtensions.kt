@@ -12,3 +12,9 @@ import com.bugsnag.android.performance.internal.SpanImpl
 fun BugsnagPerformance.takeCurrentBatch(): Collection<SpanImpl> {
     return BugsnagPerformanceHooks.takeCurrentBatch()
 }
+
+val Span.duration: Long
+    get() = BugsnagPerformanceHooks.durationOf(this as SpanImpl)
+
+val Span.durationMillis: Long
+    get() = duration / 1_000_000L

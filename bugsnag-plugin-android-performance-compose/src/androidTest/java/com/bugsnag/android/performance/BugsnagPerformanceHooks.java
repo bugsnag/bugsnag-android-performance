@@ -19,4 +19,14 @@ class BugsnagPerformanceHooks {
         forwardingSpanProcessor.forwardTo(target);
         return target.takeBatch();
     }
+
+    static long durationOf(SpanImpl span) {
+        long endTime = span.getEndTime$internal();
+
+        if (endTime <= 0) {
+            return 0;
+        }
+
+        return endTime - span.getStartTime$internal();
+    }
 }
