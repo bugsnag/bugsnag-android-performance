@@ -101,7 +101,7 @@ public class InstrumentedAppState {
             (bootstrapSpanProcessor as? ForwardingSpanProcessor)?.discard()
         }
 
-        if (!configuration.autoInstrumentRendering && framerateMetricsSource != null) {
+        if (!configuration.enabledMetrics.rendering && framerateMetricsSource != null) {
             spanFactory.framerateMetricsSource = null
             app.unregisterActivityLifecycleCallbacks(framerateMetricsSource)
             framerateMetricsSource = null
