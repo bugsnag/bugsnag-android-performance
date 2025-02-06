@@ -5,6 +5,7 @@ import android.app.Application
 import android.content.Context
 import android.os.Build
 import com.bugsnag.android.performance.AutoInstrument
+import com.bugsnag.android.performance.EnabledMetrics
 import com.bugsnag.android.performance.Logger
 import com.bugsnag.android.performance.NetworkRequestInstrumentationCallback
 import com.bugsnag.android.performance.PerformanceConfiguration
@@ -23,7 +24,7 @@ internal data class ImmutableConfig(
     val endpoint: String,
     val autoInstrumentAppStarts: Boolean,
     val autoInstrumentActivities: AutoInstrument,
-    val autoInstrumentRendering: Boolean,
+    val enabledMetrics: EnabledMetrics,
     val serviceName: String,
     val releaseStage: String,
     val enabledReleaseStages: Set<String>?,
@@ -50,7 +51,7 @@ internal data class ImmutableConfig(
             ?: "https://${configuration.apiKey}.otlp.bugsnag.com/v1/traces",
         configuration.autoInstrumentAppStarts,
         configuration.autoInstrumentActivities,
-        configuration.autoInstrumentRendering,
+        configuration.enabledMetrics.copy(),
         configuration.serviceName ?: configuration.context.packageName,
         getReleaseStage(configuration),
         configuration.enabledReleaseStages?.toSet(),
