@@ -284,8 +284,16 @@ public class SpanFactory(
             isFirstClass == true
         }
 
-        return if (localRenderingMetricsSource != null || localCpuMetricsSource != null || localMemoryMetricsSource != null) {
-            SpanMetricsSnapshot(localRenderingMetricsSource, localCpuMetricsSource, localMemoryMetricsSource)
+        return if (
+            localRenderingMetricsSource != null ||
+            localCpuMetricsSource != null ||
+            localMemoryMetricsSource != null
+        ) {
+            SpanMetricsSnapshot(
+                localRenderingMetricsSource,
+                localCpuMetricsSource,
+                localMemoryMetricsSource,
+            )
         } else {
             null
         }
