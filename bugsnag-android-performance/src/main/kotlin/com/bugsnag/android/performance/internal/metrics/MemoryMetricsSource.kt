@@ -30,10 +30,10 @@ internal class MemoryMetricsSource(
             sample.timestamp = timestamp
 
             val memoryInfo = activityManager?.getProcessMemoryInfo(intArrayOf(Process.myPid()))
-            if (memoryInfo?.size == 1) {
-                val memoryInfoSample = memoryInfo[0]
+            val memoryInfoSample = memoryInfo?.getOrNull(0)?.takeIf { memoryInfo.size == 1 }
+            if (memoryInfoSample != null) {
                 sample.pss =
-                    (memoryInfoSample.dalvikPss + memoryInfoSample.nativePss + memoryInfoSample.otherPss) * 1024L
+                    (memoryInfoSample.dalvikPss + memoryInfoSample.nativePss + memoryInfoSample.otherPss) * KILOBYTE
             } else {
                 sample.pss = -1
             }
@@ -81,7 +81,7 @@ internal class MemoryMetricsSource(
                 }
 
                 target.attributes["bugsnag.system.memory.spaces.space_names"] =
-                    arrayOf("device", "art")
+                    SPACE_NAMES
 
                 deviceMemory?.also {
                     target.attributes["bugsnag.device.physical_device_memory"] = it
@@ -145,6 +145,10 @@ internal class MemoryMetricsSource(
          * sample each second).
          */
         const val DEFAULT_SAMPLE_COUNT = 60 * 10
+
+        const val KILOBYTE = 1024L
+
+        val SPACE_NAMES = arrayOf("device", "art")
     }
 }
 

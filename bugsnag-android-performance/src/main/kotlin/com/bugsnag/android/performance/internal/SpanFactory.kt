@@ -11,6 +11,7 @@ import com.bugsnag.android.performance.SpanOptions
 import com.bugsnag.android.performance.ViewType
 import com.bugsnag.android.performance.internal.framerate.FramerateMetricsSnapshot
 import com.bugsnag.android.performance.internal.integration.NotifierIntegration
+import com.bugsnag.android.performance.internal.metrics.AbstractSampledMetricsSource.Companion.SAMPLE_DELAY_ONE_SECOND
 import com.bugsnag.android.performance.internal.metrics.CpuMetricsSource
 import com.bugsnag.android.performance.internal.metrics.MemoryMetricsSource
 import com.bugsnag.android.performance.internal.metrics.MetricSource
@@ -47,11 +48,11 @@ public class SpanFactory(
 
         this.spanTaskWorker.start()
 
-        val cpuMetricsSource = CpuMetricsSource(samplingDelayMs = ONE_SECOND)
-        this.spanTaskWorker.addSampler(cpuMetricsSource, ONE_SECOND)
+        val cpuMetricsSource = CpuMetricsSource(samplingDelayMs = SAMPLE_DELAY_ONE_SECOND)
+        this.spanTaskWorker.addSampler(cpuMetricsSource, SAMPLE_DELAY_ONE_SECOND)
         this.cpuMetricsSource = cpuMetricsSource
 
-        memoryMetricsSource?.let { this.spanTaskWorker.addSampler(it, ONE_SECOND) }
+        memoryMetricsSource?.let { this.spanTaskWorker.addSampler(it, SAMPLE_DELAY_ONE_SECOND) }
     }
 
     @JvmOverloads
@@ -291,8 +292,4 @@ public class SpanFactory(
     }
 
     private fun UUID.isValidTraceId() = mostSignificantBits != 0L || leastSignificantBits != 0L
-
-    internal companion object {
-        const val ONE_SECOND = 1000L
-    }
 }
