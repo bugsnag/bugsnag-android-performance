@@ -5,12 +5,12 @@ import android.os.Build
 import androidx.annotation.RestrictTo
 import com.bugsnag.android.performance.AutoInstrument
 import com.bugsnag.android.performance.SpanContext
-import com.bugsnag.android.performance.internal.SpanFactory.Companion.ONE_SECOND
 import com.bugsnag.android.performance.internal.framerate.FramerateMetricsSource
 import com.bugsnag.android.performance.internal.instrumentation.AbstractActivityLifecycleInstrumentation
 import com.bugsnag.android.performance.internal.instrumentation.ActivityLifecycleInstrumentation
 import com.bugsnag.android.performance.internal.instrumentation.ForegroundState
 import com.bugsnag.android.performance.internal.instrumentation.LegacyActivityInstrumentation
+import com.bugsnag.android.performance.internal.metrics.AbstractSampledMetricsSource.Companion.SAMPLE_DELAY_ONE_SECOND
 import com.bugsnag.android.performance.internal.metrics.MemoryMetricsSource
 import com.bugsnag.android.performance.internal.processing.ForwardingSpanProcessor
 import com.bugsnag.android.performance.internal.processing.ImmutableConfig
@@ -54,7 +54,7 @@ public class InstrumentedAppState {
         app = application
         app.registerActivityLifecycleCallbacks(activityInstrumentation)
 
-        memoryMetricsSource = MemoryMetricsSource(application, ONE_SECOND)
+        memoryMetricsSource = MemoryMetricsSource(application, SAMPLE_DELAY_ONE_SECOND)
         spanFactory.memoryMetricsSource = memoryMetricsSource
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
