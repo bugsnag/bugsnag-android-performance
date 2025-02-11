@@ -36,7 +36,6 @@
     <ID>MagicNumber:SpanKind.kt$SpanKind.CLIENT$3</ID>
     <ID>MagicNumber:SpanKind.kt$SpanKind.CONSUMER$5</ID>
     <ID>MagicNumber:SpanKind.kt$SpanKind.PRODUCER$4</ID>
-    <ID>MaxLineLength:SpanFactory.kt$SpanFactory$return</ID>
     <ID>ReturnCount:RetryDeliveryTask.kt$RetryDeliveryTask$override fun execute(): Boolean</ID>
     <ID>ReturnCount:SpanImpl.kt$SpanState$fun block(): Boolean</ID>
     <ID>ReturnCount:SpanImpl.kt$SpanState$fun end(): Boolean</ID>
