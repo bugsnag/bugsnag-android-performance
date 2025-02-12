@@ -96,12 +96,20 @@ internal class CpuMetricsSource(
                 target.attributes["bugsnag.system.cpu_measures_overhead"] = overheadCpuSamples
                 target.attributes["bugsnag.system.cpu_measures_timestamps"] = cpuTimestamps
 
-                target.attributes["bugsnag.metrics.cpu_mean_total"] =
-                    cpuUseTotal / cpuUseSampleCount
-                target.attributes["bugsnag.metrics.cpu_mean_main_thread"] =
-                    mainThreadCpuTotal / mainThreadSampleCount
-                target.attributes["bugsnag.system.cpu_mean_overhead"] =
-                    overheadCpuTotal / overheadSampleCount
+                if (cpuUseSampleCount > 0) {
+                    target.attributes["bugsnag.metrics.cpu_mean_total"] =
+                        cpuUseTotal / cpuUseSampleCount
+                }
+
+                if (mainThreadSampleCount > 0) {
+                    target.attributes["bugsnag.metrics.cpu_mean_main_thread"] =
+                        mainThreadCpuTotal / mainThreadSampleCount
+                }
+
+                if (overheadSampleCount > 0) {
+                    target.attributes["bugsnag.system.cpu_mean_overhead"] =
+                        overheadCpuTotal / overheadSampleCount
+                }
 
                 snapshot.blocking?.cancel()
             }

@@ -88,13 +88,17 @@ internal class MemoryMetricsSource(
                     target.attributes["bugsnag.system.memory.spaces.device.size"] = it
                 }
                 target.attributes["bugsnag.system.memory.spaces.device.used"] = deviceMemorySamples
-                target.attributes["bugsnag.system.memory.spaces.device.mean"] =
-                    deviceUsedMemoryTotal / deviceUsedMemoryCount
+                if (deviceUsedMemoryCount > 0) {
+                    target.attributes["bugsnag.system.memory.spaces.device.mean"] =
+                        deviceUsedMemoryTotal / deviceUsedMemoryCount
+                }
 
                 target.attributes["bugsnag.system.memory.spaces.art.size"] = artSizeMemory
                 target.attributes["bugsnag.system.memory.spaces.art.used"] = artUsedMemorySamples
-                target.attributes["bugsnag.system.memory.spaces.art.mean"] =
-                    artUsedMemoryTotal / artUsedMemoryCount
+                if (artUsedMemoryCount > 0) {
+                    target.attributes["bugsnag.system.memory.spaces.art.mean"] =
+                        artUsedMemoryTotal / artUsedMemoryCount
+                }
                 target.attributes["bugsnag.system.memory.timestamps"] = artMemoryTimestamps
 
                 snapshot.blocking?.cancel()
