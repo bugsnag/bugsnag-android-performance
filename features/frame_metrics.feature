@@ -19,6 +19,10 @@ Scenario: Slow & Frozen Frames are reported
   * the "Slow Animation" span has array attribute named "bugsnag.system.cpu_measures_main_thread"
   * the "Slow Animation" span has array attribute named "bugsnag.system.cpu_measures_timestamps"
 
+  * the "Slow Animation" span has array attribute named "bugsnag.system.memory.spaces.device.used"
+  * the "Slow Animation" span has array attribute named "bugsnag.system.memory.spaces.art.used"
+  * the "Slow Animation" span has array attribute named "bugsnag.system.memory.timestamps"
+
 Scenario: Rending Instrumentation can be turned off
   When I run "FrameMetricsScenario" configured as "disableInstrumentation"
   * I wait to receive a trace
