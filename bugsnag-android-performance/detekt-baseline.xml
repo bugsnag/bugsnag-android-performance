@@ -26,6 +26,7 @@
     <ID>MagicNumber:InternalDebug.kt$InternalDebug$24L</ID>
     <ID>MagicNumber:InternalDebug.kt$InternalDebug$30000L</ID>
     <ID>MagicNumber:InternalDebug.kt$InternalDebug$60</ID>
+    <ID>MagicNumber:MemoryMetricsSource.kt$MemoryMetricsSource$1024L</ID>
     <ID>MagicNumber:PerformanceConfiguration.kt$PerformanceConfiguration$1000</ID>
     <ID>MagicNumber:PerformanceConfiguration.kt$PerformanceConfiguration$10000</ID>
     <ID>MagicNumber:PerformanceConfiguration.kt$PerformanceConfiguration$1024</ID>
@@ -36,6 +37,7 @@
     <ID>MagicNumber:SpanKind.kt$SpanKind.CLIENT$3</ID>
     <ID>MagicNumber:SpanKind.kt$SpanKind.CONSUMER$5</ID>
     <ID>MagicNumber:SpanKind.kt$SpanKind.PRODUCER$4</ID>
+    <ID>MaxLineLength:SpanFactory.kt$SpanFactory$return</ID>
     <ID>ReturnCount:RetryDeliveryTask.kt$RetryDeliveryTask$override fun execute(): Boolean</ID>
     <ID>ReturnCount:SpanImpl.kt$SpanState$fun block(): Boolean</ID>
     <ID>ReturnCount:SpanImpl.kt$SpanState$fun end(): Boolean</ID>

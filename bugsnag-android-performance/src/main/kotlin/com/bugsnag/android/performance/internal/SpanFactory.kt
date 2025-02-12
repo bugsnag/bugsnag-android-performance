@@ -12,6 +12,7 @@ import com.bugsnag.android.performance.ViewType
 import com.bugsnag.android.performance.internal.framerate.FramerateMetricsSnapshot
 import com.bugsnag.android.performance.internal.integration.NotifierIntegration
 import com.bugsnag.android.performance.internal.metrics.CpuMetricsSource
+import com.bugsnag.android.performance.internal.metrics.MemoryMetricsSource
 import com.bugsnag.android.performance.internal.metrics.MetricSource
 import com.bugsnag.android.performance.internal.metrics.SpanMetricsSnapshot
 import com.bugsnag.android.performance.internal.processing.AttributeLimits
@@ -33,6 +34,7 @@ public class SpanFactory(
     internal var attributeLimits: AttributeLimits? = null
     internal var framerateMetricsSource: MetricSource<FramerateMetricsSnapshot>? = null
     internal var cpuMetricsSource: CpuMetricsSource? = null
+    internal var memoryMetricsSource: MemoryMetricsSource? = null
 
     internal fun configure(
         spanProcessor: SpanProcessor,
@@ -48,6 +50,8 @@ public class SpanFactory(
         val cpuMetricsSource = CpuMetricsSource(samplingDelayMs = ONE_SECOND)
         this.spanTaskWorker.addSampler(cpuMetricsSource, ONE_SECOND)
         this.cpuMetricsSource = cpuMetricsSource
+
+        memoryMetricsSource?.let { this.spanTaskWorker.addSampler(it, ONE_SECOND) }
     }
 
     @JvmOverloads
@@ -275,8 +279,12 @@ public class SpanFactory(
             isFirstClass == true
         }
 
-        return if (localRenderingMetricsSource != null || localCpuMetricsSource != null) {
-            SpanMetricsSnapshot(localRenderingMetricsSource, localCpuMetricsSource)
+        val localMemoryMetricsSource = memoryMetricsSource?.takeIf {
+            isFirstClass == true
+        }
+
+        return if (localRenderingMetricsSource != null || localCpuMetricsSource != null || localMemoryMetricsSource != null) {
+            SpanMetricsSnapshot(localRenderingMetricsSource, localCpuMetricsSource, localMemoryMetricsSource)
         } else {
             null
         }
@@ -284,7 +292,7 @@ public class SpanFactory(
 
     private fun UUID.isValidTraceId() = mostSignificantBits != 0L || leastSignificantBits != 0L
 
-    private companion object {
+    internal companion object {
         const val ONE_SECOND = 1000L
     }
 }
