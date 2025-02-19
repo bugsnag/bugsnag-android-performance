@@ -49,6 +49,10 @@ internal abstract class AbstractSampledMetricsSource<T : LinkedMetricsSnapshot<T
             }
         }
     }
+
+    internal companion object {
+        const val SAMPLE_DELAY_ONE_SECOND = 1000L
+    }
 }
 
 internal open class LinkedMetricsSnapshot<T : LinkedMetricsSnapshot<T>> {

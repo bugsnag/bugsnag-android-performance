@@ -10,6 +10,8 @@ import com.bugsnag.android.performance.internal.instrumentation.AbstractActivity
 import com.bugsnag.android.performance.internal.instrumentation.ActivityLifecycleInstrumentation
 import com.bugsnag.android.performance.internal.instrumentation.ForegroundState
 import com.bugsnag.android.performance.internal.instrumentation.LegacyActivityInstrumentation
+import com.bugsnag.android.performance.internal.metrics.AbstractSampledMetricsSource.Companion.SAMPLE_DELAY_ONE_SECOND
+import com.bugsnag.android.performance.internal.metrics.MemoryMetricsSource
 import com.bugsnag.android.performance.internal.processing.ForwardingSpanProcessor
 import com.bugsnag.android.performance.internal.processing.ImmutableConfig
 import com.bugsnag.android.performance.internal.processing.Tracer
@@ -38,6 +40,7 @@ public class InstrumentedAppState {
         private set
 
     private var framerateMetricsSource: FramerateMetricsSource? = null
+    private var memoryMetricsSource: MemoryMetricsSource? = null
 
     @get:JvmName("getConfig\$internal")
     internal var config: ImmutableConfig? = null
@@ -50,6 +53,9 @@ public class InstrumentedAppState {
 
         app = application
         app.registerActivityLifecycleCallbacks(activityInstrumentation)
+
+        memoryMetricsSource = MemoryMetricsSource(application, SAMPLE_DELAY_ONE_SECOND)
+        spanFactory.memoryMetricsSource = memoryMetricsSource
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             framerateMetricsSource = FramerateMetricsSource()
