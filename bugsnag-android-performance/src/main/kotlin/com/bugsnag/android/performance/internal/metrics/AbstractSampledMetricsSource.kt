@@ -6,8 +6,7 @@ import java.util.concurrent.atomic.AtomicReference
 
 internal abstract class AbstractSampledMetricsSource<T : LinkedMetricsSnapshot<T>>(
     private val samplingDelayMs: Long,
-) :
-    MetricSource<T>, Runnable {
+) : SampledMetricSource<T> {
     /**
      * Chain/linked-list of snapshots awaiting the "next" sample, stored as an AtomicReference
      * in the same way as we deal with [SpanImpl] batching (see [BatchingSpanProcessor]) giving
@@ -48,10 +47,6 @@ internal abstract class AbstractSampledMetricsSource<T : LinkedMetricsSnapshot<T
                 break
             }
         }
-    }
-
-    internal companion object {
-        const val SAMPLE_DELAY_ONE_SECOND = 1000L
     }
 }
 

@@ -10,7 +10,6 @@ import com.bugsnag.android.performance.internal.instrumentation.AbstractActivity
 import com.bugsnag.android.performance.internal.instrumentation.ActivityLifecycleInstrumentation
 import com.bugsnag.android.performance.internal.instrumentation.ForegroundState
 import com.bugsnag.android.performance.internal.instrumentation.LegacyActivityInstrumentation
-import com.bugsnag.android.performance.internal.metrics.AbstractSampledMetricsSource.Companion.SAMPLE_DELAY_ONE_SECOND
 import com.bugsnag.android.performance.internal.metrics.MemoryMetricsSource
 import com.bugsnag.android.performance.internal.processing.ForwardingSpanProcessor
 import com.bugsnag.android.performance.internal.processing.ImmutableConfig
@@ -39,9 +38,6 @@ public class InstrumentedAppState {
     public lateinit var app: Application
         private set
 
-    private var framerateMetricsSource: FramerateMetricsSource? = null
-    private var memoryMetricsSource: MemoryMetricsSource? = null
-
     @get:JvmName("getConfig\$internal")
     internal var config: ImmutableConfig? = null
         private set
@@ -54,14 +50,7 @@ public class InstrumentedAppState {
         app = application
         app.registerActivityLifecycleCallbacks(activityInstrumentation)
 
-        memoryMetricsSource = MemoryMetricsSource(application, SAMPLE_DELAY_ONE_SECOND)
-        spanFactory.memoryMetricsSource = memoryMetricsSource
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            framerateMetricsSource = FramerateMetricsSource()
-            spanFactory.framerateMetricsSource = framerateMetricsSource
-            app.registerActivityLifecycleCallbacks(framerateMetricsSource)
-        }
+        spanFactory.attach(application)
 
         ForegroundState.addForegroundChangedCallback { inForeground ->
             defaultAttributeSource.update {
@@ -86,6 +75,7 @@ public class InstrumentedAppState {
             tracer,
             configuration,
             configuration.networkRequestCallback,
+            configuration.enabledMetrics,
         )
 
         tracePropagationUrls = configuration.tracePropagationUrls
@@ -105,12 +95,6 @@ public class InstrumentedAppState {
             SpanContext.contextStack.clear()
 
             (bootstrapSpanProcessor as? ForwardingSpanProcessor)?.discard()
-        }
-
-        if (!configuration.enabledMetrics.rendering && framerateMetricsSource != null) {
-            spanFactory.framerateMetricsSource = null
-            app.unregisterActivityLifecycleCallbacks(framerateMetricsSource)
-            framerateMetricsSource = null
         }
 
         ForegroundState.addForegroundChangedCallback { inForeground ->

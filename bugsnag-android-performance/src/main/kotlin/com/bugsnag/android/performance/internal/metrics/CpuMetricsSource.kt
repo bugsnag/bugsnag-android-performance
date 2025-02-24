@@ -12,7 +12,7 @@ import com.bugsnag.android.performance.internal.util.FixedRingBuffer
 internal class CpuMetricsSource(
     samplingDelayMs: Long,
     maxSampleCount: Int = DEFAULT_SAMPLE_COUNT,
-) : AbstractSampledMetricsSource<CpuMetricsSnapshot>(samplingDelayMs), Runnable {
+) : AbstractSampledMetricsSource<CpuMetricsSnapshot>(samplingDelayMs) {
 
     private val buffer = FixedRingBuffer(maxSampleCount) { CpuSampleData() }
 

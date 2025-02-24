@@ -4,13 +4,16 @@ import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.SpanMetrics
 import com.bugsnag.android.performance.SpanOptions
 import com.bugsnag.android.performance.internal.framerate.FramerateMetricsSnapshot
+import com.bugsnag.android.performance.internal.framerate.FramerateMetricsSource
 import com.bugsnag.android.performance.internal.framerate.TimestampPairBuffer
 import com.bugsnag.android.performance.internal.metrics.MetricSource
 import com.bugsnag.android.performance.test.NoopSpanProcessor
+import com.bugsnag.android.performance.test.TestMetricsContainer
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
+import org.mockito.kotlin.mock
 
 class SpanFactoryTest {
     /**
@@ -41,8 +44,14 @@ class SpanFactoryTest {
             override fun endMetrics(startMetrics: FramerateMetricsSnapshot, span: Span) = Unit
         }
 
-        spanFactory = SpanFactory(NoopSpanProcessor)
-        spanFactory.framerateMetricsSource = frameMetrics
+        spanFactory = SpanFactory(
+            NoopSpanProcessor,
+            spanAttributeSource = {},
+            metricsContainer = TestMetricsContainer(
+                frames = FramerateMetricsSource(),
+            ),
+        )
+        spanFactory.attach(mock())
     }
 
     @Test
@@ -85,14 +94,16 @@ class SpanFactoryTest {
             ).metrics,
         )
 
+        val metrics = spanFactory.createCustomSpan(
+            "Scrolling",
+            baseOptions.setFirstClass(false),
+        ).metrics
         assertNull(
             "SpanOptions.setFirstClass(false) should not have rendering metrics",
-            spanFactory.createCustomSpan(
-                "Scrolling",
-                baseOptions.setFirstClass(false),
-            ).metrics,
+            metrics,
         )
 
+        @Suppress("DEPRECATION")
         assertNull(
             "SpanOptions.setFirstClass(true).withRenderingMetrics(false) should not have rendering metrics",
             spanFactory.createCustomSpan(

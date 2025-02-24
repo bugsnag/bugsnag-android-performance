@@ -12,7 +12,7 @@ internal class MemoryMetricsSource(
     private val appContext: Context,
     samplingDelayMs: Long,
     maxSampleCount: Int = DEFAULT_SAMPLE_COUNT,
-) : AbstractSampledMetricsSource<MemoryMetricsSnapshot>(samplingDelayMs), Runnable {
+) : AbstractSampledMetricsSource<MemoryMetricsSnapshot>(samplingDelayMs) {
     private val buffer = FixedRingBuffer(maxSampleCount) { MemorySampleData() }
 
     private val runtime = Runtime.getRuntime()
