@@ -7,6 +7,16 @@ import java.util.concurrent.DelayQueue
 import java.util.concurrent.Delayed
 import java.util.concurrent.TimeUnit
 
+internal interface TimeoutExecutor {
+    fun scheduleTimeout(timeout: Timeout)
+    fun cancelTimeout(timeout: Timeout)
+}
+
+internal interface SamplerExecutor {
+    fun addSampler(sampler: Runnable, sampleRateMs: Long = 1000L)
+    fun removeSampler(sampler: Runnable)
+}
+
 internal interface ScheduledAction : Delayed, Runnable {
     override fun compareTo(other: Delayed): Int {
         val delay = getDelay(TimeUnit.NANOSECONDS)
@@ -19,7 +29,25 @@ internal interface ScheduledAction : Delayed, Runnable {
     }
 }
 
-internal class SpanTaskWorker : Runnable, TimeoutExecutor {
+internal interface Timeout : ScheduledAction {
+    /**
+     * The time that this `Timeout` is "due" relative to the [SystemClock.elapsedRealtime] clock.
+     */
+    val target: Long
+
+    /**
+     * Return the number of milliseconds before this Timeout has elapsed (may be `<=0` if the
+     * timeout has already passed).
+     */
+    val relativeMs: Long
+        get() = target - SystemClock.elapsedRealtime()
+
+    override fun getDelay(unit: TimeUnit): Long {
+        return unit.convert(relativeMs, TimeUnit.MILLISECONDS)
+    }
+}
+
+internal class SpanTaskWorker : Runnable, TimeoutExecutor, SamplerExecutor {
     /*
      * The SpanTaskWorker is a Timer/ScheduledExecutor/HandlerThread style class, but allows tasks
      * to be added and removed before the backing thread is actually started. Once it has been
@@ -76,11 +104,11 @@ internal class SpanTaskWorker : Runnable, TimeoutExecutor {
         actions.remove(timeout)
     }
 
-    fun addSampler(sampler: Runnable, sampleRateMs: Long = 1000L) {
+    override fun addSampler(sampler: Runnable, sampleRateMs: Long) {
         actions.add(Sampler(sampleRateMs, sampler))
     }
 
-    fun removeSampler(sampler: Runnable) {
+    override fun removeSampler(sampler: Runnable) {
         actions.removeAll { it is Sampler && it.sampler === sampler }
     }
 

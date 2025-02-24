@@ -25,4 +25,30 @@ internal class SpanMetricsSnapshot(
         cpuMetricsCpuMetricsSnapshot?.let { cpuMetricsSource?.endMetrics(it, spanImpl) }
         memoryMetricsMemoryMetricsSnapshot?.let { memoryMetricsSource?.endMetrics(it, spanImpl) }
     }
+
+    internal companion object {
+        /**
+         * Create a `SpanMetricsSnapshot` only if one is required (ie: at least one of the
+         * `MetricSource`s is non-null). If all of the `MetricSource`s passed here are `null`
+         * then this function will return `null`.
+         */
+        fun createIfRequired(
+            renderingMetricsSource: MetricSource<FramerateMetricsSnapshot>?,
+            cpuMetricsSource: MetricSource<CpuMetricsSnapshot>?,
+            memoryMetricsSource: MetricSource<MemoryMetricsSnapshot>?,
+        ): SpanMetricsSnapshot? {
+            if (renderingMetricsSource == null &&
+                cpuMetricsSource == null &&
+                memoryMetricsSource == null
+            ) {
+                return null
+            }
+
+            return SpanMetricsSnapshot(
+                renderingMetricsSource,
+                cpuMetricsSource,
+                memoryMetricsSource,
+            )
+        }
+    }
 }
