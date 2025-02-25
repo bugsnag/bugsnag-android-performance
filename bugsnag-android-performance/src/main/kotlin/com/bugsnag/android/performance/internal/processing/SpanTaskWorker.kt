@@ -86,13 +86,7 @@ internal class SpanTaskWorker : Runnable, TimeoutExecutor, SamplerExecutor {
 
     override fun run() {
         while (running) {
-            try {
-                actions.take().run()
-            } catch (ie: InterruptedException) {
-                // ignore and continue, the thread may have been stopped
-            } catch (ex: Exception) {
-                Logger.w("unhandled exception in timeout", ex)
-            }
+            runTask(actions.take())
         }
     }
 
@@ -105,22 +99,36 @@ internal class SpanTaskWorker : Runnable, TimeoutExecutor, SamplerExecutor {
     }
 
     override fun addSampler(sampler: Runnable, sampleRateMs: Long) {
-        actions.add(Sampler(sampleRateMs, sampler))
+        actions.add(Sampler(sampler, sampleRateMs))
     }
 
     override fun removeSampler(sampler: Runnable) {
         actions.removeAll { it is Sampler && it.sampler === sampler }
     }
 
-    private inner class Sampler(
-        val sampleRateMs: Long,
-        val sampler: Runnable,
-    ) : ScheduledAction {
-        private val baseTime = SystemClock.elapsedRealtime()
+    private fun runTask(task: Runnable) {
+        try {
+            task.run()
+        } catch (ie: InterruptedException) {
+            // ignore and continue, the thread may have been stopped
+        } catch (ex: Exception) {
+            Logger.w("unhandled exception in span task: $task", ex)
+        }
+    }
 
-        private var runCount = 1L
+    private inner class Sampler(
+        val sampler: Runnable,
+        val sampleRateMs: Long,
+    ) : ScheduledAction {
+        private var baseTime: Long = 0L
+
+        private var runCount = 0L
 
         override fun getDelay(unit: TimeUnit): Long {
+            if (runCount == 0L) {
+                return 0L
+            }
+
             val currentTime = SystemClock.elapsedRealtime()
             val expectedNextTime = baseTime + (runCount * sampleRateMs)
 
@@ -129,6 +137,11 @@ internal class SpanTaskWorker : Runnable, TimeoutExecutor, SamplerExecutor {
 
         override fun run() {
             try {
+                // the "baseTime" is the first time the sampler is run
+                if (runCount == 0L) {
+                    baseTime = SystemClock.elapsedRealtime()
+                }
+
                 sampler.run()
             } finally {
                 runCount++

@@ -4,7 +4,6 @@ import android.app.Activity
 import android.app.Application
 import android.os.SystemClock
 import androidx.annotation.RestrictTo
-import androidx.annotation.VisibleForTesting
 import com.bugsnag.android.performance.EnabledMetrics
 import com.bugsnag.android.performance.NetworkRequestInfo
 import com.bugsnag.android.performance.NetworkRequestInstrumentationCallback
@@ -16,9 +15,7 @@ import com.bugsnag.android.performance.ViewType
 import com.bugsnag.android.performance.internal.integration.NotifierIntegration
 import com.bugsnag.android.performance.internal.metrics.MetricsContainer
 import com.bugsnag.android.performance.internal.processing.AttributeLimits
-import com.bugsnag.android.performance.internal.processing.SamplerExecutor
 import com.bugsnag.android.performance.internal.processing.SpanTaskWorker
-import com.bugsnag.android.performance.internal.processing.TimeoutExecutor
 import java.util.UUID
 
 internal typealias AttributeSource = (target: SpanImpl) -> Unit
@@ -46,6 +43,7 @@ public class SpanFactory internal constructor(
 
     internal fun attach(application: Application) {
         metricsContainer.attach(application)
+        spanTaskWorker.start()
     }
 
     internal fun configure(
@@ -57,8 +55,6 @@ public class SpanFactory internal constructor(
         this.spanProcessor = spanProcessor
         this.attributeLimits = attributeLimits
         this.networkRequestCallback = networkRequestCallback
-
-        this.spanTaskWorker.start()
 
         metricsContainer.configure(enabledMetrics)
     }

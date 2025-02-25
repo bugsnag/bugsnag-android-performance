@@ -120,6 +120,10 @@ internal class CpuMetricsSource(
         this.mainThreadStatReader = CpuMetricsSampler(Process.myPid(), mainThreadTid)
     }
 
+    override fun toString(): String {
+        return "cpuMetrics"
+    }
+
     private class CpuSampleData(
         @JvmField
         var processCpuPct: Double = 0.0,
@@ -200,6 +204,7 @@ internal object SystemConfig {
                 .inputStream
                 .bufferedReader()
                 .readText()
+                .trim()
 
             _clockTickHz = getconfOutput.toDouble()
         } catch (ex: Exception) {
