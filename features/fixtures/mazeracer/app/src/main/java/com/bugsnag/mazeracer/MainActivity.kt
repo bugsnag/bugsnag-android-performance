@@ -92,6 +92,7 @@ class MainActivity : AppCompatActivity() {
         log("MainActivity.onCreate complete")
     }
 
+    @Suppress("deprecated")
     override fun onActivityResult(
         requestCode: Int,
         resultCode: Int,

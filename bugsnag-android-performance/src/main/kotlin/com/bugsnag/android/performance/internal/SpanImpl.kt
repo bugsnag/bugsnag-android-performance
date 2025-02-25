@@ -440,17 +440,15 @@ public class SpanImpl internal constructor(
             }
         }
 
-        override fun upgrade(): SpanContext? {
+        override fun upgrade(): SpanContext {
             synchronized(span) {
-                if (!isValid) {
-                    return null
+                if (!isUpgraded) {
+                    span.timeoutExecutor.cancelTimeout(this)
+                    isUpgraded = true
                 }
-
-                span.timeoutExecutor.cancelTimeout(this)
-                isUpgraded = true
-
-                return span
             }
+
+            return span
         }
 
         override fun run() {

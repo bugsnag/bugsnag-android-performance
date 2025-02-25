@@ -5,7 +5,6 @@ import com.bugsnag.android.performance.test.TestSpanFactory
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertNull
 import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -131,9 +130,7 @@ class SpanBlockingTest {
         assertFalse(span.isBlocked())
         assertTrue(spanProcessor.isEmpty())
 
-        assertNull(condition1!!.upgrade())
-
-        condition1.close()
+        condition1!!.close()
         assertFalse(span.isOpen())
         assertFalse(span.isBlocked())
         assertTrue(spanProcessor.isEmpty())
