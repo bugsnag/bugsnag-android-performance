@@ -32,8 +32,11 @@ internal class MemoryMetricsSource(
             val memoryInfo = activityManager?.getProcessMemoryInfo(intArrayOf(Process.myPid()))
             val memoryInfoSample = memoryInfo?.getOrNull(0)?.takeIf { memoryInfo.size == 1 }
             if (memoryInfoSample != null) {
-                sample.pss =
-                    (memoryInfoSample.dalvikPss + memoryInfoSample.nativePss + memoryInfoSample.otherPss) * KILOBYTE
+                val pssPages = memoryInfoSample.dalvikPss +
+                        memoryInfoSample.nativePss +
+                        memoryInfoSample.otherPss
+
+                sample.pss = pssPages * KILOBYTE
             } else {
                 sample.pss = -1
             }
@@ -80,14 +83,15 @@ internal class MemoryMetricsSource(
                     }
                 }
 
-                target.attributes["bugsnag.system.memory.spaces.space_names"] =
-                    SPACE_NAMES
+                target.attributes["bugsnag.system.memory.spaces.space_names"] = SPACE_NAMES
 
                 deviceMemory?.also {
                     target.attributes["bugsnag.device.physical_device_memory"] = it
                     target.attributes["bugsnag.system.memory.spaces.device.size"] = it
                 }
+
                 target.attributes["bugsnag.system.memory.spaces.device.used"] = deviceMemorySamples
+
                 if (deviceUsedMemoryCount > 0) {
                     target.attributes["bugsnag.system.memory.spaces.device.mean"] =
                         deviceUsedMemoryTotal / deviceUsedMemoryCount
@@ -95,10 +99,12 @@ internal class MemoryMetricsSource(
 
                 target.attributes["bugsnag.system.memory.spaces.art.size"] = artSizeMemory
                 target.attributes["bugsnag.system.memory.spaces.art.used"] = artUsedMemorySamples
+              
                 if (artUsedMemoryCount > 0) {
                     target.attributes["bugsnag.system.memory.spaces.art.mean"] =
                         artUsedMemoryTotal / artUsedMemoryCount
                 }
+
                 target.attributes["bugsnag.system.memory.timestamps"] = artMemoryTimestamps
 
                 snapshot.blocking?.cancel()
@@ -123,6 +129,10 @@ internal class MemoryMetricsSource(
             @Suppress("PrivateApi")
             AndroidException::class.java.getDeclaredMethod("getTotalMemory").invoke(null) as Long?
         }.getOrNull()
+    }
+
+    override fun toString(): String {
+        return "memoryMetrics"
     }
 
     private data class MemorySampleData(
