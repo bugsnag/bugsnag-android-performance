@@ -8,3 +8,5 @@ public interface MetricSource<T> {
     public fun createStartMetrics(): T
     public fun endMetrics(startMetrics: T, span: Span)
 }
+
+internal interface SampledMetricSource<T>: MetricSource<T>, Runnable

@@ -250,8 +250,10 @@ public class SpanOptions private constructor(
 
         @JvmName("createWithRenderingMetrics")
         @JvmStatic
-        public fun withRenderingMetrics(instrumentRendering: Boolean): SpanOptions =
-            DEFAULTS.withRenderingMetrics(instrumentRendering)
+        public fun withRenderingMetrics(instrumentRendering: Boolean): SpanOptions {
+            @Suppress("DEPRECATION")
+            return DEFAULTS.withRenderingMetrics(instrumentRendering)
+        }
 
         @JvmName("createWithMetrics")
         @JvmOverloads
