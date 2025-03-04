@@ -5,7 +5,6 @@
     <ID>ComplexMethod:Connectivity.kt$ConnectivityApi24$private fun nameForDataNetworkType(dataNetworkType: Int): String</ID>
     <ID>ComplexMethod:SpanOptions.kt$SpanOptions$override fun equals(other: Any?): Boolean</ID>
     <ID>DestructuringDeclarationWithTooManyEntries:ActivityLifecycleInstrumentationTest.kt$ActivityLifecycleInstrumentationTest$val (create, viewLoad, start, resume) = spans</ID>
-    <ID>InvalidPackageDeclaration:LoadingIndicatorViewTest.kt$package com.bugsnag.android.performance.test</ID>
     <ID>LongMethod:BugsnagPerformance.kt$BugsnagPerformance$private fun startUnderLock(configuration: ImmutableConfig)</ID>
     <ID>LongMethod:SpanJsonTest.kt$SpanJsonTest$@Test fun testJsonEncoding()</ID>
     <ID>LongParameterList:SpanFactory.kt$SpanFactory$( name: String, kind: SpanKind, category: SpanCategory, startTime: Long, parentContext: SpanContext?, isFirstClass: Boolean?, makeContext: Boolean, instrumentRendering: Boolean?, spanProcessor: SpanProcessor, )</ID>
@@ -32,7 +31,6 @@
     <ID>MagicNumber:SpanKind.kt$SpanKind.CLIENT$3</ID>
     <ID>MagicNumber:SpanKind.kt$SpanKind.CONSUMER$5</ID>
     <ID>MagicNumber:SpanKind.kt$SpanKind.PRODUCER$4</ID>
-    <ID>NewLineAtEndOfFile:LoadingIndicatorViewTest.kt$com.bugsnag.android.performance.test.LoadingIndicatorViewTest.kt</ID>
     <ID>ReturnCount:RetryDeliveryTask.kt$RetryDeliveryTask$override fun execute(): Boolean</ID>
     <ID>ReturnCount:SpanImpl.kt$SpanState$fun end(): Boolean</ID>
     <ID>SwallowedException:BugsnagClock.kt$BugsnagClock$ex: Exception</ID>

@@ -7,8 +7,5 @@
     <com.bugsnag.android.performance.LoadingIndicatorView
         android:id="@+id/loading_indicator"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-    </com.bugsnag.android.performance.LoadingIndicatorView>
-
+        android:layout_height="match_parent" />
 </LinearLayout>
