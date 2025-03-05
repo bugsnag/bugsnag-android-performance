@@ -32,6 +32,7 @@
         <activity android:name=".ComposeViewLoadActivity" />
         <activity android:name=".NestedSpansActivity" />
         <activity android:name=".AnimatedActivity" />
+        <activity android:name=".LoadingIndicatorViewActivity"/>
 
         <receiver
             android:name=".MazeRacerAlarmReceiver"

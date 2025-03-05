@@ -129,3 +129,24 @@ Then('every span integer attribute {string} matches the regex {string}') do |att
   spans = spans_from_request_list(Maze::Server.list_for('traces'))
   spans.map { |span| Maze::check.match(regex, span['attributes'].find { |a| a['key'] == attribute }['value']['intValue']) }
 end
+
+Then('the {string} span took at least {int} {word}') do |span_name, min_duration, unit|
+  spans = spans_from_request_list(Maze::Server.list_for('traces'))
+  named_spans = spans.select { |s| s['name'].eql?(span_name) }
+
+  raise Test::Unit::AssertionFailedError.new "no span named #{span_name} found" if named_spans.empty?
+  raise Test::Unit::AssertionFailedError.new "found #{named_spans.size} spans named #{span_name}, expected exactly one" unless named_spans.size == 1
+
+  end_time_nanos = named_spans.first['endTimeUnixNano'].to_i
+  start_time_nanos = named_spans.first['startTimeUnixNano'].to_i
+
+  duration_nanos = end_time_nanos - start_time_nanos
+  duration = case unit
+    when 'ms', 'millis', 'milliseconds' then duration_nanos / 1_000_000
+    when 'ns', 'nanos', 'nanoseconds' then duration_nanos
+    when 's', 'seconds' then duration_nanos / 1_000_000 / 1000
+    else raise Maze::Error::AssertionFailedError.new "Unknown time unit used: #{unit}"
+  end
+
+  Maze.check.operator(duration, :>=, min_duration)
+end
