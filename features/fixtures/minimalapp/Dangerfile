@@ -16,18 +16,20 @@ def buildOutputs(bugsnag: false, minified: false)
 end
 
 apk = buildOutputs(bugsnag: false, minified: false)
-apk_size = `stat -f "%z" #{apk}`.to_i
+apk_size = File.size(apk)
 
 apk = buildOutputs(bugsnag: false, minified: true)
-min_apk_size = `stat -f "%z" #{apk}`.to_i
+min_apk_size = File.size(apk)
 
 apk = buildOutputs(bugsnag: true, minified: false)
-apk_bugsnag_size = `stat -f "%z" #{apk}`.to_i
+apk_bugsnag_size = File.size(apk)
 
 apk = buildOutputs(bugsnag: true, minified: true)
-min_apk_bugsnag_size = `stat -f "%z" #{apk}`.to_i
+min_apk_bugsnag_size = File.size(apk)
 
 calculated_sizes = {
+  :apk_size => apk_size,
+  :apk_bugsnag_size => apk_bugsnag_size,
   :apk => apk_bugsnag_size - apk_size,
   :min_apk => min_apk_bugsnag_size - min_apk_size
 }
@@ -38,6 +40,13 @@ end
 
 markdown(%Q{
   ### Android notifier sizes
+
+  | Format           | Size of apk (kB)                                   |
+  |------------------|----------------------------------------------------|
+  | APK              | #{format_kbs(calculated_sizes[:apk_size])}         |
+  | APK with Bugsnag | #{format_kbs(calculated_sizes[:apk_bugsnag_size])} |
+
+  ### Android notifier size impact
 
   | Format       | Size impact of Bugsnag (kB)                   |
   |--------------|-----------------------------------------------|
