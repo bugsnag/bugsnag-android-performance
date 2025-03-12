@@ -26,7 +26,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
-internal class ComposeTest {
+internal class MeasuredComposableTest {
     @get:Rule
     val composeTestRule = createComposeRule()
 
@@ -37,7 +37,7 @@ internal class ComposeTest {
     }
 
     @Test
-    fun myUIComponentTest() {
+    fun measuredScreenLoad() {
         composeTestRule.setContent {
             MeasuredComposable(name = "Parent") {
                 LoginScreen()

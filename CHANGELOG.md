@@ -1,3 +1,12 @@
+## 1.12.0 (2025-03-12)
+
+### Changes
+
+* Added LoadingIndicator composable as a way to easily extend ViewLoad end times to interactivity
+  [https://github.com/bugsnag/bugsnag-android-performance/pull/336](https://github.com/bugsnag/bugsnag-android-performance/pull/336)
+* Added LoadingIndicatorView as a way for xml layouts to easily extend ViewLoad end times to interactivity
+  [https://github.com/bugsnag/bugsnag-android-performance/pull/352](https://github.com/bugsnag/bugsnag-android-performance/pull/352)
+
 ## 1.11.0 (2025-01-20)
 
 ### Changes
