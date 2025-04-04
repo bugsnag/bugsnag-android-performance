@@ -8,6 +8,7 @@ import android.system.OsConstants
 import com.bugsnag.android.performance.internal.BugsnagClock
 import com.bugsnag.android.performance.internal.Loopers
 import com.bugsnag.android.performance.internal.util.FixedRingBuffer
+import kotlin.math.max
 
 internal class CpuMetricsSource(
     samplingDelayMs: Long,
@@ -35,7 +36,7 @@ internal class CpuMetricsSource(
     }
 
     override fun createStartMetrics(): CpuMetricsSnapshot {
-        return CpuMetricsSnapshot(buffer.currentIndex)
+        return CpuMetricsSnapshot(max(buffer.currentIndex - 1, 0))
     }
 
     override fun captureSample() {
