@@ -7,6 +7,7 @@ import android.util.AndroidException
 import com.bugsnag.android.performance.internal.BugsnagClock
 import com.bugsnag.android.performance.internal.getActivityManager
 import com.bugsnag.android.performance.internal.util.FixedRingBuffer
+import kotlin.math.max
 
 internal class MemoryMetricsSource(
     private val appContext: Context,
@@ -113,7 +114,7 @@ internal class MemoryMetricsSource(
     }
 
     override fun createStartMetrics(): MemoryMetricsSnapshot {
-        return MemoryMetricsSnapshot(buffer.currentIndex)
+        return MemoryMetricsSnapshot(max(buffer.currentIndex - 1, 0))
     }
 
     private fun calculateTotalMemory(): Long? {
