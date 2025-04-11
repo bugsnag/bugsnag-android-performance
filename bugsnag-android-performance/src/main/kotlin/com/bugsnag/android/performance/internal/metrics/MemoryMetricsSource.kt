@@ -84,8 +84,6 @@ internal class MemoryMetricsSource(
                     }
                 }
 
-                target.attributes["bugsnag.system.memory.spaces.space_names"] = SPACE_NAMES
-
                 deviceMemory?.also {
                     target.attributes["bugsnag.device.physical_device_memory"] = it
                     target.attributes["bugsnag.system.memory.spaces.device.size"] = it
@@ -158,8 +156,6 @@ internal class MemoryMetricsSource(
         const val DEFAULT_SAMPLE_COUNT = 60 * 10
 
         const val KILOBYTE = 1024L
-
-        val SPACE_NAMES = arrayOf("device", "art")
     }
 }
 

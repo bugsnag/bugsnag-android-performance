@@ -21,7 +21,6 @@ Feature: Device Metrics
     * the "FirstClass" span has int attribute named "bugsnag.system.memory.spaces.device.mean"
     * the "FirstClass" span has int attribute named "bugsnag.system.memory.spaces.art.mean"
 
-    * the "FirstClass" span has array attribute named "bugsnag.system.memory.spaces.space_names"
     * the "FirstClass" span has array attribute named "bugsnag.system.memory.spaces.device.used"
     * the "FirstClass" span has array attribute named "bugsnag.system.memory.spaces.art.used"
     * the "FirstClass" span has array attribute named "bugsnag.system.memory.timestamps"
@@ -40,7 +39,6 @@ Feature: Device Metrics
     * the "No Metrics" span has no "bugsnag.system.memory.spaces.device.size" attribute
     * the "No Metrics" span has no "bugsnag.system.memory.spaces.device.mean" attribute
     * the "No Metrics" span has no "bugsnag.system.memory.spaces.art.mean" attribute
-    * the "No Metrics" span has no "bugsnag.system.memory.spaces.space_names" attribute
     * the "No Metrics" span has no "bugsnag.system.memory.spaces.device.used" attribute
     * the "No Metrics" span has no "bugsnag.system.memory.spaces.art.used" attribute
     * the "No Metrics" span has no "bugsnag.system.memory.timestamps" attribute
@@ -59,7 +57,6 @@ Feature: Device Metrics
     * the "Not FirstClass" span has no "bugsnag.system.memory.spaces.device.size" attribute
     * the "Not FirstClass" span has no "bugsnag.system.memory.spaces.device.mean" attribute
     * the "Not FirstClass" span has no "bugsnag.system.memory.spaces.art.mean" attribute
-    * the "Not FirstClass" span has no "bugsnag.system.memory.spaces.space_names" attribute
     * the "Not FirstClass" span has no "bugsnag.system.memory.spaces.device.used" attribute
     * the "Not FirstClass" span has no "bugsnag.system.memory.spaces.art.used" attribute
     * the "Not FirstClass" span has no "bugsnag.system.memory.timestamps" attribute
@@ -79,7 +76,6 @@ Feature: Device Metrics
     * the "CPU Metrics Only" span has no "bugsnag.system.memory.spaces.device.size" attribute
     * the "CPU Metrics Only" span has no "bugsnag.system.memory.spaces.device.mean" attribute
     * the "CPU Metrics Only" span has no "bugsnag.system.memory.spaces.art.mean" attribute
-    * the "CPU Metrics Only" span has no "bugsnag.system.memory.spaces.space_names" attribute
     * the "CPU Metrics Only" span has no "bugsnag.system.memory.spaces.device.used" attribute
     * the "CPU Metrics Only" span has no "bugsnag.system.memory.spaces.art.used" attribute
     * the "CPU Metrics Only" span has no "bugsnag.system.memory.timestamps" attribute
@@ -99,7 +95,6 @@ Feature: Device Metrics
     * the "Memory Metrics Only" span has int attribute named "bugsnag.system.memory.spaces.device.mean"
     * the "Memory Metrics Only" span has int attribute named "bugsnag.system.memory.spaces.art.mean"
 
-    * the "Memory Metrics Only" span has array attribute named "bugsnag.system.memory.spaces.space_names"
     * the "Memory Metrics Only" span has array attribute named "bugsnag.system.memory.spaces.device.used"
     * the "Memory Metrics Only" span has array attribute named "bugsnag.system.memory.spaces.art.used"
     * the "Memory Metrics Only" span has array attribute named "bugsnag.system.memory.timestamps"
@@ -124,7 +119,6 @@ Feature: Device Metrics
     * the "FirstClass" span has no "bugsnag.system.memory.spaces.device.size" attribute
     * the "FirstClass" span has no "bugsnag.system.memory.spaces.device.mean" attribute
     * the "FirstClass" span has no "bugsnag.system.memory.spaces.art.mean" attribute
-    * the "FirstClass" span has no "bugsnag.system.memory.spaces.space_names" attribute
     * the "FirstClass" span has no "bugsnag.system.memory.spaces.device.used" attribute
     * the "FirstClass" span has no "bugsnag.system.memory.spaces.art.used" attribute
     * the "FirstClass" span has no "bugsnag.system.memory.timestamps" attribute
@@ -143,7 +137,6 @@ Feature: Device Metrics
     * the "No Metrics" span has no "bugsnag.system.memory.spaces.device.size" attribute
     * the "No Metrics" span has no "bugsnag.system.memory.spaces.device.mean" attribute
     * the "No Metrics" span has no "bugsnag.system.memory.spaces.art.mean" attribute
-    * the "No Metrics" span has no "bugsnag.system.memory.spaces.space_names" attribute
     * the "No Metrics" span has no "bugsnag.system.memory.spaces.device.used" attribute
     * the "No Metrics" span has no "bugsnag.system.memory.spaces.art.used" attribute
     * the "No Metrics" span has no "bugsnag.system.memory.timestamps" attribute
@@ -162,7 +155,6 @@ Feature: Device Metrics
     * the "Not FirstClass" span has no "bugsnag.system.memory.spaces.device.size" attribute
     * the "Not FirstClass" span has no "bugsnag.system.memory.spaces.device.mean" attribute
     * the "Not FirstClass" span has no "bugsnag.system.memory.spaces.art.mean" attribute
-    * the "Not FirstClass" span has no "bugsnag.system.memory.spaces.space_names" attribute
     * the "Not FirstClass" span has no "bugsnag.system.memory.spaces.device.used" attribute
     * the "Not FirstClass" span has no "bugsnag.system.memory.spaces.art.used" attribute
     * the "Not FirstClass" span has no "bugsnag.system.memory.timestamps" attribute
@@ -182,7 +174,6 @@ Feature: Device Metrics
     * the "CPU Metrics Only" span has no "bugsnag.system.memory.spaces.device.size" attribute
     * the "CPU Metrics Only" span has no "bugsnag.system.memory.spaces.device.mean" attribute
     * the "CPU Metrics Only" span has no "bugsnag.system.memory.spaces.art.mean" attribute
-    * the "CPU Metrics Only" span has no "bugsnag.system.memory.spaces.space_names" attribute
     * the "CPU Metrics Only" span has no "bugsnag.system.memory.spaces.device.used" attribute
     * the "CPU Metrics Only" span has no "bugsnag.system.memory.spaces.art.used" attribute
     * the "CPU Metrics Only" span has no "bugsnag.system.memory.timestamps" attribute
@@ -201,7 +192,6 @@ Feature: Device Metrics
     * the "Memory Metrics Only" span has no "bugsnag.system.memory.spaces.device.size" attribute
     * the "Memory Metrics Only" span has no "bugsnag.system.memory.spaces.device.mean" attribute
     * the "Memory Metrics Only" span has no "bugsnag.system.memory.spaces.art.mean" attribute
-    * the "Memory Metrics Only" span has no "bugsnag.system.memory.spaces.space_names" attribute
     * the "Memory Metrics Only" span has no "bugsnag.system.memory.spaces.device.used" attribute
     * the "Memory Metrics Only" span has no "bugsnag.system.memory.spaces.art.used" attribute
     * the "Memory Metrics Only" span has no "bugsnag.system.memory.timestamps" attribute
@@ -226,7 +216,6 @@ Feature: Device Metrics
     * the "FirstClass" span has int attribute named "bugsnag.system.memory.spaces.device.mean"
     * the "FirstClass" span has int attribute named "bugsnag.system.memory.spaces.art.mean"
 
-    * the "FirstClass" span has array attribute named "bugsnag.system.memory.spaces.space_names"
     * the "FirstClass" span has array attribute named "bugsnag.system.memory.spaces.device.used"
     * the "FirstClass" span has array attribute named "bugsnag.system.memory.spaces.art.used"
     * the "FirstClass" span has array attribute named "bugsnag.system.memory.timestamps"
@@ -245,7 +234,6 @@ Feature: Device Metrics
     * the "No Metrics" span has no "bugsnag.system.memory.spaces.device.size" attribute
     * the "No Metrics" span has no "bugsnag.system.memory.spaces.device.mean" attribute
     * the "No Metrics" span has no "bugsnag.system.memory.spaces.art.mean" attribute
-    * the "No Metrics" span has no "bugsnag.system.memory.spaces.space_names" attribute
     * the "No Metrics" span has no "bugsnag.system.memory.spaces.device.used" attribute
     * the "No Metrics" span has no "bugsnag.system.memory.spaces.art.used" attribute
     * the "No Metrics" span has no "bugsnag.system.memory.timestamps" attribute
@@ -264,7 +252,6 @@ Feature: Device Metrics
     * the "Not FirstClass" span has no "bugsnag.system.memory.spaces.device.size" attribute
     * the "Not FirstClass" span has no "bugsnag.system.memory.spaces.device.mean" attribute
     * the "Not FirstClass" span has no "bugsnag.system.memory.spaces.art.mean" attribute
-    * the "Not FirstClass" span has no "bugsnag.system.memory.spaces.space_names" attribute
     * the "Not FirstClass" span has no "bugsnag.system.memory.spaces.device.used" attribute
     * the "Not FirstClass" span has no "bugsnag.system.memory.spaces.art.used" attribute
     * the "Not FirstClass" span has no "bugsnag.system.memory.timestamps" attribute
@@ -283,7 +270,6 @@ Feature: Device Metrics
     * the "CPU Metrics Only" span has no "bugsnag.system.memory.spaces.device.size" attribute
     * the "CPU Metrics Only" span has no "bugsnag.system.memory.spaces.device.mean" attribute
     * the "CPU Metrics Only" span has no "bugsnag.system.memory.spaces.art.mean" attribute
-    * the "CPU Metrics Only" span has no "bugsnag.system.memory.spaces.space_names" attribute
     * the "CPU Metrics Only" span has no "bugsnag.system.memory.spaces.device.used" attribute
     * the "CPU Metrics Only" span has no "bugsnag.system.memory.spaces.art.used" attribute
     * the "CPU Metrics Only" span has no "bugsnag.system.memory.timestamps" attribute
@@ -303,7 +289,6 @@ Feature: Device Metrics
     * the "Memory Metrics Only" span has int attribute named "bugsnag.system.memory.spaces.device.mean"
     * the "Memory Metrics Only" span has int attribute named "bugsnag.system.memory.spaces.art.mean"
 
-    * the "Memory Metrics Only" span has array attribute named "bugsnag.system.memory.spaces.space_names"
     * the "Memory Metrics Only" span has array attribute named "bugsnag.system.memory.spaces.device.used"
     * the "Memory Metrics Only" span has array attribute named "bugsnag.system.memory.spaces.art.used"
     * the "Memory Metrics Only" span has array attribute named "bugsnag.system.memory.timestamps"
