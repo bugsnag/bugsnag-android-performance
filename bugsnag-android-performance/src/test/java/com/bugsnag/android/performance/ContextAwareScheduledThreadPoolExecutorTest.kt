@@ -5,6 +5,7 @@ import com.bugsnag.android.performance.internal.SpanFactory
 import com.bugsnag.android.performance.test.CollectingSpanProcessor
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertSame
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -13,6 +14,7 @@ import org.robolectric.annotation.Config
 import org.robolectric.shadows.ShadowPausedSystemClock
 import java.lang.Thread.sleep
 import java.util.concurrent.Callable
+import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
 @RunWith(RobolectricTestRunner::class)
@@ -79,12 +81,14 @@ class ContextAwareScheduledThreadPoolExecutorTest {
     fun scheduleWithFixedDelay() {
         val scheduledExecutor = ContextAwareScheduledThreadPoolExecutor(1)
         var startTime = SystemClock.elapsedRealtime()
+        val countDownLatch = CountDownLatch(2)
         spanFactory.createCustomSpan("parent").use {
             scheduledExecutor.scheduleWithFixedDelay(
                 {
                     startTime += 100L
                     SystemClock.setCurrentTimeMillis(startTime)
                     spanFactory.createCustomSpan("child").end()
+                    countDownLatch.countDown()
                 },
                 0L,
                 100L,
@@ -95,8 +99,7 @@ class ContextAwareScheduledThreadPoolExecutorTest {
             sleep(75L)
         }
 
-        // allow task to run once more
-        sleep(75L)
+        assertTrue(countDownLatch.await(500L, TimeUnit.MILLISECONDS))
         scheduledExecutor.shutdownNow()
 
         val collectedSpans = spanProcessor.toList()
@@ -109,12 +112,14 @@ class ContextAwareScheduledThreadPoolExecutorTest {
     fun scheduleAtFixedRate() {
         val scheduledExecutor = ContextAwareScheduledThreadPoolExecutor(1)
         var startTime = SystemClock.elapsedRealtime()
+        val countDownLatch = CountDownLatch(2)
         spanFactory.createCustomSpan("parent").use {
             scheduledExecutor.scheduleAtFixedRate(
                 {
                     startTime += 100L
                     SystemClock.setCurrentTimeMillis(startTime)
                     spanFactory.createCustomSpan("child").end()
+                    countDownLatch.countDown()
                 },
                 0L,
                 100L,
@@ -125,8 +130,7 @@ class ContextAwareScheduledThreadPoolExecutorTest {
             sleep(75L)
         }
 
-        // allow task to run once more
-        sleep(75L)
+        assertTrue(countDownLatch.await(500L, TimeUnit.MILLISECONDS))
         scheduledExecutor.shutdownNow()
 
         val collectedSpans = spanProcessor.toList()
