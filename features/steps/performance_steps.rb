@@ -97,6 +97,20 @@ Then('the {string} span has no {string} attribute') do |span_name, attribute|
   Maze.check.nil(attribute)
 end
 
+Then('the {string} span has {word} attribute named {string}') do |span_name, attribute_type, attribute|
+  spans = spans_from_request_list(Maze::Server.list_for('traces'))
+  found_spans = spans.find_all { |span| span['name'].eql?(span_name) }
+  raise Test::Unit::AssertionFailedError.new "No spans were found with the name #{span_name}" if found_spans.empty?
+  raise Test::Unit::AssertionFailedError.new "found #{found_spans.size} spans named #{span_name}, expected exactly one" unless found_spans.size == 1
+
+  attributes = found_spans.first['attributes']
+  attribute = attributes.find { |a| a['key'] == attribute }
+
+  value = attribute&.dig 'value', "#{attribute_type}Value"
+
+  Maze.check.not_nil value
+end
+
 Then('every span string attribute {string} does not exist') do |attribute|
   spans = spans_from_request_list(Maze::Server.list_for('traces'))
   spans.map { |span| Maze.check.nil span['attributes'].find { |a| a['key'] == attribute } }
@@ -105,15 +119,16 @@ end
 When("I relaunch the app after shutdown") do
   max_attempts = 20
   attempts = 0
-  state = Maze.driver.app_state('com.bugsnag.mazeracer')
+  manager = Maze::Api::Appium::AppManager.new
+  state = manager.state
   until (attempts >= max_attempts) || state == :not_running
     attempts += 1
-    state = Maze.driver.app_state('com.bugsnag.mazeracer')
+    state = manager.state
     sleep 0.5
   end
   $logger.warn "App state #{state} instead of not_running after 10s" unless state == :not_running
 
-  Maze.driver.activate_app Maze.driver.app_id
+  manager.activate
 end
 
 def spans_from_request_list list

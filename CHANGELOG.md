@@ -1,3 +1,10 @@
+## 1.13.0 (2025-04-24)
+
+### Changes
+
+* Optionally capture and report CPU and Memory use on selected spans (opt-in using `PerformanceConfiguration.enabledMetrics`)
+  [#366](https://github.com/bugsnag/bugsnag-android-performance/pull/366)
+
 ## 1.12.0 (2025-03-12)
 
 ### Changes

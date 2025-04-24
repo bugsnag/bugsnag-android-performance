@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import com.bugsnag.android.performance.AutoInstrument
+import com.bugsnag.android.performance.EnabledMetrics
 import com.bugsnag.android.performance.Logger
 import com.bugsnag.android.performance.OnSpanEndCallback
 import com.bugsnag.android.performance.PerformanceConfiguration
@@ -26,6 +27,9 @@ import org.mockito.kotlin.verify
 import java.util.regex.Pattern
 
 class ImmutableConfigTest {
+
+    val enabledMetricsSample: EnabledMetrics = EnabledMetrics(true)
+
     @Before
     fun setupLogger() {
         Logger.delegate = NoopLogger
@@ -39,7 +43,8 @@ class ImmutableConfigTest {
             enabledReleaseStages = setOf("staging", "production")
             autoInstrumentAppStarts = false
             autoInstrumentActivities = AutoInstrument.START_ONLY
-            autoInstrumentRendering = false
+            enabledMetrics = enabledMetricsSample
+            enabledMetrics.rendering = false
             versionCode = 543L
             appVersion = "9.8.1"
             tracePropagationUrls = emptySet<Pattern>()
@@ -51,13 +56,14 @@ class ImmutableConfigTest {
         assertEquals(perfConfig.apiKey, immutableConfig.apiKey)
         assertEquals(perfConfig.endpoint, immutableConfig.endpoint)
         assertEquals(perfConfig.autoInstrumentAppStarts, immutableConfig.autoInstrumentAppStarts)
-        assertEquals(perfConfig.autoInstrumentRendering, immutableConfig.autoInstrumentRendering)
+        assertEquals(perfConfig.enabledMetrics.rendering, immutableConfig.enabledMetrics.rendering)
         assertEquals(TEST_PACKAGE_NAME, immutableConfig.serviceName)
         assertEquals(perfConfig.releaseStage, immutableConfig.releaseStage)
         assertEquals(perfConfig.enabledReleaseStages, immutableConfig.enabledReleaseStages)
         assertEquals(perfConfig.versionCode, immutableConfig.versionCode)
         assertEquals(perfConfig.appVersion, immutableConfig.appVersion)
         assertEquals(perfConfig.tracePropagationUrls, immutableConfig.tracePropagationUrls)
+        assertEquals(perfConfig.enabledMetrics, immutableConfig.enabledMetrics)
     }
 
     @Test
@@ -204,6 +210,7 @@ class ImmutableConfigTest {
             versionCode = 543L
             appVersion = "9.8.1"
             tracePropagationUrls = emptySet<Pattern>()
+            enabledMetrics = enabledMetricsSample
         }
 
         val spanEndCallback1 = DummyCallback()

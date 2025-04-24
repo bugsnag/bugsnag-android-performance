@@ -2,7 +2,7 @@ package com.bugsnag.mazeracer.scenarios
 
 import com.bugsnag.android.performance.BugsnagPerformance
 import com.bugsnag.android.performance.PerformanceConfiguration
-import com.bugsnag.android.performance.measureSpan
+import com.bugsnag.android.performance.SpanOptions
 import com.bugsnag.mazeracer.Scenario
 import kotlin.concurrent.thread
 
@@ -18,9 +18,10 @@ class PreStartSpansScenario(
         repeat(3) { index ->
             // these should each be queued for sending once we call 'start'
             thread {
-                measureSpan("Thread Span $index") {
-                    Thread.sleep(30)
-                }
+                BugsnagPerformance.startSpan("Thread Span $index", SpanOptions.setFirstClass(false))
+                    .use {
+                        Thread.sleep(30)
+                    }
             }
         }
 
@@ -28,7 +29,7 @@ class PreStartSpansScenario(
         BugsnagPerformance.start(config)
 
         runAndFlush {
-            measureSpan("Post Start") {
+            BugsnagPerformance.startSpan("Post Start", SpanOptions.setFirstClass(false)).use {
                 Thread.sleep(100)
             }
 

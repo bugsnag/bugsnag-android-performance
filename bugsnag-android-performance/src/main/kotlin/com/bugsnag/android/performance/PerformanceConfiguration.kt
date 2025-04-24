@@ -21,7 +21,15 @@ public class PerformanceConfiguration private constructor(public val context: Co
 
     public var autoInstrumentActivities: AutoInstrument = AutoInstrument.FULL
 
-    public var autoInstrumentRendering: Boolean = false
+    public var enabledMetrics: EnabledMetrics = EnabledMetrics(false)
+
+    @Deprecated(
+        message = "use enabledMetrics.rendering",
+        replaceWith = ReplaceWith("enabledMetrics.rendering"),
+    )
+    public var autoInstrumentRendering: Boolean
+        get() = enabledMetrics.rendering
+        set(value) { enabledMetrics.rendering = value }
 
     public var releaseStage: String? = null
 
@@ -90,7 +98,7 @@ public class PerformanceConfiguration private constructor(public val context: Co
             "endpoint='$endpoint', " +
             "autoInstrumentAppStarts=$autoInstrumentAppStarts, " +
             "autoInstrumentActivities=$autoInstrumentActivities, " +
-            "autoInstrumentRendering=$autoInstrumentRendering, " +
+            "enabledMetrics=$enabledMetrics, " +
             "releaseStage=$releaseStage, " +
             "versionCode=$versionCode, " +
             "appVersion=$appVersion, " +

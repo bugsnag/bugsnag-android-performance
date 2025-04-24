@@ -2,6 +2,7 @@ package com.bugsnag.android.performance.internal
 
 import android.app.Application
 import com.bugsnag.android.performance.AutoInstrument
+import com.bugsnag.android.performance.EnabledMetrics
 import com.bugsnag.android.performance.internal.processing.ImmutableConfig
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -26,7 +27,7 @@ class ResourceAttributesTest {
             "",
             true,
             AutoInstrument.FULL,
-            true,
+            EnabledMetrics(true, true, true),
             "bugsnag.performance.android",
             "development",
             setOf("production"),
@@ -70,7 +71,7 @@ class ResourceAttributesTest {
             "",
             true,
             AutoInstrument.FULL,
-            true,
+            EnabledMetrics(true, true, true),
             "bugsnag.performance.android",
             "production",
             setOf("production"),
