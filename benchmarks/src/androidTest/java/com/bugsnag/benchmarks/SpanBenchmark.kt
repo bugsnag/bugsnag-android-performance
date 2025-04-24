@@ -5,9 +5,9 @@ import androidx.benchmark.junit4.measureRepeated
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.bugsnag.android.performance.BugsnagPerformance
+import com.bugsnag.android.performance.Logger
 import com.bugsnag.android.performance.PerformanceConfiguration
 import com.bugsnag.android.performance.ViewType
-import com.bugsnag.android.performance.internal.NoopLogger
 import org.junit.BeforeClass
 import org.junit.Rule
 import org.junit.Test
@@ -61,7 +61,7 @@ class SpanBenchmark {
     fun logNetworkRequestSpans() {
         val url = URL("http://localhost")
         benchmarkRule.measureRepeated {
-            BugsnagPerformance.startNetworkRequestSpan(url, "POST").end()
+            BugsnagPerformance.startNetworkRequestSpan(url, "POST")?.end()
         }
     }
 
@@ -80,4 +80,15 @@ class SpanBenchmark {
 
     // it's not really an Activity, but we pretend it is
     class MyActivity
+}
+
+internal object NoopLogger : Logger {
+    override fun e(msg: String): Unit = Unit
+    override fun e(msg: String, throwable: Throwable): Unit = Unit
+    override fun w(msg: String): Unit = Unit
+    override fun w(msg: String, throwable: Throwable): Unit = Unit
+    override fun i(msg: String): Unit = Unit
+    override fun i(msg: String, throwable: Throwable): Unit = Unit
+    override fun d(msg: String): Unit = Unit
+    override fun d(msg: String, throwable: Throwable): Unit = Unit
 }

@@ -7,8 +7,8 @@ import com.bugsnag.android.performance.HasAttributes
 import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.SpanContext
 import com.bugsnag.android.performance.SpanKind
-import com.bugsnag.android.performance.internal.framerate.FramerateMetricsSnapshot
 import com.bugsnag.android.performance.internal.integration.NotifierIntegration
+import com.bugsnag.android.performance.internal.metrics.SpanMetricsSnapshot
 import com.bugsnag.android.performance.internal.processing.AttributeLimits
 import com.bugsnag.android.performance.internal.processing.JsonTraceWriter
 import com.bugsnag.android.performance.internal.processing.Timeout
@@ -34,7 +34,7 @@ public class SpanImpl internal constructor(
     public val parentSpanId: Long,
     private val makeContext: Boolean,
     private val attributeLimits: AttributeLimits?,
-    private val framerateMetricsSource: MetricSource<FramerateMetricsSnapshot>?,
+    internal val metrics: SpanMetricsSnapshot?,
     private val timeoutExecutor: TimeoutExecutor,
     private val processor: SpanProcessor,
 ) : Span, HasAttributes {
@@ -50,8 +50,6 @@ public class SpanImpl internal constructor(
                 field = value
             }
         }
-
-    internal val startFrameMetrics = framerateMetricsSource?.createStartMetrics()
 
     internal var isSealed: Boolean = false
 
@@ -99,11 +97,12 @@ public class SpanImpl internal constructor(
     }
 
     override fun end(endTime: Long) {
-        if (state.end()) {
+        if (state.ending()) {
             markEndTime(endTime)
 
             if (makeContext) SpanContext.detach(this)
             NotifierIntegration.onSpanEnded(this)
+            state.end()
 
             if (!isBlocked()) {
                 sendForProcessing()
@@ -114,7 +113,7 @@ public class SpanImpl internal constructor(
     @JvmName("markEndTime\$internal")
     internal fun markEndTime(endTime: Long) {
         this.endTime = endTime
-        startFrameMetrics?.let { framerateMetricsSource?.endMetrics(it, this) }
+        metrics?.finish(this)
     }
 
     @JvmName("sendForProcessing\$internal")
@@ -502,7 +501,10 @@ internal value class SpanState private constructor(private val state: AtomicInte
     constructor() : this(AtomicInteger(OPEN))
 
     val isOpen: Boolean get() = state.get().let { it == OPEN || it == OPEN_BLOCKED }
-    val isBlocked: Boolean get() = state.get().let { it == OPEN_BLOCKED || it == ENDED_BLOCKED }
+    val isBlocked: Boolean
+        get() = state.get().let {
+            it == OPEN_BLOCKED || it == ENDING_BLOCKED || it == ENDED_BLOCKED
+        }
     val isDiscarded: Boolean get() = state.get() == DISCARDED
 
     fun process(): Boolean {
@@ -510,24 +512,44 @@ internal value class SpanState private constructor(private val state: AtomicInte
             when (val s = state.get()) {
                 // discarded & already processed spans cannot be processed
                 DISCARDED, PROCESSED -> return false
-                else -> if (state.compareAndSet(s, PROCESSED)) {
-                    return true
-                }
+                else ->
+                    if (state.compareAndSet(s, PROCESSED)) {
+                        return true
+                    }
             }
         }
     }
 
+    fun ending(): Boolean {
+        while (true) {
+            when (val s = state.get()) {
+                OPEN ->
+                    if (state.compareAndSet(s, ENDING)) {
+                        return true
+                    }
+
+                OPEN_BLOCKED ->
+                    if (state.compareAndSet(s, ENDING_BLOCKED)) {
+                        return true
+                    }
+
+                else -> return false
+            }
+        }
+    }
 
     fun end(): Boolean {
         while (true) {
             when (val s = state.get()) {
-                OPEN -> if (state.compareAndSet(s, ENDED)) {
-                    return true
-                }
+                OPEN, ENDING ->
+                    if (state.compareAndSet(s, ENDED)) {
+                        return true
+                    }
 
-                OPEN_BLOCKED -> if (state.compareAndSet(s, ENDED_BLOCKED)) {
-                    return true
-                }
+                OPEN_BLOCKED, ENDING_BLOCKED ->
+                    if (state.compareAndSet(s, ENDED_BLOCKED)) {
+                        return true
+                    }
 
                 else -> return false
             }
@@ -542,9 +564,10 @@ internal value class SpanState private constructor(private val state: AtomicInte
     fun discard(): Boolean {
         while (true) {
             when (val s = state.get()) {
-                OPEN, OPEN_BLOCKED -> if (state.compareAndSet(s, DISCARDED)) {
-                    return true
-                }
+                OPEN, OPEN_BLOCKED, ENDING, ENDING_BLOCKED ->
+                    if (state.compareAndSet(s, DISCARDED)) {
+                        return true
+                    }
 
                 else -> return s == DISCARDED
             }
@@ -554,11 +577,17 @@ internal value class SpanState private constructor(private val state: AtomicInte
     fun block(): Boolean {
         while (true) {
             when (val s = state.get()) {
-                OPEN -> if (state.compareAndSet(s, OPEN_BLOCKED)) {
-                    return true
-                }
+                OPEN ->
+                    if (state.compareAndSet(s, OPEN_BLOCKED)) {
+                        return true
+                    }
 
-                else -> return s == OPEN_BLOCKED
+                ENDING ->
+                    if (state.compareAndSet(s, ENDING_BLOCKED)) {
+                        return true
+                    }
+
+                else -> return s == OPEN_BLOCKED || s == ENDING_BLOCKED || s == ENDED_BLOCKED
             }
         }
     }
@@ -574,8 +603,10 @@ internal value class SpanState private constructor(private val state: AtomicInte
         internal const val OPEN: Int = -1
         internal const val DISCARDED: Int = -2
         internal const val OPEN_BLOCKED: Int = -3
-        internal const val ENDED: Int = -4
-        internal const val ENDED_BLOCKED: Int = -5
-        internal const val PROCESSED = -6
+        internal const val ENDING: Int = -4
+        internal const val ENDING_BLOCKED: Int = -5
+        internal const val ENDED: Int = -6
+        internal const val ENDED_BLOCKED: Int = -7
+        internal const val PROCESSED = -8
     }
 }

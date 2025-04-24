@@ -1,45 +1,62 @@
 package com.bugsnag.android.performance.internal
 
 import android.app.Activity
+import android.app.Application
 import android.os.SystemClock
 import androidx.annotation.RestrictTo
+import com.bugsnag.android.performance.EnabledMetrics
 import com.bugsnag.android.performance.NetworkRequestInfo
 import com.bugsnag.android.performance.NetworkRequestInstrumentationCallback
 import com.bugsnag.android.performance.SpanContext
 import com.bugsnag.android.performance.SpanKind
+import com.bugsnag.android.performance.SpanMetrics
 import com.bugsnag.android.performance.SpanOptions
 import com.bugsnag.android.performance.ViewType
-import com.bugsnag.android.performance.internal.framerate.FramerateMetricsSnapshot
 import com.bugsnag.android.performance.internal.integration.NotifierIntegration
+import com.bugsnag.android.performance.internal.metrics.MetricsContainer
 import com.bugsnag.android.performance.internal.processing.AttributeLimits
-import com.bugsnag.android.performance.internal.processing.TimeoutExecutorImpl
+import com.bugsnag.android.performance.internal.processing.SpanTaskWorker
 import java.util.UUID
 
 internal typealias AttributeSource = (target: SpanImpl) -> Unit
 
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
-public class SpanFactory(
+public class SpanFactory internal constructor(
     public var spanProcessor: SpanProcessor,
-    public val spanAttributeSource: AttributeSource = {},
+    public val spanAttributeSource: AttributeSource,
+    private val spanTaskWorker: SpanTaskWorker = SpanTaskWorker(),
+    internal val metricsContainer: MetricsContainer = MetricsContainer(spanTaskWorker),
 ) {
-
-    private val timeoutExecutor = TimeoutExecutorImpl()
 
     public var networkRequestCallback: NetworkRequestInstrumentationCallback? = null
 
     internal var attributeLimits: AttributeLimits? = null
-    internal var framerateMetricsSource: MetricSource<FramerateMetricsSnapshot>? = null
+
+    public constructor(
+        spanProcessor: SpanProcessor,
+        spanAttributeSource: AttributeSource = {},
+    ) : this(
+        spanProcessor,
+        spanAttributeSource,
+        SpanTaskWorker(),
+    )
+
+    internal fun attach(application: Application) {
+        metricsContainer.attach(application)
+        spanTaskWorker.start()
+    }
 
     internal fun configure(
         spanProcessor: SpanProcessor,
         attributeLimits: AttributeLimits,
         networkRequestCallback: NetworkRequestInstrumentationCallback?,
+        enabledMetrics: EnabledMetrics,
     ) {
         this.spanProcessor = spanProcessor
         this.attributeLimits = attributeLimits
         this.networkRequestCallback = networkRequestCallback
 
-        this.timeoutExecutor.start()
+        metricsContainer.configure(enabledMetrics)
     }
 
     @JvmOverloads
@@ -56,7 +73,7 @@ public class SpanFactory(
             options.parentContext,
             options.isFirstClass != false,
             options.makeContext,
-            options.instrumentRendering,
+            options.spanMetrics,
             spanProcessor,
         )
     }
@@ -79,7 +96,7 @@ public class SpanFactory(
                 options.parentContext,
                 options.isFirstClass,
                 options.makeContext,
-                options.instrumentRendering,
+                options.spanMetrics,
                 spanProcessor,
             )
             span.attributes["http.url"] = resultUrl
@@ -115,7 +132,7 @@ public class SpanFactory(
             options.parentContext,
             options.isFirstClass,
             options.makeContext,
-            options.instrumentRendering,
+            options.spanMetrics,
             spanProcessor,
         )
 
@@ -148,7 +165,7 @@ public class SpanFactory(
             options.parentContext,
             options.isFirstClass,
             options.makeContext,
-            options.instrumentRendering,
+            options.spanMetrics,
             spanProcessor,
         )
 
@@ -186,7 +203,7 @@ public class SpanFactory(
             null,
             isFirstClass = true,
             makeContext = true,
-            instrumentRendering = true,
+            SpanMetrics(rendering = true),
             spanProcessor,
         )
 
@@ -208,7 +225,7 @@ public class SpanFactory(
             appStartContext,
             isFirstClass = false,
             makeContext = true,
-            instrumentRendering = false,
+            null,
             spanProcessor,
         )
 
@@ -225,11 +242,12 @@ public class SpanFactory(
         parentContext: SpanContext?,
         isFirstClass: Boolean?,
         makeContext: Boolean,
-        instrumentRendering: Boolean?,
+        spanMetrics: SpanMetrics?,
         spanProcessor: SpanProcessor,
     ): SpanImpl {
         val parent = parentContext?.takeIf { it.traceId.isValidTraceId() }
 
+        val metrics = metricsContainer.createSpanMetricsSnapshot(isFirstClass == true, spanMetrics)
         val span = SpanImpl(
             name = name,
             category = category,
@@ -239,11 +257,9 @@ public class SpanFactory(
             parentSpanId = parent?.spanId ?: 0L,
             makeContext = makeContext,
             attributeLimits = attributeLimits,
-            framerateMetricsSource = framerateMetricsSource
-                ?.takeIf { renderingMetricsEnabled(isFirstClass, instrumentRendering) },
-            // framerateMetrics are only recorded on firstClass spans
+            metrics = metrics,
             processor = spanProcessor,
-            timeoutExecutor = timeoutExecutor,
+            timeoutExecutor = spanTaskWorker,
         )
 
         if (isFirstClass != null) {
@@ -256,9 +272,6 @@ public class SpanFactory(
 
         return span
     }
-
-    private fun renderingMetricsEnabled(isFirstClass: Boolean?, instrumentRendering: Boolean?) =
-        (isFirstClass == true && instrumentRendering != false) || instrumentRendering == true
 
     private fun UUID.isValidTraceId() = mostSignificantBits != 0L || leastSignificantBits != 0L
 }

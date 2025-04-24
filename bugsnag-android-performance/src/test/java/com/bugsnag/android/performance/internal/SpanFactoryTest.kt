@@ -1,14 +1,19 @@
 package com.bugsnag.android.performance.internal
 
 import com.bugsnag.android.performance.Span
+import com.bugsnag.android.performance.SpanMetrics
 import com.bugsnag.android.performance.SpanOptions
 import com.bugsnag.android.performance.internal.framerate.FramerateMetricsSnapshot
+import com.bugsnag.android.performance.internal.framerate.FramerateMetricsSource
 import com.bugsnag.android.performance.internal.framerate.TimestampPairBuffer
+import com.bugsnag.android.performance.internal.metrics.MetricSource
 import com.bugsnag.android.performance.test.NoopSpanProcessor
+import com.bugsnag.android.performance.test.TestMetricsContainer
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
+import org.mockito.kotlin.mock
 
 class SpanFactoryTest {
     /**
@@ -19,6 +24,11 @@ class SpanFactoryTest {
     private lateinit var frameMetrics: MetricSource<FramerateMetricsSnapshot>
 
     private lateinit var spanFactory: SpanFactory
+
+    private val spanMetricsWithRendering =
+        SpanMetrics(rendering = true, cpu = false, memory = false)
+    private val spanMetricsWithoutRendering =
+        SpanMetrics(rendering = false, cpu = false, memory = false)
 
     @Before
     fun setup() {
@@ -34,8 +44,14 @@ class SpanFactoryTest {
             override fun endMetrics(startMetrics: FramerateMetricsSnapshot, span: Span) = Unit
         }
 
-        spanFactory = SpanFactory(NoopSpanProcessor)
-        spanFactory.framerateMetricsSource = frameMetrics
+        spanFactory = SpanFactory(
+            NoopSpanProcessor,
+            spanAttributeSource = {},
+            metricsContainer = TestMetricsContainer(
+                frames = FramerateMetricsSource(),
+            ),
+        )
+        spanFactory.attach(mock())
     }
 
     @Test
@@ -45,7 +61,7 @@ class SpanFactoryTest {
             spanFactory.createCustomSpan(
                 "First Class",
                 baseOptions.setFirstClass(true),
-            ).startFrameMetrics,
+            ).metrics,
         )
 
         assertNotNull(
@@ -54,8 +70,8 @@ class SpanFactoryTest {
                 "Scrolling",
                 baseOptions
                     .setFirstClass(false)
-                    .withRenderingMetrics(true),
-            ).startFrameMetrics,
+                    .withMetrics(spanMetricsWithRendering),
+            ).metrics,
         )
 
         assertNotNull(
@@ -64,16 +80,38 @@ class SpanFactoryTest {
                 "Scrolling",
                 baseOptions
                     .setFirstClass(true)
-                    .withRenderingMetrics(true),
-            ).startFrameMetrics,
+                    .withMetrics(spanMetricsWithRendering),
+            ).metrics,
         )
 
-        assertNull(
-            "SpanOptions.setFirstClass(false) should not have rendering metrics",
+        assertNotNull(
+            "setFirstClass(true).withRenderingMetrics(true) should have rendering metrics",
             spanFactory.createCustomSpan(
                 "Scrolling",
-                baseOptions.setFirstClass(false),
-            ).startFrameMetrics,
+                baseOptions
+                    .setFirstClass(true)
+                    .withMetrics(null),
+            ).metrics,
+        )
+
+        val metrics = spanFactory.createCustomSpan(
+            "Scrolling",
+            baseOptions.setFirstClass(false),
+        ).metrics
+        assertNull(
+            "SpanOptions.setFirstClass(false) should not have rendering metrics",
+            metrics,
+        )
+
+        @Suppress("DEPRECATION")
+        assertNull(
+            "SpanOptions.setFirstClass(true).withRenderingMetrics(false) should not have rendering metrics",
+            spanFactory.createCustomSpan(
+                "Scrolling",
+                baseOptions
+                    .setFirstClass(true)
+                    .withRenderingMetrics(false),
+            ).metrics,
         )
 
         assertNull(
@@ -82,8 +120,8 @@ class SpanFactoryTest {
                 "Scrolling",
                 baseOptions
                     .setFirstClass(true)
-                    .withRenderingMetrics(false),
-            ).startFrameMetrics,
+                    .withMetrics(spanMetricsWithoutRendering),
+            ).metrics,
         )
     }
 }
