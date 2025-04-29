@@ -4,17 +4,16 @@ import android.os.SystemClock
 import com.bugsnag.android.performance.internal.SpanFactory
 import com.bugsnag.android.performance.test.CollectingSpanProcessor
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertSame
-import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.robolectric.shadows.ShadowPausedSystemClock
-import java.lang.Thread.sleep
 import java.util.concurrent.Callable
-import java.util.concurrent.CountDownLatch
+import java.util.concurrent.SynchronousQueue
 import java.util.concurrent.TimeUnit
 
 @RunWith(RobolectricTestRunner::class)
@@ -81,14 +80,17 @@ class ContextAwareScheduledThreadPoolExecutorTest {
     fun scheduleWithFixedDelay() {
         val scheduledExecutor = ContextAwareScheduledThreadPoolExecutor(1)
         var startTime = SystemClock.elapsedRealtime()
-        val countDownLatch = CountDownLatch(2)
+        // this is a weird use of SynchronousQueue - we use it to block until the appropriate spans are created
+        // we could probably use a Phaser or Semaphore instead but this is simpler to understand
+        // the span tasks put Units in the queue to signal that they have run, and we poll the queue to wait for them
+        val sync = SynchronousQueue<Unit>()
         spanFactory.createCustomSpan("parent").use {
             scheduledExecutor.scheduleWithFixedDelay(
                 {
                     startTime += 100L
                     SystemClock.setCurrentTimeMillis(startTime)
                     spanFactory.createCustomSpan("child").end()
-                    countDownLatch.countDown()
+                    sync.put(Unit)
                 },
                 0L,
                 100L,
@@ -96,10 +98,10 @@ class ContextAwareScheduledThreadPoolExecutorTest {
             )
 
             // end the parent span after one task execution
-            sleep(75L)
+            sync.poll(500, TimeUnit.MILLISECONDS)
         }
 
-        assertTrue(countDownLatch.await(500L, TimeUnit.MILLISECONDS))
+        assertNotNull(sync.poll(500, TimeUnit.MILLISECONDS))
         scheduledExecutor.shutdownNow()
 
         val collectedSpans = spanProcessor.toList()
@@ -112,14 +114,17 @@ class ContextAwareScheduledThreadPoolExecutorTest {
     fun scheduleAtFixedRate() {
         val scheduledExecutor = ContextAwareScheduledThreadPoolExecutor(1)
         var startTime = SystemClock.elapsedRealtime()
-        val countDownLatch = CountDownLatch(2)
+        // this is a weird use of SynchronousQueue - we use it to block until the appropriate spans are created
+        // we could probably use a Phaser or Semaphore instead but this is simpler to understand
+        // the span tasks put Units in the queue to signal that they have run, and we poll the queue to wait for them
+        val sync = SynchronousQueue<Unit>()
         spanFactory.createCustomSpan("parent").use {
             scheduledExecutor.scheduleAtFixedRate(
                 {
                     startTime += 100L
                     SystemClock.setCurrentTimeMillis(startTime)
                     spanFactory.createCustomSpan("child").end()
-                    countDownLatch.countDown()
+                    sync.put(Unit)
                 },
                 0L,
                 100L,
@@ -127,10 +132,10 @@ class ContextAwareScheduledThreadPoolExecutorTest {
             )
 
             // end the parent span after one task execution
-            sleep(75L)
+            sync.poll(500, TimeUnit.MILLISECONDS)
         }
 
-        assertTrue(countDownLatch.await(500L, TimeUnit.MILLISECONDS))
+        assertNotNull(sync.poll(500, TimeUnit.MILLISECONDS))
         scheduledExecutor.shutdownNow()
 
         val collectedSpans = spanProcessor.toList()
