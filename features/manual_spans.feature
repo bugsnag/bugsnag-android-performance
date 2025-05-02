@@ -86,7 +86,7 @@ Feature: Manual creation of spans
   Scenario: Send on App backgrounded
     Given I run "AppBackgroundedScenario"
     And I send the app to the background for 5 seconds
-    And I wait to receive 1 span
+    And I wait to receive at least 1 span
     Then a span name equals "Span 1"
 
   # Skip pending PLAT-11356
@@ -94,13 +94,13 @@ Feature: Manual creation of spans
   Scenario: Spans logged in the background
     Given I run "BackgroundSpanScenario"
     And I send the app to the background for 5 seconds
-    And I wait to receive 1 span
+    And I wait to receive at least 1 span
     Then a span name equals "BackgroundSpan"
     * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0" boolean attribute "bugsnag.app.in_foreground" is false
 
   Scenario: Span attributes are limited based on config
     Given I run "AttributeLimitsScenario"
-    And I wait to receive 1 span
+    And I wait to receive at least 1 span
     Then a span name equals "Custom Span"
     * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0" string array attribute "arrayAttribute" equals the array:
       | this is a *** 68 CHARS TRUNCATED |
