@@ -47,7 +47,7 @@ Feature: Automatic creation of spans
     Given I run "AppStartScenario"
     Then I relaunch the app after shutdown
     * I load scenario "AppStartScenario"
-    And I wait for 6 spans
+    And I wait to receive 6 spans
     * a span named "[AppStart/AndroidCold]" contains the attributes:
       | attribute                         | type        | value                |
       | bugsnag.span.category             | stringValue | app_start            |
@@ -88,7 +88,7 @@ Feature: Automatic creation of spans
     Given I run "AppStartScenario"
     Then I relaunch the app after shutdown
     * I load scenario "AppStartScenario"
-    And I wait for 2 spans
+    And I wait to receive 2 spans
     * a span named "[AppStart/AndroidCold]" contains the attributes:
       | attribute                         | type        | value                |
       | bugsnag.span.category             | stringValue | app_start            |
@@ -119,7 +119,7 @@ Feature: Automatic creation of spans
   @skip_below_android_10
   Scenario: Activity load breakdown with full ViewLoad instrumentation
     Given I run "ActivityLoadInstrumentationScenario" configured as "FULL"
-    And I wait for 5 spans
+    And I wait to receive 5 spans
     Then a span named "[ViewLoad/Activity]ActivityViewLoadActivity" contains the attributes:
       | attribute             | type        | value                    |
       | bugsnag.span.category | stringValue | view_load                |
@@ -153,7 +153,7 @@ Feature: Automatic creation of spans
   @skip_below_android_10
   Scenario: Activity load breakdown with start-only ViewLoad instrumentation
     Given I run "ActivityLoadInstrumentationScenario" configured as "START_ONLY"
-    And I wait for 5 spans
+    And I wait to receive 5 spans
     Then a span named "[ViewLoad/Activity]ActivityViewLoadActivity" contains the attributes:
       | attribute             | type        | value                    |
       | bugsnag.span.category | stringValue | view_load                |
@@ -186,7 +186,7 @@ Feature: Automatic creation of spans
 
   Scenario: AppStart/AndroidCold is discarded for background starts
     Given I run "BackgroundAppStartScenario"
-    And I wait for 1 span
+    And I wait to receive 1 span
     * a span named "AlarmReceiver" contains the attributes:
       | attribute                | type      | value |
       | bugsnag.span.first_class | boolValue | true  |
@@ -207,7 +207,7 @@ Feature: Automatic creation of spans
     Given I run "AppStartScenario"
     Then I relaunch the app after shutdown
     * I load scenario "AppStartScenario"
-    And I wait for 9 spans
+    And I wait to receive 9 spans
     * a span named "[AppStart/AndroidCold]" contains the attributes:
       | attribute                         | type        | value                |
       | bugsnag.span.category             | stringValue | app_start            |

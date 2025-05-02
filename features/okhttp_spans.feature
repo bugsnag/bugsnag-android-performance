@@ -26,7 +26,7 @@ Feature: OkHttp EventListener
 
   Scenario: Auto-Instrument Network with Callback
     Given I run "OkhttpAutoInstrumentNetworkCallbackScenario"
-    And I wait for 2 spans
+    And I wait to receive 2 spans
     Then the trace "Content-Type" header equals "application/json"
     * the trace "Bugsnag-Sent-At" header matches the regex "^\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d\.\d\d\dZ$"
     * every span field "name" equals "[HTTP/GET]"
@@ -39,7 +39,7 @@ Feature: OkHttp EventListener
 
   Scenario: Manual-Instrument Network with Callback
     Given I run "OkhttpManualNetworkCallbackScenario"
-    And I wait for 2 spans
+    And I wait to receive 2 spans
     Then the trace "Content-Type" header equals "application/json"
     * the trace "Bugsnag-Sent-At" header matches the regex "^\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d\.\d\d\dZ$"
     * every span field "name" equals "[HTTP/GET]"
