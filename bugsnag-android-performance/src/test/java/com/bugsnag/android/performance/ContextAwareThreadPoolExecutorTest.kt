@@ -3,6 +3,7 @@ package com.bugsnag.android.performance
 import com.bugsnag.android.performance.internal.SpanFactory
 import com.bugsnag.android.performance.test.CollectingSpanProcessor
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -47,15 +48,17 @@ class ContextAwareThreadPoolExecutorTest {
     fun closedContext() {
         val executor = ContextAwareThreadPoolExecutor(1, 1, 1L, TimeUnit.MILLISECONDS, LinkedBlockingQueue())
         spanFactory.createCustomSpan("parent").use {
-            executor.submit {
+            executor.execute {
                 // allow the parent span to close before starting a span within the task
                 sleep(10L)
                 spanFactory.createCustomSpan("child").end(10L)
             }
         }
 
+        executor.shutdown()
+
         // wait for the task to complete
-        executor.awaitTermination(20L, TimeUnit.MILLISECONDS)
+        assertTrue(executor.awaitTermination(500, TimeUnit.MILLISECONDS))
 
         val collectedSpans = spanProcessor.toList()
         assertEquals(2, collectedSpans.size)
