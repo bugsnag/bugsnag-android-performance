@@ -1,3 +1,10 @@
+## TBD
+
+### Changes
+
+* Introduced `RemoteSpanContext` to allow cross-layer parenting of spans, along with easy encoding of `traceparent` headers
+  [#378](https://github.com/bugsnag/bugsnag-android-performance/pull/378)
+
 ## 1.13.0 (2025-04-24)
 
 ### Changes
