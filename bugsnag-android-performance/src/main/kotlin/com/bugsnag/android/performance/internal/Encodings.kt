@@ -47,3 +47,7 @@ internal fun StringBuilder.appendHexString(bytes: ByteArray): StringBuilder {
     bytes.forEach { appendHexPair(it.toInt() and 0xff) }
     return this
 }
+
+internal fun String.parseUnsignedLong(): Long {
+    return java.lang.Long.parseUnsignedLong(this, 16)
+}

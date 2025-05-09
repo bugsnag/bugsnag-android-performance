@@ -8,6 +8,14 @@ internal interface Sampler {
     }
 
     fun shouldKeepSpan(span: SpanImpl): Boolean
+
+    /**
+     * The probability that any given [Span] is retained during sampling as a value between 0 and 1.
+     * Defaults to 1.0 but the implementation should override this value to return an equivalent
+     * value to the current sampling probability (if possible).
+     */
+    val sampleProbability: Double
+        get() = 1.0
 }
 
 /**
@@ -17,6 +25,7 @@ internal interface Sampler {
 internal object DiscardingSampler : Sampler {
     override fun sampled(spans: Collection<SpanImpl>): Collection<SpanImpl> = emptyList()
     override fun shouldKeepSpan(span: SpanImpl): Boolean = false
+    override val sampleProbability: Double get() = 0.0
 }
 
 internal class ProbabilitySampler(
@@ -24,7 +33,7 @@ internal class ProbabilitySampler(
      * The probability that any given [Span] is retained during sampling as a value between 0 and 1.
      */
     @FloatRange(from = 0.0, to = 1.0)
-    var sampleProbability: Double,
+    override var sampleProbability: Double,
 ) : Sampler {
     // Side effect: Sets span.samplingProbability to the current probability
     override fun shouldKeepSpan(span: SpanImpl): Boolean {
