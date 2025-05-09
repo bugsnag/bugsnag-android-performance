@@ -160,8 +160,10 @@ public object BugsnagPerformance {
                 }
 
                 tracer.sampler = sampler
+                spanFactory.sampler = sampler
             } else {
                 tracer.sampler = DiscardingSampler
+                spanFactory.sampler = DiscardingSampler
             }
 
             workerTasks.add(SendBatchTask(delivery, tracer, resourceAttributes))
