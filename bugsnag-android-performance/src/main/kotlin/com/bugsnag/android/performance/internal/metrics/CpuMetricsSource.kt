@@ -71,45 +71,46 @@ internal class CpuMetricsSource(
                 var overheadSampleCount = 0
 
                 buffer.forEachIndexed(from, to) { index, sample ->
-                    processCpuSamples[index] = sample.processCpuPct
-                    mainThreadCpuSamples[index] = sample.mainCpuPct
-                    overheadCpuSamples[index] = sample.overheadCpuPct
+                    processCpuSamples[index] = sample.processCpuPct.ensurePositive()
+                    mainThreadCpuSamples[index] = sample.mainCpuPct.ensurePositive()
+                    overheadCpuSamples[index] = sample.overheadCpuPct.ensurePositive()
                     cpuTimestamps[index] = sample.timestamp
 
-                    if (sample.processCpuPct != -1.0) {
-                        cpuUseTotal += sample.processCpuPct
+                    if (sample.processCpuPct >= 0.0) {
+                        cpuUseTotal += processCpuSamples[index]
                         cpuUseSampleCount++
                     }
 
-                    if (sample.mainCpuPct != -1.0) {
-                        mainThreadCpuTotal += sample.mainCpuPct
+                    if (sample.mainCpuPct >= 0.0) {
+                        mainThreadCpuTotal += mainThreadCpuSamples[index]
                         mainThreadSampleCount++
                     }
 
-                    if (sample.overheadCpuPct != -1.0) {
-                        overheadCpuTotal += sample.overheadCpuPct
+                    if (sample.overheadCpuPct >= 0.0) {
+                        overheadCpuTotal += overheadCpuSamples[index]
                         overheadSampleCount++
                     }
                 }
 
                 target.attributes["bugsnag.system.cpu_measures_total"] = processCpuSamples
-                target.attributes["bugsnag.system.cpu_measures_main_thread"] = mainThreadCpuSamples
-                target.attributes["bugsnag.system.cpu_measures_overhead"] = overheadCpuSamples
-                target.attributes["bugsnag.system.cpu_measures_timestamps"] = cpuTimestamps
 
                 if (cpuUseSampleCount > 0) {
-                    target.attributes["bugsnag.metrics.cpu_mean_total"] =
-                        cpuUseTotal / cpuUseSampleCount
+                    target.attributes["bugsnag.system.cpu_measures_timestamps"] = cpuTimestamps
+                    target.attributes["bugsnag.system.cpu_mean_total"] =
+                        (cpuUseTotal / cpuUseSampleCount).ensurePositive()
                 }
 
                 if (mainThreadSampleCount > 0) {
-                    target.attributes["bugsnag.metrics.cpu_mean_main_thread"] =
-                        mainThreadCpuTotal / mainThreadSampleCount
+                    target.attributes["bugsnag.system.cpu_measures_main_thread"] =
+                        mainThreadCpuSamples
+                    target.attributes["bugsnag.system.cpu_mean_main_thread"] =
+                        (mainThreadCpuTotal / mainThreadSampleCount).ensurePositive()
                 }
 
                 if (overheadSampleCount > 0) {
+                    target.attributes["bugsnag.system.cpu_measures_overhead"] = overheadCpuSamples
                     target.attributes["bugsnag.system.cpu_mean_overhead"] =
-                        overheadCpuTotal / overheadSampleCount
+                        (overheadCpuTotal / overheadSampleCount).ensurePositive()
                 }
 
                 snapshot.blocking?.cancel()
@@ -123,6 +124,10 @@ internal class CpuMetricsSource(
 
     override fun toString(): String {
         return "cpuMetrics"
+    }
+
+    private fun Double.ensurePositive(): Double {
+        return if (isFinite() && this > 0.0) this else 0.0
     }
 
     private class CpuSampleData(
@@ -181,7 +186,8 @@ private class CpuMetricsSampler(statFile: String) {
         previousUptime = uptimeSec
 
         val cpuUsagePercent = 100.0 * (deltaCpuTime / deltaUptime)
-        return cpuUsagePercent / SystemConfig.numCores
+        val normalisedPct = cpuUsagePercent / SystemConfig.numCores
+        return if (normalisedPct.isFinite()) normalisedPct else 0.0
     }
 }
 
@@ -219,10 +225,15 @@ internal object SystemConfig {
      */
     val clockTickHz: Double get() = _clockTickHz
 
-    val numCores: Int =
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+    val numCores: Int = numProcessorCores()
+
+    private fun numProcessorCores(): Int {
+        val cores = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             Os.sysconf(OsConstants._SC_NPROCESSORS_CONF).toInt()
         } else {
             Runtime.getRuntime().availableProcessors()
         }
+
+        return max(cores, 1)
+    }
 }
