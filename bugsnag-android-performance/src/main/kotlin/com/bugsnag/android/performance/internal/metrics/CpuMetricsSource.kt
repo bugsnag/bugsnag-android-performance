@@ -98,12 +98,12 @@ internal class CpuMetricsSource(
                 target.attributes["bugsnag.system.cpu_measures_timestamps"] = cpuTimestamps
 
                 if (cpuUseSampleCount > 0) {
-                    target.attributes["bugsnag.metrics.cpu_mean_total"] =
+                    target.attributes["bugsnag.system.cpu_mean_total"] =
                         cpuUseTotal / cpuUseSampleCount
                 }
 
                 if (mainThreadSampleCount > 0) {
-                    target.attributes["bugsnag.metrics.cpu_mean_main_thread"] =
+                    target.attributes["bugsnag.system.cpu_mean_main_thread"] =
                         mainThreadCpuTotal / mainThreadSampleCount
                 }
 
