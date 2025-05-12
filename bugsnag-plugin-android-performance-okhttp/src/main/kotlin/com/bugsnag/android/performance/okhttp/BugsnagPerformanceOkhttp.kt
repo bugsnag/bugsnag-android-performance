@@ -4,10 +4,9 @@ import com.bugsnag.android.performance.BugsnagPerformance
 import com.bugsnag.android.performance.NetworkRequestAttributes
 import com.bugsnag.android.performance.SpanContext
 import com.bugsnag.android.performance.SpanOptions
+import com.bugsnag.android.performance.encodeAsTraceParent
 import com.bugsnag.android.performance.internal.SpanImpl
 import com.bugsnag.android.performance.internal.SpanTracker
-import com.bugsnag.android.performance.internal.appendHexLong
-import com.bugsnag.android.performance.internal.appendHexUUID
 import com.bugsnag.android.performance.okhttp.OkhttpModule.Companion.tracePropagationUrls
 import okhttp3.Call
 import okhttp3.EventListener
@@ -16,7 +15,6 @@ import okhttp3.OkHttpClient
 import okhttp3.Protocol
 import okhttp3.Response
 import java.io.IOException
-import java.util.UUID
 
 public class BugsnagPerformanceOkhttp : EventListener(), Interceptor {
     public companion object EventListenerFactory : EventListener.Factory {
@@ -89,21 +87,6 @@ public class BugsnagPerformanceOkhttp : EventListener(), Interceptor {
         spans.discardAllSpans(call)
     }
 
-    private fun buildTraceParentHeader(
-        traceId: UUID,
-        parentSpanId: Long,
-        sampled: Boolean,
-    ): String {
-        return buildString {
-            append("00-")
-            appendHexUUID(traceId)
-            append('-')
-            appendHexLong(parentSpanId)
-            append('-')
-            append(if (sampled) "01" else "00")
-        }
-    }
-
     override fun intercept(chain: Interceptor.Chain): Response {
         val spanContext: SpanContext? = spans[chain.call()]
             ?: SpanContext.current.takeUnless { it == SpanContext.invalid }
@@ -114,14 +97,7 @@ public class BugsnagPerformanceOkhttp : EventListener(), Interceptor {
         return chain.proceed(
             chain.request()
                 .newBuilder()
-                .header(
-                    "traceparent",
-                    buildTraceParentHeader(
-                        spanContext.traceId,
-                        spanContext.spanId,
-                        (spanContext as? SpanImpl)?.isSampled() != false,
-                    ),
-                )
+                .header("traceparent", spanContext.encodeAsTraceParent())
                 .build(),
         )
     }

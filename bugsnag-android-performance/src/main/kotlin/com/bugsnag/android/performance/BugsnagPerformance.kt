@@ -33,7 +33,7 @@ import java.net.URL
  * @see [start]
  */
 public object BugsnagPerformance {
-    public const val VERSION: String = "1.13.0"
+    public const val VERSION: String = "1.14.0"
 
     @get:JvmName("getInstrumentedAppState\$internal")
     internal val instrumentedAppState = InstrumentedAppState()
@@ -160,8 +160,10 @@ public object BugsnagPerformance {
                 }
 
                 tracer.sampler = sampler
+                spanFactory.sampler = sampler
             } else {
                 tracer.sampler = DiscardingSampler
+                spanFactory.sampler = DiscardingSampler
             }
 
             workerTasks.add(SendBatchTask(delivery, tracer, resourceAttributes))

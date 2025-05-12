@@ -16,6 +16,7 @@ import com.bugsnag.android.performance.internal.integration.NotifierIntegration
 import com.bugsnag.android.performance.internal.metrics.MetricsContainer
 import com.bugsnag.android.performance.internal.processing.AttributeLimits
 import com.bugsnag.android.performance.internal.processing.SpanTaskWorker
+import com.bugsnag.android.performance.internal.processing.Tracer
 import java.util.UUID
 
 internal typealias AttributeSource = (target: SpanImpl) -> Unit
@@ -29,6 +30,8 @@ public class SpanFactory internal constructor(
 ) {
 
     public var networkRequestCallback: NetworkRequestInstrumentationCallback? = null
+
+    internal var sampler: Sampler? = null
 
     internal var attributeLimits: AttributeLimits? = null
 
@@ -265,6 +268,8 @@ public class SpanFactory internal constructor(
         if (isFirstClass != null) {
             span.attributes["bugsnag.span.first_class"] = isFirstClass
         }
+
+        span.samplingProbability = sampler?.sampleProbability ?: 1.0
 
         spanAttributeSource(span)
 

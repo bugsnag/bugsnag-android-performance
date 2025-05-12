@@ -5,8 +5,8 @@ Feature: Device Metrics
     * I wait to receive a trace
 
     # Check CPU Metrics on first class spans
-    * the "FirstClass" span has double attribute named "bugsnag.metrics.cpu_mean_total"
-    * the "FirstClass" span has double attribute named "bugsnag.metrics.cpu_mean_main_thread"
+    * the "FirstClass" span has double attribute named "bugsnag.system.cpu_mean_total"
+    * the "FirstClass" span has double attribute named "bugsnag.system.cpu_mean_main_thread"
     * the "FirstClass" span has double attribute named "bugsnag.system.cpu_mean_overhead"
 
     * the "FirstClass" span has array attribute named "bugsnag.system.cpu_measures_total"
@@ -26,8 +26,8 @@ Feature: Device Metrics
     * the "FirstClass" span has array attribute named "bugsnag.system.memory.timestamps"
 
     # Check that no metrics are reported on the "No Metrics" span
-    * the "No Metrics" span has no "bugsnag.metrics.cpu_mean_total" attribute
-    * the "No Metrics" span has no "bugsnag.metrics.cpu_mean_main_thread" attribute
+    * the "No Metrics" span has no "bugsnag.system.cpu_mean_total" attribute
+    * the "No Metrics" span has no "bugsnag.system.cpu_mean_main_thread" attribute
     * the "No Metrics" span has no "bugsnag.system.cpu_mean_overhead" attribute
     * the "No Metrics" span has no "bugsnag.system.cpu_measures_total" attribute
     * the "No Metrics" span has no "bugsnag.system.cpu_measures_main_thread" attribute
@@ -44,8 +44,8 @@ Feature: Device Metrics
     * the "No Metrics" span has no "bugsnag.system.memory.timestamps" attribute
     
     # Check that no metrics are reported on the "Not FirstClass" span
-    * the "Not FirstClass" span has no "bugsnag.metrics.cpu_mean_total" attribute
-    * the "Not FirstClass" span has no "bugsnag.metrics.cpu_mean_main_thread" attribute
+    * the "Not FirstClass" span has no "bugsnag.system.cpu_mean_total" attribute
+    * the "Not FirstClass" span has no "bugsnag.system.cpu_mean_main_thread" attribute
     * the "Not FirstClass" span has no "bugsnag.system.cpu_mean_overhead" attribute
     * the "Not FirstClass" span has no "bugsnag.system.cpu_measures_total" attribute
     * the "Not FirstClass" span has no "bugsnag.system.cpu_measures_main_thread" attribute
@@ -62,8 +62,8 @@ Feature: Device Metrics
     * the "Not FirstClass" span has no "bugsnag.system.memory.timestamps" attribute
     
     # Check that only CPU Metrics are recorded on the "CPU Metrics Only" span
-    * the "CPU Metrics Only" span has double attribute named "bugsnag.metrics.cpu_mean_total"
-    * the "CPU Metrics Only" span has double attribute named "bugsnag.metrics.cpu_mean_main_thread"
+    * the "CPU Metrics Only" span has double attribute named "bugsnag.system.cpu_mean_total"
+    * the "CPU Metrics Only" span has double attribute named "bugsnag.system.cpu_mean_main_thread"
     * the "CPU Metrics Only" span has double attribute named "bugsnag.system.cpu_mean_overhead"
 
     * the "CPU Metrics Only" span has array attribute named "bugsnag.system.cpu_measures_total"
@@ -81,8 +81,8 @@ Feature: Device Metrics
     * the "CPU Metrics Only" span has no "bugsnag.system.memory.timestamps" attribute
 
     # Check that only Memory Metrics are recorded on the "Memory Metrics Only" span
-    * the "Memory Metrics Only" span has no "bugsnag.metrics.cpu_mean_total" attribute
-    * the "Memory Metrics Only" span has no "bugsnag.metrics.cpu_mean_main_thread" attribute
+    * the "Memory Metrics Only" span has no "bugsnag.system.cpu_mean_total" attribute
+    * the "Memory Metrics Only" span has no "bugsnag.system.cpu_mean_main_thread" attribute
     * the "Memory Metrics Only" span has no "bugsnag.system.cpu_mean_overhead" attribute
     * the "Memory Metrics Only" span has no "bugsnag.system.cpu_measures_total" attribute
     * the "Memory Metrics Only" span has no "bugsnag.system.cpu_measures_main_thread" attribute
@@ -104,8 +104,8 @@ Feature: Device Metrics
     * I wait to receive a trace
 
     # Check CPU Metrics on first class spans
-    * the "FirstClass" span has double attribute named "bugsnag.metrics.cpu_mean_total"
-    * the "FirstClass" span has double attribute named "bugsnag.metrics.cpu_mean_main_thread"
+    * the "FirstClass" span has double attribute named "bugsnag.system.cpu_mean_total"
+    * the "FirstClass" span has double attribute named "bugsnag.system.cpu_mean_main_thread"
     * the "FirstClass" span has double attribute named "bugsnag.system.cpu_mean_overhead"
 
     * the "FirstClass" span has array attribute named "bugsnag.system.cpu_measures_total"
@@ -124,8 +124,8 @@ Feature: Device Metrics
     * the "FirstClass" span has no "bugsnag.system.memory.timestamps" attribute
 
     # Check that no metrics are reported on the "No Metrics" span
-    * the "No Metrics" span has no "bugsnag.metrics.cpu_mean_total" attribute
-    * the "No Metrics" span has no "bugsnag.metrics.cpu_mean_main_thread" attribute
+    * the "No Metrics" span has no "bugsnag.system.cpu_mean_total" attribute
+    * the "No Metrics" span has no "bugsnag.system.cpu_mean_main_thread" attribute
     * the "No Metrics" span has no "bugsnag.system.cpu_mean_overhead" attribute
     * the "No Metrics" span has no "bugsnag.system.cpu_measures_total" attribute
     * the "No Metrics" span has no "bugsnag.system.cpu_measures_main_thread" attribute
@@ -142,8 +142,8 @@ Feature: Device Metrics
     * the "No Metrics" span has no "bugsnag.system.memory.timestamps" attribute
 
     # Check that no metrics are reported on the "Not FirstClass" span
-    * the "Not FirstClass" span has no "bugsnag.metrics.cpu_mean_total" attribute
-    * the "Not FirstClass" span has no "bugsnag.metrics.cpu_mean_main_thread" attribute
+    * the "Not FirstClass" span has no "bugsnag.system.cpu_mean_total" attribute
+    * the "Not FirstClass" span has no "bugsnag.system.cpu_mean_main_thread" attribute
     * the "Not FirstClass" span has no "bugsnag.system.cpu_mean_overhead" attribute
     * the "Not FirstClass" span has no "bugsnag.system.cpu_measures_total" attribute
     * the "Not FirstClass" span has no "bugsnag.system.cpu_measures_main_thread" attribute
@@ -160,8 +160,8 @@ Feature: Device Metrics
     * the "Not FirstClass" span has no "bugsnag.system.memory.timestamps" attribute
 
     # Check that only CPU Metrics are recorded on the "CPU Metrics Only" span
-    * the "CPU Metrics Only" span has double attribute named "bugsnag.metrics.cpu_mean_total"
-    * the "CPU Metrics Only" span has double attribute named "bugsnag.metrics.cpu_mean_main_thread"
+    * the "CPU Metrics Only" span has double attribute named "bugsnag.system.cpu_mean_total"
+    * the "CPU Metrics Only" span has double attribute named "bugsnag.system.cpu_mean_main_thread"
     * the "CPU Metrics Only" span has double attribute named "bugsnag.system.cpu_mean_overhead"
 
     * the "CPU Metrics Only" span has array attribute named "bugsnag.system.cpu_measures_total"
@@ -179,8 +179,8 @@ Feature: Device Metrics
     * the "CPU Metrics Only" span has no "bugsnag.system.memory.timestamps" attribute
 
     # Check that no metrics are recorded on the "Memory Metrics Only" span for this case
-    * the "Memory Metrics Only" span has no "bugsnag.metrics.cpu_mean_total" attribute
-    * the "Memory Metrics Only" span has no "bugsnag.metrics.cpu_mean_main_thread" attribute
+    * the "Memory Metrics Only" span has no "bugsnag.system.cpu_mean_total" attribute
+    * the "Memory Metrics Only" span has no "bugsnag.system.cpu_mean_main_thread" attribute
     * the "Memory Metrics Only" span has no "bugsnag.system.cpu_mean_overhead" attribute
     * the "Memory Metrics Only" span has no "bugsnag.system.cpu_measures_total" attribute
     * the "Memory Metrics Only" span has no "bugsnag.system.cpu_measures_main_thread" attribute
@@ -201,8 +201,8 @@ Feature: Device Metrics
     * I wait to receive a trace
 
     # Check there are no CPU Metrics on first class spans
-    * the "FirstClass" span has no "bugsnag.metrics.cpu_mean_total" attribute
-    * the "FirstClass" span has no "bugsnag.metrics.cpu_mean_main_thread" attribute
+    * the "FirstClass" span has no "bugsnag.system.cpu_mean_total" attribute
+    * the "FirstClass" span has no "bugsnag.system.cpu_mean_main_thread" attribute
     * the "FirstClass" span has no "bugsnag.system.cpu_mean_overhead" attribute
     * the "FirstClass" span has no "bugsnag.system.cpu_measures_total" attribute
     * the "FirstClass" span has no "bugsnag.system.cpu_measures_main_thread" attribute
@@ -221,8 +221,8 @@ Feature: Device Metrics
     * the "FirstClass" span has array attribute named "bugsnag.system.memory.timestamps"
     
     # Check that no metrics are reported on the "No Metrics" span
-    * the "No Metrics" span has no "bugsnag.metrics.cpu_mean_total" attribute
-    * the "No Metrics" span has no "bugsnag.metrics.cpu_mean_main_thread" attribute
+    * the "No Metrics" span has no "bugsnag.system.cpu_mean_total" attribute
+    * the "No Metrics" span has no "bugsnag.system.cpu_mean_main_thread" attribute
     * the "No Metrics" span has no "bugsnag.system.cpu_mean_overhead" attribute
     * the "No Metrics" span has no "bugsnag.system.cpu_measures_total" attribute
     * the "No Metrics" span has no "bugsnag.system.cpu_measures_main_thread" attribute
@@ -239,8 +239,8 @@ Feature: Device Metrics
     * the "No Metrics" span has no "bugsnag.system.memory.timestamps" attribute
 
     # Check that no metrics are reported on the "Not FirstClass" span
-    * the "Not FirstClass" span has no "bugsnag.metrics.cpu_mean_total" attribute
-    * the "Not FirstClass" span has no "bugsnag.metrics.cpu_mean_main_thread" attribute
+    * the "Not FirstClass" span has no "bugsnag.system.cpu_mean_total" attribute
+    * the "Not FirstClass" span has no "bugsnag.system.cpu_mean_main_thread" attribute
     * the "Not FirstClass" span has no "bugsnag.system.cpu_mean_overhead" attribute
     * the "Not FirstClass" span has no "bugsnag.system.cpu_measures_total" attribute
     * the "Not FirstClass" span has no "bugsnag.system.cpu_measures_main_thread" attribute
@@ -257,8 +257,8 @@ Feature: Device Metrics
     * the "Not FirstClass" span has no "bugsnag.system.memory.timestamps" attribute
 
     # Check that there are no CPU Metrics are recorded on the "CPU Metrics Only" span (not gathered)
-    * the "CPU Metrics Only" span has no "bugsnag.metrics.cpu_mean_total" attribute
-    * the "CPU Metrics Only" span has no "bugsnag.metrics.cpu_mean_main_thread" attribute
+    * the "CPU Metrics Only" span has no "bugsnag.system.cpu_mean_total" attribute
+    * the "CPU Metrics Only" span has no "bugsnag.system.cpu_mean_main_thread" attribute
     * the "CPU Metrics Only" span has no "bugsnag.system.cpu_mean_overhead" attribute
     * the "CPU Metrics Only" span has no "bugsnag.system.cpu_measures_total" attribute
     * the "CPU Metrics Only" span has no "bugsnag.system.cpu_measures_main_thread" attribute
@@ -275,8 +275,8 @@ Feature: Device Metrics
     * the "CPU Metrics Only" span has no "bugsnag.system.memory.timestamps" attribute
 
     # Check that only Memory Metrics are recorded on the "Memory Metrics Only" span
-    * the "Memory Metrics Only" span has no "bugsnag.metrics.cpu_mean_total" attribute
-    * the "Memory Metrics Only" span has no "bugsnag.metrics.cpu_mean_main_thread" attribute
+    * the "Memory Metrics Only" span has no "bugsnag.system.cpu_mean_total" attribute
+    * the "Memory Metrics Only" span has no "bugsnag.system.cpu_mean_main_thread" attribute
     * the "Memory Metrics Only" span has no "bugsnag.system.cpu_mean_overhead" attribute
     * the "Memory Metrics Only" span has no "bugsnag.system.cpu_measures_total" attribute
     * the "Memory Metrics Only" span has no "bugsnag.system.cpu_measures_main_thread" attribute
