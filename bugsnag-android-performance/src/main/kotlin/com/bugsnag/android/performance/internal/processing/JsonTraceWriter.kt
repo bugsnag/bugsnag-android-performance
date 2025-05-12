@@ -65,11 +65,21 @@ internal class JsonTraceWriter(
     }
 
     fun value(value: Double): JsonTraceWriter {
+        if (!value.isFinite()) {
+            json.nullValue()
+            return this
+        }
+
         json.value(value)
         return this
     }
 
     fun value(value: Number): JsonTraceWriter {
+        if (value is Double || value is Float) {
+            value(value.toDouble())
+            return this
+        }
+
         json.value(value)
         return this
     }
