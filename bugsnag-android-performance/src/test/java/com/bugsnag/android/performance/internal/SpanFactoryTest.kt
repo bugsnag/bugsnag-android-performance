@@ -9,6 +9,7 @@ import com.bugsnag.android.performance.internal.framerate.TimestampPairBuffer
 import com.bugsnag.android.performance.internal.metrics.MetricSource
 import com.bugsnag.android.performance.test.NoopSpanProcessor
 import com.bugsnag.android.performance.test.TestMetricsContainer
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Before
@@ -123,5 +124,13 @@ class SpanFactoryTest {
                     .withMetrics(spanMetricsWithoutRendering),
             ).metrics,
         )
+    }
+
+    @Test
+    fun testSamplingProbability() {
+        spanFactory.sampler = ProbabilitySampler(0.5)
+
+        val span = spanFactory.createCustomSpan("Test", baseOptions)
+        assertEquals(0.5, span.samplingProbability, 0.01)
     }
 }
