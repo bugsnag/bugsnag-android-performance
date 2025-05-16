@@ -5,8 +5,10 @@ import android.app.Application
 import android.os.SystemClock
 import androidx.annotation.RestrictTo
 import com.bugsnag.android.performance.EnabledMetrics
+import com.bugsnag.android.performance.Logger
 import com.bugsnag.android.performance.NetworkRequestInfo
 import com.bugsnag.android.performance.NetworkRequestInstrumentationCallback
+import com.bugsnag.android.performance.OnSpanStartCallback
 import com.bugsnag.android.performance.SpanContext
 import com.bugsnag.android.performance.SpanKind
 import com.bugsnag.android.performance.SpanMetrics
@@ -16,7 +18,6 @@ import com.bugsnag.android.performance.internal.integration.NotifierIntegration
 import com.bugsnag.android.performance.internal.metrics.MetricsContainer
 import com.bugsnag.android.performance.internal.processing.AttributeLimits
 import com.bugsnag.android.performance.internal.processing.SpanTaskWorker
-import com.bugsnag.android.performance.internal.processing.Tracer
 import java.util.UUID
 
 internal typealias AttributeSource = (target: SpanImpl) -> Unit
@@ -35,6 +36,8 @@ public class SpanFactory internal constructor(
 
     internal var attributeLimits: AttributeLimits? = null
 
+    internal var spanStartCallbacks: Array<OnSpanStartCallback> = emptyArray()
+
     public constructor(
         spanProcessor: SpanProcessor,
         spanAttributeSource: AttributeSource = {},
@@ -52,11 +55,13 @@ public class SpanFactory internal constructor(
     internal fun configure(
         spanProcessor: SpanProcessor,
         attributeLimits: AttributeLimits,
+        spanStartCallbacks: Array<OnSpanStartCallback>,
         networkRequestCallback: NetworkRequestInstrumentationCallback?,
         enabledMetrics: EnabledMetrics,
     ) {
         this.spanProcessor = spanProcessor
         this.attributeLimits = attributeLimits
+        this.spanStartCallbacks = spanStartCallbacks
         this.networkRequestCallback = networkRequestCallback
 
         metricsContainer.configure(enabledMetrics)
@@ -273,9 +278,22 @@ public class SpanFactory internal constructor(
 
         spanAttributeSource(span)
 
+        runOnSpanStartCallbacks(span)
         NotifierIntegration.onSpanStarted(span)
 
         return span
+    }
+
+    private fun runOnSpanStartCallbacks(span: SpanImpl) {
+        @Suppress("TooGenericExceptionCaught")
+        spanStartCallbacks.forEach {
+            try {
+                it.onSpanStart(span)
+            } catch (ex: Exception) {
+                // swallow any exceptions to avoid any possible crash
+                Logger.w("Exception in onSpanStart callback", ex)
+            }
+        }
     }
 
     private fun UUID.isValidTraceId() = mostSignificantBits != 0L || leastSignificantBits != 0L
