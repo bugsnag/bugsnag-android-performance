@@ -11,6 +11,15 @@ class ManualSpanScenario(
 ) : Scenario(config, scenarioMetadata) {
     init {
         config.serviceName = "manual.span.service"
+
+        config.addOnSpanStartCallback { span ->
+            span.setAttribute("spanStartCallback", true)
+        }
+
+        config.addOnSpanEndCallback { span ->
+            span.setAttribute("spanEndCallback", true)
+            true
+        }
     }
 
     override fun startScenario() {

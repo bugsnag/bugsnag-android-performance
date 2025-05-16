@@ -27,6 +27,8 @@ Feature: Manual creation of spans
       | attribute                         | type        | value               |
       | bugsnag.span.category             | stringValue | custom              |
       | bugsnag.span.first_class          | boolValue   | true                |
+      | spanStartCallback                 | boolValue   | true                |
+      | spanEndCallback                   | boolValue   | true                |
 
     * the trace payload field "resourceSpans.0.resource" string attribute "host.arch" is one of:
       | x86   |
