@@ -46,6 +46,9 @@ public class PerformanceConfiguration private constructor(public val context: Co
     public var samplingProbability: Double? = null
 
     @JvmSynthetic
+    internal val spanStartCallbacks: MutableList<OnSpanStartCallback> = ArrayList()
+
+    @JvmSynthetic
     internal val spanEndCallbacks: MutableList<OnSpanEndCallback> = ArrayList()
 
     /**
@@ -83,10 +86,45 @@ public class PerformanceConfiguration private constructor(public val context: Co
             field = if (value !in 1..1000) 128 else value
         }
 
+    /**
+     * Add an `OnSpanStartCallback` to be called when a span is started. This callback can be used
+     * to pre-configure the span before it is used (such as setting attributes).
+     *
+     * @see OnSpanStartCallback
+     * @see addOnSpanEndCallback
+     */
+    public fun addOnSpanStartCallback(onSpanStartCallback: OnSpanStartCallback) {
+        spanStartCallbacks.add(onSpanStartCallback)
+    }
+
+    /**
+     * Remove an `OnSpanStartCallback` that was previously added. If the callback was not
+     * added, this will do nothing.
+     *
+     * @see OnSpanStartCallback
+     */
+    public fun removeOnSpanStartCallback(onSpanStartCallback: OnSpanStartCallback) {
+        spanStartCallbacks.remove(onSpanStartCallback)
+    }
+
+    /**
+     * Add an `OnSpanEndCallback` to be called when a span is ended. These callbacks can modify the
+     * attributes of a span or cause it to be discarded between the time [Span.end] is called
+     * and when the span is enqueued for delivery.
+     *
+     * @see OnSpanEndCallback
+     * @see addOnSpanStartCallback
+     */
     public fun addOnSpanEndCallback(onSpanEndCallback: OnSpanEndCallback) {
         spanEndCallbacks.add(onSpanEndCallback)
     }
 
+    /**
+     * Remove an `OnSpanEndCallback` that was previously added. If the callback was not
+     * added, this will do nothing.
+     *
+     * @see OnSpanEndCallback
+     */
     public fun removeOnSpanEndCallback(onSpanEndCallback: OnSpanEndCallback) {
         spanEndCallbacks.remove(onSpanEndCallback)
     }

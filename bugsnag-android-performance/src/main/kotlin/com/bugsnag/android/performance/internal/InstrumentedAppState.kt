@@ -5,12 +5,10 @@ import android.os.Build
 import androidx.annotation.RestrictTo
 import com.bugsnag.android.performance.AutoInstrument
 import com.bugsnag.android.performance.SpanContext
-import com.bugsnag.android.performance.internal.framerate.FramerateMetricsSource
 import com.bugsnag.android.performance.internal.instrumentation.AbstractActivityLifecycleInstrumentation
 import com.bugsnag.android.performance.internal.instrumentation.ActivityLifecycleInstrumentation
 import com.bugsnag.android.performance.internal.instrumentation.ForegroundState
 import com.bugsnag.android.performance.internal.instrumentation.LegacyActivityInstrumentation
-import com.bugsnag.android.performance.internal.metrics.MemoryMetricsSource
 import com.bugsnag.android.performance.internal.processing.ForwardingSpanProcessor
 import com.bugsnag.android.performance.internal.processing.ImmutableConfig
 import com.bugsnag.android.performance.internal.processing.Tracer
@@ -74,6 +72,7 @@ public class InstrumentedAppState {
         spanFactory.configure(
             tracer,
             configuration,
+            configuration.spanStartCallbacks,
             configuration.networkRequestCallback,
             configuration.enabledMetrics,
         )

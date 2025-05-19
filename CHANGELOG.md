@@ -1,3 +1,10 @@
+## TBD
+
+### Changes
+
+* Introduced `OnSpanStartCallback` as a way to listen-for and modify all spans before they are used
+  [#383](https://github.com/bugsnag/bugsnag-android-performance/pull/383)
+
 ## 1.14.0 (2025-05-12)
 
 ### Changes

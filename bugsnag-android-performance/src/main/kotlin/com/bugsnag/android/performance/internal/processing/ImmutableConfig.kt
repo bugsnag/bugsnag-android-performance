@@ -8,8 +8,9 @@ import com.bugsnag.android.performance.AutoInstrument
 import com.bugsnag.android.performance.EnabledMetrics
 import com.bugsnag.android.performance.Logger
 import com.bugsnag.android.performance.NetworkRequestInstrumentationCallback
-import com.bugsnag.android.performance.PerformanceConfiguration
 import com.bugsnag.android.performance.OnSpanEndCallback
+import com.bugsnag.android.performance.OnSpanStartCallback
+import com.bugsnag.android.performance.PerformanceConfiguration
 import com.bugsnag.android.performance.internal.DebugLogger
 import com.bugsnag.android.performance.internal.NoopLogger
 import com.bugsnag.android.performance.internal.RELEASE_STAGE_PRODUCTION
@@ -18,7 +19,7 @@ import java.util.regex.Pattern
 
 internal const val DEFAULT_ENDPOINT = "https://otlp.bugsnag.com/v1/traces"
 
-internal data class ImmutableConfig(
+internal class ImmutableConfig(
     val application: Application,
     val apiKey: String,
     val endpoint: String,
@@ -35,6 +36,7 @@ internal data class ImmutableConfig(
     val doNotEndAppStart: Collection<Class<out Activity>>,
     val doNotAutoInstrument: Collection<Class<*>>,
     val tracePropagationUrls: Collection<Pattern>,
+    val spanStartCallbacks: Array<OnSpanStartCallback>,
     val spanEndCallbacks: Array<OnSpanEndCallback>,
     val samplingProbability: Double?,
     override val attributeStringValueLimit: Int,
@@ -67,6 +69,7 @@ internal data class ImmutableConfig(
         configuration.doNotEndAppStart,
         configuration.doNotAutoInstrument,
         configuration.tracePropagationUrls.toSet(),
+        configuration.spanStartCallbacks.toTypedArray(),
         configuration.spanEndCallbacks.toTypedArray(),
         configuration.samplingProbability,
         configuration.attributeStringValueLimit,
