@@ -6,6 +6,8 @@ import android.content.Context
 import android.net.Uri
 import android.os.SystemClock
 import com.bugsnag.android.performance.BugsnagPerformance.start
+import com.bugsnag.android.performance.internal.controls.CompositeSpanControlProvider
+import com.bugsnag.android.performance.controls.SpanQuery
 import com.bugsnag.android.performance.internal.Connectivity
 import com.bugsnag.android.performance.internal.DiscardingSampler
 import com.bugsnag.android.performance.internal.HttpDelivery
@@ -43,6 +45,8 @@ public object BugsnagPerformance {
     private lateinit var worker: Worker
 
     private val spanFactory get() = instrumentedAppState.spanFactory
+
+    private val spanControlProvider = CompositeSpanControlProvider()
 
     /**
      * Initialise the Bugsnag Performance SDK. This should be called within your
@@ -315,6 +319,20 @@ public object BugsnagPerformance {
         synchronized(this) {
             instrumentedAppState.startupTracker.onFirstClassLoadReported()
         }
+    }
+
+    /**
+     * Attempt to retrieve the span controls for a given [SpanQuery]. This is used to access
+     * specialised behaviours for specific span types.
+     *
+     * @param query the span query to retrieve controls for
+     * @return the span controls for the given query, or null if none exists or the query cannot
+     *      be fulfilled
+     */
+    @JvmStatic
+    public fun <C> getSpanControls(query: SpanQuery<C>): C? {
+        @Suppress("UNCHECKED_CAST")
+        return spanControlProvider[query as SpanQuery<Any>] as C
     }
 }
 
