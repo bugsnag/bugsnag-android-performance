@@ -26,6 +26,7 @@ import com.bugsnag.android.performance.internal.createResourceAttributes
 import com.bugsnag.android.performance.internal.integration.NotifierIntegration
 import com.bugsnag.android.performance.internal.isInForeground
 import com.bugsnag.android.performance.internal.metrics.SystemConfig
+import com.bugsnag.android.performance.internal.plugins.PluginManager
 import com.bugsnag.android.performance.internal.processing.ImmutableConfig
 import java.net.URL
 
@@ -78,7 +79,7 @@ public object BugsnagPerformance {
         if (!isStarted) {
             synchronized(this) {
                 if (!isStarted) {
-                    startUnderLock(ImmutableConfig(configuration))
+                    startUnderLock(configuration)
                     isStarted = true
                 }
             }
@@ -91,8 +92,13 @@ public object BugsnagPerformance {
         Logger.w("BugsnagPerformance.start has already been called")
     }
 
-    private fun startUnderLock(configuration: ImmutableConfig) {
-        Logger.delegate = configuration.logger
+    private fun startUnderLock(externalConfiguration: PerformanceConfiguration) {
+        Logger.delegate = ImmutableConfig.getLogger(externalConfiguration)
+
+        val pluginManager = PluginManager(externalConfiguration.plugins)
+        pluginManager.installPlugins(externalConfiguration)
+
+        val configuration = ImmutableConfig(externalConfiguration, pluginManager)
         val tracer = instrumentedAppState.configure(configuration)
 
         if (configuration.autoInstrumentAppStarts) {
@@ -176,8 +182,11 @@ public object BugsnagPerformance {
                 workerTasks.add(SendBatchTask(delivery, tracer, resourceAttributes))
                 workerTasks.add(RetryDeliveryTask(persistence.retryQueue, httpDelivery, connectivity))
 
-                return@Worker workerTasks
-            }
+                // starting plugins is the last thing to do before starting the first tasks
+            pluginManager.startPlugins()
+
+            return@Worker workerTasks
+        }
 
         // register the Worker with the components that depend on it
         tracer.worker = bsgWorker

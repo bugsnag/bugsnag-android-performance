@@ -9,6 +9,7 @@ import com.bugsnag.android.performance.Logger
 import com.bugsnag.android.performance.NetworkRequestInfo
 import com.bugsnag.android.performance.NetworkRequestInstrumentationCallback
 import com.bugsnag.android.performance.OnSpanStartCallback
+import com.bugsnag.android.performance.PluginContext
 import com.bugsnag.android.performance.SpanContext
 import com.bugsnag.android.performance.SpanKind
 import com.bugsnag.android.performance.SpanMetrics
@@ -18,6 +19,8 @@ import com.bugsnag.android.performance.internal.integration.NotifierIntegration
 import com.bugsnag.android.performance.internal.metrics.MetricsContainer
 import com.bugsnag.android.performance.internal.processing.AttributeLimits
 import com.bugsnag.android.performance.internal.processing.SpanTaskWorker
+import com.bugsnag.android.performance.internal.util.Prioritized
+import com.bugsnag.android.performance.internal.util.PrioritizedSet
 import java.util.UUID
 
 internal typealias AttributeSource = (target: SpanImpl) -> Unit
@@ -35,7 +38,7 @@ public class SpanFactory internal constructor(
 
     internal var attributeLimits: AttributeLimits? = null
 
-    internal var spanStartCallbacks: Array<OnSpanStartCallback> = emptyArray()
+    internal val spanStartCallbacks = PrioritizedSet<OnSpanStartCallback>()
 
     public constructor(
         spanProcessor: SpanProcessor,
@@ -54,14 +57,15 @@ public class SpanFactory internal constructor(
     internal fun configure(
         spanProcessor: SpanProcessor,
         attributeLimits: AttributeLimits,
-        spanStartCallbacks: Array<OnSpanStartCallback>,
+        spanStartCallbacks: Collection<Prioritized<OnSpanStartCallback>>,
         networkRequestCallback: NetworkRequestInstrumentationCallback?,
         enabledMetrics: EnabledMetrics,
     ) {
         this.spanProcessor = spanProcessor
         this.attributeLimits = attributeLimits
-        this.spanStartCallbacks = spanStartCallbacks
         this.networkRequestCallback = networkRequestCallback
+
+        this.spanStartCallbacks.addAll(spanStartCallbacks)
 
         metricsContainer.configure(enabledMetrics)
     }
