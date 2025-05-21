@@ -4,10 +4,7 @@ import com.bugsnag.android.performance.controls.SpanControlProvider
 import com.bugsnag.android.performance.controls.SpanQuery
 
 import com.bugsnag.android.performance.internal.util.Prioritized
-
-import java.util.concurrent.locks.ReentrantLock
-
-import kotlin.concurrent.withLock
+import com.bugsnag.android.performance.internal.util.PrioritizedSet
 
 /**
  * A compositing [SpanControlProvider] that delegates to a list of other [SpanControlProvider]s.
@@ -21,10 +18,7 @@ import kotlin.concurrent.withLock
  * the providers is the order in which they were added.
  */
 internal class CompositeSpanControlProvider : SpanControlProvider<Any> {
-    @Volatile
-    private var providers: Array<Prioritized<SpanControlProvider<Any>>> = emptyArray()
-
-    private val lock = ReentrantLock()
+    private val providers = PrioritizedSet<SpanControlProvider<*>>()
 
     val size: Int
         get() = providers.size
@@ -37,17 +31,7 @@ internal class CompositeSpanControlProvider : SpanControlProvider<Any> {
      * @param provider The [SpanControlProvider] to add and its priority
      */
     fun addProvider(provider: Prioritized<SpanControlProvider<*>>) {
-        lock.withLock {
-            @Suppress("UNCHECKED_CAST")
-            val castProvider = provider as Prioritized<SpanControlProvider<Any>>
-            if (providers.any { it.value == castProvider.value }) {
-                return
-            }
-
-            val newProviders = providers + castProvider
-            newProviders.sort()
-            providers = newProviders
-        }
+        providers.add(provider)
     }
 
     /**
@@ -58,36 +42,14 @@ internal class CompositeSpanControlProvider : SpanControlProvider<Any> {
      * @param newProviders The collection of [SpanControlProvider]s to add and their priorities
      */
     fun addProviders(newProviders: Collection<Prioritized<SpanControlProvider<*>>>) {
-        lock.withLock {
-            val newProviderArray = providers.copyOf(providers.size + newProviders.size)
-            var index = providers.size
-
-            for (provider in newProviders) {
-                @Suppress("UNCHECKED_CAST")
-                val castProvider = provider as Prioritized<SpanControlProvider<Any>>
-                if (providers.none { it.value == castProvider.value }) {
-                    newProviderArray[index++] = castProvider
-                }
-            }
-
-            if (index == newProviderArray.size) {
-                newProviderArray.sort()
-                @Suppress("UNCHECKED_CAST")
-                providers = newProviderArray as Array<Prioritized<SpanControlProvider<Any>>>
-            } else {
-                newProviderArray.sort(0, index)
-                @Suppress("UNCHECKED_CAST")
-                providers = newProviderArray.copyOf(index)
-                        as Array<Prioritized<SpanControlProvider<Any>>>
-            }
-        }
+        providers.addAll(newProviders)
     }
 
     override operator fun <Q : SpanQuery<Any>> get(query: Q): Any? {
-        val providerList = providers
-
-        for (provider in providerList) {
-            val result = provider.value[query]
+        providers.forEach { provider ->
+            @Suppress("UNCHECKED_CAST")
+            val anyProvider = provider as SpanControlProvider<Any>
+            val result = anyProvider[query]
             if (result != null) {
                 return result
             }
