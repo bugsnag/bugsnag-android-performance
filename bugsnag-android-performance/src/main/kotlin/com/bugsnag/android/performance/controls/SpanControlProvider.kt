@@ -17,8 +17,8 @@ public interface SpanQuery<out C>
  */
 public interface SpanControlProvider<C> {
     /**
-     * If possible retrieves the span controls the given [query]. If the query cannot be fulfilled
-     * by this provider, null is returned.
+     * If possible retrieves the span controls for the given [query]. If the query cannot be
+     * fulfilled by this provider, null is returned.
      *
      * @param query The query to be used to retrieve the span control
      * @return the span control for the query, or null if no match is found or the query cannot be
