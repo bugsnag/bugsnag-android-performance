@@ -9,14 +9,18 @@ import com.bugsnag.android.performance.internal.ProbabilitySampler
 import com.bugsnag.android.performance.internal.Sampler
 import com.bugsnag.android.performance.internal.SpanImpl
 import com.bugsnag.android.performance.internal.Worker
+import com.bugsnag.android.performance.internal.util.Prioritized
+import com.bugsnag.android.performance.internal.util.PrioritizedSet
 
 internal class Tracer(
-    @get:VisibleForTesting
-    internal val spanEndCallbacks: Array<OnSpanEndCallback>,
+    spanEndCallbacks: List<Prioritized<OnSpanEndCallback>>,
 ) : BatchingSpanProcessor() {
     private var lastBatchSendTime = SystemClock.elapsedRealtime()
     internal var sampler: Sampler = ProbabilitySampler(1.0)
     internal var worker: Worker? = null
+
+    @VisibleForTesting
+    internal val spanEndCallbacks = PrioritizedSet(spanEndCallbacks)
 
     /**
      * Returns the next batch of spans to be sent, or `null` if the batch is not "ready" to be sent.
