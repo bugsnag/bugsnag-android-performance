@@ -193,6 +193,11 @@ public object BugsnagPerformance {
 
         loadModules()
 
+        spanControlProvider.addProviders(
+            pluginManager.installedPluginContexts
+                .flatMap { it.spanControlProviders },
+        )
+
         bsgWorker.start()
 
         worker = bsgWorker

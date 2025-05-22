@@ -12,6 +12,7 @@ Feature: Plugins
     Then a span named "Span 2" contains the attributes:
       | attribute | type        | value |
       | spanCount | intValue    | 2     |
+      | queried   | boolValue   | true  |
 
     Then a span named "Span 3" contains the attributes:
       | attribute | type        | value |
