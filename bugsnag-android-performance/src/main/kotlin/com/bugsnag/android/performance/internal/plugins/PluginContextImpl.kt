@@ -4,6 +4,7 @@ import com.bugsnag.android.performance.OnSpanEndCallback
 import com.bugsnag.android.performance.OnSpanStartCallback
 import com.bugsnag.android.performance.PerformanceConfiguration
 import com.bugsnag.android.performance.PluginContext
+import com.bugsnag.android.performance.controls.SpanControlProvider
 import com.bugsnag.android.performance.internal.util.Prioritized
 
 internal class PluginContextImpl(
@@ -11,12 +12,17 @@ internal class PluginContextImpl(
 ) : PluginContext {
     internal val spanStartCallbacks = mutableListOf<Prioritized<OnSpanStartCallback>>()
     internal val spanEndCallbacks = mutableListOf<Prioritized<OnSpanEndCallback>>()
+    internal val spanControlProviders = mutableListOf<Prioritized<SpanControlProvider<*>>>()
 
-    override fun addOnSpanStartCallback(priority: Int, sb: OnSpanStartCallback) {
-        spanStartCallbacks.add(Prioritized(priority, sb))
+    override fun addOnSpanStartCallback(priority: Int, callback: OnSpanStartCallback) {
+        spanStartCallbacks.add(Prioritized(priority, callback))
     }
 
-    override fun addOnSpanEndCallback(priority: Int, sb: OnSpanEndCallback) {
-        spanEndCallbacks.add(Prioritized(priority, sb))
+    override fun addOnSpanEndCallback(priority: Int, callback: OnSpanEndCallback) {
+        spanEndCallbacks.add(Prioritized(priority, callback))
+    }
+
+    override fun addSpanControlProvider(priority: Int, provider: SpanControlProvider<*>) {
+        spanControlProviders.add(Prioritized(priority, provider))
     }
 }

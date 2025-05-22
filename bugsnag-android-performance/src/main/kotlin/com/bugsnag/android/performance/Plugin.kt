@@ -1,5 +1,12 @@
 package com.bugsnag.android.performance
 
+import com.bugsnag.android.performance.controls.SpanControlProvider
+
+/**
+ * A plugin interface that provides a way to extend the functionality of the performance monitoring
+ * library. Plugins are added to the library via the [PerformanceConfiguration.addPlugin]
+ * method, and are called when the library is started.
+ */
 public interface Plugin {
     /**
      * Called when the plugin is loaded. This is where you can set up any necessary resources or
@@ -38,7 +45,16 @@ public interface PluginContext {
      *
      * @see PerformanceConfiguration.addOnSpanStartCallback
      */
-    public fun addOnSpanStartCallback(priority: Int = NORM_PRIORITY, sb: OnSpanStartCallback)
+    public fun addOnSpanStartCallback(priority: Int = NORM_PRIORITY, callback: OnSpanStartCallback)
+
+    /**
+     * Add a [OnSpanStartCallback] to the list of callbacks that will be called when a span is
+     * started. This is a convenience method that is the same as calling
+     * [addOnSpanStartCallback] with the default priority of [NORM_PRIORITY].
+     */
+    public fun addOnSpanStartCallback(callback: OnSpanStartCallback) {
+        addOnSpanStartCallback(NORM_PRIORITY, callback)
+    }
 
     /**
      * Add a [OnSpanEndCallback] to the list of callbacks that will be called when a span is
@@ -49,7 +65,39 @@ public interface PluginContext {
      *
      * @see PerformanceConfiguration.addOnSpanEndCallback
      */
-    public fun addOnSpanEndCallback(priority: Int = NORM_PRIORITY, sb: OnSpanEndCallback)
+    public fun addOnSpanEndCallback(priority: Int = NORM_PRIORITY, callback: OnSpanEndCallback)
+
+    /**
+     * Add a [OnSpanEndCallback] to the list of callbacks that will be called when a span is
+     * ended. This is a convenience method that is the same as calling
+     * [addOnSpanEndCallback] with the default priority of [NORM_PRIORITY].
+     */
+    public fun addOnSpanEndCallback(callback: OnSpanEndCallback) {
+        addOnSpanEndCallback(NORM_PRIORITY, callback)
+    }
+
+    /**
+     * Add a [SpanControlProvider] to the list of providers that can be queried via
+     * [BugsnagPerformance.getSpanControls]. The priority of the provider determines the order
+     * in which it will be queried, with higher priorities being queried first.
+     *
+     * @see BugsnagPerformance.getSpanControls
+     */
+    public fun addSpanControlProvider(
+        priority: Int = NORM_PRIORITY,
+        provider: SpanControlProvider<*>
+    )
+
+    /**
+     * Add a [SpanControlProvider] to the list of providers that can be queried via
+     * [BugsnagPerformance.getSpanControls]. This is a convenience method that is the same as
+     * calling [addSpanControlProvider] with the default priority of [NORM_PRIORITY].
+     *
+     * @see BugsnagPerformance.getSpanControls
+     */
+    public fun addSpanControlProvider(provider: SpanControlProvider<*>) {
+        addSpanControlProvider(NORM_PRIORITY, provider)
+    }
 
     public companion object {
         /**
@@ -64,6 +112,10 @@ public interface PluginContext {
          * than
          */
         public const val NORM_PRIORITY: Int = 10_000
+
+        /**
+         * A priority value for actions that should be called after [NORM_PRIORITY] actions.
+         */
         public const val LOW_PRIORITY: Int = 100_000
     }
 }
