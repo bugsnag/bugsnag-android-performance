@@ -6,7 +6,6 @@ import android.content.Context
 import android.net.Uri
 import android.os.SystemClock
 import com.bugsnag.android.performance.BugsnagPerformance.start
-import com.bugsnag.android.performance.internal.controls.CompositeSpanControlProvider
 import com.bugsnag.android.performance.controls.SpanQuery
 import com.bugsnag.android.performance.internal.Connectivity
 import com.bugsnag.android.performance.internal.DiscardingSampler
@@ -22,6 +21,7 @@ import com.bugsnag.android.performance.internal.SamplerTask
 import com.bugsnag.android.performance.internal.SendBatchTask
 import com.bugsnag.android.performance.internal.Task
 import com.bugsnag.android.performance.internal.Worker
+import com.bugsnag.android.performance.internal.controls.CompositeSpanControlProvider
 import com.bugsnag.android.performance.internal.createResourceAttributes
 import com.bugsnag.android.performance.internal.integration.NotifierIntegration
 import com.bugsnag.android.performance.internal.isInForeground
@@ -191,8 +191,7 @@ public object BugsnagPerformance {
         loadModules()
 
         spanControlProvider.addProviders(
-            pluginManager.installedPluginContexts
-                .flatMap { it.spanControlProviders },
+            pluginManager.completeContext?.spanControlProviders.orEmpty(),
         )
 
         bsgWorker.start()

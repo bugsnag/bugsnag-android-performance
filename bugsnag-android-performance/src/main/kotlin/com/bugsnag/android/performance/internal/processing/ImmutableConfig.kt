@@ -65,10 +65,14 @@ internal class ImmutableConfig(
         configuration.doNotEndAppStart,
         configuration.doNotAutoInstrument,
         configuration.tracePropagationUrls.toSet(),
-        configuration.spanStartCallbacks.map { Prioritized(PluginContext.NORM_PRIORITY, it) } +
-                pluginManager.installedPluginContexts.flatMap { it.spanStartCallbacks },
-        configuration.spanEndCallbacks.map { Prioritized(PluginContext.NORM_PRIORITY, it) } +
-                pluginManager.installedPluginContexts.flatMap { it.spanEndCallbacks },
+        createPrioritizedList(
+            configuration.spanStartCallbacks,
+            pluginManager.completeContext?.spanStartCallbacks.orEmpty(),
+        ),
+        createPrioritizedList(
+            configuration.spanEndCallbacks,
+            pluginManager.completeContext?.spanEndCallbacks.orEmpty(),
+        ),
         configuration.samplingProbability,
         configuration.attributeStringValueLimit,
         configuration.attributeArrayLengthLimit,
@@ -77,6 +81,16 @@ internal class ImmutableConfig(
 
     companion object {
         private const val VALID_API_KEY_LENGTH = 32
+
+        internal fun <T> createPrioritizedList(
+            normalPriority: Collection<T>,
+            prioritized: Collection<Prioritized<T>>,
+        ): List<Prioritized<T>> {
+            val out = ArrayList<Prioritized<T>>(normalPriority.size + prioritized.size)
+            normalPriority.mapTo(out) { Prioritized(PluginContext.NORM_PRIORITY, it) }
+            out.addAll(prioritized)
+            return out
+        }
 
         internal fun getLogger(configuration: PerformanceConfiguration): Logger {
             return configuration.logger

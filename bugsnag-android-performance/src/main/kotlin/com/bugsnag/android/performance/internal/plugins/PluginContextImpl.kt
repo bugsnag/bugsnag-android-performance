@@ -14,6 +14,12 @@ internal class PluginContextImpl(
     internal val spanEndCallbacks = mutableListOf<Prioritized<OnSpanEndCallback>>()
     internal val spanControlProviders = mutableListOf<Prioritized<SpanControlProvider<*>>>()
 
+    internal fun mergeFrom(other: PluginContextImpl) {
+        spanStartCallbacks.addAll(other.spanStartCallbacks)
+        spanEndCallbacks.addAll(other.spanEndCallbacks)
+        spanControlProviders.addAll(other.spanControlProviders)
+    }
+
     override fun addOnSpanStartCallback(priority: Int, callback: OnSpanStartCallback) {
         spanStartCallbacks.add(Prioritized(priority, callback))
     }
