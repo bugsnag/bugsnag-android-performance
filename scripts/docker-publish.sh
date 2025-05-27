@@ -23,8 +23,7 @@ if [[ $? -ne 0 || -z "$REPOS_JSON" ]]; then
 fi
 
 echo "Available repositories:"
-echo "$REPOS_JSON" | jq -r '.[] | "\(.repositoryKey) - \(.groupId) - \(.status)"'
-
+echo "$REPOS_JSON" | jq -r '.repositories[] | select(.state == "open") | .key'
 
 #URL="https://ossrh-staging-api.central.sonatype.com/manual/upload/repository/$REPO_KEY/com.bugsnag--default-repository?publishing_type=user_managed"
 #
