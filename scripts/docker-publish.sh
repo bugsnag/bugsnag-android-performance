@@ -22,8 +22,6 @@ if [[ $? -ne 0 || -z "$REPOS_JSON" ]]; then
   exit 1
 fi
 
-echo "Available repositories:"
-
 REPO_KEY=$(echo "$REPOS_JSON" | jq -r '.repositories[] | select(.state == "open") | .key')
 
 if [[ $(echo "$REPO_KEY" | wc -l) -gt 1 ]]; then
@@ -31,6 +29,8 @@ if [[ $(echo "$REPO_KEY" | wc -l) -gt 1 ]]; then
   echo "$REPOS_JSON" | jq -r '.repositories[] | select(.state == "open") | .key'
   exit 1
 fi
+
+echo "Available repository to close: $REPO_KEY"
 
 URL="https://ossrh-staging-api.central.sonatype.com/manual/upload/repository/$REPO_KEY/com.bugsnag--default-repository?publishing_type=user_managed"
 
