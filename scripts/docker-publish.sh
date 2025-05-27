@@ -23,11 +23,18 @@ if [[ $? -ne 0 || -z "$REPOS_JSON" ]]; then
 fi
 
 echo "Available repositories:"
-echo "$REPOS_JSON" | jq -r '.repositories[] | select(.state == "open") | .key'
 
-#URL="https://ossrh-staging-api.central.sonatype.com/manual/upload/repository/$REPO_KEY/com.bugsnag--default-repository?publishing_type=user_managed"
-#
-#echo "Closing repository $REPO_KEY..."
-#RESPONSE=$(curl -s -w "\nHTTP Status: %{http_code}\n" -X POST -u "$PUBLISH_USER:$PUBLISH_PASS" "$URL")
-#
-#echo "$RESPONSE"
+REPO_KEY=$(echo "$REPOS_JSON" | jq -r '.repositories[] | select(.state == "open") | .key')
+
+if [[ $(echo "$REPO_KEY" | wc -l) -gt 1 ]]; then
+  echo "Multiple open repositories found. Please specify which repository to close."
+  echo "$REPOS_JSON" | jq -r '.repositories[] | select(.state == "open") | .key'
+  exit 1
+fi
+
+URL="https://ossrh-staging-api.central.sonatype.com/manual/upload/repository/$REPO_KEY/com.bugsnag--default-repository?publishing_type=user_managed"
+
+echo "Closing repository $REPO_KEY..."
+RESPONSE=$(curl -s -w "\nHTTP Status: %{http_code}\n" -X POST -u "$PUBLISH_USER:$PUBLISH_PASS" "$URL")
+
+echo "$RESPONSE"
