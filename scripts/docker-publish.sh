@@ -14,6 +14,21 @@ echo "nexusPassword=$PUBLISH_PASS" >> ~/.gradle/gradle.properties
 /app/gradlew assembleRelease publish --no-daemon --max-workers=1 && \
  echo "Go to https://oss.sonatype.org/ to release the final artefact. For the full release instructions, please read https://github.com/bugsnag/bugsnag-android-performance/blob/next/docs/RELEASING.md"
 
+echo "Fetching staging repositories..."
+REPOS_JSON=$(curl -s -u "$PUBLISH_USER:$PUBLISH_PASS" "https://ossrh-staging-api.central.sonatype.com/manual/search/repositories")
 
-#curl -u "20Saazig:sV7Vd5KK0N3r63YDxfJqkRHKp3/WEApS+dZSorhKkaEH" https://ossrh-staging-api.central.sonatype.com/manual/search/repositories
-#curl -X POST -u "20Saazig:sV7Vd5KK0N3r63YDxfJqkRHKp3/WEApS+dZSorhKkaEH" 'https://ossrh-staging-api.central.sonatype.com/manual/upload/repository/<repository-key>/com.bugsnag--default-repository?publishing_type=user_managed'
+if [[ $? -ne 0 || -z "$REPOS_JSON" ]]; then
+  echo "Failed to retrieve repository list. Check your credentials or network."
+  exit 1
+fi
+
+echo "Available repositories:"
+echo "$REPOS_JSON" | jq -r
+
+
+#URL="https://ossrh-staging-api.central.sonatype.com/manual/upload/repository/$REPO_KEY/com.bugsnag--default-repository?publishing_type=user_managed"
+#
+#echo "Closing repository $REPO_KEY..."
+#RESPONSE=$(curl -s -w "\nHTTP Status: %{http_code}\n" -X POST -u "$PUBLISH_USER:$PUBLISH_PASS" "$URL")
+#
+#echo "$RESPONSE"
