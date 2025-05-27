@@ -13,3 +13,7 @@ echo "nexusPassword=$PUBLISH_PASS" >> ~/.gradle/gradle.properties
 
 /app/gradlew assembleRelease publish --no-daemon --max-workers=1 && \
  echo "Go to https://oss.sonatype.org/ to release the final artefact. For the full release instructions, please read https://github.com/bugsnag/bugsnag-android-performance/blob/next/docs/RELEASING.md"
+
+
+#curl -u "20Saazig:sV7Vd5KK0N3r63YDxfJqkRHKp3/WEApS+dZSorhKkaEH" https://ossrh-staging-api.central.sonatype.com/manual/search/repositories
+#curl -X POST -u "20Saazig:sV7Vd5KK0N3r63YDxfJqkRHKp3/WEApS+dZSorhKkaEH" 'https://ossrh-staging-api.central.sonatype.com/manual/upload/repository/<repository-key>/com.bugsnag--default-repository?publishing_type=user_managed'
