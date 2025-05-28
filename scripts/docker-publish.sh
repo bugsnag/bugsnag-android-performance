@@ -32,7 +32,7 @@ fi
 
 echo "Available repository to close: $REPO_KEY"
 
-URL="https://ossrh-staging-api.central.sonatype.com/manual/upload/repository/$REPO_KEY/com.bugsnag--default-repository?publishing_type=user_managed"
+URL="https://ossrh-staging-api.central.sonatype.com/manual/upload/repository/$REPO_KEY?publishing_type=user_managed"
 
 echo "Closing repository $REPO_KEY..."
 RESPONSE=$(curl -s -w "\nHTTP Status: %{http_code}\n" -X POST -u "$PUBLISH_USER:$PUBLISH_PASS" "$URL")
