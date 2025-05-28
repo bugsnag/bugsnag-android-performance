@@ -14,65 +14,32 @@ echo "nexusPassword=$PUBLISH_PASS" >> ~/.gradle/gradle.properties
 /app/gradlew assembleRelease publish --no-daemon --max-workers=1 && \
  echo "Go to https://oss.sonatype.org/ to release the final artefact. For the full release instructions, please read https://github.com/bugsnag/bugsnag-android-performance/blob/next/docs/RELEASING.md"
 
-API_BASE="https://ossrh-staging-api.central.sonatype.com/manual"
+echo "Fetching staging repositories..."
+REPOS_JSON=$(curl -s -u "$PUBLISH_USER:$PUBLISH_PASS" "https://ossrh-staging-api.central.sonatype.com/manual/search/repositories")
 
-function fetch_repositories() {
-  echo "Fetching staging repositories..."
-  local response
-  response=$(curl -s -u "$PUBLISH_USER:$PUBLISH_PASS" "$API_BASE/search/repositories")
+if [[ $? -ne 0 || -z "$REPOS_JSON" ]]; then
+  echo "Failed to retrieve repository list. Check your credentials or network."
+  exit 1
+fi
 
-  if [[ -z "$response" ]]; then
-    echo "Error: Empty response. Check your credentials or network connection." >&2
+REPO_KEY=$(echo "$REPOS_JSON" | jq -r '.repositories[] | select(.state == "open") | .key')
+
+if [[ $(echo "$REPO_KEY" | wc -l) -gt 1 ]]; then
+  echo "Multiple open repositories found. Please specify which repository to close."
+  echo "$REPOS_JSON" | jq -r '.repositories[] | select(.state == "open") | .key'
+  exit 1
+fi
+
+echo "Closing repository $REPO_KEY..."
+URL="https://ossrh-staging-api.central.sonatype.com/manual/upload/repository/$REPO_KEY?publishing_type=user_managed"
+RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" -X POST -u "$PUBLISH_USER:$PUBLISH_PASS" "$URL")
+BODY=$(echo "$RESPONSE" | sed -n '/^HTTP_STATUS:/!p')
+STATUS=$(echo "$RESPONSE" | sed -n 's/^HTTP_STATUS://p')
+
+  if [[ "$STATUS" != "200" ]]; then
+    echo "Failed to close repository. HTTP Status: $STATUS"
+    echo "$BODY" | jq -r
     exit 1
   fi
 
-  echo "$response"
-}
-
-function select_open_repository() {
-  local repos_json="$1"
-  local open_repos
-  open_repos=$(echo "$repos_json" | jq -r '.repositories[] | select(.state == "open") | .key')
-
-  local count
-  count=$(echo "$open_repos" | wc -l)
-
-  if [[ $count -eq 0 ]]; then
-    echo "No open repositories found."
-    exit 1
-  elif [[ $count -gt 1 ]]; then
-    echo "Multiple open repositories found. Please specify which one to close:"
-    echo "$open_repos"
-    exit 1
-  fi
-
-  echo "$open_repos"
-}
-
-function close_repository() {
-  local repo_key="$1"
-  local url="$API_BASE/upload/repository/$repo_key?publishing_type=user_managed"
-
-  echo "Closing repository: $repo_key ..."
-  local response
-  response=$(curl -s -w "\nHTTP_STATUS:%{http_code}" -X POST -u "$PUBLISH_USER:$PUBLISH_PASS" "$url")
-
-  local body status
-  body=$(echo "$response" | sed -n '/^HTTP_STATUS:/!p')
-  status=$(echo "$response" | sed -n 's/^HTTP_STATUS://p')
-
-  if [[ "$status" != "200" ]]; then
-    echo "Failed to close repository. HTTP Status: $status"
-    echo "$body" | jq -r
-    exit 1
-  fi
-
-  echo "Repository $repo_key closed successfully."
-}
-
-# Main script execution
-repos_json=$(fetch_repositories)
-repo_key=$(select_open_repository "$repos_json")
-close_repository "$repo_key"
-
-
+  echo "Repository $REPO_KEY closed successfully."
