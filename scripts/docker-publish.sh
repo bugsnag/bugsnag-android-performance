@@ -27,10 +27,6 @@ mkdir -p "$GRADLE_DIR"
 # === Build and Publish ===
 /app/gradlew assembleRelease publish --no-daemon --max-workers=1
 
-echo "Go to https://oss.sonatype.org/ to release the final artefact."
-echo "For full release instructions, visit:"
-echo "https://github.com/bugsnag/bugsnag-android-performance/blob/next/docs/RELEASING.md"
-
 # === Close Staging Repository ===
 echo "--- Closing staging repository"
 echo "Fetching staging repositories..."
@@ -70,3 +66,7 @@ if [[ "$STATUS" != "200" ]]; then
 fi
 
 echo "Repository $REPO_KEY closed successfully."
+
+echo "Go to https://oss.sonatype.org/ to release the final artefact."
+echo "For full release instructions, visit:"
+echo "https://github.com/bugsnag/bugsnag-android-performance/blob/next/docs/RELEASING.md"
