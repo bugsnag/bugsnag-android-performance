@@ -2,8 +2,6 @@ FROM 855461928731.dkr.ecr.us-west-1.amazonaws.com/android:performance-release as
 
 WORKDIR /app
 
-RUN apt-get install jq -y
-
 # Copy gradle files
 COPY gradlew gradle.properties /app/
 COPY gradle/ /app/gradle/
