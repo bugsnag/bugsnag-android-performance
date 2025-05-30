@@ -27,16 +27,26 @@ internal data class Prioritized<T>(val priority: Int, val value: T) : Comparable
  * priorities. A true set implementation would consider {priority, value} when taking equality into
  * account.
  */
-internal class PrioritizedSet<T> {
+internal class PrioritizedSet<T> private constructor(values: Array<Prioritized<T>>) {
     @Volatile
     @PublishedApi
-    internal var values: Array<Prioritized<T>> = emptyArray()
+    internal var values: Array<Prioritized<T>> = values
         private set
 
     private val lock = ReentrantLock()
 
     val size: Int
         get() = values.size
+
+    constructor() : this(emptyArray())
+    constructor(initialValues: Collection<Prioritized<T>>) :
+            this(initialValues.toTypedArray().apply { sort() })
+    constructor(priority: Int, initialValues: List<T>) :
+            this(
+                Array(initialValues.size) {
+                    Prioritized(priority, initialValues[it])
+                }.apply { sort() }
+            )
 
     fun add(element: Prioritized<T>): Boolean {
         lock.withLock {
@@ -85,4 +95,7 @@ internal class PrioritizedSet<T> {
             action(prioritized.value)
         }
     }
+
+    fun isEmpty() = values.isEmpty()
+    fun isNotEmpty() = values.isNotEmpty()
 }
