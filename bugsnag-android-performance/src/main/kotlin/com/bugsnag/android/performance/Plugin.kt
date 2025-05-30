@@ -111,7 +111,7 @@ public interface PluginContext {
          * with priority lower than this will be called before these, and priority values higher
          * than
          */
-        public const val NORM_PRIORITY: Int = 10_000
+        public const val NORM_PRIORITY: Int = 50_000
 
         /**
          * A priority value for actions that should be called after [NORM_PRIORITY] actions.
