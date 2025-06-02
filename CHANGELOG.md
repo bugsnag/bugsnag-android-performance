@@ -4,6 +4,8 @@
 
 * Introduced `OnSpanStartCallback` as a way to listen-for and modify all spans before they are used
   [#383](https://github.com/bugsnag/bugsnag-android-performance/pull/383)
+* Added `Plugin` as a way to extend the functionality of the BugsnagPerformance library
+  [#387](https://github.com/bugsnag/bugsnag-android-performance/pull/387)
 
 ## 1.14.0 (2025-05-12)
 

@@ -10,11 +10,16 @@ import java.io.Closeable
  *
  * Spans may not be changed once they have been closed.
  *
- * The [Span] interface is for internal use and is not intended for third-party implementation.
+ * The [Span] interface is not intended for third-party implementation.
  *
  * @see BugsnagPerformance.startSpan
  */
 public interface Span : SpanContext, Closeable, HasAttributes {
+    /**
+     * The name of this span.
+     */
+    public val name: String
+
     /**
      * End this with a specified timestamp relative to [SystemClock.elapsedRealtimeNanos]. If this
      * span has already been closed this will have no effect.

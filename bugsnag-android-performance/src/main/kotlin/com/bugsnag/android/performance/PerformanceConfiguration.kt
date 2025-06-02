@@ -46,6 +46,9 @@ public class PerformanceConfiguration private constructor(public val context: Co
     public var samplingProbability: Double? = null
 
     @JvmSynthetic
+    internal val plugins: MutableList<Plugin> = ArrayList()
+
+    @JvmSynthetic
     internal val spanStartCallbacks: MutableList<OnSpanStartCallback> = ArrayList()
 
     @JvmSynthetic
@@ -85,6 +88,14 @@ public class PerformanceConfiguration private constructor(public val context: Co
         set(value) {
             field = if (value !in 1..1000) 128 else value
         }
+
+    public fun addPlugin(plugin: Plugin) {
+        plugins.add(plugin)
+    }
+
+    public fun removePlugin(plugin: Plugin) {
+        plugins.remove(plugin)
+    }
 
     /**
      * Add an `OnSpanStartCallback` to be called when a span is started. This callback can be used
