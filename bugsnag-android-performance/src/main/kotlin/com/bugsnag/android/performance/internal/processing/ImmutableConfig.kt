@@ -18,9 +18,9 @@ import com.bugsnag.android.performance.internal.releaseStage
 import java.util.regex.Pattern
 
 internal const val DEFAULT_ENDPOINT = "https://otlp.bugsnag.com/v1/traces"
-internal const val BUGSNAG_ENDPOINT = "https://%s.otlp.bugsnag.com/v1/traces"
-internal const val HUB_ENDPOINT = "https://%s.otlp.insighthub.smartbear.com/v1/traces"
-internal const val HUB_API_PREFIX = "00000";
+private const val BUGSNAG_ENDPOINT = "https://%s.otlp.bugsnag.com/v1/traces"
+private const val HUB_ENDPOINT = "https://%s.otlp.insighthub.smartbear.com/v1/traces"
+private const val HUB_API_PREFIX = "00000";
 
 internal class ImmutableConfig(
     val application: Application,
@@ -56,10 +56,10 @@ internal class ImmutableConfig(
         {
             if(configuration.apiKey.startsWith(HUB_API_PREFIX))
             {
-                String.format(HUB_ENDPOINT, configuration.apiKey)
+                HUB_ENDPOINT.format(configuration.apiKey)
             }else
             {
-                String.format(BUGSNAG_ENDPOINT, configuration.apiKey)
+                BUGSNAG_ENDPOINT.format(configuration.apiKey)
             }
         }else
         {
