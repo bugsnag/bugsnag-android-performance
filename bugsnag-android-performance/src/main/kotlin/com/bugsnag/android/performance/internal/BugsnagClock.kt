@@ -51,6 +51,12 @@ internal object BugsnagClock {
 
     fun toDate(): Date = Date(currentUnixNanoTime() / NANOS_IN_MILLIS)
 
+    fun fromDate(date: Date): Long {
+        // Convert the date to nanoseconds since epoch
+        val nanoTimestamp = date.time * NANOS_IN_MILLIS
+        return unixNanoTimeToElapsedRealtime(nanoTimestamp)
+    }
+
     /**
      * Covert a given time from [SystemClock.elapsedRealtimeNanos] into Unix time with nanosecond
      * precision.
