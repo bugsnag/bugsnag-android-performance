@@ -1,15 +1,15 @@
-package com.bugsnag.android.performance.internal.processing
+package com.bugsnag.android.performance
 
 import android.app.Application
 import androidx.test.core.app.ApplicationProvider
-import com.bugsnag.android.performance.PerformanceConfiguration
+import com.bugsnag.android.performance.internal.processing.ImmutableConfig
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
-class ImmutableConfigTest {
+class ConfigurationEndpointTest {
 
     private val appContext: Application = ApplicationProvider.getApplicationContext()
 
