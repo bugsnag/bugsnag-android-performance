@@ -27,7 +27,6 @@ import org.mockito.kotlin.verify
 import java.util.regex.Pattern
 
 class ImmutableConfigTest {
-
     val enabledMetricsSample: EnabledMetrics = EnabledMetrics(true)
 
     @Before
@@ -37,18 +36,19 @@ class ImmutableConfigTest {
 
     @Test
     fun copyFromPerformanceConfiguration() {
-        val perfConfig = PerformanceConfiguration(mockedContext(), TEST_API_KEY).apply {
-            endpoint = "https://test.com/testing"
-            releaseStage = "staging"
-            enabledReleaseStages = setOf("staging", "production")
-            autoInstrumentAppStarts = false
-            autoInstrumentActivities = AutoInstrument.START_ONLY
-            enabledMetrics = enabledMetricsSample
-            enabledMetrics.rendering = false
-            versionCode = 543L
-            appVersion = "9.8.1"
-            tracePropagationUrls = emptySet<Pattern>()
-        }
+        val perfConfig =
+            PerformanceConfiguration(mockedContext(), TEST_API_KEY).apply {
+                endpoint = "https://test.com/testing"
+                releaseStage = "staging"
+                enabledReleaseStages = setOf("staging", "production")
+                autoInstrumentAppStarts = false
+                autoInstrumentActivities = AutoInstrument.START_ONLY
+                enabledMetrics = enabledMetricsSample
+                enabledMetrics.rendering = false
+                versionCode = 543L
+                appVersion = "9.8.1"
+                tracePropagationUrls = emptySet<Pattern>()
+            }
 
         val immutableConfig = ImmutableConfig(perfConfig)
 
@@ -121,16 +121,36 @@ class ImmutableConfigTest {
 
     @Test
     fun overrideLogger() {
-        val testLogger = object : Logger {
-            override fun e(msg: String) = Unit
-            override fun e(msg: String, throwable: Throwable) = Unit
-            override fun w(msg: String) = Unit
-            override fun w(msg: String, throwable: Throwable) = Unit
-            override fun i(msg: String) = Unit
-            override fun i(msg: String, throwable: Throwable) = Unit
-            override fun d(msg: String) = Unit
-            override fun d(msg: String, throwable: Throwable) = Unit
-        }
+        val testLogger =
+            object : Logger {
+                override fun e(msg: String) = Unit
+
+                override fun e(
+                    msg: String,
+                    throwable: Throwable,
+                ) = Unit
+
+                override fun w(msg: String) = Unit
+
+                override fun w(
+                    msg: String,
+                    throwable: Throwable,
+                ) = Unit
+
+                override fun i(msg: String) = Unit
+
+                override fun i(
+                    msg: String,
+                    throwable: Throwable,
+                ) = Unit
+
+                override fun d(msg: String) = Unit
+
+                override fun d(
+                    msg: String,
+                    throwable: Throwable,
+                ) = Unit
+            }
 
         val perfConfig = PerformanceConfiguration(mockedContext(), TEST_API_KEY)
         perfConfig.logger = testLogger
@@ -201,17 +221,18 @@ class ImmutableConfigTest {
 
     @Test
     fun addRemoveSpanEndCallbacks() {
-        val perfConfig = PerformanceConfiguration(mockedContext(), TEST_API_KEY).apply {
-            endpoint = "https://test.com/testing"
-            releaseStage = "staging"
-            enabledReleaseStages = setOf("staging", "production")
-            autoInstrumentAppStarts = false
-            autoInstrumentActivities = AutoInstrument.START_ONLY
-            versionCode = 543L
-            appVersion = "9.8.1"
-            tracePropagationUrls = emptySet<Pattern>()
-            enabledMetrics = enabledMetricsSample
-        }
+        val perfConfig =
+            PerformanceConfiguration(mockedContext(), TEST_API_KEY).apply {
+                endpoint = "https://test.com/testing"
+                releaseStage = "staging"
+                enabledReleaseStages = setOf("staging", "production")
+                autoInstrumentAppStarts = false
+                autoInstrumentActivities = AutoInstrument.START_ONLY
+                versionCode = 543L
+                appVersion = "9.8.1"
+                tracePropagationUrls = emptySet<Pattern>()
+                enabledMetrics = enabledMetricsSample
+            }
 
         val spanEndCallback1 = DummyCallback()
         val spanEndCallback2 = DummyCallback()
@@ -234,18 +255,20 @@ class ImmutableConfigTest {
     }
 
     private fun mockedContext(): Context {
-        val packageInfo = mock<PackageInfo> { info ->
-            // versionCode is a Java field, not a getter
-            @Suppress("DEPRECATION")
-            info.versionCode = TEST_VERSION_CODE
-            info.versionName = TEST_VERSION_NAME
+        val packageInfo =
+            mock<PackageInfo> { info ->
+                // versionCode is a Java field, not a getter
+                @Suppress("DEPRECATION")
+                info.versionCode = TEST_VERSION_CODE
+                info.versionName = TEST_VERSION_NAME
 
-            on { info.longVersionCode } doReturn TEST_VERSION_CODE.toLong()
-        }
+                on { info.longVersionCode } doReturn TEST_VERSION_CODE.toLong()
+            }
 
-        val packageManager = mock<PackageManager> { pm ->
-            on { (pm.getPackageInfo(eq(TEST_PACKAGE_NAME), any())) } doReturn packageInfo
-        }
+        val packageManager =
+            mock<PackageManager> { pm ->
+                on { (pm.getPackageInfo(eq(TEST_PACKAGE_NAME), any())) } doReturn packageInfo
+            }
 
         return mock<Application> { ctx ->
             on { ctx.packageName } doReturn TEST_PACKAGE_NAME

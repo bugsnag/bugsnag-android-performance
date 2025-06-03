@@ -29,7 +29,9 @@ public class PerformanceConfiguration private constructor(public val context: Co
     )
     public var autoInstrumentRendering: Boolean
         get() = enabledMetrics.rendering
-        set(value) { enabledMetrics.rendering = value }
+        set(value) {
+            enabledMetrics.rendering = value
+        }
 
     public var releaseStage: String? = null
 
@@ -181,13 +183,18 @@ public class PerformanceConfiguration private constructor(public val context: Co
 
         @JvmStatic
         @JvmOverloads
-        public fun load(ctx: Context, apiKey: String? = null): PerformanceConfiguration {
+        public fun load(
+            ctx: Context,
+            apiKey: String? = null,
+        ): PerformanceConfiguration {
             try {
                 val packageManager = ctx.packageManager
                 val packageName = ctx.packageName
-                val ai = packageManager.getApplicationInfo(
-                    packageName, PackageManager.GET_META_DATA,
-                )
+                val ai =
+                    packageManager.getApplicationInfo(
+                        packageName,
+                        PackageManager.GET_META_DATA,
+                    )
                 val data = ai.metaData
                 return loadFromMetaData(ctx, data, apiKey)
             } catch (exc: Exception) {
@@ -211,10 +218,11 @@ public class PerformanceConfiguration private constructor(public val context: Co
                 data.getString(ENDPOINT_KEY)
                     ?.also { config.endpoint = it }
 
-                config.autoInstrumentAppStarts = data.getBoolean(
-                    AUTO_INSTRUMENT_APP_STARTS_KEY,
-                    config.autoInstrumentAppStarts,
-                )
+                config.autoInstrumentAppStarts =
+                    data.getBoolean(
+                        AUTO_INSTRUMENT_APP_STARTS_KEY,
+                        config.autoInstrumentAppStarts,
+                    )
 
                 data.getString(AUTO_INSTRUMENT_ACTIVITIES_KEY)
                     ?.also { config.autoInstrumentActivities = AutoInstrument.valueOf(it) }
@@ -245,11 +253,12 @@ public class PerformanceConfiguration private constructor(public val context: Co
                 }
 
                 if (data.containsKey(TRACE_PROPAGATION_URLS_KEY)) {
-                    config.tracePropagationUrls = data.getString(TRACE_PROPAGATION_URLS_KEY)
-                        ?.splitToSequence(',')
-                        ?.map { it.toPattern() }
-                        ?.toList()
-                        .orEmpty()
+                    config.tracePropagationUrls =
+                        data.getString(TRACE_PROPAGATION_URLS_KEY)
+                            ?.splitToSequence(',')
+                            ?.map { it.toPattern() }
+                            ?.toList()
+                            .orEmpty()
                 }
 
                 data.getString(SERVICE_NAME_KEY)

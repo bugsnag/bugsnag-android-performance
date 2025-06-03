@@ -11,7 +11,6 @@ import androidx.annotation.RequiresApi
 internal abstract class FramerateCollector(
     private val metricsContainer: FramerateMetricsContainer,
 ) : Window.OnFrameMetricsAvailableListener {
-
     private var previousFrameTime: Long = 0L
 
     override fun onFrameMetricsAvailable(
@@ -62,12 +61,14 @@ internal abstract class FramerateCollector(
     }
 
     open val FrameMetrics.totalDuration: Long
-        get() = (getMetric(FrameMetrics.UNKNOWN_DELAY_DURATION)
-                + getMetric(FrameMetrics.INPUT_HANDLING_DURATION)
-                + getMetric(FrameMetrics.ANIMATION_DURATION)
-                + getMetric(FrameMetrics.LAYOUT_MEASURE_DURATION)
-                + getMetric(FrameMetrics.DRAW_DURATION)
-                + getMetric(FrameMetrics.SYNC_DURATION))
+        get() = (
+            getMetric(FrameMetrics.UNKNOWN_DELAY_DURATION) +
+                getMetric(FrameMetrics.INPUT_HANDLING_DURATION) +
+                getMetric(FrameMetrics.ANIMATION_DURATION) +
+                getMetric(FrameMetrics.LAYOUT_MEASURE_DURATION) +
+                getMetric(FrameMetrics.DRAW_DURATION) +
+                getMetric(FrameMetrics.SYNC_DURATION)
+        )
 
     open val FrameMetrics.isFirstFrame: Boolean
         get() = getMetric(FrameMetrics.FIRST_DRAW_FRAME) != 0L

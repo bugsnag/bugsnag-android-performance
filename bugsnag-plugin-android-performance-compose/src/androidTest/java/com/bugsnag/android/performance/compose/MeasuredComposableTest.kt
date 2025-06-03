@@ -103,9 +103,10 @@ fun LoginScreen() {
     Column(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 30.dp),
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .padding(horizontal = 30.dp),
     ) {
         MeasuredComposable("Email") {
             EmailField(

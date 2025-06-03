@@ -173,6 +173,7 @@ internal class SpanContextTest {
         val threadId: Long,
     ) : SpanContext {
         override fun wrap(runnable: Runnable) = runnable
+
         override fun <T> wrap(callable: Callable<T>) = callable
     }
 }

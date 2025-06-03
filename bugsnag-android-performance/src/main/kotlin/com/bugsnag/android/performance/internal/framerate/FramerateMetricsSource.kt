@@ -13,13 +13,13 @@ import androidx.annotation.RequiresApi
 import com.bugsnag.android.performance.BugsnagPerformance
 import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.SpanOptions
-import com.bugsnag.android.performance.internal.metrics.MetricSource
 import com.bugsnag.android.performance.internal.SpanImpl
+import com.bugsnag.android.performance.internal.metrics.MetricSource
 import java.util.WeakHashMap
 
-internal class FramerateMetricsSource : ActivityLifecycleCallbacks,
+internal class FramerateMetricsSource :
+    ActivityLifecycleCallbacks,
     MetricSource<FramerateMetricsSnapshot> {
-
     private val frameMetricsListeners = WeakHashMap<Activity, OnFrameMetricsAvailableListener>()
     private val thread = HandlerThread("Bugsnag FrameMetrics thread")
     private val handler: Handler by lazy {
@@ -33,7 +33,10 @@ internal class FramerateMetricsSource : ActivityLifecycleCallbacks,
         return metricsContainer.snapshot()
     }
 
-    override fun endMetrics(startMetrics: FramerateMetricsSnapshot, span: Span) {
+    override fun endMetrics(
+        startMetrics: FramerateMetricsSnapshot,
+        span: Span,
+    ) {
         val currentMetrics = metricsContainer.snapshot()
 
         if (currentMetrics.totalFrameCount > startMetrics.totalFrameCount) {
@@ -59,13 +62,15 @@ internal class FramerateMetricsSource : ActivityLifecycleCallbacks,
     }
 
     private fun createFrameMetricsAvailableListener(window: Window): OnFrameMetricsAvailableListener? =
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             FramerateCollector31(metricsContainer)
-        else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             FramerateCollector26(window, Choreographer.getInstance(), metricsContainer)
-        else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             FramerateCollector24(window, Choreographer.getInstance(), metricsContainer)
-        else null
+        } else {
+            null
+        }
 
     @RequiresApi(Build.VERSION_CODES.N)
     override fun onActivityStarted(activity: Activity) {
@@ -86,9 +91,19 @@ internal class FramerateMetricsSource : ActivityLifecycleCallbacks,
         }
     }
 
-    override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) = Unit
-    override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) = Unit
+    override fun onActivitySaveInstanceState(
+        activity: Activity,
+        outState: Bundle,
+    ) = Unit
+
+    override fun onActivityCreated(
+        activity: Activity,
+        savedInstanceState: Bundle?,
+    ) = Unit
+
     override fun onActivityDestroyed(activity: Activity) = Unit
+
     override fun onActivityResumed(activity: Activity) = Unit
+
     override fun onActivityPaused(activity: Activity) = Unit
 }

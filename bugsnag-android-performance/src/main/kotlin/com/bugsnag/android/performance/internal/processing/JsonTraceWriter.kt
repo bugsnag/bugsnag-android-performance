@@ -18,7 +18,7 @@ internal class JsonTraceWriter(
     internal var currentSpan: SpanImpl? = null
 
     constructor(out: Writer, attributeLimits: AttributeLimits? = null) :
-            this(JsonWriter(out), attributeLimits)
+        this(JsonWriter(out), attributeLimits)
 
     inline fun writeSpan(
         spanImpl: SpanImpl,
@@ -118,7 +118,7 @@ internal class JsonTraceWriter(
                 } else {
                     Logger.w(
                         "Span attribute $key in span ${currentSpan?.name} was dropped as " +
-                                "the key exceeds the $MAX_KEY_LENGTH character fixed limit.",
+                            "the key exceeds the $MAX_KEY_LENGTH character fixed limit.",
                     )
                     currentSpan?.apply { droppedAttributesCount++ }
                 }
@@ -273,8 +273,8 @@ internal class JsonTraceWriter(
         if (attributeLimits != null && arraySize > attributeLimits.attributeArrayLengthLimit) {
             Logger.w(
                 "Span attribute $key in span ${currentSpan?.name} was truncated as the " +
-                        "array exceeds the ${attributeLimits.attributeArrayLengthLimit} element " +
-                        "limit set by attributeArrayLengthLimit.",
+                    "array exceeds the ${attributeLimits.attributeArrayLengthLimit} element " +
+                    "limit set by attributeArrayLengthLimit.",
             )
         }
     }

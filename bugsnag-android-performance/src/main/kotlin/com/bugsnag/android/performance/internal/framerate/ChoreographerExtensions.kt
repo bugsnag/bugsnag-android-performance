@@ -19,8 +19,9 @@ private val choreographerLastFrameTimeField: Field? =
  * is based on `System.nanoTime()`.
  */
 internal val Choreographer.lastFrameTimeNanos: Long?
-    get() = try {
-        choreographerLastFrameTimeField?.get(this) as Long?
-    } catch (_: Exception) {
-        null
-    }
+    get() =
+        try {
+            choreographerLastFrameTimeField?.get(this) as Long?
+        } catch (_: Exception) {
+            null
+        }

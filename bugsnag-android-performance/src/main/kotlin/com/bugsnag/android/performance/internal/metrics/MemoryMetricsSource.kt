@@ -33,7 +33,8 @@ internal class MemoryMetricsSource(
             val memoryInfo = activityManager?.getProcessMemoryInfo(intArrayOf(Process.myPid()))
             val memoryInfoSample = memoryInfo?.getOrNull(0)?.takeIf { memoryInfo.size == 1 }
             if (memoryInfoSample != null) {
-                val pssPages = memoryInfoSample.dalvikPss +
+                val pssPages =
+                    memoryInfoSample.dalvikPss +
                         memoryInfoSample.nativePss +
                         memoryInfoSample.otherPss
 
@@ -98,7 +99,7 @@ internal class MemoryMetricsSource(
 
                 target.attributes["bugsnag.system.memory.spaces.art.size"] = artSizeMemory
                 target.attributes["bugsnag.system.memory.spaces.art.used"] = artUsedMemorySamples
-              
+
                 if (artUsedMemoryCount > 0) {
                     target.attributes["bugsnag.system.memory.spaces.art.mean"] =
                         artUsedMemoryTotal / artUsedMemoryCount
@@ -116,9 +117,10 @@ internal class MemoryMetricsSource(
     }
 
     private fun calculateTotalMemory(): Long? {
-        val totalMemory = appContext.getActivityManager()
-            ?.let { am -> ActivityManager.MemoryInfo().also { am.getMemoryInfo(it) } }
-            ?.totalMem
+        val totalMemory =
+            appContext.getActivityManager()
+                ?.let { am -> ActivityManager.MemoryInfo().also { am.getMemoryInfo(it) } }
+                ?.totalMem
         if (totalMemory != null) {
             return totalMemory
         }
@@ -137,13 +139,10 @@ internal class MemoryMetricsSource(
     private data class MemorySampleData(
         @JvmField
         var freeMemory: Long = 0L,
-
         @JvmField
         var totalMemory: Long = 0L,
-
         @JvmField
         var pss: Long = 0L,
-
         @JvmField
         var timestamp: Long = 0L,
     )

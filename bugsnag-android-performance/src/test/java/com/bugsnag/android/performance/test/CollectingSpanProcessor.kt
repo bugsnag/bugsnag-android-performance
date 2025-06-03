@@ -13,6 +13,7 @@ class CollectingSpanProcessor : SpanProcessor {
     }
 
     fun isEmpty() = spans.isEmpty()
+
     fun isNotEmpty() = spans.isNotEmpty()
 
     fun toList(): List<SpanImpl> = spans.sortedBy { it.startTime }

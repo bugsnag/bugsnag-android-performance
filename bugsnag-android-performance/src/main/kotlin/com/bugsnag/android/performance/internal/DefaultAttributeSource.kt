@@ -3,9 +3,10 @@ package com.bugsnag.android.performance.internal
 import java.util.concurrent.atomic.AtomicReference
 
 internal class DefaultAttributeSource : AttributeSource {
-    internal var currentDefaultAttributes = AtomicReference(
-        DefaultAttributes(NetworkType.UNKNOWN, null, isInForeground()),
-    )
+    internal var currentDefaultAttributes =
+        AtomicReference(
+            DefaultAttributes(NetworkType.UNKNOWN, null, isInForeground()),
+        )
 
     /**
      * Safely update the default set of attributes in this `DefaultAttributeSource`. This method

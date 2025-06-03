@@ -35,8 +35,9 @@ internal object TraceFileDecoder {
     internal const val FILENAME_SUFFIX = ".json"
 
     fun decodeTracePayload(file: File): TracePayload {
-        val timestamp = parseTimestamp(file.name)
-            ?: throw IOException("not a valid trace payload filename: '${file.name}'")
+        val timestamp =
+            parseTimestamp(file.name)
+                ?: throw IOException("not a valid trace payload filename: '${file.name}'")
 
         return file.inputStream().buffered().use { istream ->
             // parse the HTTP headers from the start of the file
@@ -73,7 +74,10 @@ internal object TraceFileDecoder {
         return headers
     }
 
-    private fun parseHeaderLine(headerLine: String, output: MutableMap<String, String>) {
+    private fun parseHeaderLine(
+        headerLine: String,
+        output: MutableMap<String, String>,
+    ) {
         val separator = headerLine.indexOf(':')
         if (separator == -1) {
             throw IOException("Not a valid HTTP header line: '$headerLine'")
@@ -130,7 +134,7 @@ internal object TraceFileDecoder {
  */
 internal class RetryQueue(
     private val queueDirectory: File,
-    private val maxPayloadAgeNanos: Long = TimeUnit.MILLISECONDS.toNanos(InternalDebug.dropSpansOlderThanMs)
+    private val maxPayloadAgeNanos: Long = TimeUnit.MILLISECONDS.toNanos(InternalDebug.dropSpansOlderThanMs),
 ) {
     private fun ensureQueueDirectory(): File {
         if (!queueDirectory.exists()) queueDirectory.mkdirs()
@@ -148,14 +152,18 @@ internal class RetryQueue(
         return File(ensureQueueDirectory(), "$FILENAME_PREFIX$timestampString$FILENAME_SUFFIX")
     }
 
-    private fun writeHeaders(headers: Map<String, String>, out: OutputStream) {
-        val headerBytes = headers.entries
-            .joinToString(
-                separator = "\r\n",
-                postfix = "\r\n\r\n",
-                transform = { (key, value) -> "$key: $value" }
-            )
-            .toByteArray()
+    private fun writeHeaders(
+        headers: Map<String, String>,
+        out: OutputStream,
+    ) {
+        val headerBytes =
+            headers.entries
+                .joinToString(
+                    separator = "\r\n",
+                    postfix = "\r\n\r\n",
+                    transform = { (key, value) -> "$key: $value" },
+                )
+                .toByteArray()
 
         out.write(headerBytes)
     }
@@ -198,7 +206,7 @@ internal class RetryQueue(
 }
 
 internal class PersistentState(
-    private val stateFile: File
+    private val stateFile: File,
 ) {
     var pValue: Double = 1.0
     var pValueExpiryTime: Long = 0
@@ -221,10 +229,11 @@ internal class PersistentState(
     }
 
     fun save() {
-        val jsonObject = JSONObject().apply {
-            put(P_VALUE_KEY, pValue)
-            put(P_VALUE_EXPIRY_KEY, pValueExpiryTime)
-        }
+        val jsonObject =
+            JSONObject().apply {
+                put(P_VALUE_KEY, pValue)
+                put(P_VALUE_EXPIRY_KEY, pValueExpiryTime)
+            }
 
         @Suppress("TooGenericExceptionCaught", "SwallowedException")
         try {

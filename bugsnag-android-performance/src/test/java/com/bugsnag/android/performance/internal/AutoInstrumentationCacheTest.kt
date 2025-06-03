@@ -8,7 +8,6 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 internal class AutoInstrumentationCacheTest {
-
     @DoNotAutoInstrument
     class DoNotAutoInstrumentActivity : Activity()
 
@@ -65,9 +64,10 @@ internal class AutoInstrumentationCacheTest {
         doNotAutoInstrumentActivities.add(DoNotAutoInstrumentActivity::class.java)
         doNotAutoInstrumentActivities.add(DoNotEndAppStartActivity::class.java)
 
-        val autoInstrumentationCache = AutoInstrumentationCache().apply {
-            configure(hashSetOf(), doNotAutoInstrumentActivities)
-        }
+        val autoInstrumentationCache =
+            AutoInstrumentationCache().apply {
+                configure(hashSetOf(), doNotAutoInstrumentActivities)
+            }
 
         val isInstrumentationResult1 =
             autoInstrumentationCache.isInstrumentationEnabled(doNotAutoInstrumentActivities.last())
@@ -82,9 +82,10 @@ internal class AutoInstrumentationCacheTest {
     fun testDoNotEndAppStartActivities() {
         val doNotEndAppStartActivities = hashSetOf<Class<out Activity>>()
         doNotEndAppStartActivities.add(DoNotEndAppStartActivity::class.java)
-        val autoInstrumentationCache = AutoInstrumentationCache().apply {
-            configure(doNotEndAppStartActivities, hashSetOf())
-        }
+        val autoInstrumentationCache =
+            AutoInstrumentationCache().apply {
+                configure(doNotEndAppStartActivities, hashSetOf())
+            }
 
         val isEndAppStartResult1 =
             autoInstrumentationCache.isAppStartActivity(doNotEndAppStartActivities.first())
@@ -97,18 +98,21 @@ internal class AutoInstrumentationCacheTest {
 
     @Test
     fun testMixedActivities() {
-        val doNotAutoInstrumentFragmentActivities = hashSetOf(
-            DoNotEndAppStartActivity::class.java,
-            NoAnnotatedActivity::class.java,
-        )
-        val doNotEndAppStartActivities = hashSetOf(
-            DoNotAutoInstrumentActivity::class.java,
-            NoAnnotatedActivity::class.java,
-        )
+        val doNotAutoInstrumentFragmentActivities =
+            hashSetOf(
+                DoNotEndAppStartActivity::class.java,
+                NoAnnotatedActivity::class.java,
+            )
+        val doNotEndAppStartActivities =
+            hashSetOf(
+                DoNotAutoInstrumentActivity::class.java,
+                NoAnnotatedActivity::class.java,
+            )
 
-        val autoInstrumentationCache = AutoInstrumentationCache().apply {
-            configure(doNotEndAppStartActivities, doNotAutoInstrumentFragmentActivities)
-        }
+        val autoInstrumentationCache =
+            AutoInstrumentationCache().apply {
+                configure(doNotEndAppStartActivities, doNotAutoInstrumentFragmentActivities)
+            }
 
         val isInstrumentationResult1 =
             autoInstrumentationCache.isInstrumentationEnabled(doNotAutoInstrumentFragmentActivities.last())

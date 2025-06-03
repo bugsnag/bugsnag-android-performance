@@ -18,7 +18,6 @@ public class FragmentActivityLifecycleCallbacks(
     private val spanFactory: SpanFactory,
     private val autoInstrumentationCache: AutoInstrumentationCache,
 ) : ActivityLifecycleCallbacks, FragmentLifecycleCallbacks() {
-
     /**
      * ViewLoad for Fragments is not a context Span because Fragment lifecycles can be interleaved:
      * - Fragment1 PreCreate
@@ -36,7 +35,10 @@ public class FragmentActivityLifecycleCallbacks(
      */
     private val viewLoadOpts = SpanOptions.makeCurrentContext(false)
 
-    override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
+    override fun onActivityCreated(
+        activity: Activity,
+        savedInstanceState: Bundle?,
+    ) {
         if (activity !is FragmentActivity) return
 
         activity.supportFragmentManager
@@ -51,13 +53,14 @@ public class FragmentActivityLifecycleCallbacks(
         if (autoInstrumentationCache.isInstrumentationEnabled(f::class.java)) {
             // we start both ViewLoad & ViewLoadPhase/Create at exactly the same timestamp
             val timestamp = SystemClock.elapsedRealtimeNanos()
-            val viewLoad = spanTracker.associate(f) {
-                spanFactory.createViewLoadSpan(
-                    ViewType.FRAGMENT,
-                    viewNameForFragment(f),
-                    viewLoadOpts.startTime(timestamp),
-                )
-            }
+            val viewLoad =
+                spanTracker.associate(f) {
+                    spanFactory.createViewLoadSpan(
+                        ViewType.FRAGMENT,
+                        viewNameForFragment(f),
+                        viewLoadOpts.startTime(timestamp),
+                    )
+                }
 
             spanTracker.associate(f, ViewLoadPhase.CREATE) {
                 spanFactory.createViewLoadPhaseSpan(
@@ -72,7 +75,11 @@ public class FragmentActivityLifecycleCallbacks(
         }
     }
 
-    override fun onFragmentCreated(fm: FragmentManager, f: Fragment, savedInstanceState: Bundle?) {
+    override fun onFragmentCreated(
+        fm: FragmentManager,
+        f: Fragment,
+        savedInstanceState: Bundle?,
+    ) {
         if (!f.isAdded) {
             // remove & discard the Fragment span
             spanTracker.removeAssociation(f, ViewLoadPhase.CREATE)?.discard()
@@ -82,14 +89,25 @@ public class FragmentActivityLifecycleCallbacks(
         }
     }
 
-    override fun onFragmentResumed(fm: FragmentManager, f: Fragment) {
+    override fun onFragmentResumed(
+        fm: FragmentManager,
+        f: Fragment,
+    ) {
         spanTracker.endAllSpans(f)
     }
 
     override fun onActivityStarted(activity: Activity): Unit = Unit
+
     override fun onActivityResumed(activity: Activity): Unit = Unit
+
     override fun onActivityPaused(activity: Activity): Unit = Unit
+
     override fun onActivityStopped(activity: Activity): Unit = Unit
-    override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle): Unit = Unit
+
+    override fun onActivitySaveInstanceState(
+        activity: Activity,
+        outState: Bundle,
+    ): Unit = Unit
+
     override fun onActivityDestroyed(activity: Activity): Unit = Unit
 }

@@ -37,8 +37,9 @@ internal object BugsnagClock {
         }
 
         // We couldn't use the GNSS clock, so we try and use the wall clock
-        val bootTime = (System.currentTimeMillis() * NANOS_IN_MILLIS) -
-            SystemClock.elapsedRealtimeNanos()
+        val bootTime =
+            (System.currentTimeMillis() * NANOS_IN_MILLIS) -
+                SystemClock.elapsedRealtimeNanos()
 
         // If the elapsedRealtimeNanos is (somehow) longer than the wall clock time, we would
         // return a negative boot time possibly leading to negative timestamps in the Spans

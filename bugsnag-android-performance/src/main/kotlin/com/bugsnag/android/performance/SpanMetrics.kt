@@ -16,12 +16,10 @@ public class SpanMetrics(
      * Determines whether rendering metrics (slow and frozen frames) are reported for the span.
      */
     public val rendering: Boolean? = null,
-
     /**
      * Determines whether CPU use is reported for the span.
      */
     public val cpu: Boolean? = null,
-
     /**
      * Determines whether memory consumption is reported for the span.
      */
@@ -29,9 +27,9 @@ public class SpanMetrics(
 ) {
     override fun equals(other: Any?): Boolean {
         return other is SpanMetrics &&
-                rendering == other.rendering &&
-                cpu == other.cpu &&
-                memory == other.memory
+            rendering == other.rendering &&
+            cpu == other.cpu &&
+            memory == other.memory
     }
 
     override fun hashCode(): Int {

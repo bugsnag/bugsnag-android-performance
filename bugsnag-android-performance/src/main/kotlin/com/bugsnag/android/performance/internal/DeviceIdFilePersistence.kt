@@ -95,7 +95,10 @@ public class DeviceIdFilePersistence(
         }
     }
 
-    private fun persistDeviceIdUnderLock(uuid: UUID, channel: FileChannel): String {
+    private fun persistDeviceIdUnderLock(
+        uuid: UUID,
+        channel: FileChannel,
+    ): String {
         val id = uuid.toString()
         val json = JSONObject()
         json.put(KEY_ID, id)

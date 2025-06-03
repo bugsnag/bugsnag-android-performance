@@ -14,7 +14,6 @@ import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 
 class RetryDeliveryTaskTest {
-
     @Before
     fun configureLogging() {
         Logger.delegate = NoopLogger
@@ -26,17 +25,20 @@ class RetryDeliveryTaskTest {
             TracePayload.createTracePayload("fake-api-key", byteArrayOf(), timestamp = 0L)
 
         val delivery = StubDelivery()
-        val retryQueue = mock<RetryQueue> {
-            on { next() } doReturn tracePayload
-        }
-        val connectivity = mock<Connectivity> {
-            on { connectivityStatus } doReturn ConnectivityStatus(
-                false,
-                ConnectionMetering.DISCONNECTED,
-                NetworkType.CELL,
-                null,
-            )
-        }
+        val retryQueue =
+            mock<RetryQueue> {
+                on { next() } doReturn tracePayload
+            }
+        val connectivity =
+            mock<Connectivity> {
+                on { connectivityStatus } doReturn
+                    ConnectivityStatus(
+                        false,
+                        ConnectionMetering.DISCONNECTED,
+                        NetworkType.CELL,
+                        null,
+                    )
+            }
         val retryDeliveryTask = RetryDeliveryTask(retryQueue, delivery, connectivity)
 
         assertFalse(retryDeliveryTask.execute())
@@ -50,17 +52,20 @@ class RetryDeliveryTaskTest {
 
         val delivery = StubDelivery()
 
-        val retryQueue = mock<RetryQueue> {
-            on { next() } doReturn tracePayload
-        }
-        val connectivity = mock<Connectivity> {
-            on { connectivityStatus } doReturn ConnectivityStatus(
-                true,
-                ConnectionMetering.UNMETERED,
-                NetworkType.WIFI,
-                null,
-            )
-        }
+        val retryQueue =
+            mock<RetryQueue> {
+                on { next() } doReturn tracePayload
+            }
+        val connectivity =
+            mock<Connectivity> {
+                on { connectivityStatus } doReturn
+                    ConnectivityStatus(
+                        true,
+                        ConnectionMetering.UNMETERED,
+                        NetworkType.WIFI,
+                        null,
+                    )
+            }
 
         val retryDeliveryTask = RetryDeliveryTask(retryQueue, delivery, connectivity)
 
@@ -77,17 +82,20 @@ class RetryDeliveryTaskTest {
 
         val delivery = StubDelivery()
 
-        val retryQueue = mock<RetryQueue> {
-            on { next() } doReturn tracePayload
-        }
-        val connectivity = mock<Connectivity> {
-            on { connectivityStatus } doReturn ConnectivityStatus(
-                true,
-                ConnectionMetering.UNMETERED,
-                NetworkType.WIFI,
-                null,
-            )
-        }
+        val retryQueue =
+            mock<RetryQueue> {
+                on { next() } doReturn tracePayload
+            }
+        val connectivity =
+            mock<Connectivity> {
+                on { connectivityStatus } doReturn
+                    ConnectivityStatus(
+                        true,
+                        ConnectionMetering.UNMETERED,
+                        NetworkType.WIFI,
+                        null,
+                    )
+            }
 
         val retryDeliveryTask = RetryDeliveryTask(retryQueue, delivery, connectivity)
 
@@ -104,17 +112,20 @@ class RetryDeliveryTaskTest {
 
         val delivery = StubDelivery()
 
-        val retryQueue = mock<RetryQueue> {
-            on { next() } doReturn tracePayload
-        }
-        val connectivity = mock<Connectivity> {
-            on { connectivityStatus } doReturn ConnectivityStatus(
-                true,
-                ConnectionMetering.UNMETERED,
-                NetworkType.WIFI,
-                null,
-            )
-        }
+        val retryQueue =
+            mock<RetryQueue> {
+                on { next() } doReturn tracePayload
+            }
+        val connectivity =
+            mock<Connectivity> {
+                on { connectivityStatus } doReturn
+                    ConnectivityStatus(
+                        true,
+                        ConnectionMetering.UNMETERED,
+                        NetworkType.WIFI,
+                        null,
+                    )
+            }
 
         val retryDeliveryTask = RetryDeliveryTask(retryQueue, delivery, connectivity)
 

@@ -28,7 +28,6 @@ import java.util.concurrent.TimeUnit
 @RunWith(RobolectricTestRunner::class)
 @Config(shadows = [ShadowPausedSystemClock::class], sdk = [32])
 class ActivityLifecycleInstrumentationTest {
-
     private lateinit var spanTracker: SpanTracker
     private lateinit var spanProcessor: CollectingSpanProcessor
     private lateinit var spanFactory: SpanFactory
@@ -42,15 +41,17 @@ class ActivityLifecycleInstrumentationTest {
         spanProcessor = CollectingSpanProcessor()
         spanFactory = SpanFactory(spanProcessor)
         autoInstrumentationCache = AutoInstrumentationCache()
-        activityInstrumentation = ActivityLifecycleInstrumentation(
-            spanTracker,
-            spanFactory,
-            mock(),
-            autoInstrumentationCache,
-        )
-        lifecycleHelper = ActivityLifecycleHelper(activityInstrumentation) {
-            ShadowPausedSystemClock.advanceBy(1, TimeUnit.MILLISECONDS)
-        }
+        activityInstrumentation =
+            ActivityLifecycleInstrumentation(
+                spanTracker,
+                spanFactory,
+                mock(),
+                autoInstrumentationCache,
+            )
+        lifecycleHelper =
+            ActivityLifecycleHelper(activityInstrumentation) {
+                ShadowPausedSystemClock.advanceBy(1, TimeUnit.MILLISECONDS)
+            }
     }
 
     @Test
@@ -71,9 +72,10 @@ class ActivityLifecycleInstrumentationTest {
 
     @Test
     fun activityFinishesOnCreate() {
-        val activity = mock<Activity> {
-            whenever(it.isFinishing) doReturn true
-        }
+        val activity =
+            mock<Activity> {
+                whenever(it.isFinishing) doReturn true
+            }
 
         lifecycleHelper.progressLifecycle(activity, from = DESTROYED, to = CREATED)
         activityInstrumentation.onActivityPreCreated(activity, null)
@@ -112,11 +114,7 @@ class ActivityLifecycleInstrumentationTest {
         ShadowPausedSystemClock.advanceBy(1, TimeUnit.MILLISECONDS)
 
         // tear the activity back down again
-        lifecycleHelper.progressLifecycle(
-            activity,
-            from = RESUMED,
-            to = CREATED, // onPause, onStop
-        )
+        lifecycleHelper.progressLifecycle(activity, from = RESUMED, to = CREATED)
 
         Shadows.shadowOf(Loopers.main).runToEndOfTasks()
 

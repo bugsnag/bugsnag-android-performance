@@ -20,12 +20,13 @@ class SpanContextStackTest {
         val parent = spanFactory.newSpan(endTime = null, processor = NoopSpanProcessor)
         stack.attach(parent)
 
-        val child = spanFactory.newSpan(
-            endTime = null,
-            traceId = parent.traceId,
-            parentSpanId = parent.spanId,
-            processor = NoopSpanProcessor,
-        )
+        val child =
+            spanFactory.newSpan(
+                endTime = null,
+                traceId = parent.traceId,
+                parentSpanId = parent.spanId,
+                processor = NoopSpanProcessor,
+            )
         stack.attach(child)
 
         assertSame(child, stack.top)
@@ -39,12 +40,13 @@ class SpanContextStackTest {
         val parent = spanFactory.newSpan(endTime = null, processor = NoopSpanProcessor)
         stack.attach(parent)
 
-        var child: SpanImpl? = spanFactory.newSpan(
-            endTime = null,
-            traceId = parent.traceId,
-            parentSpanId = parent.spanId,
-            processor = NoopSpanProcessor,
-        )
+        var child: SpanImpl? =
+            spanFactory.newSpan(
+                endTime = null,
+                traceId = parent.traceId,
+                parentSpanId = parent.spanId,
+                processor = NoopSpanProcessor,
+            )
         stack.attach(child!!)
         assertSame(child, stack.top)
 
@@ -60,35 +62,39 @@ class SpanContextStackTest {
     @Test
     fun findReturnsTop() {
         val stack = SpanContextStack()
-        val baseViewLoad = spanFactory.newSpan(
-            endTime = null,
-            spanCategory = SpanCategory.VIEW_LOAD,
-            processor = NoopSpanProcessor,
-        )
+        val baseViewLoad =
+            spanFactory.newSpan(
+                endTime = null,
+                spanCategory = SpanCategory.VIEW_LOAD,
+                processor = NoopSpanProcessor,
+            )
         stack.attach(baseViewLoad)
 
-        val viewLoadPhase = spanFactory.newSpan(
-            parentSpanId = baseViewLoad.spanId,
-            endTime = null,
-            spanCategory = SpanCategory.VIEW_LOAD_PHASE,
-            processor = NoopSpanProcessor,
-        )
+        val viewLoadPhase =
+            spanFactory.newSpan(
+                parentSpanId = baseViewLoad.spanId,
+                endTime = null,
+                spanCategory = SpanCategory.VIEW_LOAD_PHASE,
+                processor = NoopSpanProcessor,
+            )
         stack.attach(viewLoadPhase)
 
-        val childViewLoad = spanFactory.newSpan(
-            parentSpanId = viewLoadPhase.spanId,
-            endTime = null,
-            spanCategory = SpanCategory.VIEW_LOAD,
-            processor = NoopSpanProcessor,
-        )
+        val childViewLoad =
+            spanFactory.newSpan(
+                parentSpanId = viewLoadPhase.spanId,
+                endTime = null,
+                spanCategory = SpanCategory.VIEW_LOAD,
+                processor = NoopSpanProcessor,
+            )
         stack.attach(childViewLoad)
 
-        val childViewLoadPhase = spanFactory.newSpan(
-            parentSpanId = childViewLoad.spanId,
-            endTime = null,
-            spanCategory = SpanCategory.VIEW_LOAD_PHASE,
-            processor = NoopSpanProcessor,
-        )
+        val childViewLoadPhase =
+            spanFactory.newSpan(
+                parentSpanId = childViewLoad.spanId,
+                endTime = null,
+                spanCategory = SpanCategory.VIEW_LOAD_PHASE,
+                processor = NoopSpanProcessor,
+            )
         stack.attach(childViewLoadPhase)
 
         val currentViewLoad = stack.findSpan { it.category == SpanCategory.VIEW_LOAD }

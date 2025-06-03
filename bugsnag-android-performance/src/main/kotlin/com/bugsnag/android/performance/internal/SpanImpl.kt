@@ -25,10 +25,8 @@ public class SpanImpl internal constructor(
     name: String,
     internal val category: SpanCategory,
     internal val kind: SpanKind,
-
     @get:JvmName("getStartTime\$internal")
     internal val startTime: Long,
-
     override val traceId: UUID,
     override val spanId: Long = nextSpanId(),
     public val parentSpanId: Long,
@@ -38,7 +36,6 @@ public class SpanImpl internal constructor(
     private val timeoutExecutor: TimeoutExecutor,
     private val processor: SpanProcessor,
 ) : Span, HasAttributes {
-
     public val attributes: Attributes = Attributes()
 
     /**
@@ -72,7 +69,7 @@ public class SpanImpl internal constructor(
     @get:FloatRange(from = 0.0, to = 1.0)
     internal var samplingProbability: Double = 1.0
         set(
-            @FloatRange(from = 0.0, to = 1.0) value
+        @FloatRange(from = 0.0, to = 1.0) value
         ) {
             field = value.coerceIn(0.0, 1.0)
             attributes["bugsnag.sampling.p"] = field
@@ -163,12 +160,14 @@ public class SpanImpl internal constructor(
     }
 
     override fun end(): Unit = end(SystemClock.elapsedRealtimeNanos())
+
     public fun isSampled(): Boolean = samplingValue <= samplingProbability
 
     override fun isEnded(): Boolean = !state.isOpen
+
     public fun isOpen(): Boolean = state.isOpen
-    public fun isBlocked(): Boolean =
-        state.isBlocked && (conditions == null || conditions?.isNotEmpty() == true)
+
+    public fun isBlocked(): Boolean = state.isBlocked && (conditions == null || conditions?.isNotEmpty() == true)
 
     internal fun toJson(json: JsonTraceWriter) {
         json.writeSpan(this) {
@@ -233,7 +232,10 @@ public class SpanImpl internal constructor(
         }
     }
 
-    override fun setAttribute(name: String, value: Long) {
+    override fun setAttribute(
+        name: String,
+        value: Long,
+    ) {
         if (!isSealed) {
             attributes[name] = value
         }
@@ -502,9 +504,10 @@ internal value class SpanState private constructor(private val state: AtomicInte
 
     val isOpen: Boolean get() = state.get().let { it == OPEN || it == OPEN_BLOCKED }
     val isBlocked: Boolean
-        get() = state.get().let {
-            it == OPEN_BLOCKED || it == ENDING_BLOCKED || it == ENDED_BLOCKED
-        }
+        get() =
+            state.get().let {
+                it == OPEN_BLOCKED || it == ENDING_BLOCKED || it == ENDED_BLOCKED
+            }
     val isDiscarded: Boolean get() = state.get() == DISCARDED
 
     fun process(): Boolean {
@@ -592,12 +595,13 @@ internal value class SpanState private constructor(private val state: AtomicInte
         }
     }
 
-    override fun toString(): String = when (state.get()) {
-        OPEN -> "open"
-        DISCARDED -> "discarded"
-        OPEN_BLOCKED -> "blocked"
-        else -> "ended"
-    }
+    override fun toString(): String =
+        when (state.get()) {
+            OPEN -> "open"
+            DISCARDED -> "discarded"
+            OPEN_BLOCKED -> "blocked"
+            else -> "ended"
+        }
 
     companion object {
         internal const val OPEN: Int = -1

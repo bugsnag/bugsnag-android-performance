@@ -8,13 +8,11 @@ public class EnabledMetrics(
      * Determines whether rendering metrics (slow and frozen frames) are gathered and reported
      */
     public var rendering: Boolean = false,
-
     /**
      * Determines whether CPU use is gathered and reported. When enabled, the CPU use is
      * sampled periodically for the app process and main thread.
      */
     public var cpu: Boolean = false,
-
     /**
      * Determines whether memory consumption is gathered and reported.
      */
@@ -26,9 +24,9 @@ public class EnabledMetrics(
 
     override fun equals(other: Any?): Boolean {
         return other is EnabledMetrics &&
-                rendering == other.rendering &&
-                cpu == other.cpu &&
-                memory == other.memory
+            rendering == other.rendering &&
+            cpu == other.cpu &&
+            memory == other.memory
     }
 
     override fun hashCode(): Int {

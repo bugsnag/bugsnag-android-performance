@@ -5,7 +5,6 @@ import com.bugsnag.android.performance.internal.SpanImpl
 import com.bugsnag.android.performance.internal.appendHexLong
 import com.bugsnag.android.performance.internal.appendHexUUID
 import com.bugsnag.android.performance.internal.parseUnsignedLong
-
 import java.util.UUID
 
 /**
@@ -19,7 +18,6 @@ public class RemoteSpanContext(
     override val spanId: Long,
     override val traceId: UUID,
 ) : SpanContext {
-
     /**
      * Returns a string representation of the span context in the W3C `traceparent` header format.
      *
@@ -35,8 +33,8 @@ public class RemoteSpanContext(
      */
     override fun equals(other: Any?): Boolean {
         return other is SpanContext &&
-                other.spanId == spanId &&
-                other.traceId == traceId
+            other.spanId == spanId &&
+            other.traceId == traceId
     }
 
     override fun hashCode(): Int {
@@ -86,14 +84,16 @@ public class RemoteSpanContext(
          */
         @JvmStatic
         public fun parseTraceParentOrNull(traceParent: String): RemoteSpanContext? {
-            val match = traceParentRegex.matchEntire(traceParent)
-                ?: return null
+            val match =
+                traceParentRegex.matchEntire(traceParent)
+                    ?: return null
 
             val (traceIdHex, spanIdHex) = match.destructured
-            val traceId = UUID(
-                traceIdHex.substring(0, TRACE_ID_MID).parseUnsignedLong(),
-                traceIdHex.substring(TRACE_ID_MID, TRACE_ID_END).parseUnsignedLong(),
-            )
+            val traceId =
+                UUID(
+                    traceIdHex.substring(0, TRACE_ID_MID).parseUnsignedLong(),
+                    traceIdHex.substring(TRACE_ID_MID, TRACE_ID_END).parseUnsignedLong(),
+                )
             val spanId = spanIdHex.parseUnsignedLong()
 
             return RemoteSpanContext(

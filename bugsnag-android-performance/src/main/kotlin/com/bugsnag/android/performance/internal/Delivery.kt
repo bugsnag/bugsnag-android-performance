@@ -7,9 +7,9 @@ internal sealed class DeliveryResult {
 
     data class Failed(
         val payload: TracePayload,
-        val canRetry: Boolean
+        val canRetry: Boolean,
     ) : DeliveryResult() {
-        override fun toString(): String = "Failed[canRetry=${canRetry}]"
+        override fun toString(): String = "Failed[canRetry=$canRetry]"
     }
 }
 
@@ -20,7 +20,12 @@ internal fun interface NewProbabilityCallback {
 internal interface Delivery {
     var newProbabilityCallback: NewProbabilityCallback?
 
-    fun deliver(spans: Collection<SpanImpl>, resourceAttributes: Attributes): DeliveryResult
+    fun deliver(
+        spans: Collection<SpanImpl>,
+        resourceAttributes: Attributes,
+    ): DeliveryResult
+
     fun deliver(tracePayload: TracePayload): DeliveryResult
+
     fun fetchCurrentProbability()
 }
