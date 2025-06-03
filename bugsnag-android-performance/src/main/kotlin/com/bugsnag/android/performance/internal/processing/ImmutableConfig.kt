@@ -52,17 +52,13 @@ internal class ImmutableConfig(
     constructor(configuration: PerformanceConfiguration) : this(
         configuration.context.applicationContext as Application,
         configuration.apiKey.also { validateApiKey(it) },
-        if(configuration.endpoint == DEFAULT_ENDPOINT)
-        {
-            if(configuration.apiKey.startsWith(HUB_API_PREFIX))
-            {
+        if (configuration.endpoint == DEFAULT_ENDPOINT) {
+            if (configuration.apiKey.startsWith(HUB_API_PREFIX)) {
                 HUB_ENDPOINT.format(configuration.apiKey)
-            }else
-            {
+            } else {
                 BUGSNAG_ENDPOINT.format(configuration.apiKey)
             }
-        }else
-        {
+        } else {
             configuration.endpoint
         },
         configuration.autoInstrumentAppStarts,
