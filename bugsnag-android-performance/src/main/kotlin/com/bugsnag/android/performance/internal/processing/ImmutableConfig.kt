@@ -18,6 +18,9 @@ import com.bugsnag.android.performance.internal.releaseStage
 import java.util.regex.Pattern
 
 internal const val DEFAULT_ENDPOINT = "https://otlp.bugsnag.com/v1/traces"
+private const val BUGSNAG_ENDPOINT = "https://%s.otlp.bugsnag.com/v1/traces"
+private const val HUB_ENDPOINT = "https://%s.otlp.insighthub.smartbear.com/v1/traces"
+private const val HUB_API_PREFIX = "00000";
 
 internal class ImmutableConfig(
     val application: Application,
@@ -49,8 +52,15 @@ internal class ImmutableConfig(
     constructor(configuration: PerformanceConfiguration) : this(
         configuration.context.applicationContext as Application,
         configuration.apiKey.also { validateApiKey(it) },
-        configuration.endpoint.takeUnless { it == DEFAULT_ENDPOINT }
-            ?: "https://${configuration.apiKey}.otlp.bugsnag.com/v1/traces",
+        if (configuration.endpoint == DEFAULT_ENDPOINT) {
+            if (configuration.apiKey.startsWith(HUB_API_PREFIX)) {
+                HUB_ENDPOINT.format(configuration.apiKey)
+            } else {
+                BUGSNAG_ENDPOINT.format(configuration.apiKey)
+            }
+        } else {
+            configuration.endpoint
+        },
         configuration.autoInstrumentAppStarts,
         configuration.autoInstrumentActivities,
         configuration.enabledMetrics.copy(),
