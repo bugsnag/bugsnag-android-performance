@@ -85,7 +85,10 @@ internal open class HttpDelivery(
     }
 
     @Suppress("MagicNumber")
-    private fun getDeliveryResult(statusCode: Int, payload: TracePayload): DeliveryResult {
+    private fun getDeliveryResult(
+        statusCode: Int,
+        payload: TracePayload,
+    ): DeliveryResult {
         return when {
             statusCode in 200..299 -> DeliveryResult.Success
             statusCode in 400..499 && statusCode !in httpRetryCodes ->
@@ -115,22 +118,20 @@ internal open class HttpDelivery(
     }
 
     companion object {
-        private val httpRetryCodes = setOf(
-            // 402 Payment Required: a nonstandard client error status response code that is
-            // reserved for future use. This status code is returned by ngrok when a tunnel has expired.
-            402,
-
-            // 407 Proxy Authentication Required: the request has not been applied because it
-            // lacks valid authentication credentials for a proxy server that is between the browser
-            // and the server that can access the requested resource.
-            407,
-
-            // 408 Request Timeout: the server would like to shut down this unused connection.
-            408,
-
-            // 429 Too Many Requests: the user has sent too many requests in a given amount of time
-            // ("rate limiting").
-            429,
-        )
+        private val httpRetryCodes =
+            setOf(
+                // 402 Payment Required: a nonstandard client error status response code that is
+                // reserved for future use. This status code is returned by ngrok when a tunnel has expired.
+                402,
+                // 407 Proxy Authentication Required: the request has not been applied because it
+                // lacks valid authentication credentials for a proxy server that is between the browser
+                // and the server that can access the requested resource.
+                407,
+                // 408 Request Timeout: the server would like to shut down this unused connection.
+                408,
+                // 429 Too Many Requests: the user has sent too many requests in a given amount of time
+                // ("rate limiting").
+                429,
+            )
     }
 }

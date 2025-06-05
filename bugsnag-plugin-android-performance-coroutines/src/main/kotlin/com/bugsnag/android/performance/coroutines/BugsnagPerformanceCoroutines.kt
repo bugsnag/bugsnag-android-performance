@@ -8,15 +8,12 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.ThreadContextElement
-import java.util.ArrayDeque
-import java.util.Deque
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
 private class ContextAwareCoroutineContextElement(
     private val coroutineContextStack: SpanContextStack,
 ) : ThreadContextElement<SpanContextStack> {
-
     constructor(spanContext: SpanContext) : this(SpanContextStack().apply { attach(spanContext) })
 
     override val key: CoroutineContext.Key<ContextAwareCoroutineContextElement>
@@ -35,7 +32,10 @@ private class ContextAwareCoroutineContextElement(
         return previousStack
     }
 
-    override fun restoreThreadContext(context: CoroutineContext, oldState: SpanContextStack) {
+    override fun restoreThreadContext(
+        context: CoroutineContext,
+        oldState: SpanContextStack,
+    ) {
         // coroutine suspended - restore this thread's previous SpanContext stack
         BugsnagPerformanceInternals.currentSpanContextStack = oldState
     }
@@ -49,9 +49,7 @@ private class ContextAwareCoroutineContextElement(
  * Maintains a Span Context stack for the coroutine, with the [SpanContext] at the root,
  * which persists the suspend/resume boundary.
  */
-public fun SpanContext.asCoroutineElement(): CoroutineContext.Element =
-    ContextAwareCoroutineContextElement(this)
-
+public fun SpanContext.asCoroutineElement(): CoroutineContext.Element = ContextAwareCoroutineContextElement(this)
 
 /**
  * Returns a context containing the [SpanContext] as a [CoroutineContext.Element] and elements
@@ -83,13 +81,15 @@ private class BugsnagCoroutineContext(
     private val baseContext: CoroutineContext,
     private val baseSpanContext: ContextAwareCoroutineContextElement,
 ) : CoroutineContext {
-
     override fun plus(context: CoroutineContext): CoroutineContext {
         if (context === EmptyCoroutineContext) return this
         return BugsnagCoroutineContext(baseContext + context, baseSpanContext.copy())
     }
 
-    override fun <R> fold(initial: R, operation: (R, CoroutineContext.Element) -> R): R {
+    override fun <R> fold(
+        initial: R,
+        operation: (R, CoroutineContext.Element) -> R,
+    ): R {
         return baseContext.fold(operation(initial, baseSpanContext), operation)
     }
 
@@ -111,7 +111,6 @@ private class BugsnagCoroutineContext(
     }
 }
 
-
 /**
  * A Coroutine Scope to automatically create context-aware coroutines
  */
@@ -121,8 +120,9 @@ public class BugsnagPerformanceScope(
     private val baseContext = SupervisorJob() + dispatcher
 
     override val coroutineContext: CoroutineContext
-        get() = BugsnagCoroutineContext(
-            baseContext,
-            ContextAwareCoroutineContextElement(SpanContext.current),
-        )
+        get() =
+            BugsnagCoroutineContext(
+                baseContext,
+                ContextAwareCoroutineContextElement(SpanContext.current),
+            )
 }

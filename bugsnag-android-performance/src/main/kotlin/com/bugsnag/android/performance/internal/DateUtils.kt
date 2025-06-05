@@ -9,13 +9,14 @@ import java.util.TimeZone
 
 internal object DateUtils {
     // SimpleDateFormat isn't thread safe, cache one instance per thread as needed.
-    private val iso8601Holder = object : ThreadLocal<DateFormat>() {
-        override fun initialValue(): DateFormat {
-            return SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US).apply {
-                timeZone = TimeZone.getTimeZone("UTC")
+    private val iso8601Holder =
+        object : ThreadLocal<DateFormat>() {
+            override fun initialValue(): DateFormat {
+                return SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US).apply {
+                    timeZone = TimeZone.getTimeZone("UTC")
+                }
             }
         }
-    }
 
     private val iso8601Format: DateFormat
         get() = requireNotNull(iso8601Holder.get()) { "Unable to find valid dateformatter" }

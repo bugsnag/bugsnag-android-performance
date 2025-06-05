@@ -28,19 +28,21 @@ internal data class ConnectivityStatus(
     val networkSubType: String?,
 )
 
-private val unknownNetwork = ConnectivityStatus(
-    false,
-    ConnectionMetering.DISCONNECTED,
-    NetworkType.UNKNOWN,
-    null,
-)
+private val unknownNetwork =
+    ConnectivityStatus(
+        false,
+        ConnectionMetering.DISCONNECTED,
+        NetworkType.UNKNOWN,
+        null,
+    )
 
-private val noNetwork = ConnectivityStatus(
-    false,
-    ConnectionMetering.DISCONNECTED,
-    NetworkType.UNAVAILABLE,
-    null,
-)
+private val noNetwork =
+    ConnectivityStatus(
+        false,
+        ConnectionMetering.DISCONNECTED,
+        NetworkType.UNAVAILABLE,
+        null,
+    )
 
 internal typealias NetworkChangeCallback = (status: ConnectivityStatus) -> Unit
 
@@ -51,10 +53,10 @@ internal enum class ConnectionMetering {
 }
 
 internal interface Connectivity {
-
     val connectivityStatus: ConnectivityStatus
 
     fun registerForNetworkChanges()
+
     fun unregisterForNetworkChanges()
 
     companion object Factory {
@@ -135,7 +137,10 @@ internal class ConnectivityLegacy(
         )
     }
 
-    override fun onReceive(context: Context, intent: Intent) {
+    override fun onReceive(
+        context: Context,
+        intent: Intent,
+    ) {
         connectivityStatus = networkInfoToStatus(cm.activeNetworkInfo)
     }
 }
@@ -146,7 +151,6 @@ internal open class ConnectivityApi24(
     private val cm: ConnectivityManager,
     private val callback: NetworkChangeCallback?,
 ) : ConnectivityManager.NetworkCallback(), Connectivity {
-
     private val tm: TelephonyManager? = context.getTelephonyManager()
 
     override var connectivityStatus: ConnectivityStatus =
@@ -174,7 +178,7 @@ internal open class ConnectivityApi24(
     protected open fun networkTypeFor(capabilities: NetworkCapabilities): NetworkType {
         return when {
             capabilities.hasTransport(TRANSPORT_ETHERNET) ||
-                    capabilities.hasTransport(TRANSPORT_USB) -> NetworkType.WIRED
+                capabilities.hasTransport(TRANSPORT_USB) -> NetworkType.WIRED
 
             capabilities.hasTransport(TRANSPORT_WIFI) -> NetworkType.WIFI
             capabilities.hasTransport(TRANSPORT_CELLULAR) -> NetworkType.CELL
@@ -195,34 +199,35 @@ internal open class ConnectivityApi24(
         }
     }
 
-    private fun nameForDataNetworkType(dataNetworkType: Int): String = when (dataNetworkType) {
-        TelephonyManager.NETWORK_TYPE_1xRTT -> "cdma2000_1xrtt"
-        TelephonyManager.NETWORK_TYPE_CDMA -> "cdma"
-        TelephonyManager.NETWORK_TYPE_EDGE -> "edge"
-        TelephonyManager.NETWORK_TYPE_EHRPD -> "ehrpd"
-        TelephonyManager.NETWORK_TYPE_EVDO_0 -> "evdo_0"
-        TelephonyManager.NETWORK_TYPE_EVDO_A -> "evdo_a"
-        TelephonyManager.NETWORK_TYPE_EVDO_B -> "evdo_b"
-        TelephonyManager.NETWORK_TYPE_GSM -> "gsm"
-        TelephonyManager.NETWORK_TYPE_GPRS -> "gprs"
-        TelephonyManager.NETWORK_TYPE_HSDPA -> "hsdpa"
-        TelephonyManager.NETWORK_TYPE_HSPA -> "hspa"
-        TelephonyManager.NETWORK_TYPE_HSPAP -> "hspap"
-        TelephonyManager.NETWORK_TYPE_HSUPA -> "hsupa"
-        TelephonyManager.NETWORK_TYPE_IDEN -> "iden"
-        TelephonyManager.NETWORK_TYPE_IWLAN -> "iwlan"
-        TelephonyManager.NETWORK_TYPE_LTE -> "lte"
-        TelephonyManager.NETWORK_TYPE_NR -> "nr"
-        TelephonyManager.NETWORK_TYPE_UMTS -> "umts"
-        TelephonyManager.NETWORK_TYPE_TD_SCDMA -> "td_scdma"
-        else -> "unknown"
-    }
+    private fun nameForDataNetworkType(dataNetworkType: Int): String =
+        when (dataNetworkType) {
+            TelephonyManager.NETWORK_TYPE_1xRTT -> "cdma2000_1xrtt"
+            TelephonyManager.NETWORK_TYPE_CDMA -> "cdma"
+            TelephonyManager.NETWORK_TYPE_EDGE -> "edge"
+            TelephonyManager.NETWORK_TYPE_EHRPD -> "ehrpd"
+            TelephonyManager.NETWORK_TYPE_EVDO_0 -> "evdo_0"
+            TelephonyManager.NETWORK_TYPE_EVDO_A -> "evdo_a"
+            TelephonyManager.NETWORK_TYPE_EVDO_B -> "evdo_b"
+            TelephonyManager.NETWORK_TYPE_GSM -> "gsm"
+            TelephonyManager.NETWORK_TYPE_GPRS -> "gprs"
+            TelephonyManager.NETWORK_TYPE_HSDPA -> "hsdpa"
+            TelephonyManager.NETWORK_TYPE_HSPA -> "hspa"
+            TelephonyManager.NETWORK_TYPE_HSPAP -> "hspap"
+            TelephonyManager.NETWORK_TYPE_HSUPA -> "hsupa"
+            TelephonyManager.NETWORK_TYPE_IDEN -> "iden"
+            TelephonyManager.NETWORK_TYPE_IWLAN -> "iwlan"
+            TelephonyManager.NETWORK_TYPE_LTE -> "lte"
+            TelephonyManager.NETWORK_TYPE_NR -> "nr"
+            TelephonyManager.NETWORK_TYPE_UMTS -> "umts"
+            TelephonyManager.NETWORK_TYPE_TD_SCDMA -> "td_scdma"
+            else -> "unknown"
+        }
 
     protected open fun meteringFor(capabilities: NetworkCapabilities): ConnectionMetering {
         return when {
             capabilities.hasTransport(TRANSPORT_WIFI) -> ConnectionMetering.UNMETERED
             capabilities.hasTransport(TRANSPORT_ETHERNET) ||
-                    capabilities.hasTransport(TRANSPORT_USB) -> ConnectionMetering.UNMETERED
+                capabilities.hasTransport(TRANSPORT_USB) -> ConnectionMetering.UNMETERED
 
             capabilities.hasTransport(TRANSPORT_CELLULAR) -> ConnectionMetering.POTENTIALLY_METERED
             else -> ConnectionMetering.DISCONNECTED
@@ -231,7 +236,7 @@ internal open class ConnectivityApi24(
 
     protected open fun connectedFor(capabilities: NetworkCapabilities): Boolean {
         return capabilities.hasCapability(NET_CAPABILITY_INTERNET) &&
-                capabilities.hasCapability(NET_CAPABILITY_VALIDATED)
+            capabilities.hasCapability(NET_CAPABILITY_VALIDATED)
     }
 
     override fun registerForNetworkChanges() {
@@ -247,14 +252,25 @@ internal open class ConnectivityApi24(
     }
 
     override fun onUnavailable() = updateActiveNetwork()
+
     override fun onLost(network: Network) = updateActiveNetwork()
-    override fun onLinkPropertiesChanged(network: Network, linkProperties: LinkProperties) =
-        updateActiveNetwork()
+
+    override fun onLinkPropertiesChanged(
+        network: Network,
+        linkProperties: LinkProperties,
+    ) = updateActiveNetwork()
 
     override fun onAvailable(network: Network) = updateActiveNetwork()
-    override fun onBlockedStatusChanged(network: Network, blocked: Boolean) = updateActiveNetwork()
-    override fun onCapabilitiesChanged(network: Network, networkCapabilities: NetworkCapabilities) =
-        updateActiveNetwork()
+
+    override fun onBlockedStatusChanged(
+        network: Network,
+        blocked: Boolean,
+    ) = updateActiveNetwork()
+
+    override fun onCapabilitiesChanged(
+        network: Network,
+        networkCapabilities: NetworkCapabilities,
+    ) = updateActiveNetwork()
 
     private fun updateActiveNetwork() {
         val activeNetwork = cm.activeNetwork
@@ -266,7 +282,6 @@ internal open class ConnectivityApi24(
         val capabilities = cm.safeGetNetworkCapabilities(activeNetwork) ?: return
         connectivityStatus = networkCapabilitiesToStatus(capabilities)
     }
-
 }
 
 @RequiresApi(Build.VERSION_CODES.S)
@@ -275,11 +290,10 @@ internal class ConnectivityApi31(
     cm: ConnectivityManager,
     callback: NetworkChangeCallback?,
 ) : ConnectivityApi24(context, cm, callback) {
-
     override fun meteringFor(capabilities: NetworkCapabilities): ConnectionMetering {
         return when {
             capabilities.hasCapability(NET_CAPABILITY_NOT_METERED) ||
-                    capabilities.hasCapability(NET_CAPABILITY_TEMPORARILY_NOT_METERED) -> ConnectionMetering.UNMETERED
+                capabilities.hasCapability(NET_CAPABILITY_TEMPORARILY_NOT_METERED) -> ConnectionMetering.UNMETERED
 
             else -> super.meteringFor(capabilities)
         }
@@ -295,6 +309,7 @@ internal object UnknownConnectivity : Connectivity {
         get() = unknownNetwork
 
     override fun registerForNetworkChanges() = Unit
+
     override fun unregisterForNetworkChanges() = Unit
 }
 

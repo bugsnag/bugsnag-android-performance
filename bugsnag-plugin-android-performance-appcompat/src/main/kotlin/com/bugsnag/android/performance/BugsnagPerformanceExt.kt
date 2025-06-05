@@ -13,11 +13,12 @@ internal fun SpanFactory.createViewLoadSpan(
     fragment: Fragment,
     options: SpanOptions = SpanOptions.DEFAULTS,
 ): SpanImpl {
-    val span = createViewLoadSpan(
-        ViewType.FRAGMENT,
-        viewNameForFragment(fragment),
-        options,
-    )
+    val span =
+        createViewLoadSpan(
+            ViewType.FRAGMENT,
+            viewNameForFragment(fragment),
+            options,
+        )
 
     val tag = fragment.tag
     if (tag != null) {

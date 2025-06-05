@@ -15,7 +15,6 @@ public value class SpanContextStack(
     @PublishedApi
     internal val stack: Deque<WeakReference<SpanContext>> = ArrayDeque(),
 ) {
-
     /**
      * The current top of the stack or `null` if none is valid or the stack is empty.
      */

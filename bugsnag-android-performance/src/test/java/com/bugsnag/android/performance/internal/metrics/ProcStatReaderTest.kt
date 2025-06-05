@@ -15,11 +15,12 @@ internal class ProcStatReaderTest {
     companion object {
         @get:JvmStatic
         @get:Parameters
-        val parameters = listOf<Pair<String, ProcStatReader.Stat>>(
-            "stat1" to ProcStatReader.Stat('R', 0, 0, 0, 0, 20, 0, 1, 0, 6815, 11071946752L, 1126),
-            "stat2" to ProcStatReader.Stat('S', 1, 1, 0, 0, 20, 0, 11, 0, 295206, 34206609408, 17794),
-            "stat3" to ProcStatReader.Stat('S', 12, 6, 0, 0, 20, 0, 18, 0, -4717, -16747143168, -21121),
-        )
+        val parameters =
+            listOf<Pair<String, ProcStatReader.Stat>>(
+                "stat1" to ProcStatReader.Stat('R', 0, 0, 0, 0, 20, 0, 1, 0, 6815, 11071946752L, 1126),
+                "stat2" to ProcStatReader.Stat('S', 1, 1, 0, 0, 20, 0, 11, 0, 295206, 34206609408, 17794),
+                "stat3" to ProcStatReader.Stat('S', 12, 6, 0, 0, 20, 0, 18, 0, -4717, -16747143168, -21121),
+            )
     }
 
     @Parameter

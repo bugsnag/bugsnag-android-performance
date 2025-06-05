@@ -62,9 +62,10 @@ class ConfigurationLoaderTest {
     fun loadFromBugsnagConfig() {
         val versionCode = 321
 
-        val metadataBundle = Bundle().apply {
-            putInt("com.bugsnag.android.VERSION_CODE", versionCode)
-        }
+        val metadataBundle =
+            Bundle().apply {
+                putInt("com.bugsnag.android.VERSION_CODE", versionCode)
+            }
 
         val config = PerformanceConfiguration.loadFromMetaData(mock(), metadataBundle, null)
         assertEquals(versionCode.toLong(), config.versionCode)

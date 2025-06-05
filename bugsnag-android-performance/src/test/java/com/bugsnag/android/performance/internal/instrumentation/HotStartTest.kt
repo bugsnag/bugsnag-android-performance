@@ -24,7 +24,6 @@ import java.util.concurrent.TimeUnit
 @RunWith(RobolectricTestRunner::class)
 @Config(shadows = [ShadowPausedSystemClock::class], sdk = [32])
 class HotStartTest {
-
     private lateinit var spanTracker: SpanTracker
     private lateinit var spanProcessor: CollectingSpanProcessor
     private lateinit var spanFactory: SpanFactory
@@ -40,15 +39,17 @@ class HotStartTest {
         spanFactory = SpanFactory(spanProcessor)
         autoInstrumentationCache = AutoInstrumentationCache()
         appStartTracker = AppStartTracker(spanTracker, spanFactory)
-        activityInstrumentation = ActivityLifecycleInstrumentation(
-            spanTracker,
-            spanFactory,
-            appStartTracker,
-            autoInstrumentationCache,
-        )
-        lifecycleHelper = ActivityLifecycleHelper(activityInstrumentation) {
-            ShadowPausedSystemClock.advanceBy(1, TimeUnit.MILLISECONDS)
-        }
+        activityInstrumentation =
+            ActivityLifecycleInstrumentation(
+                spanTracker,
+                spanFactory,
+                appStartTracker,
+                autoInstrumentationCache,
+            )
+        lifecycleHelper =
+            ActivityLifecycleHelper(activityInstrumentation) {
+                ShadowPausedSystemClock.advanceBy(1, TimeUnit.MILLISECONDS)
+            }
     }
 
     @Test

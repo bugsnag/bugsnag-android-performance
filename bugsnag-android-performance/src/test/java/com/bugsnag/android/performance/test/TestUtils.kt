@@ -8,7 +8,10 @@ import org.mockito.Mockito
 import java.util.concurrent.Future
 import java.util.concurrent.FutureTask
 
-fun assertJsonEquals(expected: String, actual: String) {
+fun assertJsonEquals(
+    expected: String,
+    actual: String,
+) {
     val expectedObject = JSONObject(expected).toString()
     val actualObject = JSONObject(actual).toString()
 

@@ -24,7 +24,7 @@ internal const val RELEASE_STAGE_PRODUCTION = "production"
  */
 internal fun Context.registerReceiverSafe(
     receiver: BroadcastReceiver?,
-    filter: IntentFilter?
+    filter: IntentFilter?,
 ): Intent? {
     try {
         return registerReceiver(receiver, filter)
@@ -42,9 +42,7 @@ internal fun Context.registerReceiverSafe(
  * Calls [Context.unregisterReceiver] but swallows [SecurityException] and [RemoteException]
  * to avoid terminating the process in rare cases where the registration is unsuccessful.
  */
-internal fun Context.unregisterReceiverSafe(
-    receiver: BroadcastReceiver?
-) {
+internal fun Context.unregisterReceiverSafe(receiver: BroadcastReceiver?) {
     try {
         unregisterReceiver(receiver)
     } catch (exc: SecurityException) {
@@ -77,20 +75,20 @@ internal fun ConnectivityManager.safeGetNetworkCapabilities(network: Network?): 
 }
 
 @JvmName("getActivityManagerFrom")
-internal fun Context.getActivityManager(): ActivityManager? =
-    safeGetSystemService(Context.ACTIVITY_SERVICE)
+internal fun Context.getActivityManager(): ActivityManager? = safeGetSystemService(Context.ACTIVITY_SERVICE)
 
 @JvmName("getConnectivityManagerFrom")
-internal fun Context.getConnectivityManager(): ConnectivityManager? =
-    safeGetSystemService(Context.CONNECTIVITY_SERVICE)
+internal fun Context.getConnectivityManager(): ConnectivityManager? = safeGetSystemService(Context.CONNECTIVITY_SERVICE)
 
 @JvmName("getTelephonyManagerFrom")
-internal fun Context.getTelephonyManager(): TelephonyManager? =
-    safeGetSystemService(Context.TELEPHONY_SERVICE)
+internal fun Context.getTelephonyManager(): TelephonyManager? = safeGetSystemService(Context.TELEPHONY_SERVICE)
 
 internal val Context.releaseStage: String
     get() {
         val appInfo = applicationInfo ?: return RELEASE_STAGE_PRODUCTION
-        return if (appInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0) RELEASE_STAGE_DEVELOPMENT
-        else RELEASE_STAGE_PRODUCTION
+        return if (appInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0) {
+            RELEASE_STAGE_DEVELOPMENT
+        } else {
+            RELEASE_STAGE_PRODUCTION
+        }
     }

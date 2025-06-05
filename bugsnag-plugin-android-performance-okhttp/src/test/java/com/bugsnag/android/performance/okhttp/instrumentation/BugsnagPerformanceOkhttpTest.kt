@@ -13,7 +13,6 @@ import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
 class BugsnagPerformanceOkhttpTest {
-
     @Before
     fun setUp() {
         OkhttpModule.tracePropagationUrls = listOf(".*".toPattern())

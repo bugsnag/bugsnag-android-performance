@@ -31,25 +31,27 @@ class FragmentActivityLifecycleCallbacksTest {
     private lateinit var fragment2: Fragment
     private lateinit var autoInstrumentationCache: AutoInstrumentationCache
 
-
     @Before
     fun setup() {
         spanCollector = ArrayList()
         spanTracker = SpanTracker()
         autoInstrumentationCache = AutoInstrumentationCache()
-        lifecycleCallbacks = FragmentActivityLifecycleCallbacks(
-            spanTracker,
-            SpanFactory({ spanCollector.add(it as SpanImpl) }),
-            autoInstrumentationCache,
-        )
+        lifecycleCallbacks =
+            FragmentActivityLifecycleCallbacks(
+                spanTracker,
+                SpanFactory({ spanCollector.add(it as SpanImpl) }),
+                autoInstrumentationCache,
+            )
 
         fm = object : FragmentManager() {}
-        fragment1 = mock {
-            whenever(it.isAdded) doReturn true
-        }
-        fragment2 = mock {
-            whenever(it.isAdded) doReturn true
-        }
+        fragment1 =
+            mock {
+                whenever(it.isAdded) doReturn true
+            }
+        fragment2 =
+            mock {
+                whenever(it.isAdded) doReturn true
+            }
     }
 
     @After

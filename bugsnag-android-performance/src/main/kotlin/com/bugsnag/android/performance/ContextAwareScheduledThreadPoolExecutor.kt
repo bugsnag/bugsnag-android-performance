@@ -30,7 +30,11 @@ public class ContextAwareScheduledThreadPoolExecutor : ScheduledThreadPoolExecut
         handler: RejectedExecutionHandler?,
     ) : super(corePoolSize, threadFactory, handler)
 
-    override fun schedule(command: Runnable?, delay: Long, unit: TimeUnit?): ScheduledFuture<*> {
+    override fun schedule(
+        command: Runnable?,
+        delay: Long,
+        unit: TimeUnit?,
+    ): ScheduledFuture<*> {
         return super.schedule(command?.let { SpanContext.current.wrap(it) }, delay, unit)
     }
 

@@ -12,6 +12,7 @@ internal object Loopers {
     fun isMainThread(): Boolean = Looper.myLooper() === main
 
     fun newMainHandler() = Handler(main)
+
     fun newMainHandler(callback: Handler.Callback) = Handler(main, callback)
 
     /**

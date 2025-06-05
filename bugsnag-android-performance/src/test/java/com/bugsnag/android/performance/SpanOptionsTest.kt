@@ -79,11 +79,12 @@ class SpanOptionsTest {
     }
 
     @Test
-    fun defaultStartTime() = withStaticMock<SystemClock> { clock ->
-        val expectedTime = 192837465L
-        clock.`when`<Long> { SystemClock.elapsedRealtimeNanos() }.doReturn(expectedTime)
-        assertEquals(expectedTime, SpanOptions.DEFAULTS.startTime)
-    }
+    fun defaultStartTime() =
+        withStaticMock<SystemClock> { clock ->
+            val expectedTime = 192837465L
+            clock.`when`<Long> { SystemClock.elapsedRealtimeNanos() }.doReturn(expectedTime)
+            assertEquals(expectedTime, SpanOptions.DEFAULTS.startTime)
+        }
 
     @Test
     fun overrideStartTime() {
@@ -94,71 +95,74 @@ class SpanOptionsTest {
     }
 
     @Test
-    fun overrideIsFirstClass() = withStaticMock<SystemClock> { clock ->
-        val expectedTime = 12345L
-        clock.`when`<Long> { SystemClock.elapsedRealtimeNanos() }.doReturn(expectedTime)
+    fun overrideIsFirstClass() =
+        withStaticMock<SystemClock> { clock ->
+            val expectedTime = 12345L
+            clock.`when`<Long> { SystemClock.elapsedRealtimeNanos() }.doReturn(expectedTime)
 
-        assertEquals(false, SpanOptions.setFirstClass(false).isFirstClass)
-        // test multi overrides of the same value
-        assertEquals(
-            true,
-            SpanOptions.setFirstClass(false).setFirstClass(true).isFirstClass,
-        )
+            assertEquals(false, SpanOptions.setFirstClass(false).isFirstClass)
+            // test multi overrides of the same value
+            assertEquals(
+                true,
+                SpanOptions.setFirstClass(false).setFirstClass(true).isFirstClass,
+            )
 
-        // test nested span creation
-        spanFactory.createCustomSpan("parent").use { rootSpan ->
-            assertEquals(true, rootSpan.attributes["bugsnag.span.first_class"])
-            spanFactory.createCustomSpan("child").use { childSpan ->
-                // All Custom spans are first_class
-                assertEquals(true, childSpan.attributes["bugsnag.span.first_class"])
-                spanFactory.createCustomSpan("override", SpanOptions.setFirstClass(true))
-                    .use { overrideSpan ->
-                        assertEquals(true, overrideSpan.attributes["bugsnag.span.first_class"])
-                    }
-            }
-        }
-    }
-
-    @Test
-    fun overrideParentContext() = withStaticMock<SystemClock> { clock ->
-        val expectedTime = 12345L
-        clock.`when`<Long> { SystemClock.elapsedRealtimeNanos() }.doReturn(expectedTime)
-
-        assertNull(SpanOptions.within(null).parentContext)
-        // test multi overrides of the same value
-        assertNull(SpanOptions.within(SpanContext.current).within(null).parentContext)
-
-        // test nested span creation
-        spanFactory.createCustomSpan("parent").use { rootSpan ->
-            assertEquals(0L, rootSpan.parentSpanId)
-            spanFactory.createCustomSpan("child").use { childSpan ->
-                assertEquals(rootSpan.spanId, childSpan.parentSpanId)
-                spanFactory.createCustomSpan("override", SpanOptions.within(null))
-                    .use { overrideSpan ->
-                        assertEquals(0L, overrideSpan.parentSpanId)
-                    }
-            }
-        }
-    }
-
-    @Test
-    fun overrideCurrentContext() = withStaticMock<SystemClock> { clock ->
-        val expectedTime = 12345L
-        clock.`when`<Long> { SystemClock.elapsedRealtimeNanos() }.doReturn(expectedTime)
-
-        assertFalse(SpanOptions.makeCurrentContext(false).makeContext)
-        // test multi overrides of the same value
-        assertTrue(
-            SpanOptions.makeCurrentContext(false).makeCurrentContext(true).makeContext,
-        )
-
-        // test nested span creation
-        spanFactory.createCustomSpan("parent").use { defaultSpan ->
-            assertSame(SpanContext.current, defaultSpan)
-            spanFactory.createCustomSpan("child", SpanOptions.makeCurrentContext(false))
-                .use { overrideSpan ->
-                    assertNotSame(SpanContext.current, overrideSpan)
+            // test nested span creation
+            spanFactory.createCustomSpan("parent").use { rootSpan ->
+                assertEquals(true, rootSpan.attributes["bugsnag.span.first_class"])
+                spanFactory.createCustomSpan("child").use { childSpan ->
+                    // All Custom spans are first_class
+                    assertEquals(true, childSpan.attributes["bugsnag.span.first_class"])
+                    spanFactory.createCustomSpan("override", SpanOptions.setFirstClass(true))
+                        .use { overrideSpan ->
+                            assertEquals(true, overrideSpan.attributes["bugsnag.span.first_class"])
+                        }
                 }
+            }
         }
-    }
+
+    @Test
+    fun overrideParentContext() =
+        withStaticMock<SystemClock> { clock ->
+            val expectedTime = 12345L
+            clock.`when`<Long> { SystemClock.elapsedRealtimeNanos() }.doReturn(expectedTime)
+
+            assertNull(SpanOptions.within(null).parentContext)
+            // test multi overrides of the same value
+            assertNull(SpanOptions.within(SpanContext.current).within(null).parentContext)
+
+            // test nested span creation
+            spanFactory.createCustomSpan("parent").use { rootSpan ->
+                assertEquals(0L, rootSpan.parentSpanId)
+                spanFactory.createCustomSpan("child").use { childSpan ->
+                    assertEquals(rootSpan.spanId, childSpan.parentSpanId)
+                    spanFactory.createCustomSpan("override", SpanOptions.within(null))
+                        .use { overrideSpan ->
+                            assertEquals(0L, overrideSpan.parentSpanId)
+                        }
+                }
+            }
+        }
+
+    @Test
+    fun overrideCurrentContext() =
+        withStaticMock<SystemClock> { clock ->
+            val expectedTime = 12345L
+            clock.`when`<Long> { SystemClock.elapsedRealtimeNanos() }.doReturn(expectedTime)
+
+            assertFalse(SpanOptions.makeCurrentContext(false).makeContext)
+            // test multi overrides of the same value
+            assertTrue(
+                SpanOptions.makeCurrentContext(false).makeCurrentContext(true).makeContext,
+            )
+
+            // test nested span creation
+            spanFactory.createCustomSpan("parent").use { defaultSpan ->
+                assertSame(SpanContext.current, defaultSpan)
+                spanFactory.createCustomSpan("child", SpanOptions.makeCurrentContext(false))
+                    .use { overrideSpan ->
+                        assertNotSame(SpanContext.current, overrideSpan)
+                    }
+            }
+        }
 }

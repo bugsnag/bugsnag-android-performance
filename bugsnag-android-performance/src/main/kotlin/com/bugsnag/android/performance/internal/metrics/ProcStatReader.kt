@@ -17,9 +17,10 @@ internal class ProcStatReader(
      */
     private val path: String,
 ) {
-    private val buffer = ByteBuffer
-        .allocateDirect(BUFFER_SIZE)
-        .apply { order(ByteOrder.BIG_ENDIAN) }
+    private val buffer =
+        ByteBuffer
+            .allocateDirect(BUFFER_SIZE)
+            .apply { order(ByteOrder.BIG_ENDIAN) }
 
     private fun skipUntil(ch: Char): Boolean {
         val code = ch.code

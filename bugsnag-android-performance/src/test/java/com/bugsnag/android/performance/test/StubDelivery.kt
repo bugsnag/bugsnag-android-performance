@@ -33,7 +33,10 @@ internal class StubDelivery : Delivery {
         lastSpanDelivery = null
     }
 
-    override fun deliver(spans: Collection<SpanImpl>, resourceAttributes: Attributes): DeliveryResult {
+    override fun deliver(
+        spans: Collection<SpanImpl>,
+        resourceAttributes: Attributes,
+    ): DeliveryResult {
         lock.withLock {
             lastSpanDelivery = spans
             deliveryCondition.signalAll()

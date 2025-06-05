@@ -15,6 +15,7 @@ internal abstract class AbstractSampledMetricsSource<T : LinkedMetricsSnapshot<T
     private val awaitingNextSample = AtomicReference<T?>(null)
 
     protected abstract fun captureSample()
+
     protected abstract fun populatedWaitingTargets()
 
     override fun run() {
@@ -35,7 +36,10 @@ internal abstract class AbstractSampledMetricsSource<T : LinkedMetricsSnapshot<T
         }
     }
 
-    override fun endMetrics(startMetrics: T, span: Span) {
+    override fun endMetrics(
+        startMetrics: T,
+        span: Span,
+    ) {
         startMetrics.target = span as SpanImpl
         startMetrics.blocking = span.block(samplingDelayMs * 2)
 

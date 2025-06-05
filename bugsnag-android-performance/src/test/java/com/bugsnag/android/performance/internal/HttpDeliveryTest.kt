@@ -27,22 +27,25 @@ class HttpDeliveryTest {
 
     @Test
     fun noConnectivity() {
-        val connectivity = mock<Connectivity> {
-            on { connectivityStatus } doReturn ConnectivityStatus(
+        val connectivity =
+            mock<Connectivity> {
+                on { connectivityStatus } doReturn
+                    ConnectivityStatus(
+                        false,
+                        ConnectionMetering.DISCONNECTED,
+                        NetworkType.CELL,
+                        null,
+                    )
+            }
+
+        val delivery =
+            HttpDelivery(
+                "http://localhost",
+                "0123456789abcdef0123456789abcdef",
+                connectivity,
                 false,
-                ConnectionMetering.DISCONNECTED,
-                NetworkType.CELL,
                 null,
             )
-        }
-
-        val delivery = HttpDelivery(
-            "http://localhost",
-            "0123456789abcdef0123456789abcdef",
-            connectivity,
-            false,
-            null,
-        )
 
         val spans = spanFactory.newSpans(5, spanProcessor)
         val result = delivery.deliver(spans, Attributes())
@@ -54,29 +57,33 @@ class HttpDeliveryTest {
 
     @Test
     fun headersFromSpans() {
-        val connectivity = mock<Connectivity> {
-            on { connectivityStatus } doReturn ConnectivityStatus(
-                true,
-                ConnectionMetering.POTENTIALLY_METERED,
-                NetworkType.CELL,
+        val connectivity =
+            mock<Connectivity> {
+                on { connectivityStatus } doReturn
+                    ConnectivityStatus(
+                        true,
+                        ConnectionMetering.POTENTIALLY_METERED,
+                        NetworkType.CELL,
+                        null,
+                    )
+            }
+
+        val connection =
+            mock<HttpURLConnection> {
+                on { responseCode } doReturn 200
+                on { outputStream } doReturn ByteArrayOutputStream()
+            }
+
+        val delivery =
+            object : HttpDelivery(
+                "http://localhost",
+                "0123456789abcdef0123456789abcdef",
+                connectivity,
+                false,
                 null,
-            )
-        }
-
-        val connection = mock<HttpURLConnection> {
-            on { responseCode } doReturn 200
-            on { outputStream } doReturn ByteArrayOutputStream()
-        }
-
-        val delivery = object : HttpDelivery(
-            "http://localhost",
-            "0123456789abcdef0123456789abcdef",
-            connectivity,
-            false,
-            null,
-        ) {
-            override fun openConnection(): HttpURLConnection = connection
-        }
+            ) {
+                override fun openConnection(): HttpURLConnection = connection
+            }
 
         val spans = spanFactory.newSpans(5, spanProcessor)
         val result = delivery.deliver(spans, Attributes())
@@ -96,43 +103,48 @@ class HttpDeliveryTest {
 
     @Test
     fun headersFromRetry() {
-        val connectivity = mock<Connectivity> {
-            on { connectivityStatus } doReturn ConnectivityStatus(
-                true,
-                ConnectionMetering.POTENTIALLY_METERED,
-                NetworkType.CELL,
+        val connectivity =
+            mock<Connectivity> {
+                on { connectivityStatus } doReturn
+                    ConnectivityStatus(
+                        true,
+                        ConnectionMetering.POTENTIALLY_METERED,
+                        NetworkType.CELL,
+                        null,
+                    )
+            }
+
+        val connection =
+            mock<HttpURLConnection> {
+                on { responseCode } doReturn 200
+                on { outputStream } doReturn ByteArrayOutputStream()
+            }
+
+        val delivery =
+            object : HttpDelivery(
+                "http://localhost",
+                "0123456789abcdef0123456789abcdef",
+                connectivity,
+                false,
                 null,
-            )
-        }
-
-        val connection = mock<HttpURLConnection> {
-            on { responseCode } doReturn 200
-            on { outputStream } doReturn ByteArrayOutputStream()
-        }
-
-        val delivery = object : HttpDelivery(
-            "http://localhost",
-            "0123456789abcdef0123456789abcdef",
-            connectivity,
-            false,
-            null,
-        ) {
-            override fun openConnection(): HttpURLConnection = connection
-        }
+            ) {
+                override fun openConnection(): HttpURLConnection = connection
+            }
 
         // Set our own Bugsnag-Sent-At header as 10 seconds ago, as it should be overwritten by
         // the HttpDelivery.deliver
         val datestamp = DateUtils.toIso8601(Date(System.currentTimeMillis() - 10_000L))
 
-        val result = delivery.deliver(
-            TracePayload.createTracePayload(
-                "0123456789abcdef0123456789abcdef",
-                """{"message": "Hello World"}""".toByteArray(),
-                hashMapOf(
-                    "Bugsnag-Sent-At" to datestamp,
+        val result =
+            delivery.deliver(
+                TracePayload.createTracePayload(
+                    "0123456789abcdef0123456789abcdef",
+                    """{"message": "Hello World"}""".toByteArray(),
+                    hashMapOf(
+                        "Bugsnag-Sent-At" to datestamp,
+                    ),
                 ),
-            ),
-        )
+            )
 
         assertTrue(result is DeliveryResult.Success)
 

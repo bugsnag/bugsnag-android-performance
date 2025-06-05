@@ -22,84 +22,92 @@ class SpanTrackerTest {
     }
 
     @Test
-    fun testAutomaticEndWithLeak() = withStaticMock<SystemClock> { mockedClock ->
-        val autoEndTime = 100L
-        mockedClock.`when`<Long>(SystemClock::elapsedRealtimeNanos).thenReturn(autoEndTime)
+    fun testAutomaticEndWithLeak() =
+        withStaticMock<SystemClock> { mockedClock ->
+            val autoEndTime = 100L
+            mockedClock.`when`<Long>(SystemClock::elapsedRealtimeNanos).thenReturn(autoEndTime)
 
-        val tracker = SpanTracker()
-        val loadSpan = tracker.associate("TestActivity") {
-            createSpan()
+            val tracker = SpanTracker()
+            val loadSpan =
+                tracker.associate("TestActivity") {
+                    createSpan()
+                }
+
+            val onCreateSpan =
+                tracker.associate("TestActivity", ViewLoadPhase.CREATE) {
+                    createSpan()
+                }
+
+            tracker.markSpanAutomaticEnd("TestActivity", ViewLoadPhase.CREATE)
+            tracker.markSpanLeaked("TestActivity", ViewLoadPhase.CREATE)
+
+            assertEquals(autoEndTime, onCreateSpan.endTime)
+            assertNull(tracker["TestActivity", ViewLoadPhase.CREATE])
+
+            assertNotNull(tracker["TestActivity"])
+            assertNotEquals(autoEndTime, loadSpan.endTime)
+
+            tracker.markSpanAutomaticEnd("TestActivity")
+            tracker.markSpanLeaked("TestActivity")
+
+            assertEquals(autoEndTime, loadSpan.endTime)
+            assertNull(tracker["TestActivity"])
         }
-
-        val onCreateSpan = tracker.associate("TestActivity", ViewLoadPhase.CREATE) {
-            createSpan()
-        }
-
-        tracker.markSpanAutomaticEnd("TestActivity", ViewLoadPhase.CREATE)
-        tracker.markSpanLeaked("TestActivity", ViewLoadPhase.CREATE)
-
-        assertEquals(autoEndTime, onCreateSpan.endTime)
-        assertNull(tracker["TestActivity", ViewLoadPhase.CREATE])
-
-        assertNotNull(tracker["TestActivity"])
-        assertNotEquals(autoEndTime, loadSpan.endTime)
-
-        tracker.markSpanAutomaticEnd("TestActivity")
-        tracker.markSpanLeaked("TestActivity")
-
-        assertEquals(autoEndTime, loadSpan.endTime)
-        assertNull(tracker["TestActivity"])
-    }
 
     @Test
-    fun testAutomaticEndWithManualEnd() = withStaticMock<SystemClock> { mockedClock ->
-        val autoEndTime = 100L
-        val realEndTime = 500L
+    fun testAutomaticEndWithManualEnd() =
+        withStaticMock<SystemClock> { mockedClock ->
+            val autoEndTime = 100L
+            val realEndTime = 500L
 
-        mockedClock.`when`<Long>(SystemClock::elapsedRealtimeNanos).thenReturn(autoEndTime)
+            mockedClock.`when`<Long>(SystemClock::elapsedRealtimeNanos).thenReturn(autoEndTime)
 
-        val tracker = SpanTracker()
-        val loadSpan = tracker.associate("TestActivity") {
-            createSpan()
+            val tracker = SpanTracker()
+            val loadSpan =
+                tracker.associate("TestActivity") {
+                    createSpan()
+                }
+
+            val onCreateSpan =
+                tracker.associate("TestActivity", ViewLoadPhase.CREATE) {
+                    createSpan()
+                }
+
+            // Check that subtoken spans can also be ended manually
+            tracker.markSpanAutomaticEnd("TestActivity", ViewLoadPhase.CREATE)
+            onCreateSpan.end(realEndTime)
+            tracker.markSpanLeaked("TestActivity", ViewLoadPhase.CREATE)
+
+            assertEquals(realEndTime, onCreateSpan.endTime)
+            assertNull(tracker["TestActivity", ViewLoadPhase.CREATE])
+
+            // Activity.onResume
+            tracker.markSpanAutomaticEnd("TestActivity")
+
+            // manually end the returned Span
+            loadSpan.end(realEndTime)
+
+            // Activity.onDestroy
+            tracker.markSpanLeaked("TestActivity")
+
+            assertEquals(realEndTime, loadSpan.endTime)
+            assertNull(tracker["TestActivity"])
         }
-
-        val onCreateSpan = tracker.associate("TestActivity", ViewLoadPhase.CREATE) {
-            createSpan()
-        }
-
-        // Check that subtoken spans can also be ended manually
-        tracker.markSpanAutomaticEnd("TestActivity", ViewLoadPhase.CREATE)
-        onCreateSpan.end(realEndTime)
-        tracker.markSpanLeaked("TestActivity", ViewLoadPhase.CREATE)
-
-        assertEquals(realEndTime, onCreateSpan.endTime)
-        assertNull(tracker["TestActivity", ViewLoadPhase.CREATE])
-
-        // Activity.onResume
-        tracker.markSpanAutomaticEnd("TestActivity")
-
-        // manually end the returned Span
-        loadSpan.end(realEndTime)
-
-        // Activity.onDestroy
-        tracker.markSpanLeaked("TestActivity")
-
-        assertEquals(realEndTime, loadSpan.endTime)
-        assertNull(tracker["TestActivity"])
-    }
 
     @Test
     fun testNormalEnd() {
         val endTime = 150L
 
         val tracker = SpanTracker()
-        val loadSpan = tracker.associate("TestActivity") {
-            createSpan()
-        }
+        val loadSpan =
+            tracker.associate("TestActivity") {
+                createSpan()
+            }
 
-        val onCreateSpan = tracker.associate("TestActivity", ViewLoadPhase.CREATE) {
-            createSpan()
-        }
+        val onCreateSpan =
+            tracker.associate("TestActivity", ViewLoadPhase.CREATE) {
+                createSpan()
+            }
 
         assertSame(loadSpan, tracker["TestActivity"])
         assertSame(onCreateSpan, tracker["TestActivity", ViewLoadPhase.CREATE])

@@ -11,7 +11,10 @@ public interface HasAttributes {
      * @param name the attribute name
      * @param value the value to set the attribute to
      */
-    public fun setAttribute(name: String, value: String?)
+    public fun setAttribute(
+        name: String,
+        value: String?,
+    )
 
     /**
      * Set a long integer attribute.
@@ -19,7 +22,10 @@ public interface HasAttributes {
      * @param name the attribute name
      * @param value the value to set the attribute to
      */
-    public fun setAttribute(name: String, value: Long)
+    public fun setAttribute(
+        name: String,
+        value: Long,
+    )
 
     /**
      * Set an integer attribute.
@@ -27,7 +33,10 @@ public interface HasAttributes {
      * @param name the attribute name
      * @param value the value to set the attribute to
      */
-    public fun setAttribute(name: String, value: Int)
+    public fun setAttribute(
+        name: String,
+        value: Int,
+    )
 
     /**
      * Set a floating point / double attribute.
@@ -35,7 +44,10 @@ public interface HasAttributes {
      * @param name the attribute name
      * @param value the value to set the attribute to
      */
-    public fun setAttribute(name: String, value: Double)
+    public fun setAttribute(
+        name: String,
+        value: Double,
+    )
 
     /**
      * Set a boolean attribute.
@@ -43,7 +55,10 @@ public interface HasAttributes {
      * @param name the attribute name
      * @param value the value to set the attribute to
      */
-    public fun setAttribute(name: String, value: Boolean)
+    public fun setAttribute(
+        name: String,
+        value: Boolean,
+    )
 
     /**
      * Set or clear a string collection attribute. Passing `null` will remove the attribute.
@@ -51,7 +66,10 @@ public interface HasAttributes {
      * @param name the attribute name
      * @param value the value to set the attribute to
      */
-    public fun setAttribute(name: String, value: Array<String>?)
+    public fun setAttribute(
+        name: String,
+        value: Array<String>?,
+    )
 
     /**
      * Set a collection of primitive values as an attribute.
@@ -59,7 +77,10 @@ public interface HasAttributes {
      * are supported. If the collection contains mixed values, null, or any other type: the behavior is
      * undefined.
      */
-    public fun setAttribute(name: String, value: Collection<Any>?)
+    public fun setAttribute(
+        name: String,
+        value: Collection<Any>?,
+    )
 
     /**
      * Set an array of integer values.
@@ -67,7 +88,10 @@ public interface HasAttributes {
      * @param name the attribute name
      * @param value the value to set the attribute to
      */
-    public fun setAttribute(name: String, value: IntArray?)
+    public fun setAttribute(
+        name: String,
+        value: IntArray?,
+    )
 
     /**
      * Set an array of long values.
@@ -75,13 +99,19 @@ public interface HasAttributes {
      * @param name the attribute name
      * @param value the value to set the attribute to
      */
-    public fun setAttribute(name: String, value: LongArray?)
-    
-     /**
+    public fun setAttribute(
+        name: String,
+        value: LongArray?,
+    )
+
+    /**
      * Set an array of double values.
      *
      * @param name the attribute name
      * @param value the value to set the attribute to
      */
-    public fun setAttribute(name: String, value: DoubleArray?)
+    public fun setAttribute(
+        name: String,
+        value: DoubleArray?,
+    )
 }

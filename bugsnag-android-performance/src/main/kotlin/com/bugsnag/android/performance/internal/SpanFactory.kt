@@ -29,7 +29,6 @@ public class SpanFactory internal constructor(
     private val spanTaskWorker: SpanTaskWorker = SpanTaskWorker(),
     internal val metricsContainer: MetricsContainer = MetricsContainer(spanTaskWorker),
 ) {
-
     public var networkRequestCallback: NetworkRequestInstrumentationCallback? = null
 
     internal var sampler: Sampler? = null
@@ -96,17 +95,18 @@ public class SpanFactory internal constructor(
         networkRequestCallback?.onNetworkRequest(reqInfo)
         reqInfo.url?.let { resultUrl ->
             val verbUpper = verb.uppercase()
-            val span = createSpan(
-                "[HTTP/$verbUpper]",
-                SpanKind.CLIENT,
-                SpanCategory.NETWORK,
-                options.startTime,
-                options.parentContext,
-                options.isFirstClass,
-                options.makeContext,
-                options.spanMetrics,
-                spanProcessor,
-            )
+            val span =
+                createSpan(
+                    "[HTTP/$verbUpper]",
+                    SpanKind.CLIENT,
+                    SpanCategory.NETWORK,
+                    options.startTime,
+                    options.parentContext,
+                    options.isFirstClass,
+                    options.makeContext,
+                    options.spanMetrics,
+                    spanProcessor,
+                )
             span.attributes["http.url"] = resultUrl
             span.attributes["http.method"] = verbUpper
             return span
@@ -129,20 +129,22 @@ public class SpanFactory internal constructor(
         options: SpanOptions = SpanOptions.DEFAULTS,
         spanProcessor: SpanProcessor = this.spanProcessor,
     ): SpanImpl {
-        val isFirstClass = options.isFirstClass
-            ?: SpanContext.contextStack.noSpansMatch { it.category == SpanCategory.VIEW_LOAD }
+        val isFirstClass =
+            options.isFirstClass
+                ?: SpanContext.contextStack.noSpansMatch { it.category == SpanCategory.VIEW_LOAD }
 
-        val span = createSpan(
-            "[ViewLoad/${viewType.spanName}]$viewName",
-            SpanKind.INTERNAL,
-            SpanCategory.VIEW_LOAD,
-            options.startTime,
-            options.parentContext,
-            options.isFirstClass,
-            options.makeContext,
-            options.spanMetrics,
-            spanProcessor,
-        )
+        val span =
+            createSpan(
+                "[ViewLoad/${viewType.spanName}]$viewName",
+                SpanKind.INTERNAL,
+                SpanCategory.VIEW_LOAD,
+                options.startTime,
+                options.parentContext,
+                options.isFirstClass,
+                options.makeContext,
+                options.spanMetrics,
+                spanProcessor,
+            )
 
         span.attributes["bugsnag.view.type"] = viewType.typeName
         span.attributes["bugsnag.view.name"] = viewName
@@ -165,17 +167,18 @@ public class SpanFactory internal constructor(
         spanProcessor: SpanProcessor = this.spanProcessor,
     ): SpanImpl {
         val phaseName = phase.phaseNameFor(viewType)
-        val span = createSpan(
-            "[ViewLoadPhase/$phaseName]$viewName",
-            SpanKind.INTERNAL,
-            SpanCategory.VIEW_LOAD_PHASE,
-            options.startTime,
-            options.parentContext,
-            options.isFirstClass,
-            options.makeContext,
-            options.spanMetrics,
-            spanProcessor,
-        )
+        val span =
+            createSpan(
+                "[ViewLoadPhase/$phaseName]$viewName",
+                SpanKind.INTERNAL,
+                SpanCategory.VIEW_LOAD_PHASE,
+                options.startTime,
+                options.parentContext,
+                options.isFirstClass,
+                options.makeContext,
+                options.spanMetrics,
+                spanProcessor,
+            )
 
         span.attributes["bugsnag.view.name"] = viewName
         span.attributes["bugsnag.view.type"] = viewType.typeName
@@ -203,17 +206,18 @@ public class SpanFactory internal constructor(
         startType: String,
         spanProcessor: SpanProcessor = this.spanProcessor,
     ): SpanImpl {
-        val span = createSpan(
-            "[AppStart/Android$startType]",
-            SpanKind.INTERNAL,
-            SpanCategory.APP_START,
-            SystemClock.elapsedRealtimeNanos(),
-            null,
-            isFirstClass = true,
-            makeContext = true,
-            SpanMetrics(rendering = true),
-            spanProcessor,
-        )
+        val span =
+            createSpan(
+                "[AppStart/Android$startType]",
+                SpanKind.INTERNAL,
+                SpanCategory.APP_START,
+                SystemClock.elapsedRealtimeNanos(),
+                null,
+                isFirstClass = true,
+                makeContext = true,
+                SpanMetrics(rendering = true),
+                spanProcessor,
+            )
 
         span.attributes["bugsnag.app_start.type"] = startType.lowercase()
 
@@ -225,17 +229,18 @@ public class SpanFactory internal constructor(
         appStartContext: SpanContext,
         spanProcessor: SpanProcessor = this.spanProcessor,
     ): SpanImpl {
-        val span = createSpan(
-            "[AppStartPhase/${phase.phaseName}]",
-            SpanKind.INTERNAL,
-            SpanCategory.APP_START_PHASE,
-            SystemClock.elapsedRealtimeNanos(),
-            appStartContext,
-            isFirstClass = false,
-            makeContext = true,
-            null,
-            spanProcessor,
-        )
+        val span =
+            createSpan(
+                "[AppStartPhase/${phase.phaseName}]",
+                SpanKind.INTERNAL,
+                SpanCategory.APP_START_PHASE,
+                SystemClock.elapsedRealtimeNanos(),
+                appStartContext,
+                isFirstClass = false,
+                makeContext = true,
+                null,
+                spanProcessor,
+            )
 
         span.attributes["bugsnag.phase"] = "FrameworkLoad"
 
@@ -256,19 +261,20 @@ public class SpanFactory internal constructor(
         val parent = parentContext?.takeIf { it.traceId.isValidTraceId() }
 
         val metrics = metricsContainer.createSpanMetricsSnapshot(isFirstClass == true, spanMetrics)
-        val span = SpanImpl(
-            name = name,
-            category = category,
-            kind = kind,
-            startTime = startTime,
-            traceId = parent?.traceId ?: UUID.randomUUID(),
-            parentSpanId = parent?.spanId ?: 0L,
-            makeContext = makeContext,
-            attributeLimits = attributeLimits,
-            metrics = metrics,
-            processor = spanProcessor,
-            timeoutExecutor = spanTaskWorker,
-        )
+        val span =
+            SpanImpl(
+                name = name,
+                category = category,
+                kind = kind,
+                startTime = startTime,
+                traceId = parent?.traceId ?: UUID.randomUUID(),
+                parentSpanId = parent?.spanId ?: 0L,
+                makeContext = makeContext,
+                attributeLimits = attributeLimits,
+                metrics = metrics,
+                processor = spanProcessor,
+                timeoutExecutor = spanTaskWorker,
+            )
 
         if (isFirstClass != null) {
             span.attributes["bugsnag.span.first_class"] = isFirstClass

@@ -29,7 +29,6 @@ import java.util.concurrent.TimeUnit
 @RunWith(RobolectricTestRunner::class)
 @Config(shadows = [ShadowPausedSystemClock::class])
 class LegacyActivityInstrumentationTest {
-
     private lateinit var spanTracker: SpanTracker
     private lateinit var spanProcessor: CollectingSpanProcessor
     private lateinit var spanFactory: SpanFactory
@@ -42,21 +41,23 @@ class LegacyActivityInstrumentationTest {
         spanProcessor = CollectingSpanProcessor()
         spanFactory = SpanFactory(spanProcessor)
         autoInstrumentationCache = AutoInstrumentationCache()
-        activityInstrumentation = LegacyActivityInstrumentation(
-            spanTracker,
-            spanFactory,
-            mock(),
-            autoInstrumentationCache,
-        )
+        activityInstrumentation =
+            LegacyActivityInstrumentation(
+                spanTracker,
+                spanFactory,
+                mock(),
+                autoInstrumentationCache,
+            )
     }
 
     @Test
     fun defaultActivityInstrumentation() {
         val activity = Activity()
 
-        val lifecycleHelper = ActivityLifecycleHelper(activityInstrumentation) {
-            ShadowPausedSystemClock.advanceBy(1, TimeUnit.MILLISECONDS)
-        }
+        val lifecycleHelper =
+            ActivityLifecycleHelper(activityInstrumentation) {
+                ShadowPausedSystemClock.advanceBy(1, TimeUnit.MILLISECONDS)
+            }
 
         lifecycleHelper.progressLifecycle(activity, from = DESTROYED, to = RESUMED)
 
@@ -79,9 +80,10 @@ class LegacyActivityInstrumentationTest {
 
         val activity = DoNotAutoInstrumentActivity()
 
-        val lifecycleHelper = ActivityLifecycleHelper(activityInstrumentation) {
-            ShadowPausedSystemClock.advanceBy(1, TimeUnit.MILLISECONDS)
-        }
+        val lifecycleHelper =
+            ActivityLifecycleHelper(activityInstrumentation) {
+                ShadowPausedSystemClock.advanceBy(1, TimeUnit.MILLISECONDS)
+            }
         lifecycleHelper.progressLifecycle(activity, from = DESTROYED, to = CREATED)
         Shadows.shadowOf(Loopers.main).runToEndOfTasks()
         val spans = spanProcessor.toList()
@@ -90,9 +92,10 @@ class LegacyActivityInstrumentationTest {
 
     @Test
     fun activityFinishesOnCreate() {
-        val activity = mock<Activity> {
-            whenever(it.isFinishing) doReturn true
-        }
+        val activity =
+            mock<Activity> {
+                whenever(it.isFinishing) doReturn true
+            }
 
         activityInstrumentation.onActivityCreated(activity, null)
         ShadowPausedSystemClock.advanceBy(1, TimeUnit.MILLISECONDS)
@@ -120,9 +123,10 @@ class LegacyActivityInstrumentationTest {
 
         val activity = DoNotEndAppStartActivity()
 
-        val lifecycleHelper = ActivityLifecycleHelper(activityInstrumentation) {
-            ShadowPausedSystemClock.advanceBy(1, TimeUnit.MILLISECONDS)
-        }
+        val lifecycleHelper =
+            ActivityLifecycleHelper(activityInstrumentation) {
+                ShadowPausedSystemClock.advanceBy(1, TimeUnit.MILLISECONDS)
+            }
 
         lifecycleHelper.progressLifecycle(activity, from = DESTROYED, to = CREATED)
         Shadows.shadowOf(Loopers.main).runToEndOfTasks()

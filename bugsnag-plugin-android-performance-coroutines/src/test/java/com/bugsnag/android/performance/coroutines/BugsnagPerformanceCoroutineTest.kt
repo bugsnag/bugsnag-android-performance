@@ -18,7 +18,6 @@ import java.util.concurrent.Executors
 
 @RunWith(RobolectricTestRunner::class)
 class BugsnagPerformanceCoroutineTest {
-
     private val testProcessor = SpanProcessor { }
     private lateinit var spanFactory: SpanFactory
 

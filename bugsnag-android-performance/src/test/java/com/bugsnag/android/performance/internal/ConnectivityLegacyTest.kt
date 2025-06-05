@@ -17,12 +17,13 @@ import org.mockito.kotlin.whenever
 @RunWith(Parameterized::class)
 class ConnectivityLegacyTest {
     companion object {
-        internal val noNetwork = ConnectivityStatus(
-            false,
-            ConnectionMetering.DISCONNECTED,
-            NetworkType.UNAVAILABLE,
-            null,
-        )
+        internal val noNetwork =
+            ConnectivityStatus(
+                false,
+                ConnectionMetering.DISCONNECTED,
+                NetworkType.UNAVAILABLE,
+                null,
+            )
 
         @JvmStatic
         @Parameterized.Parameters
@@ -103,9 +104,10 @@ class ConnectivityLegacyTest {
     @Test
     fun testNetworkProperties() {
         val (expected, networkInfo) = testCase
-        val connectivityManager = mock<ConnectivityManager> {
-            whenever(it.activeNetworkInfo) doReturn networkInfo
-        }
+        val connectivityManager =
+            mock<ConnectivityManager> {
+                whenever(it.activeNetworkInfo) doReturn networkInfo
+            }
 
         val connectivity = ConnectivityLegacy(mock(), connectivityManager, null)
         val status = connectivity.connectivityStatus
@@ -118,9 +120,10 @@ class ConnectivityLegacyTest {
     @Test
     fun testBroadcastNetworkProperties() {
         val (expected, networkInfo) = testCase
-        val connectivityManager = mock<ConnectivityManager> {
-            whenever(it.activeNetworkInfo) doReturnConsecutively listOf(null, networkInfo)
-        }
+        val connectivityManager =
+            mock<ConnectivityManager> {
+                whenever(it.activeNetworkInfo) doReturnConsecutively listOf(null, networkInfo)
+            }
 
         val connectivity = ConnectivityLegacy(mock(), connectivityManager, null)
         assertEquals(noNetwork, connectivity.connectivityStatus)

@@ -25,49 +25,52 @@ class TracerTest {
     private val worker = mock<Worker>()
 
     @Test
-    fun testBatchSize() = InternalDebug.withDebugValues {
-        createTracer(arrayOf(spanEndCallback1))
-        spanFactory = SpanFactory(tracer)
-        InternalDebug.spanBatchSizeSendTriggerPoint = 2
+    fun testBatchSize() =
+        InternalDebug.withDebugValues {
+            createTracer(arrayOf(spanEndCallback1))
+            spanFactory = SpanFactory(tracer)
+            InternalDebug.spanBatchSizeSendTriggerPoint = 2
 
-        spanFactory.createCustomSpan("BatchSize1.1", SpanOptions.startTime(1L)).end(10L)
+            spanFactory.createCustomSpan("BatchSize1.1", SpanOptions.startTime(1L)).end(10L)
 
-        // assert it won't be delivered immediately (the batch size is 2)
-        assertNull(tracer.collectNextBatch())
-        spanFactory.createCustomSpan("BatchSize1.2", SpanOptions.startTime(1L)).end(10L)
-        // give the delivery thread time to wake up and do it's work
-        assertEquals(2, tracer.collectNextBatch()!!.size)
+            // assert it won't be delivered immediately (the batch size is 2)
+            assertNull(tracer.collectNextBatch())
+            spanFactory.createCustomSpan("BatchSize1.2", SpanOptions.startTime(1L)).end(10L)
+            // give the delivery thread time to wake up and do it's work
+            assertEquals(2, tracer.collectNextBatch()!!.size)
 
-        // ensure that the next batch is null - since there is now no data to be delivered
-        assertNull(tracer.collectNextBatch())
+            // ensure that the next batch is null - since there is now no data to be delivered
+            assertNull(tracer.collectNextBatch())
 
-        // we deliver another two to ensure that the loop behaves as expected
-        spanFactory.createCustomSpan("BatchSize2.1", SpanOptions.startTime(2L)).end(20L)
-        spanFactory.createCustomSpan("BatchSize2.2", SpanOptions.startTime(3L)).end(30L)
+            // we deliver another two to ensure that the loop behaves as expected
+            spanFactory.createCustomSpan("BatchSize2.1", SpanOptions.startTime(2L)).end(20L)
+            spanFactory.createCustomSpan("BatchSize2.2", SpanOptions.startTime(3L)).end(30L)
 
-        assertEquals(2, tracer.collectNextBatch()!!.size)
-    }
-
-    @Test
-    fun activatesWorker() = InternalDebug.withDebugValues {
-        createTracer(arrayOf(spanEndCallback1))
-        spanFactory = SpanFactory(tracer)
-        InternalDebug.spanBatchSizeSendTriggerPoint = 2
-        spanFactory.createCustomSpan("BatchSize1.1", SpanOptions.startTime(2L)).end(20L)
-        spanFactory.createCustomSpan("BatchSize1.2", SpanOptions.startTime(3L)).end(30L)
-
-        // ensure that 2 spans woke the worker up exactly once
-        verify(worker, times(1)).wake()
-    }
+            assertEquals(2, tracer.collectNextBatch()!!.size)
+        }
 
     @Test
-    fun emptyBatch() = InternalDebug.withDebugValues {
-        createTracer(arrayOf(spanEndCallback1))
-        spanFactory = SpanFactory(tracer)
-        InternalDebug.workerSleepMs = 0L
-        val batch = tracer.collectNextBatch()
-        assertEquals(0, batch?.size) // we expect an empty batch, not null
-    }
+    fun activatesWorker() =
+        InternalDebug.withDebugValues {
+            createTracer(arrayOf(spanEndCallback1))
+            spanFactory = SpanFactory(tracer)
+            InternalDebug.spanBatchSizeSendTriggerPoint = 2
+            spanFactory.createCustomSpan("BatchSize1.1", SpanOptions.startTime(2L)).end(20L)
+            spanFactory.createCustomSpan("BatchSize1.2", SpanOptions.startTime(3L)).end(30L)
+
+            // ensure that 2 spans woke the worker up exactly once
+            verify(worker, times(1)).wake()
+        }
+
+    @Test
+    fun emptyBatch() =
+        InternalDebug.withDebugValues {
+            createTracer(arrayOf(spanEndCallback1))
+            spanFactory = SpanFactory(tracer)
+            InternalDebug.workerSleepMs = 0L
+            val batch = tracer.collectNextBatch()
+            assertEquals(0, batch?.size) // we expect an empty batch, not null
+        }
 
     @Test
     fun emptySpanEndCallback() {
@@ -83,9 +86,10 @@ class TracerTest {
         createTracer(arrayOf(spanEndCallback1, spanEndCallback2))
         spanFactory = SpanFactory(tracer)
         InternalDebug.spanBatchSizeSendTriggerPoint = 1
-        val span = spanFactory.createCustomSpan("BatchSize1.1", SpanOptions.startTime(2L)).apply {
-            end()
-        }
+        val span =
+            spanFactory.createCustomSpan("BatchSize1.1", SpanOptions.startTime(2L)).apply {
+                end()
+            }
         assertNull(span.attributes["bugsnag.span.callbacks_duration"])
         verify(worker, times(0)).wake()
     }
@@ -95,9 +99,10 @@ class TracerTest {
         createTracer(arrayOf(spanEndCallback1))
         spanFactory = SpanFactory(tracer)
         InternalDebug.spanBatchSizeSendTriggerPoint = 1
-        val span = spanFactory.createCustomSpan("BatchSize1.1", SpanOptions.startTime(2L)).apply {
-            end()
-        }
+        val span =
+            spanFactory.createCustomSpan("BatchSize1.1", SpanOptions.startTime(2L)).apply {
+                end()
+            }
 
         assertNotNull(span.attributes["bugsnag.span.callbacks_duration"])
         verify(worker, times(1)).wake()

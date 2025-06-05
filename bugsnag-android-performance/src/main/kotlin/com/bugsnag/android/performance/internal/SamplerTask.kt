@@ -30,8 +30,7 @@ internal class SamplerTask(
         }
     }
 
-    private fun isProbabilityValid(): Boolean =
-        System.currentTimeMillis() < persistentState.pValueExpiryTime
+    private fun isProbabilityValid(): Boolean = System.currentTimeMillis() < persistentState.pValueExpiryTime
 
     private fun newExpiryTime() = System.currentTimeMillis() + InternalDebug.pValueExpireAfterMs
 }

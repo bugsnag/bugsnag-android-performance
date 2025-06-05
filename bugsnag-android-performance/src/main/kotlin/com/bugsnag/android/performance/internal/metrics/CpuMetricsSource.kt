@@ -14,7 +14,6 @@ internal class CpuMetricsSource(
     samplingDelayMs: Long,
     maxSampleCount: Int = DEFAULT_SAMPLE_COUNT,
 ) : AbstractSampledMetricsSource<CpuMetricsSnapshot>(samplingDelayMs) {
-
     private val buffer = FixedRingBuffer(maxSampleCount) { CpuSampleData() }
 
     private val processSampler = CpuMetricsSampler(Process.myPid())
@@ -133,13 +132,10 @@ internal class CpuMetricsSource(
     private class CpuSampleData(
         @JvmField
         var processCpuPct: Double = 0.0,
-
         @JvmField
         var mainCpuPct: Double = 0.0,
-
         @JvmField
         var overheadCpuPct: Double = 0.0,
-
         @JvmField
         var timestamp: Long = 0L,
     )
@@ -206,12 +202,13 @@ internal object SystemConfig {
         }
 
         try {
-            val getconfOutput = Runtime.getRuntime().exec("getconf CLK_TCK")
-                .apply { waitFor() }
-                .inputStream
-                .bufferedReader()
-                .readText()
-                .trim()
+            val getconfOutput =
+                Runtime.getRuntime().exec("getconf CLK_TCK")
+                    .apply { waitFor() }
+                    .inputStream
+                    .bufferedReader()
+                    .readText()
+                    .trim()
 
             _clockTickHz = getconfOutput.toDouble()
         } catch (ex: Exception) {
@@ -228,11 +225,12 @@ internal object SystemConfig {
     val numCores: Int = numProcessorCores()
 
     private fun numProcessorCores(): Int {
-        val cores = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            Os.sysconf(OsConstants._SC_NPROCESSORS_CONF).toInt()
-        } else {
-            Runtime.getRuntime().availableProcessors()
-        }
+        val cores =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                Os.sysconf(OsConstants._SC_NPROCESSORS_CONF).toInt()
+            } else {
+                Runtime.getRuntime().availableProcessors()
+            }
 
         return max(cores, 1)
     }

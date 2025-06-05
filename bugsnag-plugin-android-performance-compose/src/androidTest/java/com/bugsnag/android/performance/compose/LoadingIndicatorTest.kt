@@ -38,31 +38,34 @@ class LoadingIndicatorTest {
     }
 
     @Test
-    fun extendsViewLoadSpanWithContent() = testExtendedViewLoad {
-        LoadingIndicatorWrapper {
-            LoadingIndicator {
+    fun extendsViewLoadSpanWithContent() =
+        testExtendedViewLoad {
+            LoadingIndicatorWrapper {
+                LoadingIndicator {
+                    Text(LOADING_MESSAGE)
+                }
+            }
+        }
+
+    @Test
+    fun extendsViewLoadSpanWithoutContent() =
+        testExtendedViewLoad {
+            LoadingIndicatorWrapper {
+                LoadingIndicator()
                 Text(LOADING_MESSAGE)
             }
         }
-    }
-
-    @Test
-    fun extendsViewLoadSpanWithoutContent() = testExtendedViewLoad {
-        LoadingIndicatorWrapper {
-            LoadingIndicator()
-            Text(LOADING_MESSAGE)
-        }
-    }
 
     private inline fun testExtendedViewLoad(crossinline loadingIndicator: @Composable () -> Unit) =
         runBlocking {
             var viewLoadSpan: Span? = null
 
             composeTestRule.setContent {
-                viewLoadSpan = BugsnagPerformance.startViewLoadSpan(
-                    ViewType.COMPOSE,
-                    "TestView",
-                )
+                viewLoadSpan =
+                    BugsnagPerformance.startViewLoadSpan(
+                        ViewType.COMPOSE,
+                        "TestView",
+                    )
 
                 loadingIndicator()
             }

@@ -6,13 +6,15 @@ import com.bugsnag.android.performance.internal.Module
 public class AppCompatModule : Module {
     private lateinit var instrumentedAppState: InstrumentedAppState
     private lateinit var fragmentActivityLifecycleCallbacks: FragmentActivityLifecycleCallbacks
+
     override fun load(instrumentedAppState: InstrumentedAppState) {
         this.instrumentedAppState = instrumentedAppState
-        this.fragmentActivityLifecycleCallbacks = FragmentActivityLifecycleCallbacks(
-            instrumentedAppState.spanTracker,
-            instrumentedAppState.spanFactory,
-            instrumentedAppState.autoInstrumentationCache,
-        )
+        this.fragmentActivityLifecycleCallbacks =
+            FragmentActivityLifecycleCallbacks(
+                instrumentedAppState.spanTracker,
+                instrumentedAppState.spanFactory,
+                instrumentedAppState.autoInstrumentationCache,
+            )
 
         instrumentedAppState.app.registerActivityLifecycleCallbacks(
             fragmentActivityLifecycleCallbacks,

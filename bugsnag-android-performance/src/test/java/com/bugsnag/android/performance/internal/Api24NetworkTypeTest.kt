@@ -27,15 +27,19 @@ class Api24NetworkTypeTest {
         testTransportType(NetworkCapabilities.TRANSPORT_CELLULAR, NetworkType.CELL)
     }
 
-    private fun testTransportType(transportType: Int, expectedNetworkType: NetworkType) {
+    private fun testTransportType(
+        transportType: Int,
+        expectedNetworkType: NetworkType,
+    ) {
         val context = mock<Context>()
         val connectivityManager = mock<ConnectivityManager>()
         var callbackInvoked = false
 
-        val connectivity = ConnectivityApi24(context, connectivityManager) { status ->
-            assertEquals(expectedNetworkType, status.networkType)
-            callbackInvoked = true
-        }
+        val connectivity =
+            ConnectivityApi24(context, connectivityManager) { status ->
+                assertEquals(expectedNetworkType, status.networkType)
+                callbackInvoked = true
+            }
 
         whenever(connectivityManager.activeNetwork).thenReturn(mock())
 

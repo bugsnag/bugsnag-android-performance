@@ -41,9 +41,10 @@ public interface SpanContext {
     }
 
     public companion object Storage {
-        private val threadLocalStorage = object : ThreadLocal<SpanContextStack>() {
-            override fun initialValue(): SpanContextStack = SpanContextStack()
-        }
+        private val threadLocalStorage =
+            object : ThreadLocal<SpanContextStack>() {
+                override fun initialValue(): SpanContextStack = SpanContextStack()
+            }
 
         @get:JvmSynthetic
         internal var contextStack: SpanContextStack
@@ -70,17 +71,18 @@ public interface SpanContext {
         }
 
         @JvmStatic
-        public val invalid: SpanContext = object : SpanContext {
-            override val spanId: Long
-                get() = 0
-            override val traceId: UUID
-                get() = UUID(0, 0)
+        public val invalid: SpanContext =
+            object : SpanContext {
+                override val spanId: Long
+                    get() = 0
+                override val traceId: UUID
+                    get() = UUID(0, 0)
 
-            override fun toString() = "InvalidContext"
+                override fun toString() = "InvalidContext"
 
-            override fun wrap(runnable: Runnable): Runnable = runnable
+                override fun wrap(runnable: Runnable): Runnable = runnable
 
-            override fun <T> wrap(callable: Callable<T>): Callable<T> = callable
-        }
+                override fun <T> wrap(callable: Callable<T>): Callable<T> = callable
+            }
     }
 }
