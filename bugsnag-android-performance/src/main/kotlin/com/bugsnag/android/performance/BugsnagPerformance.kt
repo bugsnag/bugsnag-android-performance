@@ -96,6 +96,7 @@ public object BugsnagPerformance {
         Logger.delegate = ImmutableConfig.getLogger(externalConfiguration)
 
         val pluginManager = PluginManager(externalConfiguration.plugins)
+        instrumentedAppState.pluginManager = pluginManager
         pluginManager.installPlugins(externalConfiguration)
 
         val configuration = ImmutableConfig(externalConfiguration, pluginManager)
@@ -344,6 +345,10 @@ public object BugsnagPerformance {
         @Suppress("UNCHECKED_CAST")
         return spanControlProvider[query as SpanQuery<Any>] as C
     }
+
+    public fun <T : Plugin> getPlugin(pluginClass: Class<T>): T? {
+        return instrumentedAppState.pluginManager?.getPlugin(pluginClass)
+    }
 }
 
 /**
@@ -362,4 +367,8 @@ public inline fun <R> measureSpan(
     block: () -> R,
 ): R {
     return BugsnagPerformance.startSpan(name).use { block() }
+}
+
+public inline fun <reified T : Plugin> BugsnagPerformance.getPlugin(): T? {
+    return getPlugin(T::class.java)
 }

@@ -9,6 +9,7 @@ import com.bugsnag.android.performance.internal.instrumentation.AbstractActivity
 import com.bugsnag.android.performance.internal.instrumentation.ActivityLifecycleInstrumentation
 import com.bugsnag.android.performance.internal.instrumentation.ForegroundState
 import com.bugsnag.android.performance.internal.instrumentation.LegacyActivityInstrumentation
+import com.bugsnag.android.performance.internal.plugins.PluginManager
 import com.bugsnag.android.performance.internal.processing.ForwardingSpanProcessor
 import com.bugsnag.android.performance.internal.processing.ImmutableConfig
 import com.bugsnag.android.performance.internal.processing.Tracer
@@ -32,6 +33,8 @@ public class InstrumentedAppState {
     internal val activityInstrumentation = createActivityInstrumentation()
 
     public var tracePropagationUrls: Collection<Pattern> = emptySet()
+
+    internal var pluginManager: PluginManager? = null
 
     public lateinit var app: Application
         private set

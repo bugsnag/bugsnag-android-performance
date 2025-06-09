@@ -46,4 +46,9 @@ internal class PluginManager(
             }
         }
     }
+
+    fun <T: Plugin> getPlugin(pluginClass: Class<T>): T? {
+        @Suppress("UNCHECKED_CAST")
+        return installedPlugins.firstOrNull { pluginClass.isInstance(it) } as? T
+    }
 }
