@@ -5,7 +5,9 @@ import android.app.Application
 import android.content.Context
 import android.net.Uri
 import android.os.SystemClock
+import com.bugsnag.android.performance.BugsnagPerformance.endViewLoadSpan
 import com.bugsnag.android.performance.BugsnagPerformance.start
+import com.bugsnag.android.performance.controls.AppStartControlProvider
 import com.bugsnag.android.performance.controls.SpanQuery
 import com.bugsnag.android.performance.internal.Connectivity
 import com.bugsnag.android.performance.internal.DiscardingSampler
@@ -28,6 +30,7 @@ import com.bugsnag.android.performance.internal.isInForeground
 import com.bugsnag.android.performance.internal.metrics.SystemConfig
 import com.bugsnag.android.performance.internal.plugins.PluginManager
 import com.bugsnag.android.performance.internal.processing.ImmutableConfig
+import com.bugsnag.android.performance.internal.util.Prioritized
 import java.net.URL
 
 /**
@@ -47,7 +50,14 @@ public object BugsnagPerformance {
 
     private val spanFactory get() = instrumentedAppState.spanFactory
 
-    private val spanControlProvider = CompositeSpanControlProvider()
+    private val spanControlProvider = CompositeSpanControlProvider().apply {
+        addProvider(
+            Prioritized(
+                Int.MAX_VALUE,
+                AppStartControlProvider(instrumentedAppState.spanTracker),
+            ),
+        )
+    }
 
     /**
      * Initialise the Bugsnag Performance SDK. This should be called within your
