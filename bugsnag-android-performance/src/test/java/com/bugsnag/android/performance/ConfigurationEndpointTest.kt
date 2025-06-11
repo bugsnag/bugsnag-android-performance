@@ -10,7 +10,6 @@ import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
 class ConfigurationEndpointTest {
-
     private val appContext: Application = ApplicationProvider.getApplicationContext()
 
     private val hubApiKey = "00000abcdefabcdefabcdefabcdefabcd"
@@ -37,18 +36,24 @@ class ConfigurationEndpointTest {
 
     @Test
     fun customEndpoint_overrideInConfiguration_isRespected() {
-        val perfConfig = PerformanceConfiguration(appContext, regularApiKey).apply {
-            endpoint = customEndpoint
-        }
+        val perfConfig =
+            PerformanceConfiguration(appContext, regularApiKey)
+                .apply {
+                    endpoint = customEndpoint
+                }
+
         val immutable = ImmutableConfig(perfConfig)
         assertEquals(customEndpoint, immutable.endpoint)
     }
 
     @Test
     fun defaultEndpoint_hubPrefixButEndpointOverridden_usesCustomEndpoint() {
-        val perfConfig = PerformanceConfiguration(appContext, hubApiKey).apply {
-            endpoint = customEndpoint
-        }
+        val perfConfig =
+            PerformanceConfiguration(appContext, hubApiKey)
+                .apply {
+                    endpoint = customEndpoint
+                }
+
         val immutable = ImmutableConfig(perfConfig)
         assertEquals(customEndpoint, immutable.endpoint)
     }
