@@ -48,7 +48,7 @@ Feature: Automatic creation of spans
     Then I relaunch the app after shutdown
     * I load scenario "AppStartScenario"
     And I wait to receive at least 6 spans
-    * a span named "[AppStart/AndroidCold]" contains the attributes:
+    * a span named "[AppStart/AndroidCold]SplashScreen" contains the attributes:
       | attribute                         | type        | value                |
       | bugsnag.span.category             | stringValue | app_start            |
       | bugsnag.app_start.type            | stringValue | cold                 |
@@ -89,7 +89,7 @@ Feature: Automatic creation of spans
     Then I relaunch the app after shutdown
     * I load scenario "AppStartScenario"
     And I wait to receive at least 2 spans
-    * a span named "[AppStart/AndroidCold]" contains the attributes:
+    * a span named "[AppStart/AndroidCold]SplashScreen" contains the attributes:
       | attribute                         | type        | value                |
       | bugsnag.span.category             | stringValue | app_start            |
       | bugsnag.app_start.type            | stringValue | cold                 |
@@ -208,7 +208,7 @@ Feature: Automatic creation of spans
     Then I relaunch the app after shutdown
     * I load scenario "AppStartScenario"
     And I wait to receive at least 9 spans
-    * a span named "[AppStart/AndroidCold]" contains the attributes:
+    * a span named "[AppStart/AndroidCold]SplashScreen" contains the attributes:
       | attribute                         | type        | value                |
       | bugsnag.span.category             | stringValue | app_start            |
       | bugsnag.app_start.type            | stringValue | cold                 |
