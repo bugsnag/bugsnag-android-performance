@@ -16,21 +16,15 @@ internal class TestMetricsContainer(
     private val memory: SampledMetricSource<MemoryMetricsSnapshot>? = null,
     private val frames: MetricSource<FramerateMetricsSnapshot>? = null,
 ) : MetricsContainer(TestSamplerExecutor()) {
-    override fun createCpuMetricSource(
-        application: Application,
-    ): SampledMetricSource<CpuMetricsSnapshot>? {
+    override fun createCpuMetricSource(application: Application): SampledMetricSource<CpuMetricsSnapshot>? {
         return cpu
     }
 
-    override fun createMemoryMetricSource(
-        application: Application,
-    ): SampledMetricSource<MemoryMetricsSnapshot>? {
+    override fun createMemoryMetricSource(application: Application): SampledMetricSource<MemoryMetricsSnapshot>? {
         return memory
     }
 
-    override fun createFrameMetricSource(
-        application: Application,
-    ): MetricSource<FramerateMetricsSnapshot>? {
+    override fun createFrameMetricSource(application: Application): MetricSource<FramerateMetricsSnapshot>? {
         return frames
     }
 }

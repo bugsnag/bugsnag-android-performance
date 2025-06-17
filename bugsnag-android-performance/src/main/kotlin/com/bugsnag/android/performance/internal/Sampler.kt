@@ -24,7 +24,9 @@ internal interface Sampler {
  */
 internal object DiscardingSampler : Sampler {
     override fun sampled(spans: Collection<SpanImpl>): Collection<SpanImpl> = emptyList()
+
     override fun shouldKeepSpan(span: SpanImpl): Boolean = false
+
     override val sampleProbability: Double get() = 0.0
 }
 

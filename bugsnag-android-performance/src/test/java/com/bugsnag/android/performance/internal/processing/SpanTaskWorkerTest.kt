@@ -14,7 +14,6 @@ import java.util.concurrent.TimeUnit
 
 @RunWith(RobolectricTestRunner::class)
 class SpanTaskWorkerTest {
-
     private var worker: SpanTaskWorker? = null
 
     @Before
@@ -57,9 +56,10 @@ class SpanTaskWorkerTest {
         val w = worker!!
         var runCount = 0
 
-        val sampler = Runnable {
-            runCount++
-        }
+        val sampler =
+            Runnable {
+                runCount++
+            }
 
         w.addSampler(sampler, 2L)
         w.start()
@@ -79,12 +79,13 @@ class SpanTaskWorkerTest {
 
         val latch = CountDownLatch(2)
 
-        val t1 = object : TestTimeout(5L, latch) {
-            override fun run() {
-                super.run()
-                throw IllegalStateException("oops")
+        val t1 =
+            object : TestTimeout(5L, latch) {
+                override fun run() {
+                    super.run()
+                    throw IllegalStateException("oops")
+                }
             }
-        }
 
         val t2 = TestTimeout(10L, latch)
 

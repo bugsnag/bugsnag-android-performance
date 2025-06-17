@@ -19,14 +19,15 @@ internal class TracePayloadTest {
 
     @Test
     fun testSamplerHeader() {
-        val spans = listOf(
-            createSpan(0.3),
-            createSpan(0.1),
-            createSpan(0.5),
-            createSpan(0.3),
-            createSpan(0.5),
-            createSpan(0.3),
-        )
+        val spans =
+            listOf(
+                createSpan(0.3),
+                createSpan(0.1),
+                createSpan(0.5),
+                createSpan(0.3),
+                createSpan(0.5),
+                createSpan(0.3),
+            )
 
         val tracePayload =
             TracePayload.createTracePayload(

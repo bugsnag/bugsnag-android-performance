@@ -40,16 +40,22 @@ public class SpanOptions private constructor(
      */
     public val startTime: Long
         get() =
-            if (isOptionSet(OPT_START_TIME)) _startTime
-            else SystemClock.elapsedRealtimeNanos()
+            if (isOptionSet(OPT_START_TIME)) {
+                _startTime
+            } else {
+                SystemClock.elapsedRealtimeNanos()
+            }
 
     public val isFirstClass: Boolean?
         get() = _isFirstClass.takeIf { isOptionSet(OPT_IS_FIRST_CLASS) }
 
     public val parentContext: SpanContext?
         get() =
-            if (isOptionSet(OPT_PARENT_CONTEXT)) _parentContext
-            else SpanContext.current
+            if (isOptionSet(OPT_PARENT_CONTEXT)) {
+                _parentContext
+            } else {
+                SpanContext.current
+            }
 
     public val instrumentRendering: Boolean?
         get() = _spanMetrics?.rendering
@@ -63,48 +69,53 @@ public class SpanOptions private constructor(
      *
      * @param startTime the start time to report relative to [SystemClock.elapsedRealtimeNanos]
      */
-    public fun startTime(startTime: Long): SpanOptions = SpanOptions(
-        optionsSet or OPT_START_TIME,
-        startTime,
-        _parentContext,
-        makeContext,
-        _isFirstClass,
-        _spanMetrics,
-    )
+    public fun startTime(startTime: Long): SpanOptions =
+        SpanOptions(
+            optionsSet or OPT_START_TIME,
+            startTime,
+            _parentContext,
+            makeContext,
+            _isFirstClass,
+            _spanMetrics,
+        )
 
-    public fun within(parentContext: SpanContext?): SpanOptions = SpanOptions(
-        optionsSet or OPT_PARENT_CONTEXT,
-        _startTime,
-        parentContext,
-        makeContext,
-        _isFirstClass,
-        _spanMetrics,
-    )
+    public fun within(parentContext: SpanContext?): SpanOptions =
+        SpanOptions(
+            optionsSet or OPT_PARENT_CONTEXT,
+            _startTime,
+            parentContext,
+            makeContext,
+            _isFirstClass,
+            _spanMetrics,
+        )
 
-    public fun makeCurrentContext(makeContext: Boolean): SpanOptions = SpanOptions(
-        optionsSet or OPT_MAKE_CONTEXT,
-        _startTime,
-        _parentContext,
-        makeContext,
-        _isFirstClass,
-        _spanMetrics,
-    )
+    public fun makeCurrentContext(makeContext: Boolean): SpanOptions =
+        SpanOptions(
+            optionsSet or OPT_MAKE_CONTEXT,
+            _startTime,
+            _parentContext,
+            makeContext,
+            _isFirstClass,
+            _spanMetrics,
+        )
 
-    public fun setFirstClass(isFirstClass: Boolean): SpanOptions = SpanOptions(
-        optionsSet or OPT_IS_FIRST_CLASS,
-        _startTime,
-        _parentContext,
-        makeContext,
-        isFirstClass,
-        _spanMetrics,
-    )
+    public fun setFirstClass(isFirstClass: Boolean): SpanOptions =
+        SpanOptions(
+            optionsSet or OPT_IS_FIRST_CLASS,
+            _startTime,
+            _parentContext,
+            makeContext,
+            isFirstClass,
+            _spanMetrics,
+        )
 
     @Deprecated(
         message = "use spanMetrics.rendering",
-        replaceWith = ReplaceWith(
-            expression = "withMetrics(SpanMetrics(rendering = instrumentRendering))",
-            imports = ["com.bugsnag.android.performance.SpanMetrics"],
-        ),
+        replaceWith =
+            ReplaceWith(
+                expression = "withMetrics(SpanMetrics(rendering = instrumentRendering))",
+                imports = ["com.bugsnag.android.performance.SpanMetrics"],
+            ),
     )
     public fun withRenderingMetrics(instrumentRendering: Boolean): SpanOptions {
         return if (_spanMetrics != null) {
@@ -115,7 +126,9 @@ public class SpanOptions private constructor(
                     memory = _spanMetrics.memory,
                 ),
             )
-        } else withMetrics(SpanMetrics(rendering = instrumentRendering))
+        } else {
+            withMetrics(SpanMetrics(rendering = instrumentRendering))
+        }
     }
 
     /**
@@ -125,40 +138,49 @@ public class SpanOptions private constructor(
      * only the default metrics for the span (see [SpanMetrics] for more details).
      */
     @JvmOverloads
-    public fun withMetrics(
-        spanMetrics: SpanMetrics? = SpanMetrics(rendering = true, cpu = true, memory = true),
-    ): SpanOptions = SpanOptions(
-        optionsSet or OPT_METRICS,
-        _startTime,
-        _parentContext,
-        makeContext,
-        _isFirstClass,
-        spanMetrics,
-    )
+    public fun withMetrics(spanMetrics: SpanMetrics? = SpanMetrics(rendering = true, cpu = true, memory = true)): SpanOptions =
+        SpanOptions(
+            optionsSet or OPT_METRICS,
+            _startTime,
+            _parentContext,
+            makeContext,
+            _isFirstClass,
+            spanMetrics,
+        )
 
     override fun equals(other: Any?): Boolean {
         if (other === this) return true
         if (other !is SpanOptions) return false
 
-        if ((isOptionSet(OPT_START_TIME) || other.isOptionSet(OPT_START_TIME))
-            && this._startTime != other._startTime
-        ) return false
+        if ((isOptionSet(OPT_START_TIME) || other.isOptionSet(OPT_START_TIME)) &&
+            this._startTime != other._startTime
+        ) {
+            return false
+        }
 
-        if ((isOptionSet(OPT_PARENT_CONTEXT) || other.isOptionSet(OPT_PARENT_CONTEXT))
-            && this.parentContext != other.parentContext
-        ) return false
+        if ((isOptionSet(OPT_PARENT_CONTEXT) || other.isOptionSet(OPT_PARENT_CONTEXT)) &&
+            this.parentContext != other.parentContext
+        ) {
+            return false
+        }
 
-        if ((isOptionSet(OPT_MAKE_CONTEXT) || other.isOptionSet(OPT_MAKE_CONTEXT))
-            && this.makeContext != other.makeContext
-        ) return false
+        if ((isOptionSet(OPT_MAKE_CONTEXT) || other.isOptionSet(OPT_MAKE_CONTEXT)) &&
+            this.makeContext != other.makeContext
+        ) {
+            return false
+        }
 
-        if ((isOptionSet(OPT_IS_FIRST_CLASS) || other.isOptionSet(OPT_IS_FIRST_CLASS))
-            && this.isFirstClass != other.isFirstClass
-        ) return false
+        if ((isOptionSet(OPT_IS_FIRST_CLASS) || other.isOptionSet(OPT_IS_FIRST_CLASS)) &&
+            this.isFirstClass != other.isFirstClass
+        ) {
+            return false
+        }
 
-        if ((isOptionSet(OPT_METRICS) || other.isOptionSet(OPT_METRICS))
-            && this.spanMetrics != other.spanMetrics
-        ) return false
+        if ((isOptionSet(OPT_METRICS) || other.isOptionSet(OPT_METRICS)) &&
+            this.spanMetrics != other.spanMetrics
+        ) {
+            return false
+        }
 
         return true
     }
@@ -171,41 +193,41 @@ public class SpanOptions private constructor(
         return result
     }
 
-    override fun toString(): String = buildString {
-        append("SpanOptions[")
+    override fun toString(): String =
+        buildString {
+            append("SpanOptions[")
 
-        // early exit for no-options
-        if (optionsSet == 0) {
-            append(']')
-            return@buildString
+            // early exit for no-options
+            if (optionsSet == 0) {
+                append(']')
+                return@buildString
+            }
+
+            if (isOptionSet(OPT_START_TIME)) {
+                append("startTime=").append(_startTime).append(',')
+            }
+
+            if (isOptionSet(OPT_PARENT_CONTEXT)) {
+                append("parentContext=").append(parentContext).append(',')
+            }
+
+            if (isOptionSet(OPT_MAKE_CONTEXT)) {
+                append("makeCurrentContext=").append(makeContext).append(',')
+            }
+
+            if (isOptionSet(OPT_IS_FIRST_CLASS)) {
+                append("isFirstClass=").append(_isFirstClass).append(',')
+            }
+
+            if (isOptionSet(OPT_METRICS)) {
+                append("metrics=").append(_spanMetrics).append(',')
+            }
+
+            // if we are here, the last character will always be ',' - replace it with ']'
+            setCharAt(lastIndex, ']')
         }
 
-        if (isOptionSet(OPT_START_TIME)) {
-            append("startTime=").append(_startTime).append(',')
-        }
-
-        if (isOptionSet(OPT_PARENT_CONTEXT)) {
-            append("parentContext=").append(parentContext).append(',')
-        }
-
-        if (isOptionSet(OPT_MAKE_CONTEXT)) {
-            append("makeCurrentContext=").append(makeContext).append(',')
-        }
-
-        if (isOptionSet(OPT_IS_FIRST_CLASS)) {
-            append("isFirstClass=").append(_isFirstClass).append(',')
-        }
-
-        if (isOptionSet(OPT_METRICS)) {
-            append("metrics=").append(_spanMetrics).append(',')
-        }
-
-        // if we are here, the last character will always be ',' - replace it with ']'
-        setCharAt(lastIndex, ']')
-    }
-
-    private fun isOptionSet(expectedFlag: Int): Boolean =
-        (optionsSet and expectedFlag) != 0
+    private fun isOptionSet(expectedFlag: Int): Boolean = (optionsSet and expectedFlag) != 0
 
     public companion object {
         private const val OPT_NONE = 0
@@ -240,13 +262,11 @@ public class SpanOptions private constructor(
 
         @JvmName("createAsCurrentContext")
         @JvmStatic
-        public fun makeCurrentContext(makeContext: Boolean): SpanOptions =
-            DEFAULTS.makeCurrentContext(makeContext)
+        public fun makeCurrentContext(makeContext: Boolean): SpanOptions = DEFAULTS.makeCurrentContext(makeContext)
 
         @JvmName("createFirstClass")
         @JvmStatic
-        public fun setFirstClass(isFirstClass: Boolean): SpanOptions =
-            DEFAULTS.setFirstClass(isFirstClass)
+        public fun setFirstClass(isFirstClass: Boolean): SpanOptions = DEFAULTS.setFirstClass(isFirstClass)
 
         @JvmName("createWithRenderingMetrics")
         @JvmStatic
@@ -258,7 +278,6 @@ public class SpanOptions private constructor(
         @JvmName("createWithMetrics")
         @JvmOverloads
         @JvmStatic
-        public fun withMetrics(metrics: SpanMetrics? = SpanMetrics(true, true, true)): SpanOptions =
-            DEFAULTS.withMetrics(metrics)
+        public fun withMetrics(metrics: SpanMetrics? = SpanMetrics(true, true, true)): SpanOptions = DEFAULTS.withMetrics(metrics)
     }
 }

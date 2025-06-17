@@ -23,8 +23,9 @@ class BugsnagClockTest {
     }
 
     @Test
-    fun testSafeBootFallback_Zero() = withStaticMock<SystemClock> { mockedClock ->
-        mockedClock.`when`<Long> { SystemClock.elapsedRealtimeNanos() } doReturn Long.MAX_VALUE
-        assertEquals(0L, BugsnagClock.safeBootTimeNanos())
-    }
+    fun testSafeBootFallback_Zero() =
+        withStaticMock<SystemClock> { mockedClock ->
+            mockedClock.`when`<Long> { SystemClock.elapsedRealtimeNanos() } doReturn Long.MAX_VALUE
+            assertEquals(0L, BugsnagClock.safeBootTimeNanos())
+        }
 }

@@ -37,7 +37,6 @@ internal class Worker(
      */
     private var startup: () -> List<Task> = { emptyList() },
 ) : Runnable {
-
     private lateinit var tasks: List<Task>
 
     private val lock = ReentrantLock(false)
@@ -62,10 +61,11 @@ internal class Worker(
 
         running = true
 
-        runner = Thread(this, "Bugsnag Performance").apply {
-            isDaemon = true
-            start()
-        }
+        runner =
+            Thread(this, "Bugsnag Performance").apply {
+                isDaemon = true
+                start()
+            }
     }
 
     @Synchronized

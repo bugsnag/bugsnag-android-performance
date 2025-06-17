@@ -43,29 +43,37 @@ class LegacyNetworkTypeTest {
     ) {
         val context = mock<Context>()
         var callbackInvoked = false
-        val connectivityManager = mock<ConnectivityManager> {
-            whenever(it.activeNetworkInfo) doReturnConsecutively listOf(
-                null,
-                newNetworkInfo(transportType, null),
-            )
-        }
+        val connectivityManager =
+            mock<ConnectivityManager> {
+                whenever(it.activeNetworkInfo) doReturnConsecutively
+                    listOf(
+                        null,
+                        newNetworkInfo(transportType, null),
+                    )
+            }
 
-        val connectivity = ConnectivityLegacy(context, connectivityManager) { status ->
-            assertEquals(expectedNetworkType, status.networkType)
-            assertEquals(expectedMetering, status.metering)
-            callbackInvoked = true
-        }
+        val connectivity =
+            ConnectivityLegacy(context, connectivityManager) { status ->
+                assertEquals(expectedNetworkType, status.networkType)
+                assertEquals(expectedMetering, status.metering)
+                callbackInvoked = true
+            }
 
         connectivity.onReceive(context, Intent())
 
         assertTrue("Network callback not invoked", callbackInvoked)
     }
 
-    private fun newNetworkInfo(type: Int, subType: String?): android.net.NetworkInfo =
+    private fun newNetworkInfo(
+        type: Int,
+        subType: String?,
+    ): android.net.NetworkInfo =
         @Suppress("OVERRIDE_DEPRECATION")
         object : android.net.NetworkInfo(type, 0, null, null) {
             override fun isConnectedOrConnecting(): Boolean = true
+
             override fun getType(): Int = type
+
             override fun getSubtypeName(): String? = subType
         }
 }

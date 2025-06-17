@@ -33,7 +33,7 @@ import java.net.URL
  * @see [start]
  */
 public object BugsnagPerformance {
-    public const val VERSION: String = "1.14.0"
+    public const val VERSION: String = "1.15.0"
 
     @get:JvmName("getInstrumentedAppState\$internal")
     internal val instrumentedAppState = InstrumentedAppState()
@@ -107,70 +107,73 @@ public object BugsnagPerformance {
             it.copy(isInForeground = isInForeground(application))
         }
 
-        val bsgWorker = Worker {
-            val resourceAttributes = createResourceAttributes(configuration)
-            LoadDeviceId(application, resourceAttributes).run()
+        val bsgWorker =
+            Worker {
+                val resourceAttributes = createResourceAttributes(configuration)
+                LoadDeviceId(application, resourceAttributes).run()
 
-            SystemConfig.configure()
+                SystemConfig.configure()
 
-            val connectivity =
-                Connectivity.newInstance(application) { status ->
-                    if (status.hasConnection && this::worker.isInitialized) {
-                        worker.wake()
+                val connectivity =
+                    Connectivity.newInstance(application) { status ->
+                        if (status.hasConnection && this::worker.isInitialized) {
+                            worker.wake()
+                        }
+
+                        instrumentedAppState.defaultAttributeSource.update {
+                            it.copy(
+                                networkType = status.networkType,
+                                networkSubType = status.networkSubType,
+                            )
+                        }
                     }
 
-                    instrumentedAppState.defaultAttributeSource.update {
-                        it.copy(
-                            networkType = status.networkType,
-                            networkSubType = status.networkSubType,
-                        )
-                    }
-                }
+                connectivity.registerForNetworkChanges()
 
-            connectivity.registerForNetworkChanges()
-
-            val httpDelivery = HttpDelivery(
-                configuration.endpoint,
-                requireNotNull(configuration.apiKey) {
-                    "PerformanceConfiguration.apiKey may not be null"
-                },
-                connectivity,
-                configuration.samplingProbability != null,
-                configuration,
-            )
-
-            val persistence = Persistence(application)
-            val delivery = RetryDelivery(persistence.retryQueue, httpDelivery)
-
-            val workerTasks = ArrayList<Task>()
-            if (configuration.isReleaseStageEnabled) {
-                val sampler: ProbabilitySampler
-                if (configuration.samplingProbability == null) {
-                    sampler = ProbabilitySampler(1.0)
-
-                    val samplerTask = SamplerTask(
-                        delivery,
-                        sampler,
-                        persistence.persistentState,
+                val httpDelivery =
+                    HttpDelivery(
+                        configuration.endpoint,
+                        requireNotNull(configuration.apiKey) {
+                            "PerformanceConfiguration.apiKey may not be null"
+                        },
+                        connectivity,
+                        configuration.samplingProbability != null,
+                        configuration,
                     )
-                    delivery.newProbabilityCallback = samplerTask
-                    workerTasks.add(samplerTask)
+
+                val persistence = Persistence(application)
+                val delivery = RetryDelivery(persistence.retryQueue, httpDelivery)
+
+                val workerTasks = ArrayList<Task>()
+                if (configuration.isReleaseStageEnabled) {
+                    val sampler: ProbabilitySampler
+                    if (configuration.samplingProbability == null) {
+                        sampler = ProbabilitySampler(1.0)
+
+                        val samplerTask =
+                            SamplerTask(
+                                delivery,
+                                sampler,
+                                persistence.persistentState,
+                            )
+                        delivery.newProbabilityCallback = samplerTask
+                        workerTasks.add(samplerTask)
+                    } else {
+                        sampler = ProbabilitySampler(configuration.samplingProbability)
+                    }
+
+                    tracer.sampler = sampler
+                    spanFactory.sampler = sampler
                 } else {
-                    sampler = ProbabilitySampler(configuration.samplingProbability)
+                    tracer.sampler = DiscardingSampler
+                    spanFactory.sampler = DiscardingSampler
                 }
 
-                tracer.sampler = sampler
-                spanFactory.sampler = sampler
-            } else {
-                tracer.sampler = DiscardingSampler
-                spanFactory.sampler = DiscardingSampler
+                workerTasks.add(SendBatchTask(delivery, tracer, resourceAttributes))
+                workerTasks.add(RetryDeliveryTask(persistence.retryQueue, httpDelivery, connectivity))
+
+                return@Worker workerTasks
             }
-
-            workerTasks.add(SendBatchTask(delivery, tracer, resourceAttributes))
-            workerTasks.add(RetryDeliveryTask(persistence.retryQueue, httpDelivery, connectivity))
-
-            return@Worker workerTasks
-        }
 
         // register the Worker with the components that depend on it
         tracer.worker = bsgWorker

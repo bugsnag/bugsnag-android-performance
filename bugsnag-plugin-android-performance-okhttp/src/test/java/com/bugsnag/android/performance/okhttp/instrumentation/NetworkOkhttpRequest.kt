@@ -14,10 +14,11 @@ internal fun makeNetworkOkhttpRequest(
     path: String = "/test",
     action: (OkHttpClient.Builder) -> Unit = {},
 ): RecordedRequest {
-    val server = MockWebServer().apply {
-        response?.let(this::enqueue)
-        start()
-    }
+    val server =
+        MockWebServer().apply {
+            response?.let(this::enqueue)
+            start()
+        }
     val baseUrl = server.url(path)
 
     val builder = OkHttpClient.Builder().withBugsnagPerformance()

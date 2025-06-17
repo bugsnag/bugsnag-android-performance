@@ -5,7 +5,10 @@ import com.bugsnag.android.performance.internal.processing.SamplerExecutor
 internal class TestSamplerExecutor : SamplerExecutor {
     private val samplers = mutableListOf<Pair<Long, Runnable>>()
 
-    override fun addSampler(sampler: Runnable, sampleRateMs: Long) {
+    override fun addSampler(
+        sampler: Runnable,
+        sampleRateMs: Long,
+    ) {
         samplers.add(sampleRateMs to sampler)
     }
 

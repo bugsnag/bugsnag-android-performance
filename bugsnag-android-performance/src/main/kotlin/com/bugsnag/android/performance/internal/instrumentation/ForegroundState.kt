@@ -11,7 +11,6 @@ import kotlin.math.max
 internal typealias InForegroundCallback = (inForeground: Boolean) -> Unit
 
 internal object ForegroundState : ActivityLifecycleCallbacks {
-
     /**
      * Same as `androidx.lifecycle.ProcessLifecycleOwner` and is used to avoid reporting
      * background / foreground changes when there is only 1 Activity being restarted for configuration
@@ -35,12 +34,13 @@ internal object ForegroundState : ActivityLifecycleCallbacks {
 
     private val listeners = CopyOnWriteArraySet<InForegroundCallback>()
 
-    private val sendInBackground: Runnable = Runnable {
-        if (!backgroundSent) {
-            isInForeground = false
-            backgroundSent = true
+    private val sendInBackground: Runnable =
+        Runnable {
+            if (!backgroundSent) {
+                isInForeground = false
+                backgroundSent = true
+            }
         }
-    }
 
     var isInForeground: Boolean = false
         @VisibleForTesting
@@ -63,7 +63,10 @@ internal object ForegroundState : ActivityLifecycleCallbacks {
         listeners.forEach { it(inForeground) }
     }
 
-    override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
+    override fun onActivityCreated(
+        activity: Activity,
+        savedInstanceState: Bundle?,
+    ) {
         activityInstanceCount++
     }
 
@@ -87,7 +90,11 @@ internal object ForegroundState : ActivityLifecycleCallbacks {
     }
 
     override fun onActivityResumed(activity: Activity) = Unit
-    override fun onActivityPaused(activity: Activity) = Unit
-    override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) = Unit
 
+    override fun onActivityPaused(activity: Activity) = Unit
+
+    override fun onActivitySaveInstanceState(
+        activity: Activity,
+        outState: Bundle,
+    ) = Unit
 }

@@ -15,8 +15,11 @@ internal class FramerateMetricsSnapshot(
         var bufferIndex = firstFrozenFrameIndex
         while (buffer != null) {
             val endIndex =
-                if (buffer === end.frozenFrames) end.firstFrozenFrameIndex
-                else buffer.timestamps.size
+                if (buffer === end.frozenFrames) {
+                    end.firstFrozenFrameIndex
+                } else {
+                    buffer.timestamps.size
+                }
 
             var index = bufferIndex
             while (index < endIndex) {
@@ -47,7 +50,10 @@ internal class TimestampPairBuffer(size: Int = DEFAULT_BUFFER_SIZE) {
     val timestamps: LongArray = LongArray(size)
     var next: TimestampPairBuffer? = null
 
-    fun add(start: Long, end: Long): Boolean {
+    fun add(
+        start: Long,
+        end: Long,
+    ): Boolean {
         if (index >= timestamps.size) {
             return false
         }
@@ -77,7 +83,10 @@ internal class FramerateMetricsContainer {
 
     var frozenFrames: TimestampPairBuffer = TimestampPairBuffer()
 
-    fun addFrozenFrame(start: Long, end: Long) {
+    fun addFrozenFrame(
+        start: Long,
+        end: Long,
+    ) {
         while (!frozenFrames.add(start, end)) {
             val newFrozenFrameBuffer = TimestampPairBuffer()
             frozenFrames.next = newFrozenFrameBuffer

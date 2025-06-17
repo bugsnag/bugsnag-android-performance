@@ -33,7 +33,6 @@ private const val NO_AUTO_END_TIME = -1L
  */
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP_PREFIX)
 public class SpanTracker {
-
     /*
      * Implementation:
      * SpanTracker is effectively a dual-key WeakHashMap which correctly disposes of Spans that
@@ -90,7 +89,10 @@ public class SpanTracker {
         }
     }
 
-    public operator fun get(token: Any, subToken: Enum<*>? = null): SpanImpl? {
+    public operator fun get(
+        token: Any,
+        subToken: Enum<*>? = null,
+    ): SpanImpl? {
         return lock.read {
             val hash = hashCodeFor(token, subToken)
             val index = indexForHash(hash, bindings.size)
@@ -104,7 +106,11 @@ public class SpanTracker {
      * the actual `Span` being tracked. This function may discard [span] if the given [token] is
      * already being tracked, if this is the case the tracked span will be returned.
      */
-    public fun associate(token: Any, subToken: Enum<*>? = null, span: SpanImpl): SpanImpl {
+    public fun associate(
+        token: Any,
+        subToken: Enum<*>? = null,
+        span: SpanImpl,
+    ): SpanImpl {
         return lock.write {
             sweepStaleEntriesUnderWriteLock()
 
@@ -164,7 +170,10 @@ public class SpanTracker {
         return associatedSpan
     }
 
-    public fun removeAssociation(token: Any?, subToken: Enum<*>? = null): SpanImpl? {
+    public fun removeAssociation(
+        token: Any?,
+        subToken: Enum<*>? = null,
+    ): SpanImpl? {
         if (token == null) {
             return null
         }
@@ -175,9 +184,10 @@ public class SpanTracker {
             val hash = hashCodeFor(token, subToken)
             val index = indexForHash(hash, bindings.size)
 
-            val removed = bindings.unlinkBindingWhere(index) {
-                it.get() === token && it.subToken == subToken
-            }
+            val removed =
+                bindings.unlinkBindingWhere(index) {
+                    it.get() === token && it.subToken == subToken
+                }
 
             return@write removed?.span
         }
@@ -188,7 +198,10 @@ public class SpanTracker {
      * marked as [leaked](markSpanLeaked) then its `endTime` will be set to the time that this
      * function was last called. Otherwise this value will be discarded.
      */
-    public fun markSpanAutomaticEnd(token: Any, subToken: Enum<*>? = null) {
+    public fun markSpanAutomaticEnd(
+        token: Any,
+        subToken: Enum<*>? = null,
+    ) {
         lock.read {
             val hash = hashCodeFor(token, subToken)
             val index = indexForHash(hash, bindings.size)
@@ -203,16 +216,20 @@ public class SpanTracker {
      * Returns `true` if the `Span` was marked as leaked, or `false` if the `Span` was already
      * considered to be closed (or was not tracked).
      */
-    public fun markSpanLeaked(token: Any, subToken: Enum<*>? = null): Boolean {
+    public fun markSpanLeaked(
+        token: Any,
+        subToken: Enum<*>? = null,
+    ): Boolean {
         return lock.write {
             sweepStaleEntriesUnderWriteLock()
 
             val hash = hashCodeFor(token, subToken)
             val index = indexForHash(hash, bindings.size)
 
-            val binding = bindings.unlinkBindingWhere(index) {
-                it.get() === token && it.subToken == subToken
-            }
+            val binding =
+                bindings.unlinkBindingWhere(index) {
+                    it.get() === token && it.subToken == subToken
+                }
 
             return@write binding?.markLeaked() == true
         }
@@ -233,9 +250,10 @@ public class SpanTracker {
             val hash = hashCodeFor(token, subToken)
             val index = indexForHash(hash, bindings.size)
 
-            val removed = bindings.unlinkBindingWhere(index) {
-                it.get() === token && it.subToken == subToken
-            }
+            val removed =
+                bindings.unlinkBindingWhere(index) {
+                    it.get() === token && it.subToken == subToken
+                }
 
             removed?.span?.end(endTime)
         }
@@ -246,7 +264,10 @@ public class SpanTracker {
      * use autoEndTimes where they are available, but will otherwise fallback to using [endTime]
      * for each of the spans that get closed.
      */
-    public fun endAllSpans(token: Any, endTime: Long = SystemClock.elapsedRealtimeNanos()) {
+    public fun endAllSpans(
+        token: Any,
+        endTime: Long = SystemClock.elapsedRealtimeNanos(),
+    ) {
         lock.write {
             sweepStaleEntriesUnderWriteLock()
 
@@ -311,11 +332,17 @@ public class SpanTracker {
         }
     }
 
-    private fun indexForHash(hash: Int, tableSize: Int): Int {
+    private fun indexForHash(
+        hash: Int,
+        tableSize: Int,
+    ): Int {
         return hash and (tableSize - 1)
     }
 
-    private fun hashCodeFor(token: Any, subToken: Enum<*>?): Int {
+    private fun hashCodeFor(
+        token: Any,
+        subToken: Enum<*>?,
+    ): Int {
         return System.identityHashCode(token) xor subToken.hashCode()
     }
 
@@ -421,7 +448,7 @@ public class SpanTracker {
         }
 
         override fun toString(): String {
-            return "Binding[$span, token=${get()}, subToken=${subToken}]"
+            return "Binding[$span, token=${get()}, subToken=$subToken]"
         }
 
         // Linked-list utility functions follow ----------------------------------------------------
@@ -438,7 +465,10 @@ public class SpanTracker {
                 return d
             }
 
-        fun entryFor(token: Any, subToken: Enum<*>?): SpanBinding? {
+        fun entryFor(
+            token: Any,
+            subToken: Enum<*>?,
+        ): SpanBinding? {
             var link: SpanBinding? = this
             while (link != null) {
                 if (link.get() === token && link.subToken == subToken) {

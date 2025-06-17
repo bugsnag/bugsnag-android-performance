@@ -34,7 +34,6 @@ internal abstract class AbstractActivityLifecycleInstrumentation(
     protected val startupTracker: AppStartTracker,
     protected val autoInstrumentationCache: AutoInstrumentationCache,
 ) : Application.ActivityLifecycleCallbacks, Handler.Callback {
-
     protected val handler = Loopers.newMainHandler(this)
 
     internal var openLoadSpans: Boolean = true
@@ -57,24 +56,28 @@ internal abstract class AbstractActivityLifecycleInstrumentation(
         }
     }
 
-    fun startViewLoadSpan(activity: Activity, spanOptions: SpanOptions): Span {
-        val span = spanTracker.associate(activity) {
-            // if this is still part of the AppStart span, then the first ViewLoad to end should
-            // also end the AppStart span
-            if (spanTracker[AppStartTracker.appStartToken] != null &&
-                !autoInstrumentationCache.isAppStartActivity(activity::class.java)
-            ) {
-                spanFactory.createViewLoadSpan(activity, spanOptions) { span ->
-                    // we end the AppStart span at the same timestamp as the ViewLoad span ended
-                    startupTracker.onViewLoadComplete(
-                        (span as? SpanImpl)?.endTime ?: SystemClock.elapsedRealtimeNanos(),
-                    )
-                    spanFactory.spanProcessor.onEnd(span)
+    fun startViewLoadSpan(
+        activity: Activity,
+        spanOptions: SpanOptions,
+    ): Span {
+        val span =
+            spanTracker.associate(activity) {
+                // if this is still part of the AppStart span, then the first ViewLoad to end should
+                // also end the AppStart span
+                if (spanTracker[AppStartTracker.appStartToken] != null &&
+                    !autoInstrumentationCache.isAppStartActivity(activity::class.java)
+                ) {
+                    spanFactory.createViewLoadSpan(activity, spanOptions) { span ->
+                        // we end the AppStart span at the same timestamp as the ViewLoad span ended
+                        startupTracker.onViewLoadComplete(
+                            (span as? SpanImpl)?.endTime ?: SystemClock.elapsedRealtimeNanos(),
+                        )
+                        spanFactory.spanProcessor.onEnd(span)
+                    }
+                } else {
+                    spanFactory.createViewLoadSpan(activity, spanOptions)
                 }
-            } else {
-                spanFactory.createViewLoadSpan(activity, spanOptions)
             }
-        }
 
         postCheckActivityFinished(activity)
 
@@ -110,6 +113,7 @@ internal abstract class AbstractActivityLifecycleInstrumentation(
     }
 
     override fun onActivityDestroyed(activity: Activity) = Unit
+
     override fun onActivityStopped(activity: Activity) {
         handler.sendMessageDelayed(
             Message.obtain(
@@ -121,14 +125,23 @@ internal abstract class AbstractActivityLifecycleInstrumentation(
         )
     }
 
-    override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) = Unit
+    override fun onActivityCreated(
+        activity: Activity,
+        savedInstanceState: Bundle?,
+    ) = Unit
+
     override fun onActivityStarted(activity: Activity) {
         handler.removeMessages(MSG_DISCARD_VIEW_LOAD)
     }
-    override fun onActivityResumed(activity: Activity) = Unit
-    override fun onActivityPaused(activity: Activity) = Unit
-    override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) = Unit
 
+    override fun onActivityResumed(activity: Activity) = Unit
+
+    override fun onActivityPaused(activity: Activity) = Unit
+
+    override fun onActivitySaveInstanceState(
+        activity: Activity,
+        outState: Bundle,
+    ) = Unit
 }
 
 internal class LegacyActivityInstrumentation(
@@ -137,13 +150,15 @@ internal class LegacyActivityInstrumentation(
     startupTracker: AppStartTracker,
     autoInstrumentationCache: AutoInstrumentationCache,
 ) : AbstractActivityLifecycleInstrumentation(
-    spanTracker,
-    spanFactory,
-    startupTracker,
-    autoInstrumentationCache,
-) {
-
-    override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
+        spanTracker,
+        spanFactory,
+        startupTracker,
+        autoInstrumentationCache,
+    ) {
+    override fun onActivityCreated(
+        activity: Activity,
+        savedInstanceState: Bundle?,
+    ) {
         startupTracker.onActivityCreate(savedInstanceState != null)
         autoStartViewLoadSpan(activity)
     }
@@ -151,7 +166,6 @@ internal class LegacyActivityInstrumentation(
     override fun onActivityResumed(activity: Activity) {
         autoEndViewLoadSpan(activity)
     }
-
 }
 
 internal class ActivityLifecycleInstrumentation(
@@ -160,13 +174,15 @@ internal class ActivityLifecycleInstrumentation(
     startupTracker: AppStartTracker,
     autoInstrumentationCache: AutoInstrumentationCache,
 ) : AbstractActivityLifecycleInstrumentation(
-    spanTracker,
-    spanFactory,
-    startupTracker,
-    autoInstrumentationCache,
-) {
-
-    override fun onActivityPreCreated(activity: Activity, savedInstanceState: Bundle?) {
+        spanTracker,
+        spanFactory,
+        startupTracker,
+        autoInstrumentationCache,
+    ) {
+    override fun onActivityPreCreated(
+        activity: Activity,
+        savedInstanceState: Bundle?,
+    ) {
         startupTracker.onActivityCreate(savedInstanceState != null)
         autoStartViewLoadSpan(activity)
         startViewLoadPhase(activity, ViewLoadPhase.CREATE)
@@ -182,7 +198,10 @@ internal class ActivityLifecycleInstrumentation(
         startViewLoadPhase(activity, ViewLoadPhase.RESUME)
     }
 
-    override fun onActivityPostCreated(activity: Activity, savedInstanceState: Bundle?) {
+    override fun onActivityPostCreated(
+        activity: Activity,
+        savedInstanceState: Bundle?,
+    ) {
         endViewLoadPhase(activity, ViewLoadPhase.CREATE)
     }
 
@@ -195,7 +214,10 @@ internal class ActivityLifecycleInstrumentation(
         autoEndViewLoadSpan(activity)
     }
 
-    private fun startViewLoadPhase(activity: Activity, phase: ViewLoadPhase) {
+    private fun startViewLoadPhase(
+        activity: Activity,
+        phase: ViewLoadPhase,
+    ) {
         val viewLoadSpan = spanTracker[activity]
         if (openLoadSpans && viewLoadSpan != null &&
             autoInstrumentationCache.isInstrumentationEnabled(activity::class.java)
@@ -210,7 +232,10 @@ internal class ActivityLifecycleInstrumentation(
         }
     }
 
-    private fun endViewLoadPhase(activity: Activity, phase: ViewLoadPhase) {
+    private fun endViewLoadPhase(
+        activity: Activity,
+        phase: ViewLoadPhase,
+    ) {
         spanTracker.endSpan(activity, phase)
     }
 }

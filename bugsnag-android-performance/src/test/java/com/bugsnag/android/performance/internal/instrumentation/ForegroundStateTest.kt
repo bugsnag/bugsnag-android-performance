@@ -20,7 +20,6 @@ import java.util.concurrent.TimeUnit
 @RunWith(RobolectricTestRunner::class)
 @Config(shadows = [ShadowPausedSystemClock::class])
 class ForegroundStateTest {
-
     private val activities = Array(3) { Activity() }
 
     @Before

@@ -23,12 +23,13 @@ class SpanThreadingTest {
     fun threadSafeEnd() {
         val spans = (0..100).map { spanFactory.newSpan(endTime = null, processor = spanProcessor) }
         val latch = CountDownLatch(1)
-        val threads = (0..Runtime.getRuntime().availableProcessors()).map { index ->
-            thread(name = "Span-ender $index") {
-                latch.await()
-                spans.forEach { it.end(index + 100L) }
+        val threads =
+            (0..Runtime.getRuntime().availableProcessors()).map { index ->
+                thread(name = "Span-ender $index") {
+                    latch.await()
+                    spans.forEach { it.end(index + 100L) }
+                }
             }
-        }
 
         // release the threads
         latch.countDown()

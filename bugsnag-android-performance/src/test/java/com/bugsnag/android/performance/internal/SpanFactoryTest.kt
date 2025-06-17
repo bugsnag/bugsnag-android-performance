@@ -33,25 +33,31 @@ class SpanFactoryTest {
 
     @Before
     fun setup() {
-        frameMetrics = object : MetricSource<FramerateMetricsSnapshot> {
-            private val timestampPairBuffer = TimestampPairBuffer()
-            var counter = 0L
+        frameMetrics =
+            object : MetricSource<FramerateMetricsSnapshot> {
+                private val timestampPairBuffer = TimestampPairBuffer()
+                var counter = 0L
 
-            override fun createStartMetrics(): FramerateMetricsSnapshot {
-                counter++
-                return FramerateMetricsSnapshot(counter, counter, counter, timestampPairBuffer, 0)
+                override fun createStartMetrics(): FramerateMetricsSnapshot {
+                    counter++
+                    return FramerateMetricsSnapshot(counter, counter, counter, timestampPairBuffer, 0)
+                }
+
+                override fun endMetrics(
+                    startMetrics: FramerateMetricsSnapshot,
+                    span: Span,
+                ) = Unit
             }
 
-            override fun endMetrics(startMetrics: FramerateMetricsSnapshot, span: Span) = Unit
-        }
-
-        spanFactory = SpanFactory(
-            NoopSpanProcessor,
-            spanAttributeSource = {},
-            metricsContainer = TestMetricsContainer(
-                frames = FramerateMetricsSource(),
-            ),
-        )
+        spanFactory =
+            SpanFactory(
+                NoopSpanProcessor,
+                spanAttributeSource = {},
+                metricsContainer =
+                    TestMetricsContainer(
+                        frames = FramerateMetricsSource(),
+                    ),
+            )
         spanFactory.attach(mock())
     }
 
@@ -95,10 +101,11 @@ class SpanFactoryTest {
             ).metrics,
         )
 
-        val metrics = spanFactory.createCustomSpan(
-            "Scrolling",
-            baseOptions.setFirstClass(false),
-        ).metrics
+        val metrics =
+            spanFactory.createCustomSpan(
+                "Scrolling",
+                baseOptions.setFirstClass(false),
+            ).metrics
         assertNull(
             "SpanOptions.setFirstClass(false) should not have rendering metrics",
             metrics,

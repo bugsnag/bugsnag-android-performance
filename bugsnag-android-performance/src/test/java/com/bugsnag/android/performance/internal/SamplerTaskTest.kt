@@ -35,44 +35,47 @@ internal class SamplerTaskTest {
      * Test that `fetchCurrentProbability` is never called if the probability has not expired.
      */
     @Test
-    fun probabilityNotExpired() = InternalDebug.withDebugValues {
-        InternalDebug.pValueExpireAfterMs = 200
+    fun probabilityNotExpired() =
+        InternalDebug.withDebugValues {
+            InternalDebug.pValueExpireAfterMs = 200
 
-        val delivery = mock<Delivery>()
-        val sampler = ProbabilitySampler(1.0)
-        val persistentState = mock<PersistentState> {
-            whenever(it.pValue) doReturn 0.5
-            whenever(it.pValueExpiryTime) doAnswer {
-                System.currentTimeMillis() + (InternalDebug.pValueExpireAfterMs * 2)
-            }
+            val delivery = mock<Delivery>()
+            val sampler = ProbabilitySampler(1.0)
+            val persistentState =
+                mock<PersistentState> {
+                    whenever(it.pValue) doReturn 0.5
+                    whenever(it.pValueExpiryTime) doAnswer {
+                        System.currentTimeMillis() + (InternalDebug.pValueExpireAfterMs * 2)
+                    }
+                }
+
+            val samplerTask = SamplerTask(delivery, sampler, persistentState)
+
+            samplerTask.onAttach(mock())
+            samplerTask.execute()
+
+            // the probability has not expired and this should never have been called
+            verify(delivery, never()).fetchCurrentProbability()
+
+            assertEquals(0.5, sampler.sampleProbability, 0.01)
         }
 
-        val samplerTask = SamplerTask(delivery, sampler, persistentState)
-
-        samplerTask.onAttach(mock())
-        samplerTask.execute()
-
-        // the probability has not expired and this should never have been called
-        verify(delivery, never()).fetchCurrentProbability()
-
-        assertEquals(0.5, sampler.sampleProbability, 0.01)
-    }
-
     @Test
-    fun updateProbability() = InternalDebug.withDebugValues {
-        InternalDebug.pValueExpireAfterMs = 200
+    fun updateProbability() =
+        InternalDebug.withDebugValues {
+            InternalDebug.pValueExpireAfterMs = 200
 
-        val delivery = mock<Delivery>()
-        val sampler = ProbabilitySampler(1.0)
-        val persistentState = mock<PersistentState>()
+            val delivery = mock<Delivery>()
+            val sampler = ProbabilitySampler(1.0)
+            val persistentState = mock<PersistentState>()
 
-        val samplerTask = SamplerTask(delivery, sampler, persistentState)
-        samplerTask.onNewProbability(0.25)
+            val samplerTask = SamplerTask(delivery, sampler, persistentState)
+            samplerTask.onNewProbability(0.25)
 
-        assertEquals(0.25, sampler.sampleProbability, 0.001)
+            assertEquals(0.25, sampler.sampleProbability, 0.001)
 
-        // PersistentState.update is an inline function - we verify the setters
-        verify(persistentState).pValueExpiryTime = gt(System.currentTimeMillis())
-        verify(persistentState).pValue = 0.25
-    }
+            // PersistentState.update is an inline function - we verify the setters
+            verify(persistentState).pValueExpiryTime = gt(System.currentTimeMillis())
+            verify(persistentState).pValue = 0.25
+        }
 }

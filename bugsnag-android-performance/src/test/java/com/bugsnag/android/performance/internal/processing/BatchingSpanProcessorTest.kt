@@ -36,17 +36,18 @@ class BatchingSpanProcessorTest {
     @Test
     fun testThreadedBatch() {
         val spansPerThread = 100
-        val threads = (0 until 10).map { threadId ->
-            thread {
-                repeat(spansPerThread) { spanIndex ->
-                    spanFactory.newSpan(
-                        name = "$threadId/$spanIndex",
-                        endTime = { it + spanIndex },
-                        processor = batchingSpanProcessor,
-                    )
+        val threads =
+            (0 until 10).map { threadId ->
+                thread {
+                    repeat(spansPerThread) { spanIndex ->
+                        spanFactory.newSpan(
+                            name = "$threadId/$spanIndex",
+                            endTime = { it + spanIndex },
+                            processor = batchingSpanProcessor,
+                        )
+                    }
                 }
             }
-        }
 
         threads.forEach { it.join() }
 

@@ -20,13 +20,15 @@ import com.bugsnag.android.performance.internal.ViewLoadPhase
 @Immutable
 internal data class ValueContainer<T>(var content: T)
 
-private val RENDER_SPAN_OPTIONS = SpanOptions.DEFAULTS
-    .makeCurrentContext(false)
-    .setFirstClass(false)
+private val RENDER_SPAN_OPTIONS =
+    SpanOptions.DEFAULTS
+        .makeCurrentContext(false)
+        .setFirstClass(false)
 
-private val LocalCompositionSpan = compositionLocalOf<ValueContainer<SpanContext?>> {
-    ValueContainer(null)
-}
+private val LocalCompositionSpan =
+    compositionLocalOf<ValueContainer<SpanContext?>> {
+        ValueContainer(null)
+    }
 
 @Composable
 public fun MeasuredComposable(
@@ -35,19 +37,21 @@ public fun MeasuredComposable(
     content: @Composable BoxScope.() -> Unit,
 ) {
     val viewLoadCondition = ComposeActivityLifecycleCallbacks.createCondition(LocalContext.current)
-    val parentSpanContext: SpanContext? = LocalCompositionSpan.current.content
-        ?: viewLoadCondition?.upgrade()
+    val parentSpanContext: SpanContext? =
+        LocalCompositionSpan.current.content
+            ?: viewLoadCondition?.upgrade()
 
     val alreadyComposed = remember { ValueContainer(false) }
-    var span = if (alreadyComposed.content) {
-        null
-    } else {
-        BugsnagPerformance.startViewLoadSpan(
-            ViewType.COMPOSE,
-            name,
-            SpanOptions.DEFAULTS.within(parentSpanContext),
-        )
-    }
+    var span =
+        if (alreadyComposed.content) {
+            null
+        } else {
+            BugsnagPerformance.startViewLoadSpan(
+                ViewType.COMPOSE,
+                name,
+                SpanOptions.DEFAULTS.within(parentSpanContext),
+            )
+        }
 
     if (viewLoadCondition != null && span != null) {
         span = viewLoadCondition.wrap(span)
@@ -57,19 +61,21 @@ public fun MeasuredComposable(
     val spanValue = ValueContainer<SpanContext?>(span)
     CompositionLocalProvider(LocalCompositionSpan provides spanValue) {
         Box(
-            modifier = modifier then Modifier.drawWithContent {
-                if (span?.isEnded() != true) {
-                    BugsnagPerformanceInternals.spanFactory.createViewLoadPhaseSpan(
-                        name,
-                        ViewType.COMPOSE,
-                        ViewLoadPhase.DRAW,
-                        RENDER_SPAN_OPTIONS.within(span),
-                    ).use { drawContent() }
-                    span?.end()
-                } else {
-                    drawContent()
-                }
-            },
+            modifier =
+                modifier then
+                    Modifier.drawWithContent {
+                        if (span?.isEnded() != true) {
+                            BugsnagPerformanceInternals.spanFactory.createViewLoadPhaseSpan(
+                                name,
+                                ViewType.COMPOSE,
+                                ViewLoadPhase.DRAW,
+                                RENDER_SPAN_OPTIONS.within(span),
+                            ).use { drawContent() }
+                            span?.end()
+                        } else {
+                            drawContent()
+                        }
+                    },
             propagateMinConstraints = true,
         ) {
             content()

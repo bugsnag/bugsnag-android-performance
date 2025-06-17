@@ -20,21 +20,33 @@ public object ComposeActivityLifecycleCallbacks : ActivityLifecycleCallbacks {
         return viewLoadConditions[context]?.createCondition()
     }
 
-    override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
+    override fun onActivityCreated(
+        activity: Activity,
+        savedInstanceState: Bundle?,
+    ) {
         val contextStack = BugsnagPerformanceInternals.currentSpanContextStack
         val viewLoadSpan = contextStack.current(SpanCategory.VIEW_LOAD) ?: return
 
-        val blockingCondition = viewLoadSpan.block(VIEW_LOAD_BLOCKING_TIMEOUT)
-            ?: return // if we can't block the span, return it
+        val blockingCondition =
+            viewLoadSpan.block(VIEW_LOAD_BLOCKING_TIMEOUT)
+                ?: return // if we can't block the span, return it
 
         viewLoadConditions[activity] = ViewLoad(viewLoadSpan, blockingCondition)
     }
 
     override fun onActivityStarted(activity: Activity): Unit = Unit
+
     override fun onActivityResumed(activity: Activity): Unit = Unit
+
     override fun onActivityPaused(activity: Activity): Unit = Unit
+
     override fun onActivityStopped(activity: Activity): Unit = Unit
-    override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle): Unit = Unit
+
+    override fun onActivitySaveInstanceState(
+        activity: Activity,
+        outState: Bundle,
+    ): Unit = Unit
+
     override fun onActivityDestroyed(activity: Activity): Unit = Unit
 
     internal data class ViewLoad(

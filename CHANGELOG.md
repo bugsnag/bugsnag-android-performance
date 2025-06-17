@@ -1,3 +1,12 @@
+## 1.15.0 (2025-06-17)
+
+### Changes
+
+* Set default endpoints based on API key 
+  [#390](https://github.com/bugsnag/bugsnag-android-performance/pull/390)
+* Introduced `OnSpanStartCallback` as a way to listen-for and modify all spans before they are used
+  [#383](https://github.com/bugsnag/bugsnag-android-performance/pull/383)
+
 ## 1.14.0 (2025-05-12)
 
 ### Changes

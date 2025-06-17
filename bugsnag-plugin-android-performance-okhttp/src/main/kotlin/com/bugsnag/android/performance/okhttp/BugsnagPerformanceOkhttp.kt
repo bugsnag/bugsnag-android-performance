@@ -29,11 +29,12 @@ public class BugsnagPerformanceOkhttp : EventListener(), Interceptor {
 
     override fun callStart(call: Call) {
         val url = call.request().url.toUrl()
-        val span = BugsnagPerformance.startNetworkRequestSpan(
-            url,
-            call.request().method,
-            networkSpanOptions,
-        )
+        val span =
+            BugsnagPerformance.startNetworkRequestSpan(
+                url,
+                call.request().method,
+                networkSpanOptions,
+            )
 
         if (span != null) {
             val contentLength = call.request().body?.contentLength()
@@ -44,7 +45,10 @@ public class BugsnagPerformanceOkhttp : EventListener(), Interceptor {
         }
     }
 
-    override fun responseHeadersEnd(call: Call, response: Response) {
+    override fun responseHeadersEnd(
+        call: Call,
+        response: Response,
+    ) {
         val span = spans[call] ?: return
         NetworkRequestAttributes.setResponseCode(span, response.code)
         val contentLength = response.headers["Content-Length"]?.toLongOrNull() ?: -1L
@@ -63,7 +67,10 @@ public class BugsnagPerformanceOkhttp : EventListener(), Interceptor {
         )
     }
 
-    override fun requestBodyEnd(call: Call, byteCount: Long) {
+    override fun requestBodyEnd(
+        call: Call,
+        byteCount: Long,
+    ) {
         val span = spans[call] ?: return
 
         // we rewrite the http.response_content_length attribute here, since this byteCount
@@ -77,7 +84,10 @@ public class BugsnagPerformanceOkhttp : EventListener(), Interceptor {
         spans.endSpan(call)
     }
 
-    override fun callFailed(call: Call, ioe: IOException) {
+    override fun callFailed(
+        call: Call,
+        ioe: IOException,
+    ) {
         // remove the span and discard
         spans.discardAllSpans(call)
     }
@@ -88,8 +98,9 @@ public class BugsnagPerformanceOkhttp : EventListener(), Interceptor {
     }
 
     override fun intercept(chain: Interceptor.Chain): Response {
-        val spanContext: SpanContext? = spans[chain.call()]
-            ?: SpanContext.current.takeUnless { it == SpanContext.invalid }
+        val spanContext: SpanContext? =
+            spans[chain.call()]
+                ?: SpanContext.current.takeUnless { it == SpanContext.invalid }
         val url = chain.request().url.toString()
         if (spanContext == null || !tracePropagationUrls.any { it.matcher(url).matches() }) {
             return chain.proceed(chain.request())
@@ -101,7 +112,6 @@ public class BugsnagPerformanceOkhttp : EventListener(), Interceptor {
                 .build(),
         )
     }
-
 }
 
 public fun OkHttpClient.Builder.withBugsnagPerformance(): OkHttpClient.Builder {

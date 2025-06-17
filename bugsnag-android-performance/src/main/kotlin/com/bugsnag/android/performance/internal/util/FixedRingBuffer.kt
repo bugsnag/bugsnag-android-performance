@@ -45,7 +45,10 @@ internal class FixedRingBuffer<T>(
         update(next())
     }
 
-    fun countItemsBetween(from: Int, to: Int): Int {
+    fun countItemsBetween(
+        from: Int,
+        to: Int,
+    ): Int {
         val realMin = tail - values.size
 
         // if the "to" value is no longer in the buffer, we have no data that can be delivered
@@ -63,7 +66,11 @@ internal class FixedRingBuffer<T>(
      * entire buffer will be iterated over resulting in only the most recent values being passed
      * to [consumer].
      */
-    inline fun forEach(from: Int, to: Int, consumer: (T) -> Unit) {
+    inline fun forEach(
+        from: Int,
+        to: Int,
+        consumer: (T) -> Unit,
+    ) {
         // calculate the actual number of samples that can be iterated
         val count = countItemsBetween(from, to)
         val start = to - count
@@ -74,7 +81,11 @@ internal class FixedRingBuffer<T>(
         }
     }
 
-    inline fun forEachIndexed(from: Int, to: Int, consumer: (index: Int, T) -> Unit) {
+    inline fun forEachIndexed(
+        from: Int,
+        to: Int,
+        consumer: (index: Int, T) -> Unit,
+    ) {
         // calculate the actual number of samples that can be iterated
         val count = countItemsBetween(from, to)
         val start = to - count

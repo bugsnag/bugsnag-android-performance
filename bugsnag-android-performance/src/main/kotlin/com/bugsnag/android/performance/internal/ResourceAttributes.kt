@@ -33,10 +33,11 @@ internal fun createResourceAttributes(configuration: ImmutableConfig): Attribute
     return resourceAttributes
 }
 
-private fun abiToArchitecture(abi: String?): String? = when (abi?.lowercase()) {
-    "arm64-v8a" -> "arm64"
-    "x86_64" -> "amd64"
-    "armeabi-v7a" -> "arm32"
-    "x86" -> "x86"
-    else -> null
-}
+private fun abiToArchitecture(abi: String?): String? =
+    when (abi?.lowercase()) {
+        "arm64-v8a" -> "arm64"
+        "x86_64" -> "amd64"
+        "armeabi-v7a" -> "arm32"
+        "x86" -> "x86"
+        else -> null
+    }

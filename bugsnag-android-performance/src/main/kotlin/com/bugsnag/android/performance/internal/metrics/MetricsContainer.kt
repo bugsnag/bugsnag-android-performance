@@ -81,21 +81,15 @@ internal open class MetricsContainer(private val samplerExecutor: SamplerExecuto
         )
     }
 
-    protected open fun createCpuMetricSource(
-        application: Application,
-    ): SampledMetricSource<CpuMetricsSnapshot>? {
+    protected open fun createCpuMetricSource(application: Application): SampledMetricSource<CpuMetricsSnapshot>? {
         return CpuMetricsSource(SAMPLING_DELAY_MS)
     }
 
-    protected open fun createMemoryMetricSource(
-        application: Application,
-    ): SampledMetricSource<MemoryMetricsSnapshot>? {
+    protected open fun createMemoryMetricSource(application: Application): SampledMetricSource<MemoryMetricsSnapshot>? {
         return MemoryMetricsSource(application, SAMPLING_DELAY_MS)
     }
 
-    protected open fun createFrameMetricSource(
-        application: Application,
-    ): MetricSource<FramerateMetricsSnapshot>? {
+    protected open fun createFrameMetricSource(application: Application): MetricSource<FramerateMetricsSnapshot>? {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             return FramerateMetricsSource()
                 .also { application.registerActivityLifecycleCallbacks(it) }

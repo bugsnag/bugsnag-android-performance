@@ -18,7 +18,6 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 
 class SendBatchTaskTest {
-
     @Before
     fun stubLogger() {
         Logger.delegate = NoopLogger
@@ -32,13 +31,15 @@ class SendBatchTaskTest {
     @Test
     fun sendBatch() {
         val spanFactory = TestSpanFactory()
-        val tracer = mock<Tracer> {
-            on { collectNextBatch() } doReturn spanFactory.newSpans(10, NoopSpanProcessor)
-        }
+        val tracer =
+            mock<Tracer> {
+                on { collectNextBatch() } doReturn spanFactory.newSpans(10, NoopSpanProcessor)
+            }
 
-        val delivery = mock<Delivery> {
-            on { deliver(any(), any()) } doReturn DeliveryResult.Success
-        }
+        val delivery =
+            mock<Delivery> {
+                on { deliver(any(), any()) } doReturn DeliveryResult.Success
+            }
 
         val resourceAttributes = Attributes()
         val sendBatchTask = SendBatchTask(delivery, tracer, resourceAttributes)
@@ -50,9 +51,10 @@ class SendBatchTaskTest {
 
     @Test
     fun noBatchToSend() {
-        val tracer = mock<Tracer> {
-            on { collectNextBatch() } doReturn null
-        }
+        val tracer =
+            mock<Tracer> {
+                on { collectNextBatch() } doReturn null
+            }
 
         val deliver = mock<Delivery>()
 
@@ -65,9 +67,10 @@ class SendBatchTaskTest {
 
     @Test
     fun emptyBatch() {
-        val tracer = mock<Tracer> {
-            on { collectNextBatch() } doReturn emptyList()
-        }
+        val tracer =
+            mock<Tracer> {
+                on { collectNextBatch() } doReturn emptyList()
+            }
 
         val delivery = mock<Delivery>()
 

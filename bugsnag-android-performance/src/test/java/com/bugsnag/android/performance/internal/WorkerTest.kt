@@ -69,21 +69,22 @@ class WorkerTest {
     @Test
     fun testExceptionHandling() {
         val latch = CountDownLatch(1)
-        val worker = Worker {
-            listOf(
-                object : Task {
-                    override fun execute(): Boolean {
-                        throw NullPointerException()
-                    }
-                },
-                object : Task {
-                    override fun execute(): Boolean {
-                        latch.countDown()
-                        return false
-                    }
-                },
-            )
-        }
+        val worker =
+            Worker {
+                listOf(
+                    object : Task {
+                        override fun execute(): Boolean {
+                            throw NullPointerException()
+                        }
+                    },
+                    object : Task {
+                        override fun execute(): Boolean {
+                            latch.countDown()
+                            return false
+                        }
+                    },
+                )
+            }
 
         // this test succeeds if the latch releases, as it means that the exception in the first
         // task was correctly handled without blocking the second task

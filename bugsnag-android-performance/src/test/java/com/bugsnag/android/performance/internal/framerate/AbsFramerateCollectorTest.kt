@@ -19,6 +19,7 @@ abstract class AbsFramerateCollectorTest {
     private lateinit var framerateCollector: FramerateCollector
 
     internal abstract fun createFramerateCollector(metricsContainer: FramerateMetricsContainer): FramerateCollector
+
     internal abstract fun notifyFrame(
         startTimeMs: Long,
         durationMs: Long,
@@ -110,9 +111,10 @@ open class FramerateCollector24Test : AbsFramerateCollectorTest() {
         super.setUp()
 
         display = mock<Display>()
-        windowManager = mock<WindowManager> {
-            whenever(it.defaultDisplay).doReturn(display)
-        }
+        windowManager =
+            mock<WindowManager> {
+                whenever(it.defaultDisplay).doReturn(display)
+            }
 
         whenever(window.windowManager).doReturn(windowManager)
     }
@@ -141,21 +143,25 @@ open class FramerateCollector24Test : AbsFramerateCollectorTest() {
         collector.onFrameMetricsAvailable(window, metrics, 0)
     }
 
-    protected open fun createFrameMetrics(startTimeMs: Long, durationMs: Long) =
-        mock<FrameMetrics> {
-            whenever(it.getMetric(FrameMetrics.DRAW_DURATION))
-                .doReturn(durationMs * FramerateCollector.NANOS_IN_MS)
-        }
+    protected open fun createFrameMetrics(
+        startTimeMs: Long,
+        durationMs: Long,
+    ) = mock<FrameMetrics> {
+        whenever(it.getMetric(FrameMetrics.DRAW_DURATION))
+            .doReturn(durationMs * FramerateCollector.NANOS_IN_MS)
+    }
 }
 
 class FramerateCollector26Test : FramerateCollector24Test() {
-    override fun createFrameMetrics(startTimeMs: Long, durationMs: Long) =
-        mock<FrameMetrics> {
-            whenever(it.getMetric(FrameMetrics.DRAW_DURATION))
-                .doReturn(durationMs * FramerateCollector.NANOS_IN_MS)
-            whenever(it.getMetric(FrameMetrics.INTENDED_VSYNC_TIMESTAMP))
-                .doReturn(startTimeMs * FramerateCollector.NANOS_IN_MS)
-        }
+    override fun createFrameMetrics(
+        startTimeMs: Long,
+        durationMs: Long,
+    ) = mock<FrameMetrics> {
+        whenever(it.getMetric(FrameMetrics.DRAW_DURATION))
+            .doReturn(durationMs * FramerateCollector.NANOS_IN_MS)
+        whenever(it.getMetric(FrameMetrics.INTENDED_VSYNC_TIMESTAMP))
+            .doReturn(startTimeMs * FramerateCollector.NANOS_IN_MS)
+    }
 }
 
 class FramerateCollector31Test : AbsFramerateCollectorTest() {
@@ -169,14 +175,15 @@ class FramerateCollector31Test : AbsFramerateCollectorTest() {
         deadlineMs: Long,
         collector: FramerateCollector,
     ) {
-        val metrics = mock<FrameMetrics> {
-            whenever(it.getMetric(FrameMetrics.INTENDED_VSYNC_TIMESTAMP))
-                .doReturn(startTimeMs * FramerateCollector.NANOS_IN_MS)
-            whenever(it.getMetric(FrameMetrics.DRAW_DURATION))
-                .doReturn(durationMs * FramerateCollector.NANOS_IN_MS)
-            whenever(it.getMetric(FrameMetrics.DEADLINE))
-                .doReturn(deadlineMs * FramerateCollector.NANOS_IN_MS)
-        }
+        val metrics =
+            mock<FrameMetrics> {
+                whenever(it.getMetric(FrameMetrics.INTENDED_VSYNC_TIMESTAMP))
+                    .doReturn(startTimeMs * FramerateCollector.NANOS_IN_MS)
+                whenever(it.getMetric(FrameMetrics.DRAW_DURATION))
+                    .doReturn(durationMs * FramerateCollector.NANOS_IN_MS)
+                whenever(it.getMetric(FrameMetrics.DEADLINE))
+                    .doReturn(deadlineMs * FramerateCollector.NANOS_IN_MS)
+            }
 
         collector.onFrameMetricsAvailable(window, metrics, 0)
     }

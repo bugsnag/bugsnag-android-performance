@@ -21,29 +21,31 @@ class ResourceAttributesTest {
     fun testAttributeDefaults() {
         val application = configureApplication()
 
-        val configuration = ImmutableConfig(
-            application,
-            "decafbaddecafbaddecafbaddecafbad",
-            "",
-            true,
-            AutoInstrument.FULL,
-            EnabledMetrics(true, true, true),
-            "bugsnag.performance.android",
-            "development",
-            setOf("production"),
-            321L,
-            "6.5.4",
-            NoopLogger,
-            null,
-            emptySet(),
-            emptySet(),
-            emptySet(),
-            emptyArray(),
-            null,
-            1024,
-            1000,
-            100,
-        )
+        val configuration =
+            ImmutableConfig(
+                application,
+                "decafbaddecafbaddecafbaddecafbad",
+                "",
+                true,
+                AutoInstrument.FULL,
+                EnabledMetrics(true, true, true),
+                "bugsnag.performance.android",
+                "development",
+                setOf("production"),
+                321L,
+                "6.5.4",
+                NoopLogger,
+                null,
+                emptySet(),
+                emptySet(),
+                emptySet(),
+                emptyArray(),
+                emptyArray(),
+                null,
+                1024,
+                1000,
+                100,
+            )
 
         val attributes = createResourceAttributes(configuration)
 
@@ -65,29 +67,31 @@ class ResourceAttributesTest {
     fun testAttributeOverrides() {
         val application = configureApplication()
 
-        val configuration = ImmutableConfig(
-            application,
-            "decafbaddecafbaddecafbaddecafbad",
-            "",
-            true,
-            AutoInstrument.FULL,
-            EnabledMetrics(true, true, true),
-            "bugsnag.performance.android",
-            "production",
-            setOf("production"),
-            123L,
-            "5.4.3",
-            NoopLogger,
-            null,
-            emptySet(),
-            emptySet(),
-            emptySet(),
-            emptyArray(),
-            null,
-            1024,
-            1000,
-            100,
-        )
+        val configuration =
+            ImmutableConfig(
+                application,
+                "decafbaddecafbaddecafbaddecafbad",
+                "",
+                true,
+                AutoInstrument.FULL,
+                EnabledMetrics(true, true, true),
+                "bugsnag.performance.android",
+                "production",
+                setOf("production"),
+                123L,
+                "5.4.3",
+                NoopLogger,
+                null,
+                emptySet(),
+                emptySet(),
+                emptySet(),
+                emptyArray(),
+                emptyArray(),
+                null,
+                1024,
+                1000,
+                100,
+            )
 
         val attributes = createResourceAttributes(configuration)
 
