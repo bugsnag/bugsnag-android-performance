@@ -2,6 +2,7 @@ package com.bugsnag.android.performance
 
 import android.app.Application
 import androidx.test.core.app.ApplicationProvider
+import com.bugsnag.android.performance.internal.plugins.PluginManager
 import com.bugsnag.android.performance.internal.processing.ImmutableConfig
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -12,6 +13,8 @@ import org.robolectric.RobolectricTestRunner
 class ConfigurationEndpointTest {
     private val appContext: Application = ApplicationProvider.getApplicationContext()
 
+    private val pluginManager = PluginManager(emptyList())
+
     private val hubApiKey = "00000abcdefabcdefabcdefabcdefabcd"
 
     private val regularApiKey = "abcdefabcdefabcdefabcdefabcdefabcd"
@@ -21,7 +24,7 @@ class ConfigurationEndpointTest {
     @Test
     fun defaultEndpoint_keyStartsWithHubPrefix_usesInsightHubFormat() {
         val perfConfig = PerformanceConfiguration(appContext, hubApiKey)
-        val immutable = ImmutableConfig(perfConfig)
+        val immutable = ImmutableConfig(perfConfig, pluginManager)
         val expected = "https://$hubApiKey.otlp.insighthub.smartbear.com/v1/traces"
         assertEquals(expected, immutable.endpoint)
     }
@@ -29,7 +32,7 @@ class ConfigurationEndpointTest {
     @Test
     fun defaultEndpoint_keyDoesNotStartWithHubPrefix_usesBugsnagFormat() {
         val perfConfig = PerformanceConfiguration(appContext, regularApiKey)
-        val immutable = ImmutableConfig(perfConfig)
+        val immutable = ImmutableConfig(perfConfig, pluginManager)
         val expected = "https://$regularApiKey.otlp.bugsnag.com/v1/traces"
         assertEquals(expected, immutable.endpoint)
     }
@@ -42,7 +45,7 @@ class ConfigurationEndpointTest {
                     endpoint = customEndpoint
                 }
 
-        val immutable = ImmutableConfig(perfConfig)
+        val immutable = ImmutableConfig(perfConfig, pluginManager)
         assertEquals(customEndpoint, immutable.endpoint)
     }
 
@@ -54,7 +57,7 @@ class ConfigurationEndpointTest {
                     endpoint = customEndpoint
                 }
 
-        val immutable = ImmutableConfig(perfConfig)
+        val immutable = ImmutableConfig(perfConfig, pluginManager)
         assertEquals(customEndpoint, immutable.endpoint)
     }
 }

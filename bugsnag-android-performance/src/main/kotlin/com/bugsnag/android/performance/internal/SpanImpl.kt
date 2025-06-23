@@ -33,7 +33,8 @@ public class SpanImpl internal constructor(
     private val makeContext: Boolean,
     private val attributeLimits: AttributeLimits?,
     internal val metrics: SpanMetricsSnapshot?,
-    private val timeoutExecutor: TimeoutExecutor,
+    @get:JvmName("getTimeoutExecutor\$internal")
+    internal val timeoutExecutor: TimeoutExecutor,
     private val processor: SpanProcessor,
 ) : Span, HasAttributes {
     public val attributes: Attributes = Attributes()
@@ -41,8 +42,8 @@ public class SpanImpl internal constructor(
     /**
      * The name of this `Span`
      */
-    public var name: String = name
-        set(value) {
+    public override var name: String = name
+        internal set(value) {
             if (!isEnded()) {
                 field = value
             }
