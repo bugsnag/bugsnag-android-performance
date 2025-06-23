@@ -1,3 +1,12 @@
+## TBD
+
+### Changes
+
+* Added `Plugin` as a way to extend the functionality of the BugsnagPerformance library
+  [#387](https://github.com/bugsnag/bugsnag-android-performance/pull/387)
+* Introduced `AppStartSpanControl` and `SpanType.AppStart` to allow custom categorisation of app starts
+  [#394](https://github.com/bugsnag/bugsnag-android-performance/pull/394)
+
 ## 1.15.0 (2025-06-17)
 
 ### Changes
@@ -6,10 +15,6 @@
   [#390](https://github.com/bugsnag/bugsnag-android-performance/pull/390)
 * Introduced `OnSpanStartCallback` as a way to listen-for and modify all spans before they are used
   [#383](https://github.com/bugsnag/bugsnag-android-performance/pull/383)
-* Added `Plugin` as a way to extend the functionality of the BugsnagPerformance library
-  [#387](https://github.com/bugsnag/bugsnag-android-performance/pull/387)
-* Introduced `AppStartSpanControl` and `SpanType.AppStart` to allow custom categorisation of app starts
-  [#394](https://github.com/bugsnag/bugsnag-android-performance/pull/394)
 
 ## 1.14.0 (2025-05-12)
 
