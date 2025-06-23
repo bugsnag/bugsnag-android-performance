@@ -45,11 +45,14 @@ class PrioritizedSetTest {
         val set = PrioritizedSet<String>()
         set.add(Prioritized(1, "existing"))
 
-        val newElements = listOf(
-            Prioritized(2, "existing"), // Should be ignored
-            Prioritized(3, "new1"),
-            Prioritized(4, "new2"),
-        )
+        val newElements =
+            listOf(
+                // Should be ignored
+                Prioritized(2, "existing"),
+                // Should be added
+                Prioritized(3, "new1"),
+                Prioritized(4, "new2"),
+            )
 
         assertTrue(set.addAll(newElements))
         assertEquals(3, set.size)
@@ -64,10 +67,11 @@ class PrioritizedSetTest {
         val set = PrioritizedSet<String>()
         set.add(Prioritized(1, "test"))
 
-        val newElements = listOf(
-            Prioritized(2, "test"),
-            Prioritized(3, "test"),
-        )
+        val newElements =
+            listOf(
+                Prioritized(2, "test"),
+                Prioritized(3, "test"),
+            )
 
         assertFalse(set.addAll(newElements))
         assertEquals(1, set.size)

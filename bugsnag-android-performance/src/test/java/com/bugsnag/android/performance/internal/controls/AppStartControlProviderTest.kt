@@ -14,7 +14,6 @@ import org.junit.Before
 import org.junit.Test
 
 class AppStartControlProviderTest {
-
     private lateinit var spanTracker: SpanTracker
     private lateinit var provider: AppStartControlProvider
     private lateinit var testSpan: SpanImpl
@@ -22,11 +21,12 @@ class AppStartControlProviderTest {
 
     @Before
     fun setup() {
-        testSpan = spanFactory.newSpan(
-            name = "[AppStart/AndroidCold]",
-            endTime = null,
-            processor = NoopSpanProcessor,
-        )
+        testSpan =
+            spanFactory.newSpan(
+                name = "[AppStart/AndroidCold]",
+                endTime = null,
+                processor = NoopSpanProcessor,
+            )
         spanTracker = SpanTracker()
         provider = AppStartControlProvider(spanTracker)
     }

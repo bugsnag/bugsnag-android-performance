@@ -50,14 +50,15 @@ public object BugsnagPerformance {
 
     private val spanFactory get() = instrumentedAppState.spanFactory
 
-    private val spanControlProvider = CompositeSpanControlProvider().apply {
-        addProvider(
-            Prioritized(
-                Int.MAX_VALUE,
-                AppStartControlProvider(instrumentedAppState.spanTracker),
-            ),
-        )
-    }
+    private val spanControlProvider =
+        CompositeSpanControlProvider().apply {
+            addProvider(
+                Prioritized(
+                    Int.MAX_VALUE,
+                    AppStartControlProvider(instrumentedAppState.spanTracker),
+                ),
+            )
+        }
 
     /**
      * Initialise the Bugsnag Performance SDK. This should be called within your
@@ -193,10 +194,10 @@ public object BugsnagPerformance {
                 workerTasks.add(RetryDeliveryTask(persistence.retryQueue, httpDelivery, connectivity))
 
                 // starting plugins is the last thing to do before starting the first tasks
-            pluginManager.startPlugins()
+                pluginManager.startPlugins()
 
-            return@Worker workerTasks
-        }
+                return@Worker workerTasks
+            }
 
         // register the Worker with the components that depend on it
         tracer.worker = bsgWorker

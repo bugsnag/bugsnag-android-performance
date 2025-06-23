@@ -40,13 +40,13 @@ internal class PrioritizedSet<T> private constructor(values: Array<Prioritized<T
 
     constructor() : this(emptyArray())
     constructor(initialValues: Collection<Prioritized<T>>) :
-            this(initialValues.toTypedArray().apply { sort() })
+        this(initialValues.toTypedArray().apply { sort() })
     constructor(priority: Int, initialValues: List<T>) :
-            this(
-                Array(initialValues.size) {
-                    Prioritized(priority, initialValues[it])
-                }.apply { sort() }
-            )
+        this(
+            Array(initialValues.size) {
+                Prioritized(priority, initialValues[it])
+            }.apply { sort() },
+        )
 
     fun add(element: Prioritized<T>): Boolean {
         lock.withLock {
@@ -97,5 +97,6 @@ internal class PrioritizedSet<T> private constructor(values: Array<Prioritized<T
     }
 
     fun isEmpty() = values.isEmpty()
+
     fun isNotEmpty() = values.isNotEmpty()
 }

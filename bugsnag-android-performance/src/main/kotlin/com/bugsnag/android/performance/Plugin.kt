@@ -45,7 +45,10 @@ public interface PluginContext {
      *
      * @see PerformanceConfiguration.addOnSpanStartCallback
      */
-    public fun addOnSpanStartCallback(priority: Int = NORM_PRIORITY, callback: OnSpanStartCallback)
+    public fun addOnSpanStartCallback(
+        priority: Int = NORM_PRIORITY,
+        callback: OnSpanStartCallback,
+    )
 
     /**
      * Add a [OnSpanStartCallback] to the list of callbacks that will be called when a span is
@@ -65,7 +68,10 @@ public interface PluginContext {
      *
      * @see PerformanceConfiguration.addOnSpanEndCallback
      */
-    public fun addOnSpanEndCallback(priority: Int = NORM_PRIORITY, callback: OnSpanEndCallback)
+    public fun addOnSpanEndCallback(
+        priority: Int = NORM_PRIORITY,
+        callback: OnSpanEndCallback,
+    )
 
     /**
      * Add a [OnSpanEndCallback] to the list of callbacks that will be called when a span is
@@ -85,7 +91,7 @@ public interface PluginContext {
      */
     public fun addSpanControlProvider(
         priority: Int = NORM_PRIORITY,
-        provider: SpanControlProvider<*>
+        provider: SpanControlProvider<*>,
     )
 
     /**

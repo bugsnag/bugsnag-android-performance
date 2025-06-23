@@ -6,13 +6,14 @@ import org.junit.Test
 class PrioritizedTest {
     @Test
     fun testNaturalSort() {
-        val values = arrayOf(
-            Prioritized(5, "V"),
-            Prioritized(10, "X"),
-            Prioritized(11, "XI"),
-            Prioritized(10, "X-2"),
-            Prioritized(14, "XIV"),
-        )
+        val values =
+            arrayOf(
+                Prioritized(5, "V"),
+                Prioritized(10, "X"),
+                Prioritized(11, "XI"),
+                Prioritized(10, "X-2"),
+                Prioritized(14, "XIV"),
+            )
         values.sort()
 
         assertEquals("XIV", values[0].value)

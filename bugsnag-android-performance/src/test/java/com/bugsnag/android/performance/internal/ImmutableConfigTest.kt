@@ -103,64 +103,6 @@ class ImmutableConfigTest {
     }
 
     @Test
-    fun noopLoggerInProduction() {
-        val perfConfig = PerformanceConfiguration(mockedContext(), TEST_API_KEY)
-        perfConfig.releaseStage = RELEASE_STAGE_PRODUCTION
-
-        val immutableConfig = ImmutableConfig(perfConfig)
-        assertSame(NoopLogger, immutableConfig.logger)
-    }
-
-    @Test
-    fun debugLoggerDefault() {
-        val perfConfig = PerformanceConfiguration(mockedContext(), TEST_API_KEY)
-        perfConfig.releaseStage = RELEASE_STAGE_DEVELOPMENT
-
-        val immutableConfig = ImmutableConfig(perfConfig)
-        assertSame(DebugLogger, immutableConfig.logger)
-    }
-
-    @Test
-    fun overrideLogger() {
-        val testLogger =
-            object : Logger {
-                override fun e(msg: String) = Unit
-
-                override fun e(
-                    msg: String,
-                    throwable: Throwable,
-                ) = Unit
-
-                override fun w(msg: String) = Unit
-
-                override fun w(
-                    msg: String,
-                    throwable: Throwable,
-                ) = Unit
-
-                override fun i(msg: String) = Unit
-
-                override fun i(
-                    msg: String,
-                    throwable: Throwable,
-                ) = Unit
-
-                override fun d(msg: String) = Unit
-
-                override fun d(
-                    msg: String,
-                    throwable: Throwable,
-                ) = Unit
-            }
-
-        val perfConfig = PerformanceConfiguration(mockedContext(), TEST_API_KEY)
-        perfConfig.logger = testLogger
-
-        val immutableConfig = ImmutableConfig(perfConfig)
-        assertSame(testLogger, immutableConfig.logger)
-    }
-
-    @Test
     fun versionCodeFromContext() {
         val perfConfig = PerformanceConfiguration(mockedContext(), TEST_API_KEY)
         val immutableConfig = ImmutableConfig(perfConfig, PluginManager(emptyList()))

@@ -7,10 +7,7 @@ import com.bugsnag.android.performance.internal.SpanTracker
 internal class AppStartControlProvider(
     private val spanTracker: SpanTracker,
 ) : SpanControlProvider<AppStartSpanControl> {
-
-    override fun <Q : SpanQuery<AppStartSpanControl>> get(
-        query: Q,
-    ): AppStartSpanControl? {
+    override fun <Q : SpanQuery<AppStartSpanControl>> get(query: Q): AppStartSpanControl? {
         if (query == SpanType.AppStart) {
             return spanTracker[AppStartTracker.appStartToken]
                 ?.let { AppStartSpanControlImpl(it) }

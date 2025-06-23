@@ -4,7 +4,6 @@ package com.bugsnag.android.performance.controls
  * Controls for the `AppStart` span, accessible using [BugsnagPerformance.getSpanControls] and [SpanType.AppStart].
  */
 public interface AppStartSpanControl {
-
     /**
      * Set the type of app start being measured to allow better filtering. The `appStartType` string is used to
      * split the app start spans further than simple "Cold", "Warm" and "Hot" starts and can be used when

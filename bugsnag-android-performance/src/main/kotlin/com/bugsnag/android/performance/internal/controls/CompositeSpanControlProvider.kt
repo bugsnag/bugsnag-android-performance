@@ -2,7 +2,6 @@ package com.bugsnag.android.performance.internal.controls
 
 import com.bugsnag.android.performance.controls.SpanControlProvider
 import com.bugsnag.android.performance.controls.SpanQuery
-
 import com.bugsnag.android.performance.internal.util.Prioritized
 import com.bugsnag.android.performance.internal.util.PrioritizedSet
 

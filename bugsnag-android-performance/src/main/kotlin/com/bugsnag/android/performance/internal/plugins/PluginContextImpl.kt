@@ -20,15 +20,24 @@ internal class PluginContextImpl(
         spanControlProviders.addAll(other.spanControlProviders)
     }
 
-    override fun addOnSpanStartCallback(priority: Int, callback: OnSpanStartCallback) {
+    override fun addOnSpanStartCallback(
+        priority: Int,
+        callback: OnSpanStartCallback,
+    ) {
         spanStartCallbacks.add(Prioritized(priority, callback))
     }
 
-    override fun addOnSpanEndCallback(priority: Int, callback: OnSpanEndCallback) {
+    override fun addOnSpanEndCallback(
+        priority: Int,
+        callback: OnSpanEndCallback,
+    ) {
         spanEndCallbacks.add(Prioritized(priority, callback))
     }
 
-    override fun addSpanControlProvider(priority: Int, provider: SpanControlProvider<*>) {
+    override fun addSpanControlProvider(
+        priority: Int,
+        provider: SpanControlProvider<*>,
+    ) {
         spanControlProviders.add(Prioritized(priority, provider))
     }
 }

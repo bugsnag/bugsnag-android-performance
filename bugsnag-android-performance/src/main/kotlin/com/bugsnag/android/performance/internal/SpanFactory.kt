@@ -9,7 +9,6 @@ import com.bugsnag.android.performance.Logger
 import com.bugsnag.android.performance.NetworkRequestInfo
 import com.bugsnag.android.performance.NetworkRequestInstrumentationCallback
 import com.bugsnag.android.performance.OnSpanStartCallback
-import com.bugsnag.android.performance.PluginContext
 import com.bugsnag.android.performance.SpanContext
 import com.bugsnag.android.performance.SpanKind
 import com.bugsnag.android.performance.SpanMetrics

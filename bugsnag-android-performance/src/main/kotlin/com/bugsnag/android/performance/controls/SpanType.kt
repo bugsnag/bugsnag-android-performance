@@ -5,7 +5,6 @@ package com.bugsnag.android.performance.controls
  * via [BugsnagPerformance.getSpanControls].
  */
 public sealed interface SpanType<C> : SpanQuery<C> {
-
     /**
      * Query used to retrieve the [AppStartSpanControl] for the currently open `AppStart` span
      * via [BugsnagPerformance.getSpanControls].
