@@ -5,10 +5,10 @@
     <ID>CyclomaticComplexMethod:Connectivity.kt$ConnectivityApi24$private fun nameForDataNetworkType(dataNetworkType: Int): String</ID>
     <ID>CyclomaticComplexMethod:SpanOptions.kt$SpanOptions$override fun equals(other: Any?): Boolean</ID>
     <ID>DestructuringDeclarationWithTooManyEntries:ActivityLifecycleInstrumentationTest.kt$ActivityLifecycleInstrumentationTest$val (create, viewLoad, start, resume) = spans</ID>
-    <ID>LongMethod:BugsnagPerformance.kt$BugsnagPerformance$private fun startUnderLock(configuration: ImmutableConfig)</ID>
+    <ID>LongMethod:BugsnagPerformance.kt$BugsnagPerformance$private fun startUnderLock(externalConfiguration: PerformanceConfiguration)</ID>
     <ID>LongMethod:SpanFactoryTest.kt$SpanFactoryTest$@Test fun testRenderMetricsOptions()</ID>
     <ID>LongMethod:SpanJsonTest.kt$SpanJsonTest$@Test fun testJsonEncoding()</ID>
-    <ID>LongParameterList:ImmutableConfig.kt$ImmutableConfig$( val application: Application, val apiKey: String, val endpoint: String, val autoInstrumentAppStarts: Boolean, val autoInstrumentActivities: AutoInstrument, val enabledMetrics: EnabledMetrics, val serviceName: String, val releaseStage: String, val enabledReleaseStages: Set&lt;String>?, val versionCode: Long?, val appVersion: String?, val logger: Logger, val networkRequestCallback: NetworkRequestInstrumentationCallback?, val doNotEndAppStart: Collection&lt;Class&lt;out Activity>>, val doNotAutoInstrument: Collection&lt;Class&lt;*>>, val tracePropagationUrls: Collection&lt;Pattern>, val spanStartCallbacks: Array&lt;OnSpanStartCallback>, val spanEndCallbacks: Array&lt;OnSpanEndCallback>, val samplingProbability: Double?, override val attributeStringValueLimit: Int, override val attributeArrayLengthLimit: Int, override val attributeCountLimit: Int, )</ID>
+    <ID>LongParameterList:ImmutableConfig.kt$ImmutableConfig$( val application: Application, val apiKey: String, val endpoint: String, val autoInstrumentAppStarts: Boolean, val autoInstrumentActivities: AutoInstrument, val enabledMetrics: EnabledMetrics, val serviceName: String, val releaseStage: String, val enabledReleaseStages: Set&lt;String>?, val versionCode: Long?, val appVersion: String?, val networkRequestCallback: NetworkRequestInstrumentationCallback?, val doNotEndAppStart: Collection&lt;Class&lt;out Activity>>, val doNotAutoInstrument: Collection&lt;Class&lt;*>>, val tracePropagationUrls: Collection&lt;Pattern>, val spanStartCallbacks: List&lt;Prioritized&lt;OnSpanStartCallback>>, val spanEndCallbacks: List&lt;Prioritized&lt;OnSpanEndCallback>>, val samplingProbability: Double?, override val attributeStringValueLimit: Int, override val attributeArrayLengthLimit: Int, override val attributeCountLimit: Int, )</ID>
     <ID>LongParameterList:SpanFactory.kt$SpanFactory$( name: String, kind: SpanKind, category: SpanCategory, startTime: Long, parentContext: SpanContext?, isFirstClass: Boolean?, makeContext: Boolean, spanMetrics: SpanMetrics?, spanProcessor: SpanProcessor, )</ID>
     <ID>MagicNumber:CpuMetricsSource.kt$CpuMetricsSampler$100.0</ID>
     <ID>MagicNumber:CpuMetricsSource.kt$CpuMetricsSampler$1000.0</ID>
@@ -65,6 +65,7 @@
     <ID>TooGenericExceptionCaught:ImmutableConfig.kt$ImmutableConfig.Companion$ex: RuntimeException</ID>
     <ID>TooGenericExceptionCaught:Module.kt$Module.Loader$ex: Exception</ID>
     <ID>TooGenericExceptionCaught:PerformanceConfiguration.kt$PerformanceConfiguration.Loader$exc: Exception</ID>
+    <ID>TooGenericExceptionCaught:PluginManager.kt$PluginManager$failure: Exception</ID>
     <ID>TooGenericExceptionCaught:SpanTaskWorker.kt$SpanTaskWorker$ex: Exception</ID>
     <ID>TooGenericExceptionCaught:Worker.kt$Worker$e: Exception</ID>
     <ID>TooGenericExceptionCaught:Worker.kt$Worker$ex: Exception</ID>

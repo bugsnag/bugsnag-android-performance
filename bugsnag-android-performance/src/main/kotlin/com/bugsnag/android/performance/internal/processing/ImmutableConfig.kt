@@ -11,10 +11,13 @@ import com.bugsnag.android.performance.NetworkRequestInstrumentationCallback
 import com.bugsnag.android.performance.OnSpanEndCallback
 import com.bugsnag.android.performance.OnSpanStartCallback
 import com.bugsnag.android.performance.PerformanceConfiguration
+import com.bugsnag.android.performance.PluginContext
 import com.bugsnag.android.performance.internal.DebugLogger
 import com.bugsnag.android.performance.internal.NoopLogger
 import com.bugsnag.android.performance.internal.RELEASE_STAGE_PRODUCTION
+import com.bugsnag.android.performance.internal.plugins.PluginManager
 import com.bugsnag.android.performance.internal.releaseStage
+import com.bugsnag.android.performance.internal.util.Prioritized
 import java.util.regex.Pattern
 
 internal const val DEFAULT_ENDPOINT = "https://otlp.bugsnag.com/v1/traces"
@@ -34,13 +37,12 @@ internal class ImmutableConfig(
     val enabledReleaseStages: Set<String>?,
     val versionCode: Long?,
     val appVersion: String?,
-    val logger: Logger,
     val networkRequestCallback: NetworkRequestInstrumentationCallback?,
     val doNotEndAppStart: Collection<Class<out Activity>>,
     val doNotAutoInstrument: Collection<Class<*>>,
     val tracePropagationUrls: Collection<Pattern>,
-    val spanStartCallbacks: Array<OnSpanStartCallback>,
-    val spanEndCallbacks: Array<OnSpanEndCallback>,
+    val spanStartCallbacks: List<Prioritized<OnSpanStartCallback>>,
+    val spanEndCallbacks: List<Prioritized<OnSpanEndCallback>>,
     val samplingProbability: Double?,
     override val attributeStringValueLimit: Int,
     override val attributeArrayLengthLimit: Int,
@@ -49,7 +51,7 @@ internal class ImmutableConfig(
     val isReleaseStageEnabled =
         enabledReleaseStages == null || enabledReleaseStages.contains(releaseStage)
 
-    constructor(configuration: PerformanceConfiguration) : this(
+    constructor(configuration: PerformanceConfiguration, pluginManager: PluginManager) : this(
         configuration.context.applicationContext as Application,
         configuration.apiKey.also { validateApiKey(it) },
         if (configuration.endpoint == DEFAULT_ENDPOINT) {
@@ -69,18 +71,18 @@ internal class ImmutableConfig(
         configuration.enabledReleaseStages?.toSet(),
         configuration.versionCode ?: versionCodeFor(configuration.context),
         configuration.appVersion ?: versionNameFor(configuration.context),
-        configuration.logger
-            ?: if (getReleaseStage(configuration) == RELEASE_STAGE_PRODUCTION) {
-                NoopLogger
-            } else {
-                DebugLogger
-            },
         configuration.networkRequestCallback,
         configuration.doNotEndAppStart,
         configuration.doNotAutoInstrument,
         configuration.tracePropagationUrls.toSet(),
-        configuration.spanStartCallbacks.toTypedArray(),
-        configuration.spanEndCallbacks.toTypedArray(),
+        createPrioritizedList(
+            configuration.spanStartCallbacks,
+            pluginManager.completeContext?.spanStartCallbacks.orEmpty(),
+        ),
+        createPrioritizedList(
+            configuration.spanEndCallbacks,
+            pluginManager.completeContext?.spanEndCallbacks.orEmpty(),
+        ),
         configuration.samplingProbability,
         configuration.attributeStringValueLimit,
         configuration.attributeArrayLengthLimit,
@@ -89,6 +91,25 @@ internal class ImmutableConfig(
 
     companion object {
         private const val VALID_API_KEY_LENGTH = 32
+
+        internal fun <T> createPrioritizedList(
+            normalPriority: Collection<T>,
+            prioritized: Collection<Prioritized<T>>,
+        ): List<Prioritized<T>> {
+            val out = ArrayList<Prioritized<T>>(normalPriority.size + prioritized.size)
+            normalPriority.mapTo(out) { Prioritized(PluginContext.NORM_PRIORITY, it) }
+            out.addAll(prioritized)
+            return out
+        }
+
+        internal fun getLogger(configuration: PerformanceConfiguration): Logger {
+            return configuration.logger
+                ?: if (configuration.releaseStage == RELEASE_STAGE_PRODUCTION) {
+                    NoopLogger
+                } else {
+                    DebugLogger
+                }
+        }
 
         private fun validateApiKey(apiKey: String) {
             if (apiKey.length != VALID_API_KEY_LENGTH ||

@@ -49,7 +49,7 @@ Feature: Nested spans
                 | bugsnag.phase                     | stringValue | ActivityResume      |
                 | bugsnag.view.name                 | stringValue | NestedSpansActivity |
 
-    * a span named "[AppStart/AndroidCold]" contains the attributes:
+    * a span named "[AppStart/AndroidCold]SplashScreen" contains the attributes:
                 | attribute                         | type        | value               |
                 | bugsnag.span.category             | stringValue | app_start           |
                 | bugsnag.app_start.type            | stringValue | cold                |

@@ -5,7 +5,10 @@ import android.app.Application
 import android.content.Context
 import android.net.Uri
 import android.os.SystemClock
+import com.bugsnag.android.performance.BugsnagPerformance.endViewLoadSpan
 import com.bugsnag.android.performance.BugsnagPerformance.start
+import com.bugsnag.android.performance.controls.AppStartControlProvider
+import com.bugsnag.android.performance.controls.SpanQuery
 import com.bugsnag.android.performance.internal.Connectivity
 import com.bugsnag.android.performance.internal.DiscardingSampler
 import com.bugsnag.android.performance.internal.HttpDelivery
@@ -20,11 +23,14 @@ import com.bugsnag.android.performance.internal.SamplerTask
 import com.bugsnag.android.performance.internal.SendBatchTask
 import com.bugsnag.android.performance.internal.Task
 import com.bugsnag.android.performance.internal.Worker
+import com.bugsnag.android.performance.internal.controls.CompositeSpanControlProvider
 import com.bugsnag.android.performance.internal.createResourceAttributes
 import com.bugsnag.android.performance.internal.integration.NotifierIntegration
 import com.bugsnag.android.performance.internal.isInForeground
 import com.bugsnag.android.performance.internal.metrics.SystemConfig
+import com.bugsnag.android.performance.internal.plugins.PluginManager
 import com.bugsnag.android.performance.internal.processing.ImmutableConfig
+import com.bugsnag.android.performance.internal.util.Prioritized
 import java.net.URL
 
 /**
@@ -33,7 +39,7 @@ import java.net.URL
  * @see [start]
  */
 public object BugsnagPerformance {
-    public const val VERSION: String = "1.15.0"
+    public const val VERSION: String = "1.16.0"
 
     @get:JvmName("getInstrumentedAppState\$internal")
     internal val instrumentedAppState = InstrumentedAppState()
@@ -43,6 +49,16 @@ public object BugsnagPerformance {
     private lateinit var worker: Worker
 
     private val spanFactory get() = instrumentedAppState.spanFactory
+
+    private val spanControlProvider =
+        CompositeSpanControlProvider().apply {
+            addProvider(
+                Prioritized(
+                    Int.MAX_VALUE,
+                    AppStartControlProvider(instrumentedAppState.spanTracker),
+                ),
+            )
+        }
 
     /**
      * Initialise the Bugsnag Performance SDK. This should be called within your
@@ -74,7 +90,7 @@ public object BugsnagPerformance {
         if (!isStarted) {
             synchronized(this) {
                 if (!isStarted) {
-                    startUnderLock(ImmutableConfig(configuration))
+                    startUnderLock(configuration)
                     isStarted = true
                 }
             }
@@ -87,8 +103,13 @@ public object BugsnagPerformance {
         Logger.w("BugsnagPerformance.start has already been called")
     }
 
-    private fun startUnderLock(configuration: ImmutableConfig) {
-        Logger.delegate = configuration.logger
+    private fun startUnderLock(externalConfiguration: PerformanceConfiguration) {
+        Logger.delegate = ImmutableConfig.getLogger(externalConfiguration)
+
+        val pluginManager = PluginManager(externalConfiguration.plugins)
+        pluginManager.installPlugins(externalConfiguration)
+
+        val configuration = ImmutableConfig(externalConfiguration, pluginManager)
         val tracer = instrumentedAppState.configure(configuration)
 
         if (configuration.autoInstrumentAppStarts) {
@@ -172,6 +193,9 @@ public object BugsnagPerformance {
                 workerTasks.add(SendBatchTask(delivery, tracer, resourceAttributes))
                 workerTasks.add(RetryDeliveryTask(persistence.retryQueue, httpDelivery, connectivity))
 
+                // starting plugins is the last thing to do before starting the first tasks
+                pluginManager.startPlugins()
+
                 return@Worker workerTasks
             }
 
@@ -179,6 +203,10 @@ public object BugsnagPerformance {
         tracer.worker = bsgWorker
 
         loadModules()
+
+        spanControlProvider.addProviders(
+            pluginManager.completeContext?.spanControlProviders.orEmpty(),
+        )
 
         bsgWorker.start()
 
@@ -315,6 +343,20 @@ public object BugsnagPerformance {
         synchronized(this) {
             instrumentedAppState.startupTracker.onFirstClassLoadReported()
         }
+    }
+
+    /**
+     * Attempt to retrieve the span controls for a given [SpanQuery]. This is used to access
+     * specialised behaviours for specific span types.
+     *
+     * @param query the span query to retrieve controls for
+     * @return the span controls for the given query, or null if none exists or the query cannot
+     *      be fulfilled
+     */
+    @JvmStatic
+    public fun <C> getSpanControls(query: SpanQuery<C>): C? {
+        @Suppress("UNCHECKED_CAST")
+        return spanControlProvider[query as SpanQuery<Any>] as C
     }
 }
 
