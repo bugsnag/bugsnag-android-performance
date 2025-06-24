@@ -308,6 +308,12 @@ public final class com/bugsnag/android/performance/internal/SendBatchTask : com/
 }
 
 public final class com/bugsnag/android/performance/internal/SpanCategory {
+	public static final field CATEGORY_APP_START Ljava/lang/String;
+	public static final field CATEGORY_APP_START_PHASE Ljava/lang/String;
+	public static final field CATEGORY_CUSTOM Ljava/lang/String;
+	public static final field CATEGORY_NETWORK Ljava/lang/String;
+	public static final field CATEGORY_VIEW_LOAD Ljava/lang/String;
+	public static final field CATEGORY_VIEW_LOAD_PHASE Ljava/lang/String;
 	public static final field Companion Lcom/bugsnag/android/performance/internal/SpanCategory$Companion;
 	public static final synthetic fun box-impl (Ljava/lang/String;)Lcom/bugsnag/android/performance/internal/SpanCategory;
 	public fun equals (Ljava/lang/Object;)Z
@@ -387,6 +393,7 @@ public final class com/bugsnag/android/performance/internal/SpanImpl : com/bugsn
 	public static final field Companion Lcom/bugsnag/android/performance/internal/SpanImpl$Companion;
 	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Lcom/bugsnag/android/performance/SpanKind;JLjava/util/UUID;JJZLcom/bugsnag/android/performance/internal/processing/AttributeLimits;Lcom/bugsnag/android/performance/internal/metrics/SpanMetricsSnapshot;Lcom/bugsnag/android/performance/internal/processing/TimeoutExecutor;Lcom/bugsnag/android/performance/internal/SpanProcessor;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Lcom/bugsnag/android/performance/SpanKind;JLjava/util/UUID;JJZLcom/bugsnag/android/performance/internal/processing/AttributeLimits;Lcom/bugsnag/android/performance/internal/metrics/SpanMetricsSnapshot;Lcom/bugsnag/android/performance/internal/processing/TimeoutExecutor;Lcom/bugsnag/android/performance/internal/SpanProcessor;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Lcom/bugsnag/android/performance/SpanKind;JLjava/util/UUID;JJZLcom/bugsnag/android/performance/internal/processing/TimeoutExecutor;Lcom/bugsnag/android/performance/internal/SpanProcessor;)V
 	public final fun block (J)Lcom/bugsnag/android/performance/internal/SpanImpl$Condition;
 	public fun close ()V
 	public final fun discard ()V
@@ -666,7 +673,7 @@ public final class com/bugsnag/android/performance/internal/metrics/SystemConfig
 }
 
 public final class com/bugsnag/android/performance/internal/plugins/PluginContextImpl : com/bugsnag/android/performance/PluginContext {
-	public fun <init> (Lcom/bugsnag/android/performance/PerformanceConfiguration;)V
+	public fun <init> (Lcom/bugsnag/android/performance/PerformanceConfiguration;Lcom/bugsnag/android/performance/internal/processing/TimeoutExecutor;)V
 	public fun addOnSpanEndCallback (ILcom/bugsnag/android/performance/OnSpanEndCallback;)V
 	public fun addOnSpanEndCallback (Lcom/bugsnag/android/performance/OnSpanEndCallback;)V
 	public fun addOnSpanStartCallback (ILcom/bugsnag/android/performance/OnSpanStartCallback;)V
@@ -674,10 +681,11 @@ public final class com/bugsnag/android/performance/internal/plugins/PluginContex
 	public fun addSpanControlProvider (ILcom/bugsnag/android/performance/controls/SpanControlProvider;)V
 	public fun addSpanControlProvider (Lcom/bugsnag/android/performance/controls/SpanControlProvider;)V
 	public fun getConfiguration ()Lcom/bugsnag/android/performance/PerformanceConfiguration;
+	public final fun getTimeoutExecutor ()Lcom/bugsnag/android/performance/internal/processing/TimeoutExecutor;
 }
 
 public final class com/bugsnag/android/performance/internal/plugins/PluginManager {
-	public fun <init> (Ljava/util/Collection;)V
+	public fun <init> (Ljava/util/Collection;Lcom/bugsnag/android/performance/internal/processing/TimeoutExecutor;)V
 	public final fun getCompleteContext ()Lcom/bugsnag/android/performance/internal/plugins/PluginContextImpl;
 	public final fun installPlugins (Lcom/bugsnag/android/performance/PerformanceConfiguration;)V
 	public final fun startPlugins ()V

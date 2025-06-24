@@ -39,7 +39,7 @@ public object BugsnagPerformanceImpl {
     public fun startUnderLock(externalConfiguration: PerformanceConfiguration) {
         Logger.delegate = ImmutableConfig.getLogger(externalConfiguration)
 
-        val pluginManager = PluginManager(externalConfiguration.plugins)
+        val pluginManager = PluginManager(externalConfiguration.plugins, spanFactory.spanTaskWorker)
         pluginManager.installPlugins(externalConfiguration)
 
         val configuration = ImmutableConfig(externalConfiguration, pluginManager)

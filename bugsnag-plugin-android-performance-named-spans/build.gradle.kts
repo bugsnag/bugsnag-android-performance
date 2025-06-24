@@ -13,17 +13,18 @@ plugins {
 
 apply(from = "../gradle/release.gradle")
 
+val kotlinVersion = "1.5.0"
+
 version = "${project.properties["VERSION_NAME"]}"
 group = "${project.properties["GROUP"]}"
 
 android {
-    compileSdk = 32
-    namespace = "com.bugsnag.android.performance"
+    compileSdk = 33
+    namespace = "com.bugsnag.android.performance.namedspans"
 
     defaultConfig {
         minSdk = 17
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-
         consumerProguardFiles.add(file("consumer-rules.pro"))
     }
 
@@ -62,33 +63,10 @@ project.tasks.withType(KotlinCompile::class.java).configureEach {
 
 dependencies {
     api(libs.kotlin.stdlib)
-    api(project(":bugsnag-android-performance-api"))
+
+    implementation(project(":bugsnag-android-performance"))
     implementation(project(":bugsnag-android-performance-impl"))
 
-    implementation(libs.androidx.annotation)
-
     testImplementation(libs.bundles.test.jvm)
-
-    testImplementation(libs.kotlin.reflect)
-    testImplementation(libs.jsonSchemaFriend)
-    testImplementation(libs.bugsnag.android)
     testImplementation(testFixtures(project(":bugsnag-android-performance-impl")))
-}
-
-license {
-    header = rootProject.file("LICENSE")
-    ignoreFailures = true
-}
-
-downloadLicenses {
-    dependencyConfiguration = "api"
-}
-
-detekt {
-    source.from(files("src/main/kotlin"))
-    baseline = file("detekt-baseline.xml")
-}
-
-configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
-    enableExperimentalRules.set(true)
 }
