@@ -3,8 +3,10 @@ package com.bugsnag.android.performance.internal.plugins
 import com.bugsnag.android.performance.Logger
 import com.bugsnag.android.performance.PerformanceConfiguration
 import com.bugsnag.android.performance.Plugin
+import com.bugsnag.android.performance.internal.processing.TimeoutExecutor
 
 internal class PluginManager(
+    private val timeoutExecutor: TimeoutExecutor,
     private val plugins: List<Plugin>,
 ) {
     private val installedPlugins = ArrayList<Plugin>()
@@ -18,12 +20,12 @@ internal class PluginManager(
         private set
 
     fun installPlugins(config: PerformanceConfiguration) {
-        val mergedContexts = PluginContextImpl(config)
+        val mergedContexts = PluginContextImpl(timeoutExecutor, config)
 
         for (plugin in plugins) {
             if (plugin !in installedPlugins) {
                 try {
-                    val pluginContext = PluginContextImpl(config)
+                    val pluginContext = PluginContextImpl(timeoutExecutor, config)
                     plugin.install(pluginContext)
 
                     mergedContexts.mergeFrom(pluginContext)

@@ -106,7 +106,7 @@ public object BugsnagPerformance {
     private fun startUnderLock(externalConfiguration: PerformanceConfiguration) {
         Logger.delegate = ImmutableConfig.getLogger(externalConfiguration)
 
-        val pluginManager = PluginManager(externalConfiguration.plugins)
+        val pluginManager = PluginManager(spanFactory.spanTaskWorker, externalConfiguration.plugins)
         pluginManager.installPlugins(externalConfiguration)
 
         val configuration = ImmutableConfig(externalConfiguration, pluginManager)
@@ -191,7 +191,13 @@ public object BugsnagPerformance {
                 }
 
                 workerTasks.add(SendBatchTask(delivery, tracer, resourceAttributes))
-                workerTasks.add(RetryDeliveryTask(persistence.retryQueue, httpDelivery, connectivity))
+                workerTasks.add(
+                    RetryDeliveryTask(
+                        persistence.retryQueue,
+                        httpDelivery,
+                        connectivity,
+                    ),
+                )
 
                 // starting plugins is the last thing to do before starting the first tasks
                 pluginManager.startPlugins()
