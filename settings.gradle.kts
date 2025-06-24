@@ -23,6 +23,7 @@ include(
     ":bugsnag-plugin-android-performance-appcompat",
     ":bugsnag-plugin-android-performance-coroutines",
     ":bugsnag-plugin-android-performance-compose",
+    ":bugsnag-plugin-android-performance-named-spans",
     ":benchmarks",
 )
 include(":bugsnag-android-performance-api")

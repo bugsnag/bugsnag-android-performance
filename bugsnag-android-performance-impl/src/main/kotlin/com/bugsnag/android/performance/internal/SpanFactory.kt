@@ -29,7 +29,7 @@ internal typealias AttributeSource = (target: SpanImpl) -> Unit
 public class SpanFactory internal constructor(
     public var spanProcessor: SpanProcessor,
     public val spanAttributeSource: AttributeSource,
-    private val spanTaskWorker: SpanTaskWorker = SpanTaskWorker(),
+    internal val spanTaskWorker: SpanTaskWorker = SpanTaskWorker(),
     metricsContainer: MetricsContainer? = null,
 ) {
     public var networkRequestCallback: NetworkRequestInstrumentationCallback? = null
