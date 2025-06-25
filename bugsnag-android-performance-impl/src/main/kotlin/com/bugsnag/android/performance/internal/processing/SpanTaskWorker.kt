@@ -6,22 +6,22 @@ import java.util.concurrent.DelayQueue
 import java.util.concurrent.Delayed
 import java.util.concurrent.TimeUnit
 
-internal interface TimeoutExecutor {
-    fun scheduleTimeout(timeout: Timeout)
+public interface TimeoutExecutor {
+    public fun scheduleTimeout(timeout: Timeout)
 
-    fun cancelTimeout(timeout: Timeout)
+    public fun cancelTimeout(timeout: Timeout)
 }
 
-internal interface SamplerExecutor {
-    fun addSampler(
+public interface SamplerExecutor {
+    public fun addSampler(
         sampler: Runnable,
         sampleRateMs: Long = 1000L,
     )
 
-    fun removeSampler(sampler: Runnable)
+    public fun removeSampler(sampler: Runnable)
 }
 
-internal interface ScheduledAction : Delayed, Runnable {
+public interface ScheduledAction : Delayed, Runnable {
     override fun compareTo(other: Delayed): Int {
         val delay = getDelay(TimeUnit.NANOSECONDS)
         val otherDelay = other.getDelay(TimeUnit.NANOSECONDS)
@@ -33,17 +33,17 @@ internal interface ScheduledAction : Delayed, Runnable {
     }
 }
 
-internal interface Timeout : ScheduledAction {
+public interface Timeout : ScheduledAction {
     /**
      * The time that this `Timeout` is "due" relative to the [SystemClock.elapsedRealtime] clock.
      */
-    val target: Long
+    public val target: Long
 
     /**
      * Return the number of milliseconds before this Timeout has elapsed (may be `<=0` if the
      * timeout has already passed).
      */
-    val relativeMs: Long
+    public val relativeMs: Long
         get() = target - SystemClock.elapsedRealtime()
 
     override fun getDelay(unit: TimeUnit): Long {
@@ -51,7 +51,7 @@ internal interface Timeout : ScheduledAction {
     }
 }
 
-internal class SpanTaskWorker : Runnable, TimeoutExecutor, SamplerExecutor {
+public class SpanTaskWorker : Runnable, TimeoutExecutor, SamplerExecutor {
     /*
      * The SpanTaskWorker is a Timer/ScheduledExecutor/HandlerThread style class, but allows tasks
      * to be added and removed before the backing thread is actually started. Once it has been
@@ -67,7 +67,7 @@ internal class SpanTaskWorker : Runnable, TimeoutExecutor, SamplerExecutor {
     private val actions = DelayQueue<ScheduledAction>()
 
     @Synchronized
-    fun start() {
+    public fun start() {
         if (running) {
             return
         }
@@ -78,7 +78,7 @@ internal class SpanTaskWorker : Runnable, TimeoutExecutor, SamplerExecutor {
     }
 
     @Synchronized
-    fun stop() {
+    public fun stop() {
         if (!running) {
             return
         }

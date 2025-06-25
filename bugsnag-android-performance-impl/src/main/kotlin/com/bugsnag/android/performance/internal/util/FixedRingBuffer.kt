@@ -10,8 +10,9 @@ import kotlin.math.min
  *
  * This structure is not thread-safe, external synchronization must be used when required.
  */
-internal class FixedRingBuffer<T>(
-    private val values: Array<T>,
+public class FixedRingBuffer<T>(
+    @PublishedApi
+    internal val values: Array<T>,
 ) {
     private var tail = 0
 
@@ -19,20 +20,20 @@ internal class FixedRingBuffer<T>(
      * The number of items currently "added" to this [FixedRingBuffer], and the maximum number of
      * items that can be returned by [forEach].
      */
-    val size: Int get() = min(values.size, tail)
+    public val size: Int get() = min(values.size, tail)
 
     /**
      * The current "pointer" or "tail" for this [FixedRingBuffer], this should be treated as an
      * opaque value and only be used as arguments to the [forEach] function.
      */
-    val currentIndex: Int
+    public val currentIndex: Int
         get() = tail
 
     /**
      * Returns the "next" (tail) item in the buffer, this function can be used instead of [put]
      * if more complex update logic is required.
      */
-    fun next(): T {
+    public fun next(): T {
         val index = tail % values.size
         tail++
         return values[index]
@@ -41,11 +42,11 @@ internal class FixedRingBuffer<T>(
     /**
      * "add" an item to this [FixedRingBuffer]
      */
-    inline fun put(update: (T) -> Unit) {
+    public inline fun put(update: (T) -> Unit) {
         update(next())
     }
 
-    fun countItemsBetween(
+    public fun countItemsBetween(
         from: Int,
         to: Int,
     ): Int {
@@ -66,7 +67,7 @@ internal class FixedRingBuffer<T>(
      * entire buffer will be iterated over resulting in only the most recent values being passed
      * to [consumer].
      */
-    inline fun forEach(
+    public inline fun forEach(
         from: Int,
         to: Int,
         consumer: (T) -> Unit,
@@ -81,7 +82,7 @@ internal class FixedRingBuffer<T>(
         }
     }
 
-    inline fun forEachIndexed(
+    public inline fun forEachIndexed(
         from: Int,
         to: Int,
         consumer: (index: Int, T) -> Unit,
@@ -98,7 +99,7 @@ internal class FixedRingBuffer<T>(
 }
 
 @Suppress("FunctionNaming")
-internal inline fun <reified T> FixedRingBuffer(
+public inline fun <reified T> FixedRingBuffer(
     size: Int,
     init: (index: Int) -> T,
 ): FixedRingBuffer<T> {

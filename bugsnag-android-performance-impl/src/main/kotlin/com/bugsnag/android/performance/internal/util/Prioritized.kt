@@ -11,7 +11,7 @@ import kotlin.concurrent.withLock
  * Priorities are sorted in descending order, so higher priority values will be sorted first. For
  * example, a priority of 10 will appear before a priority of 5 when using a natural sort.
  */
-internal data class Prioritized<T>(val priority: Int, val value: T) : Comparable<Prioritized<T>> {
+public data class Prioritized<T>(val priority: Int, val value: T) : Comparable<Prioritized<T>> {
     override fun compareTo(other: Prioritized<T>): Int {
         return other.priority - priority
     }
@@ -27,7 +27,7 @@ internal data class Prioritized<T>(val priority: Int, val value: T) : Comparable
  * priorities. A true set implementation would consider {priority, value} when taking equality into
  * account.
  */
-internal class PrioritizedSet<T> private constructor(values: Array<Prioritized<T>>) {
+public class PrioritizedSet<T> private constructor(values: Array<Prioritized<T>>) {
     @Volatile
     @PublishedApi
     internal var values: Array<Prioritized<T>> = values
@@ -35,20 +35,20 @@ internal class PrioritizedSet<T> private constructor(values: Array<Prioritized<T
 
     private val lock = ReentrantLock()
 
-    val size: Int
+    public val size: Int
         get() = values.size
 
-    constructor() : this(emptyArray())
-    constructor(initialValues: Collection<Prioritized<T>>) :
+    public constructor() : this(emptyArray())
+    public constructor(initialValues: Collection<Prioritized<T>>) :
         this(initialValues.toTypedArray().apply { sort() })
-    constructor(priority: Int, initialValues: List<T>) :
+    public constructor(priority: Int, initialValues: List<T>) :
         this(
             Array(initialValues.size) {
                 Prioritized(priority, initialValues[it])
             }.apply { sort() },
         )
 
-    fun add(element: Prioritized<T>): Boolean {
+    public fun add(element: Prioritized<T>): Boolean {
         lock.withLock {
             if (values.any { it.value == element.value }) {
                 return false
@@ -62,7 +62,7 @@ internal class PrioritizedSet<T> private constructor(values: Array<Prioritized<T
         return true
     }
 
-    fun addAll(elements: Collection<Prioritized<T>>): Boolean {
+    public fun addAll(elements: Collection<Prioritized<T>>): Boolean {
         lock.withLock {
             val newValuesArray = values.copyOf(values.size + elements.size)
             var index = values.size
@@ -90,13 +90,12 @@ internal class PrioritizedSet<T> private constructor(values: Array<Prioritized<T
         return true
     }
 
-    inline fun forEach(action: (T) -> Unit) {
+    public inline fun forEach(action: (T) -> Unit) {
         for (prioritized in values) {
             action(prioritized.value)
         }
     }
 
-    fun isEmpty() = values.isEmpty()
-
-    fun isNotEmpty() = values.isNotEmpty()
+    public fun isEmpty(): Boolean = values.isEmpty()
+    public fun isNotEmpty(): Boolean = values.isNotEmpty()
 }
