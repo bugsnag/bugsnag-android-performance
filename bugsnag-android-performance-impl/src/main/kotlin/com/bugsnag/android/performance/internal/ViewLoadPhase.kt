@@ -11,7 +11,7 @@ public enum class ViewLoadPhase(private val phaseName: String) {
     DRAW("Draw"),
     ;
 
-    internal fun phaseNameFor(viewType: ViewType): String {
+    public fun phaseNameFor(viewType: ViewType): String {
         return viewType.spanName + phaseName
     }
 }
