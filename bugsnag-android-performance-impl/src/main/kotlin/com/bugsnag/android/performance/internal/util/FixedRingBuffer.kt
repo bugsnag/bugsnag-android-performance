@@ -1,5 +1,6 @@
 package com.bugsnag.android.performance.internal.util
 
+import androidx.annotation.RestrictTo
 import kotlin.math.max
 import kotlin.math.min
 
@@ -10,6 +11,7 @@ import kotlin.math.min
  *
  * This structure is not thread-safe, external synchronization must be used when required.
  */
+@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 public class FixedRingBuffer<T>(
     @PublishedApi
     internal val values: Array<T>,
@@ -99,6 +101,7 @@ public class FixedRingBuffer<T>(
 }
 
 @Suppress("FunctionNaming")
+@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 public inline fun <reified T> FixedRingBuffer(
     size: Int,
     init: (index: Int) -> T,

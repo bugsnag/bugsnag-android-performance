@@ -135,7 +135,8 @@ public class DeviceIdFilePersistence(
  * Load the device.id into a given [DefaultAttributeSource], this is a `Runnable` so that it can
  * be used as a [Worker] startup task.
  */
-internal class LoadDeviceId(
+@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
+public class LoadDeviceId(
     private val context: Context,
     private val resourceAttributes: Attributes,
 ) : Runnable {

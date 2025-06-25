@@ -20,12 +20,14 @@ import android.net.NetworkCapabilities.TRANSPORT_WIFI
 import android.os.Build
 import android.telephony.TelephonyManager
 import androidx.annotation.RequiresApi
+import androidx.annotation.RestrictTo
 import com.bugsnag.android.performance.internal.getConnectivityManager
 import com.bugsnag.android.performance.internal.getTelephonyManager
 import com.bugsnag.android.performance.internal.registerReceiverSafe
 import com.bugsnag.android.performance.internal.safeGetNetworkCapabilities
 import com.bugsnag.android.performance.internal.unregisterReceiverSafe
 
+@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 public data class ConnectivityStatus(
     val hasConnection: Boolean,
     val metering: ConnectionMetering,
@@ -51,12 +53,14 @@ private val noNetwork =
 
 public typealias NetworkChangeCallback = (status: ConnectivityStatus) -> Unit
 
+@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 public enum class ConnectionMetering {
     DISCONNECTED,
     UNMETERED,
     POTENTIALLY_METERED,
 }
 
+@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 public interface Connectivity {
     public val connectivityStatus: ConnectivityStatus
 
@@ -323,5 +327,6 @@ internal object UnknownConnectivity : Connectivity {
  * `true` if the `Connectivity` [hasConnection] *or* is an unknown network (handling edge cases
  * where the network status has not been set yet, or the app might not have appropriate permissions).
  */
+@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 public fun Connectivity.shouldAttemptDelivery(): Boolean =
     connectivityStatus.networkType == NetworkType.UNKNOWN || connectivityStatus.hasConnection

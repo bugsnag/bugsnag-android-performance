@@ -1,10 +1,12 @@
 package com.bugsnag.android.performance.internal
 
+import androidx.annotation.RestrictTo
 import com.bugsnag.android.performance.Logger
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 
+@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 public interface Task {
     public fun onAttach(worker: Worker): Unit = Unit
 
@@ -17,6 +19,7 @@ public interface Task {
     public fun execute(): Boolean
 }
 
+@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 public abstract class AbstractTask : Task {
     protected var worker: Worker? = null
         private set
@@ -30,6 +33,7 @@ public abstract class AbstractTask : Task {
     }
 }
 
+@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 public class Worker(
     /**
      * The initiator function to create and return all of the `Task`s to be run by the `Worker`.

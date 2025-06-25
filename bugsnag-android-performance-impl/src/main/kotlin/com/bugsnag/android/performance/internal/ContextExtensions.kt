@@ -1,3 +1,4 @@
+@file:RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 package com.bugsnag.android.performance.internal
 
 import android.app.ActivityManager
@@ -13,6 +14,7 @@ import android.os.Build
 import android.os.RemoteException
 import android.telephony.TelephonyManager
 import androidx.annotation.RequiresApi
+import androidx.annotation.RestrictTo
 import com.bugsnag.android.performance.Logger
 
 public const val RELEASE_STAGE_DEVELOPMENT: String = "development"

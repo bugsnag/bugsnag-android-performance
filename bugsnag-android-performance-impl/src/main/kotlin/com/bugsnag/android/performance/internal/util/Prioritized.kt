@@ -1,5 +1,6 @@
 package com.bugsnag.android.performance.internal.util
 
+import androidx.annotation.RestrictTo
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 
@@ -11,6 +12,7 @@ import kotlin.concurrent.withLock
  * Priorities are sorted in descending order, so higher priority values will be sorted first. For
  * example, a priority of 10 will appear before a priority of 5 when using a natural sort.
  */
+@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 public data class Prioritized<T>(val priority: Int, val value: T) : Comparable<Prioritized<T>> {
     override fun compareTo(other: Prioritized<T>): Int {
         return other.priority - priority
@@ -27,6 +29,7 @@ public data class Prioritized<T>(val priority: Int, val value: T) : Comparable<P
  * priorities. A true set implementation would consider {priority, value} when taking equality into
  * account.
  */
+@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 public class PrioritizedSet<T> private constructor(values: Array<Prioritized<T>>) {
     @Volatile
     @PublishedApi

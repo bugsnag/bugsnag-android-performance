@@ -1,17 +1,20 @@
 package com.bugsnag.android.performance.internal.processing
 
 import android.os.SystemClock
+import androidx.annotation.RestrictTo
 import com.bugsnag.android.performance.Logger
 import java.util.concurrent.DelayQueue
 import java.util.concurrent.Delayed
 import java.util.concurrent.TimeUnit
 
+@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 public interface TimeoutExecutor {
     public fun scheduleTimeout(timeout: Timeout)
 
     public fun cancelTimeout(timeout: Timeout)
 }
 
+@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 public interface SamplerExecutor {
     public fun addSampler(
         sampler: Runnable,
@@ -21,6 +24,7 @@ public interface SamplerExecutor {
     public fun removeSampler(sampler: Runnable)
 }
 
+@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 public interface ScheduledAction : Delayed, Runnable {
     override fun compareTo(other: Delayed): Int {
         val delay = getDelay(TimeUnit.NANOSECONDS)
@@ -33,6 +37,7 @@ public interface ScheduledAction : Delayed, Runnable {
     }
 }
 
+@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 public interface Timeout : ScheduledAction {
     /**
      * The time that this `Timeout` is "due" relative to the [SystemClock.elapsedRealtime] clock.
@@ -51,6 +56,7 @@ public interface Timeout : ScheduledAction {
     }
 }
 
+@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 public class SpanTaskWorker : Runnable, TimeoutExecutor, SamplerExecutor {
     /*
      * The SpanTaskWorker is a Timer/ScheduledExecutor/HandlerThread style class, but allows tasks

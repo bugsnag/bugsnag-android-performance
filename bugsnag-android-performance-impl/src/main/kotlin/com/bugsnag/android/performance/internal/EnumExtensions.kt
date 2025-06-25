@@ -1,5 +1,7 @@
+@file:RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 package com.bugsnag.android.performance.internal
 
+import androidx.annotation.RestrictTo
 import com.bugsnag.android.performance.SpanKind
 import com.bugsnag.android.performance.ViewType
 
