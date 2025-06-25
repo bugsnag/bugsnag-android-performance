@@ -5,19 +5,19 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 
-internal interface Task {
-    fun onAttach(worker: Worker) = Unit
+public interface Task {
+    public fun onAttach(worker: Worker): Unit = Unit
 
-    fun onDetach(worker: Worker) = Unit
+    public fun onDetach(worker: Worker): Unit = Unit
 
     /**
      * Run the task and return `true` if work was done successfully (and more work is likely to be
      * available on the next call to `execute`).
      */
-    fun execute(): Boolean
+    public fun execute(): Boolean
 }
 
-internal abstract class AbstractTask : Task {
+public abstract class AbstractTask : Task {
     protected var worker: Worker? = null
         private set
 
@@ -30,7 +30,7 @@ internal abstract class AbstractTask : Task {
     }
 }
 
-internal class Worker(
+public class Worker(
     /**
      * The initiator function to create and return all of the `Task`s to be run by the `Worker`.
      * This function will be run on the `Worker` thread.
@@ -56,7 +56,7 @@ internal class Worker(
     private var running = false
 
     @Synchronized
-    fun start() {
+    public fun start() {
         if (running) return
 
         running = true
@@ -69,7 +69,7 @@ internal class Worker(
     }
 
     @Synchronized
-    fun stop(waitForTermination: Boolean = true) {
+    public fun stop(waitForTermination: Boolean = true) {
         if (!running) return
 
         running = false
@@ -128,7 +128,7 @@ internal class Worker(
         }
     }
 
-    fun wake() {
+    public fun wake() {
         if (!running) return
         // wake up with worker
         lock.withLock {
