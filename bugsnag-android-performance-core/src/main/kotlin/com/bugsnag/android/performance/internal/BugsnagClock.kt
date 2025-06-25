@@ -6,7 +6,7 @@ import androidx.annotation.VisibleForTesting
 import java.util.Date
 import kotlin.math.max
 
-internal object BugsnagClock {
+public object BugsnagClock {
     private const val NANOS_IN_MILLIS = 1_000_000L
 
     /**
@@ -15,7 +15,7 @@ internal object BugsnagClock {
      * to around a millisecond.
      */
     @VisibleForTesting
-    internal val bootTimeNano: Long = safeBootTimeNanos()
+    public val bootTimeNano: Long = safeBootTimeNanos()
 
     @VisibleForTesting
     internal fun safeBootTimeNanos(): Long {
@@ -39,7 +39,7 @@ internal object BugsnagClock {
         // We couldn't use the GNSS clock, so we try and use the wall clock
         val bootTime =
             (System.currentTimeMillis() * NANOS_IN_MILLIS) -
-                SystemClock.elapsedRealtimeNanos()
+                    SystemClock.elapsedRealtimeNanos()
 
         // If the elapsedRealtimeNanos is (somehow) longer than the wall clock time, we would
         // return a negative boot time possibly leading to negative timestamps in the Spans
@@ -50,9 +50,9 @@ internal object BugsnagClock {
         return max(bootTime, 0L)
     }
 
-    fun toDate(): Date = Date(currentUnixNanoTime() / NANOS_IN_MILLIS)
+    public fun toDate(): Date = Date(currentUnixNanoTime() / NANOS_IN_MILLIS)
 
-    fun fromDate(date: Date): Long {
+    public fun fromDate(date: Date): Long {
         // Convert the date to nanoseconds since epoch
         val nanoTimestamp = date.time * NANOS_IN_MILLIS
         return unixNanoTimeToElapsedRealtime(nanoTimestamp)
@@ -62,16 +62,19 @@ internal object BugsnagClock {
      * Covert a given time from [SystemClock.elapsedRealtimeNanos] into Unix time with nanosecond
      * precision.
      */
-    fun elapsedNanosToUnixTime(elapsedRealtimeNanos: Long) = elapsedRealtimeNanos + bootTimeNano
+    public fun elapsedNanosToUnixTime(elapsedRealtimeNanos: Long): Long =
+        elapsedRealtimeNanos + bootTimeNano
 
     /**
      * Covert a given time from Unix time with nanosecond precision into
      * [SystemClock.elapsedRealtimeNanos]
      */
-    fun unixNanoTimeToElapsedRealtime(unixNanoTime: Long) = unixNanoTime - bootTimeNano
+    public fun unixNanoTimeToElapsedRealtime(unixNanoTime: Long): Long =
+        unixNanoTime - bootTimeNano
 
     /**
      * `System.currentTimeMillis` but as nanosecond precision time.
      */
-    fun currentUnixNanoTime(): Long = elapsedNanosToUnixTime(SystemClock.elapsedRealtimeNanos())
+    public fun currentUnixNanoTime(): Long =
+        elapsedNanosToUnixTime(SystemClock.elapsedRealtimeNanos())
 }
