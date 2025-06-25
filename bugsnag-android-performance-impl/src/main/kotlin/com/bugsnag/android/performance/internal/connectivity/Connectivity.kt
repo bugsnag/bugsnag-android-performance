@@ -1,4 +1,4 @@
-package com.bugsnag.android.performance.internal
+package com.bugsnag.android.performance.internal.connectivity
 
 import android.annotation.SuppressLint
 import android.content.BroadcastReceiver
@@ -20,8 +20,13 @@ import android.net.NetworkCapabilities.TRANSPORT_WIFI
 import android.os.Build
 import android.telephony.TelephonyManager
 import androidx.annotation.RequiresApi
+import com.bugsnag.android.performance.internal.getConnectivityManager
+import com.bugsnag.android.performance.internal.getTelephonyManager
+import com.bugsnag.android.performance.internal.registerReceiverSafe
+import com.bugsnag.android.performance.internal.safeGetNetworkCapabilities
+import com.bugsnag.android.performance.internal.unregisterReceiverSafe
 
-internal data class ConnectivityStatus(
+public data class ConnectivityStatus(
     val hasConnection: Boolean,
     val metering: ConnectionMetering,
     val networkType: NetworkType,
@@ -44,23 +49,23 @@ private val noNetwork =
         null,
     )
 
-internal typealias NetworkChangeCallback = (status: ConnectivityStatus) -> Unit
+public typealias NetworkChangeCallback = (status: ConnectivityStatus) -> Unit
 
-internal enum class ConnectionMetering {
+public enum class ConnectionMetering {
     DISCONNECTED,
     UNMETERED,
     POTENTIALLY_METERED,
 }
 
-internal interface Connectivity {
-    val connectivityStatus: ConnectivityStatus
+public interface Connectivity {
+    public val connectivityStatus: ConnectivityStatus
 
-    fun registerForNetworkChanges()
+    public fun registerForNetworkChanges()
 
-    fun unregisterForNetworkChanges()
+    public fun unregisterForNetworkChanges()
 
-    companion object Factory {
-        fun newInstance(
+    public companion object Factory {
+        public fun newInstance(
             context: Context,
             callback: NetworkChangeCallback?,
         ): Connectivity {
@@ -318,5 +323,5 @@ internal object UnknownConnectivity : Connectivity {
  * `true` if the `Connectivity` [hasConnection] *or* is an unknown network (handling edge cases
  * where the network status has not been set yet, or the app might not have appropriate permissions).
  */
-internal fun Connectivity.shouldAttemptDelivery(): Boolean =
+public fun Connectivity.shouldAttemptDelivery(): Boolean =
     connectivityStatus.networkType == NetworkType.UNKNOWN || connectivityStatus.hasConnection

@@ -5,6 +5,9 @@ package com.bugsnag.android.performance.internal
 import android.content.Intent
 import android.net.ConnectivityManager
 import android.net.NetworkInfo
+import com.bugsnag.android.performance.internal.connectivity.ConnectionMetering
+import com.bugsnag.android.performance.internal.connectivity.ConnectivityLegacy
+import com.bugsnag.android.performance.internal.connectivity.ConnectivityStatus
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith

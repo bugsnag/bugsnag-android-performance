@@ -1,6 +1,10 @@
 package com.bugsnag.android.performance.internal
 
 import com.bugsnag.android.performance.Logger
+import com.bugsnag.android.performance.internal.connectivity.ConnectionMetering
+import com.bugsnag.android.performance.internal.connectivity.Connectivity
+import com.bugsnag.android.performance.internal.connectivity.ConnectivityStatus
+import com.bugsnag.android.performance.internal.connectivity.NetworkType
 import com.bugsnag.android.performance.test.StubDelivery
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull

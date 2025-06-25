@@ -9,7 +9,7 @@ import com.bugsnag.android.performance.BugsnagPerformance.endViewLoadSpan
 import com.bugsnag.android.performance.BugsnagPerformance.start
 import com.bugsnag.android.performance.controls.AppStartControlProvider
 import com.bugsnag.android.performance.controls.SpanQuery
-import com.bugsnag.android.performance.internal.Connectivity
+import com.bugsnag.android.performance.internal.connectivity.Connectivity
 import com.bugsnag.android.performance.internal.DiscardingSampler
 import com.bugsnag.android.performance.internal.HttpDelivery
 import com.bugsnag.android.performance.internal.InstrumentedAppState

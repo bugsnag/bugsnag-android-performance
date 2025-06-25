@@ -3,6 +3,8 @@ package com.bugsnag.android.performance.internal
 import android.net.TrafficStats
 import androidx.annotation.VisibleForTesting
 import com.bugsnag.android.performance.Logger
+import com.bugsnag.android.performance.internal.connectivity.Connectivity
+import com.bugsnag.android.performance.internal.connectivity.shouldAttemptDelivery
 import com.bugsnag.android.performance.internal.processing.AttributeLimits
 import java.io.IOException
 import java.net.HttpURLConnection

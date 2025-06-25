@@ -1,8 +1,8 @@
-package com.bugsnag.android.performance.internal
+package com.bugsnag.android.performance.internal.connectivity
 
-internal enum class NetworkType(
+public enum class NetworkType(
     @JvmField
-    internal val otelName: String,
+    public val otelName: String,
 ) {
     WIFI("wifi"),
     WIRED("wired"),

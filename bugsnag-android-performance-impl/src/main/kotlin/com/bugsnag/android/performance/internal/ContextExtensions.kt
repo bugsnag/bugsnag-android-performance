@@ -15,14 +15,14 @@ import android.telephony.TelephonyManager
 import androidx.annotation.RequiresApi
 import com.bugsnag.android.performance.Logger
 
-internal const val RELEASE_STAGE_DEVELOPMENT = "development"
-internal const val RELEASE_STAGE_PRODUCTION = "production"
+public const val RELEASE_STAGE_DEVELOPMENT: String = "development"
+public const val RELEASE_STAGE_PRODUCTION: String = "production"
 
 /**
  * Calls [Context.registerReceiver] but swallows [SecurityException] and [RemoteException]
  * to avoid terminating the process in rare cases where the registration is unsuccessful.
  */
-internal fun Context.registerReceiverSafe(
+public fun Context.registerReceiverSafe(
     receiver: BroadcastReceiver?,
     filter: IntentFilter?,
 ): Intent? {
@@ -42,7 +42,7 @@ internal fun Context.registerReceiverSafe(
  * Calls [Context.unregisterReceiver] but swallows [SecurityException] and [RemoteException]
  * to avoid terminating the process in rare cases where the registration is unsuccessful.
  */
-internal fun Context.unregisterReceiverSafe(receiver: BroadcastReceiver?) {
+public fun Context.unregisterReceiverSafe(receiver: BroadcastReceiver?) {
     try {
         unregisterReceiver(receiver)
     } catch (exc: SecurityException) {
@@ -66,7 +66,7 @@ private inline fun <reified T> Context.safeGetSystemService(name: String): T? {
  * work around https://issuetracker.google.com/issues/175055271 on Android 11
  */
 @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
-internal fun ConnectivityManager.safeGetNetworkCapabilities(network: Network?): NetworkCapabilities? {
+public fun ConnectivityManager.safeGetNetworkCapabilities(network: Network?): NetworkCapabilities? {
     return try {
         getNetworkCapabilities(network)
     } catch (exc: SecurityException) {
@@ -75,15 +75,18 @@ internal fun ConnectivityManager.safeGetNetworkCapabilities(network: Network?): 
 }
 
 @JvmName("getActivityManagerFrom")
-internal fun Context.getActivityManager(): ActivityManager? = safeGetSystemService(Context.ACTIVITY_SERVICE)
+public fun Context.getActivityManager(): ActivityManager? =
+    safeGetSystemService(Context.ACTIVITY_SERVICE)
 
 @JvmName("getConnectivityManagerFrom")
-internal fun Context.getConnectivityManager(): ConnectivityManager? = safeGetSystemService(Context.CONNECTIVITY_SERVICE)
+public fun Context.getConnectivityManager(): ConnectivityManager? =
+    safeGetSystemService(Context.CONNECTIVITY_SERVICE)
 
 @JvmName("getTelephonyManagerFrom")
-internal fun Context.getTelephonyManager(): TelephonyManager? = safeGetSystemService(Context.TELEPHONY_SERVICE)
+public fun Context.getTelephonyManager(): TelephonyManager? =
+    safeGetSystemService(Context.TELEPHONY_SERVICE)
 
-internal val Context.releaseStage: String
+public val Context.releaseStage: String
     get() {
         val appInfo = applicationInfo ?: return RELEASE_STAGE_PRODUCTION
         return if (appInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0) {

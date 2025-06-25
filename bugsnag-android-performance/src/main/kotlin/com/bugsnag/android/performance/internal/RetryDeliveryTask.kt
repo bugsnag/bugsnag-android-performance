@@ -1,6 +1,8 @@
 package com.bugsnag.android.performance.internal
 
 import com.bugsnag.android.performance.Logger
+import com.bugsnag.android.performance.internal.connectivity.Connectivity
+import com.bugsnag.android.performance.internal.connectivity.shouldAttemptDelivery
 
 internal class RetryDeliveryTask(
     private val retryQueue: RetryQueue,

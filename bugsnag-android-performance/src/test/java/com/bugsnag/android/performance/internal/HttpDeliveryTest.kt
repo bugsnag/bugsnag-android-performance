@@ -1,5 +1,9 @@
 package com.bugsnag.android.performance.internal
 
+import com.bugsnag.android.performance.internal.connectivity.ConnectionMetering
+import com.bugsnag.android.performance.internal.connectivity.Connectivity
+import com.bugsnag.android.performance.internal.connectivity.ConnectivityStatus
+import com.bugsnag.android.performance.internal.connectivity.NetworkType
 import com.bugsnag.android.performance.test.CollectingSpanProcessor
 import com.bugsnag.android.performance.test.TestSpanFactory
 import org.junit.Assert.assertNotEquals
