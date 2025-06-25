@@ -2,10 +2,12 @@ package com.bugsnag.android.performance.internal
 
 import android.os.Build
 import android.os.SystemClock
+import androidx.annotation.RestrictTo
 import androidx.annotation.VisibleForTesting
 import java.util.Date
 import kotlin.math.max
 
+@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP_PREFIX)
 public object BugsnagClock {
     private const val NANOS_IN_MILLIS = 1_000_000L
 

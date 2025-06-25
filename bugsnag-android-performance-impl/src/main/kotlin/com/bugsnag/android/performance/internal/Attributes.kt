@@ -6,9 +6,8 @@ import androidx.annotation.RestrictTo
 public class Attributes {
     private val content = mutableMapOf<String, Any>()
 
-    @get:JvmName("getEntries\$internal")
-    internal val entries: Collection<Map.Entry<String, Any>>
-        inline get() = content.entries
+    public val entries: Collection<Map.Entry<String, Any>>
+        get() = content.entries
 
     public val size: Int
         get() = content.size
@@ -54,13 +53,11 @@ public class Attributes {
         content[name] = value
     }
 
-    @JvmSynthetic
-    internal operator fun contains(name: String): Boolean {
+    public operator fun contains(name: String): Boolean {
         return content.containsKey(name)
     }
 
-    @JvmSynthetic
-    internal operator fun get(name: String): Any? {
+    public operator fun get(name: String): Any? {
         return content[name]
     }
 

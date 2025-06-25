@@ -26,4 +26,4 @@ include(
     ":benchmarks",
 )
 include(":bugsnag-android-performance-shared")
-include(":bugsnag-android-performance-core")
+include(":bugsnag-android-performance-impl")

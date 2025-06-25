@@ -191,7 +191,13 @@ public object BugsnagPerformance {
                 }
 
                 workerTasks.add(SendBatchTask(delivery, tracer, resourceAttributes))
-                workerTasks.add(RetryDeliveryTask(persistence.retryQueue, httpDelivery, connectivity))
+                workerTasks.add(
+                    RetryDeliveryTask(
+                        persistence.retryQueue,
+                        httpDelivery,
+                        connectivity,
+                    ),
+                )
 
                 // starting plugins is the last thing to do before starting the first tasks
                 pluginManager.startPlugins()

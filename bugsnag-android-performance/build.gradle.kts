@@ -58,7 +58,7 @@ project.tasks.withType(KotlinCompile::class.java).configureEach {
 dependencies {
     api(libs.kotlin.stdlib)
     api(project(":bugsnag-android-performance-shared"))
-    implementation(project(":bugsnag-android-performance-core"))
+    implementation(project(":bugsnag-android-performance-impl"))
 
     compileOnly(libs.bugsnag.android)
 

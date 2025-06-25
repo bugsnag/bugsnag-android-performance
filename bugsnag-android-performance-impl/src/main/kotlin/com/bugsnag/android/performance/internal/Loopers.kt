@@ -2,7 +2,9 @@ package com.bugsnag.android.performance.internal
 
 import android.os.Handler
 import android.os.Looper
+import androidx.annotation.RestrictTo
 
+@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP_PREFIX)
 public object Loopers {
     @JvmStatic
     public val main: Looper = Looper.getMainLooper()

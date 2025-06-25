@@ -1,9 +1,11 @@
 package com.bugsnag.android.performance.internal
 
 import android.util.Log
+import androidx.annotation.RestrictTo
 import com.bugsnag.android.performance.Logger
 
-internal object DebugLogger : Logger {
+@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP_PREFIX)
+public object DebugLogger : Logger {
     private const val TAG = "Bugsnag"
 
     override fun e(msg: String) {
