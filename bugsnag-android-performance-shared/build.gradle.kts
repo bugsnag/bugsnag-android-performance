@@ -17,12 +17,11 @@ group = "${project.properties["GROUP"]}"
 
 android {
     compileSdk = 32
-    namespace = "com.bugsnag.android.performance"
+    namespace = "com.bugsnag.android.performance.shared"
 
     defaultConfig {
         minSdk = 17
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-
         consumerProguardFiles.add(file("consumer-rules.pro"))
     }
 
@@ -57,18 +56,11 @@ project.tasks.withType(KotlinCompile::class.java).configureEach {
 
 dependencies {
     api(libs.kotlin.stdlib)
-    api(project(":bugsnag-android-performance-shared"))
-    implementation(project(":bugsnag-android-performance-core"))
-
-    compileOnly(libs.bugsnag.android)
 
     implementation(libs.androidx.annotation)
 
     testImplementation(libs.bundles.test.jvm)
-
     testImplementation(libs.kotlin.reflect)
-    testImplementation(libs.jsonSchemaFriend)
-    testImplementation(libs.bugsnag.android)
 }
 
 license {
