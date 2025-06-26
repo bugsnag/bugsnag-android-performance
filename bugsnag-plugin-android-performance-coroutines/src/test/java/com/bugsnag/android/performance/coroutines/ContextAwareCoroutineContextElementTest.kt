@@ -26,7 +26,9 @@ class ContextAwareCoroutineContextElementTest {
     @Before
     fun createSpanFactory() {
         collectedSpans = Collections.synchronizedList(ArrayList())
-        spanFactory = SpanFactory(spanProcessor = { collectedSpans.add(it as SpanImpl) })
+        spanFactory = SpanFactory(spanProcessor = {
+            collectedSpans.add(it as SpanImpl)
+        })
     }
 
     @Test

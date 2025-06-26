@@ -5,8 +5,9 @@ import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Modifier
-import com.bugsnag.android.performance.internal.BugsnagPerformanceInternals
+import com.bugsnag.android.performance.SpanContext
 import com.bugsnag.android.performance.internal.SpanCategory
+import com.bugsnag.android.performance.internal.SpanImpl
 
 private const val CONDITION_TIMEOUT = 100L
 
@@ -46,8 +47,10 @@ public fun LoadingIndicator(
     content: (@Composable BoxScope.() -> Unit)? = null,
 ) {
     DisposableEffect(Unit) {
-        val contextStack = BugsnagPerformanceInternals.currentSpanContextStack
-        val viewLoad = contextStack.current(SpanCategory.VIEW_LOAD)
+        val viewLoad: SpanImpl? = SpanContext.DEFAULT_STORAGE?.currentStack
+            ?.filterIsInstance<SpanImpl>()
+            ?.find { it.category == SpanCategory.VIEW_LOAD }
+
         val condition = viewLoad?.block(CONDITION_TIMEOUT)?.apply { upgrade() }
 
         onDispose {

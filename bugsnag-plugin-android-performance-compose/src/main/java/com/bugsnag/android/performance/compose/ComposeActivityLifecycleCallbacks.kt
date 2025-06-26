@@ -4,7 +4,7 @@ import android.app.Activity
 import android.app.Application.ActivityLifecycleCallbacks
 import android.content.Context
 import android.os.Bundle
-import com.bugsnag.android.performance.internal.BugsnagPerformanceInternals
+import com.bugsnag.android.performance.SpanContext
 import com.bugsnag.android.performance.internal.SpanCategory
 import com.bugsnag.android.performance.internal.SpanImpl
 import java.util.Collections
@@ -24,8 +24,11 @@ public object ComposeActivityLifecycleCallbacks : ActivityLifecycleCallbacks {
         activity: Activity,
         savedInstanceState: Bundle?,
     ) {
-        val contextStack = BugsnagPerformanceInternals.currentSpanContextStack
-        val viewLoadSpan = contextStack.current(SpanCategory.VIEW_LOAD) ?: return
+        val viewLoadSpan: SpanImpl = SpanContext.DEFAULT_STORAGE
+            ?.currentStack
+            ?.filterIsInstance<SpanImpl>()
+            ?.find { it.category == SpanCategory.VIEW_LOAD }
+            ?: return
 
         val blockingCondition =
             viewLoadSpan.block(VIEW_LOAD_BLOCKING_TIMEOUT)

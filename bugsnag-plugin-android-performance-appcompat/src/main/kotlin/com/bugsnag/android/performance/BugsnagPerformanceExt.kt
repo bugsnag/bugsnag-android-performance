@@ -1,7 +1,7 @@
 package com.bugsnag.android.performance
 
 import androidx.fragment.app.Fragment
-import com.bugsnag.android.performance.internal.BugsnagPerformanceInternals
+import com.bugsnag.android.performance.internal.BugsnagPerformanceImpl
 import com.bugsnag.android.performance.internal.SpanFactory
 import com.bugsnag.android.performance.internal.SpanImpl
 
@@ -39,7 +39,7 @@ public fun BugsnagPerformance.startViewLoadSpan(
     fragment: Fragment,
     options: SpanOptions = SpanOptions.DEFAULTS,
 ): Span {
-    return BugsnagPerformanceInternals.spanFactory.createViewLoadSpan(
+    return BugsnagPerformanceImpl.spanFactory.createViewLoadSpan(
         fragment,
         options,
     )
