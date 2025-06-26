@@ -15,10 +15,10 @@ public interface SpanContext {
     public fun wrap(runnable: Runnable): Runnable {
         return Runnable {
             try {
-                Storage.DEFAULT_STORAGE?.attach(this)
+                Storage.defaultStorage?.attach(this)
                 runnable.run()
             } finally {
-                Storage.DEFAULT_STORAGE?.detach(this)
+                Storage.defaultStorage?.detach(this)
             }
         }
     }
@@ -31,24 +31,24 @@ public interface SpanContext {
     public fun <T> wrap(callable: Callable<T>): Callable<T> {
         return Callable<T> {
             try {
-                Storage.DEFAULT_STORAGE?.attach(this)
+                Storage.defaultStorage?.attach(this)
                 callable.call()
             } finally {
-                Storage.DEFAULT_STORAGE?.detach(this)
+                Storage.defaultStorage?.detach(this)
             }
         }
     }
 
     public companion object Storage {
         @JvmStatic
-        public var DEFAULT_STORAGE: SpanContextStorage? = null
+        public var defaultStorage: SpanContextStorage? = null
 
         /**
          * Retrieve the current [SpanContext] for this thread (or [invalid] if not available).
          */
         @JvmStatic
         public val current: SpanContext
-            get() = DEFAULT_STORAGE?.currentContext ?: invalid
+            get() = defaultStorage?.currentContext ?: invalid
 
         @JvmStatic
         public val invalid: SpanContext =
@@ -72,6 +72,8 @@ public interface SpanContextStorage {
     public val currentStack: Sequence<SpanContext>
 
     public fun clear()
+
     public fun attach(spanContext: SpanContext)
+
     public fun detach(spanContext: SpanContext)
 }

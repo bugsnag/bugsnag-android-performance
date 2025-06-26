@@ -110,7 +110,7 @@ class BugsnagPerformanceCoroutineTest {
     }
 
     private fun currentContextStackSize(): Int {
-        val contextStorage = SpanContext.DEFAULT_STORAGE as? ThreadLocalSpanContextStorage
+        val contextStorage = SpanContext.defaultStorage as? ThreadLocalSpanContextStorage
         return contextStorage?.contextStack?.size ?: 0
     }
 }

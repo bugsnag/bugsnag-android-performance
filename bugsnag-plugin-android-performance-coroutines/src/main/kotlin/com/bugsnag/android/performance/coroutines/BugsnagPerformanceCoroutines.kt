@@ -27,7 +27,7 @@ private class ContextAwareCoroutineContextElement(
         // coroutine starting/resuming - grab the current SpanContext stack for this thread
         // so that we can restore it when the coroutine is suspended
         val threadLocalSpanContextStorage =
-            SpanContext.DEFAULT_STORAGE as? ThreadLocalSpanContextStorage
+            SpanContext.defaultStorage as? ThreadLocalSpanContextStorage
                 ?: return null
         val previousStack = threadLocalSpanContextStorage.contextStack
 
@@ -43,7 +43,7 @@ private class ContextAwareCoroutineContextElement(
     ) {
         // coroutine suspended - restore this thread's previous SpanContext stack
         val threadLocalSpanContextStorage =
-            SpanContext.DEFAULT_STORAGE as? ThreadLocalSpanContextStorage
+            SpanContext.defaultStorage as? ThreadLocalSpanContextStorage
                 ?: return
         // If the old state is null, we are resuming a coroutine that was started without a SpanContext
         if (oldState == null) {
@@ -63,8 +63,7 @@ private class ContextAwareCoroutineContextElement(
  * Maintains a Span Context stack for the coroutine, with the [SpanContext] at the root,
  * which persists the suspend/resume boundary.
  */
-public fun SpanContext.asCoroutineElement(): CoroutineContext.Element =
-    ContextAwareCoroutineContextElement(this)
+public fun SpanContext.asCoroutineElement(): CoroutineContext.Element = ContextAwareCoroutineContextElement(this)
 
 /**
  * Returns a context containing the [SpanContext] as a [CoroutineContext.Element] and elements

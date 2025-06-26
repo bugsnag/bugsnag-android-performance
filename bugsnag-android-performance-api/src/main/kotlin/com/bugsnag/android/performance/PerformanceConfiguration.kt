@@ -147,23 +147,23 @@ public class PerformanceConfiguration private constructor(public val context: Co
 
     override fun toString(): String =
         "PerformanceConfiguration(" +
-                "context=$context, " +
-                "apiKey=$apiKey, " +
-                "endpoint='$endpoint', " +
-                "autoInstrumentAppStarts=$autoInstrumentAppStarts, " +
-                "autoInstrumentActivities=$autoInstrumentActivities, " +
-                "enabledMetrics=$enabledMetrics, " +
-                "releaseStage=$releaseStage, " +
-                "versionCode=$versionCode, " +
-                "appVersion=$appVersion, " +
-                "enabledReleaseStages=$enabledReleaseStages, " +
-                "doNotEndAppStart=$doNotEndAppStart, " +
-                "doNotAutoInstrument=$doNotAutoInstrument, " +
-                "tracePropagationUrls=$tracePropagationUrls, " +
-                "attributeStringValueLimit=$attributeStringValueLimit, " +
-                "attributeArrayLengthLimit=$attributeArrayLengthLimit, " +
-                "attributeCountLimit=$attributeCountLimit" +
-                ")"
+            "context=$context, " +
+            "apiKey=$apiKey, " +
+            "endpoint='$endpoint', " +
+            "autoInstrumentAppStarts=$autoInstrumentAppStarts, " +
+            "autoInstrumentActivities=$autoInstrumentActivities, " +
+            "enabledMetrics=$enabledMetrics, " +
+            "releaseStage=$releaseStage, " +
+            "versionCode=$versionCode, " +
+            "appVersion=$appVersion, " +
+            "enabledReleaseStages=$enabledReleaseStages, " +
+            "doNotEndAppStart=$doNotEndAppStart, " +
+            "doNotAutoInstrument=$doNotAutoInstrument, " +
+            "tracePropagationUrls=$tracePropagationUrls, " +
+            "attributeStringValueLimit=$attributeStringValueLimit, " +
+            "attributeArrayLengthLimit=$attributeArrayLengthLimit, " +
+            "attributeCountLimit=$attributeCountLimit" +
+            ")"
 
     public companion object Loader {
         public const val DEFAULT_ENDPOINT: String = "https://otlp.bugsnag.com/v1/traces"

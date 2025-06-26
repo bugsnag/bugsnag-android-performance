@@ -91,7 +91,7 @@ public class InstrumentedAppState {
             // the discarded spans, this doesn't work if not on the main thread but
             // since that will be the most common case and there is no harm in doing it
             // on another thread - this is not conditional
-            SpanContext.Storage.DEFAULT_STORAGE?.clear()
+            SpanContext.Storage.defaultStorage?.clear()
 
             (bootstrapSpanProcessor as? ForwardingSpanProcessor)?.discard()
         }

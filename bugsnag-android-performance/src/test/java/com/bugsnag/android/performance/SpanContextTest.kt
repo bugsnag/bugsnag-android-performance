@@ -21,7 +21,7 @@ internal class SpanContextTest {
 
     @Before
     fun ensureContextClear() {
-        SpanContext.DEFAULT_STORAGE = ThreadLocalSpanContextStorage()
+        SpanContext.defaultStorage = ThreadLocalSpanContextStorage()
     }
 
     @Before
@@ -44,7 +44,7 @@ internal class SpanContextTest {
                     val expectedStack = mutableListOf<SpanContext>()
                     repeat(1000) {
                         val newContext = TestSpanContext(it.toLong(), UUID.randomUUID(), threadId)
-                        SpanContext.DEFAULT_STORAGE?.attach(newContext)
+                        SpanContext.defaultStorage?.attach(newContext)
                         expectedStack.add(newContext)
 
                         assertSame(newContext, SpanContext.current)
@@ -52,7 +52,7 @@ internal class SpanContextTest {
 
                     expectedStack.reversed().forEach { expectedContext ->
                         assertSame(expectedContext, SpanContext.current)
-                        SpanContext.DEFAULT_STORAGE?.detach(expectedContext)
+                        SpanContext.defaultStorage?.detach(expectedContext)
                     }
                 }
             }
@@ -167,7 +167,7 @@ internal class SpanContextTest {
     ) = spanFactory.createCustomSpan(name, options)
 
     private fun currentContextStackSize(): Int {
-        val contextStorage = SpanContext.DEFAULT_STORAGE as? ThreadLocalSpanContextStorage
+        val contextStorage = SpanContext.defaultStorage as? ThreadLocalSpanContextStorage
         return contextStorage?.contextStack?.size ?: 0
     }
 

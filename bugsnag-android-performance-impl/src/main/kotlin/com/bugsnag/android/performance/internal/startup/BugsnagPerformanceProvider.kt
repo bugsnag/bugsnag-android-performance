@@ -1,7 +1,6 @@
 package com.bugsnag.android.performance.internal.startup
 
 import android.app.Application
-
 import com.bugsnag.android.performance.internal.BugsnagPerformanceImpl
 import com.bugsnag.android.performance.internal.instrumentation.ForegroundState
 

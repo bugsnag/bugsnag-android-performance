@@ -47,9 +47,10 @@ public fun LoadingIndicator(
     content: (@Composable BoxScope.() -> Unit)? = null,
 ) {
     DisposableEffect(Unit) {
-        val viewLoad: SpanImpl? = SpanContext.DEFAULT_STORAGE?.currentStack
-            ?.filterIsInstance<SpanImpl>()
-            ?.find { it.category == SpanCategory.VIEW_LOAD }
+        val viewLoad: SpanImpl? =
+            SpanContext.defaultStorage?.currentStack
+                ?.filterIsInstance<SpanImpl>()
+                ?.find { it.category == SpanCategory.VIEW_LOAD }
 
         val condition = viewLoad?.block(CONDITION_TIMEOUT)?.apply { upgrade() }
 

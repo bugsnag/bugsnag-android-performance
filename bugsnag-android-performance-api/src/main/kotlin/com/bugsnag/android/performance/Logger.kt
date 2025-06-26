@@ -12,7 +12,10 @@ public interface Logger {
     /**
      * Logs a message at the error level.
      */
-    public fun e(msg: String, throwable: Throwable)
+    public fun e(
+        msg: String,
+        throwable: Throwable,
+    )
 
     /**
      * Logs a message at the warning level.
@@ -22,7 +25,10 @@ public interface Logger {
     /**
      * Logs a message at the warning level.
      */
-    public fun w(msg: String, throwable: Throwable)
+    public fun w(
+        msg: String,
+        throwable: Throwable,
+    )
 
     /**
      * Logs a message at the info level.
@@ -32,7 +38,10 @@ public interface Logger {
     /**
      * Logs a message at the info level.
      */
-    public fun i(msg: String, throwable: Throwable)
+    public fun i(
+        msg: String,
+        throwable: Throwable,
+    )
 
     /**
      * Logs a message at the debug level.
@@ -42,7 +51,10 @@ public interface Logger {
     /**
      * Logs a message at the debug level.
      */
-    public fun d(msg: String, throwable: Throwable)
+    public fun d(
+        msg: String,
+        throwable: Throwable,
+    )
 
     public companion object Global : Logger {
         public var delegate: Logger? = null
@@ -51,7 +63,10 @@ public interface Logger {
             delegate?.e(msg)
         }
 
-        override fun e(msg: String, throwable: Throwable) {
+        override fun e(
+            msg: String,
+            throwable: Throwable,
+        ) {
             delegate?.e(msg, throwable)
         }
 
@@ -59,7 +74,10 @@ public interface Logger {
             delegate?.w(msg)
         }
 
-        override fun w(msg: String, throwable: Throwable) {
+        override fun w(
+            msg: String,
+            throwable: Throwable,
+        ) {
             delegate?.w(msg, throwable)
         }
 
@@ -67,7 +85,10 @@ public interface Logger {
             delegate?.i(msg)
         }
 
-        override fun i(msg: String, throwable: Throwable) {
+        override fun i(
+            msg: String,
+            throwable: Throwable,
+        ) {
             delegate?.i(msg, throwable)
         }
 
@@ -75,7 +96,10 @@ public interface Logger {
             delegate?.d(msg)
         }
 
-        override fun d(msg: String, throwable: Throwable) {
+        override fun d(
+            msg: String,
+            throwable: Throwable,
+        ) {
             delegate?.d(msg, throwable)
         }
     }

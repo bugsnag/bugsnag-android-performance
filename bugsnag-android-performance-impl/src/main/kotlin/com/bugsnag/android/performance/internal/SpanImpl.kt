@@ -70,7 +70,7 @@ public class SpanImpl(
     @get:FloatRange(from = 0.0, to = 1.0)
     public var samplingProbability: Double = 1.0
         set(
-            @FloatRange(from = 0.0, to = 1.0) value,
+        @FloatRange(from = 0.0, to = 1.0) value,
         ) {
             field = value.coerceIn(0.0, 1.0)
             attributes["bugsnag.sampling.p"] = field
@@ -91,14 +91,14 @@ public class SpanImpl(
         samplingValue = samplingValueFor(traceId)
 
         // Starting a Span should cause it to become the current context
-        if (makeContext) SpanContext.DEFAULT_STORAGE?.attach(this)
+        if (makeContext) SpanContext.defaultStorage?.attach(this)
     }
 
     override fun end(endTime: Long) {
         if (state.ending()) {
             markEndTime(endTime)
 
-            if (makeContext) SpanContext.DEFAULT_STORAGE?.detach(this)
+            if (makeContext) SpanContext.defaultStorage?.detach(this)
             NotifierIntegration.onSpanEnded(this)
             state.end()
 
@@ -139,7 +139,7 @@ public class SpanImpl(
             }
 
             NotifierIntegration.onSpanEnded(this)
-            if (makeContext) SpanContext.DEFAULT_STORAGE?.detach(this)
+            if (makeContext) SpanContext.defaultStorage?.detach(this)
         }
     }
 
@@ -168,8 +168,7 @@ public class SpanImpl(
 
     public fun isOpen(): Boolean = state.isOpen
 
-    public fun isBlocked(): Boolean =
-        state.isBlocked && (conditions == null || conditions?.isNotEmpty() == true)
+    public fun isBlocked(): Boolean = state.isBlocked && (conditions == null || conditions?.isNotEmpty() == true)
 
     internal fun toJson(json: JsonTraceWriter) {
         json.writeSpan(this) {

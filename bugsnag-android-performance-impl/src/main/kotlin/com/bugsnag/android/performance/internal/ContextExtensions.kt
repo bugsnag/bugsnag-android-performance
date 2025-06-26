@@ -1,4 +1,5 @@
 @file:RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
+
 package com.bugsnag.android.performance.internal
 
 import android.app.ActivityManager
@@ -77,16 +78,13 @@ public fun ConnectivityManager.safeGetNetworkCapabilities(network: Network?): Ne
 }
 
 @JvmName("getActivityManagerFrom")
-public fun Context.getActivityManager(): ActivityManager? =
-    safeGetSystemService(Context.ACTIVITY_SERVICE)
+public fun Context.getActivityManager(): ActivityManager? = safeGetSystemService(Context.ACTIVITY_SERVICE)
 
 @JvmName("getConnectivityManagerFrom")
-public fun Context.getConnectivityManager(): ConnectivityManager? =
-    safeGetSystemService(Context.CONNECTIVITY_SERVICE)
+public fun Context.getConnectivityManager(): ConnectivityManager? = safeGetSystemService(Context.CONNECTIVITY_SERVICE)
 
 @JvmName("getTelephonyManagerFrom")
-public fun Context.getTelephonyManager(): TelephonyManager? =
-    safeGetSystemService(Context.TELEPHONY_SERVICE)
+public fun Context.getTelephonyManager(): TelephonyManager? = safeGetSystemService(Context.TELEPHONY_SERVICE)
 
 public val Context.releaseStage: String
     get() {

@@ -40,8 +40,9 @@ public class SpanFactory internal constructor(
 
     internal val spanStartCallbacks = PrioritizedSet<OnSpanStartCallback>()
 
-    internal val metricsContainer: MetricsContainer = metricsContainer
-        ?: MetricsContainer(spanTaskWorker, this)
+    internal val metricsContainer: MetricsContainer =
+        metricsContainer
+            ?: MetricsContainer(spanTaskWorker, this)
 
     public constructor(
         spanProcessor: SpanProcessor,
@@ -53,8 +54,8 @@ public class SpanFactory internal constructor(
     )
 
     init {
-        if (SpanContext.DEFAULT_STORAGE == null) {
-            SpanContext.Storage.DEFAULT_STORAGE = ThreadLocalSpanContextStorage()
+        if (SpanContext.defaultStorage == null) {
+            SpanContext.Storage.defaultStorage = ThreadLocalSpanContextStorage()
         }
     }
 
@@ -161,10 +162,11 @@ public class SpanFactory internal constructor(
         span.attributes["bugsnag.view.name"] = viewName
         span.attributes["bugsnag.span.first_class"] = isFirstClass
 
-        val appStart = SpanContext.DEFAULT_STORAGE
-            ?.currentStack
-            ?.filterIsInstance<SpanImpl>()
-            ?.find { it.category == SpanCategory.APP_START }
+        val appStart =
+            SpanContext.defaultStorage
+                ?.currentStack
+                ?.filterIsInstance<SpanImpl>()
+                ?.find { it.category == SpanCategory.APP_START }
 
         if (appStart != null && appStart.attributes["bugsnag.app_start.first_view_name"] == null) {
             appStart.attributes["bugsnag.view.type"] = viewType.typeName
@@ -175,7 +177,7 @@ public class SpanFactory internal constructor(
     }
 
     private fun defaultIsFirstClassViewLoad(): Boolean {
-        return SpanContext.DEFAULT_STORAGE
+        return SpanContext.defaultStorage
             ?.currentStack
             ?.filterIsInstance<SpanImpl>()
             ?.filter { it.category == SpanCategory.VIEW_LOAD }

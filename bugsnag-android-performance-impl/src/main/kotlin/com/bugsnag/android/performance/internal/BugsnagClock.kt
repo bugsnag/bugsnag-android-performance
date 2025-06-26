@@ -41,7 +41,7 @@ public object BugsnagClock {
         // We couldn't use the GNSS clock, so we try and use the wall clock
         val bootTime =
             (System.currentTimeMillis() * NANOS_IN_MILLIS) -
-                    SystemClock.elapsedRealtimeNanos()
+                SystemClock.elapsedRealtimeNanos()
 
         // If the elapsedRealtimeNanos is (somehow) longer than the wall clock time, we would
         // return a negative boot time possibly leading to negative timestamps in the Spans
@@ -64,19 +64,16 @@ public object BugsnagClock {
      * Covert a given time from [SystemClock.elapsedRealtimeNanos] into Unix time with nanosecond
      * precision.
      */
-    public fun elapsedNanosToUnixTime(elapsedRealtimeNanos: Long): Long =
-        elapsedRealtimeNanos + bootTimeNano
+    public fun elapsedNanosToUnixTime(elapsedRealtimeNanos: Long): Long = elapsedRealtimeNanos + bootTimeNano
 
     /**
      * Covert a given time from Unix time with nanosecond precision into
      * [SystemClock.elapsedRealtimeNanos]
      */
-    public fun unixNanoTimeToElapsedRealtime(unixNanoTime: Long): Long =
-        unixNanoTime - bootTimeNano
+    public fun unixNanoTimeToElapsedRealtime(unixNanoTime: Long): Long = unixNanoTime - bootTimeNano
 
     /**
      * `System.currentTimeMillis` but as nanosecond precision time.
      */
-    public fun currentUnixNanoTime(): Long =
-        elapsedNanosToUnixTime(SystemClock.elapsedRealtimeNanos())
+    public fun currentUnixNanoTime(): Long = elapsedNanosToUnixTime(SystemClock.elapsedRealtimeNanos())
 }

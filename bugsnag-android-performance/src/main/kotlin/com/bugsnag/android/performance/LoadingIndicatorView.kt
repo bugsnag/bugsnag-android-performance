@@ -42,29 +42,30 @@ private const val CONDITION_TIMEOUT = 100L
  * or by replacing the layout with new content, such as with `setContentView` or replacing a fragment.
  */
 public class LoadingIndicatorView
-@JvmOverloads
-constructor(
-    context: Context,
-    attrs: AttributeSet? = null,
-    defStyleAttr: Int = 0,
-) : FrameLayout(context, attrs, defStyleAttr) {
-    private var condition: Condition?
+    @JvmOverloads
+    constructor(
+        context: Context,
+        attrs: AttributeSet? = null,
+        defStyleAttr: Int = 0,
+    ) : FrameLayout(context, attrs, defStyleAttr) {
+        private var condition: Condition?
 
-    init {
-        val viewLoad: SpanImpl? = SpanContext.DEFAULT_STORAGE?.currentStack
-            ?.filterIsInstance<SpanImpl>()
-            ?.find { it.category == SpanCategory.VIEW_LOAD }
+        init {
+            val viewLoad: SpanImpl? =
+                SpanContext.defaultStorage?.currentStack
+                    ?.filterIsInstance<SpanImpl>()
+                    ?.find { it.category == SpanCategory.VIEW_LOAD }
 
-        condition = viewLoad?.block(CONDITION_TIMEOUT)
+            condition = viewLoad?.block(CONDITION_TIMEOUT)
+        }
+
+        override fun onAttachedToWindow() {
+            super.onAttachedToWindow()
+            condition?.upgrade()
+        }
+
+        override fun onDetachedFromWindow() {
+            super.onDetachedFromWindow()
+            condition?.close()
+        }
     }
-
-    override fun onAttachedToWindow() {
-        super.onAttachedToWindow()
-        condition?.upgrade()
-    }
-
-    override fun onDetachedFromWindow() {
-        super.onDetachedFromWindow()
-        condition?.close()
-    }
-}

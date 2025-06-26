@@ -1,7 +1,6 @@
 package com.bugsnag.android.performance.internal
 
 import com.bugsnag.android.performance.internal.connectivity.NetworkType
-
 import java.util.concurrent.atomic.AtomicReference
 
 internal class DefaultAttributeSource : AttributeSource {

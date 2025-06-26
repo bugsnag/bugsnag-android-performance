@@ -22,9 +22,10 @@ public class ThreadLocalSpanContextStorage : SpanContextStorage {
         get() = contextStack.top
 
     override val currentStack: Sequence<SpanContext>
-        get() = contextStack.stack
-            .asSequence()
-            .mapNotNull { it.get() }
+        get() =
+            contextStack.stack
+                .asSequence()
+                .mapNotNull { it.get() }
 
     override fun clear() {
         contextStack.clear()

@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>CyclomaticComplexMethod:SpanOptions.kt$SpanOptions$override fun equals(other: Any?): Boolean</ID>
+    <ID>MagicNumber:PerformanceConfiguration.kt$PerformanceConfiguration$1000</ID>
+    <ID>MagicNumber:PerformanceConfiguration.kt$PerformanceConfiguration$10000</ID>
+    <ID>MagicNumber:PerformanceConfiguration.kt$PerformanceConfiguration$1024</ID>
+    <ID>MagicNumber:PerformanceConfiguration.kt$PerformanceConfiguration$128</ID>
+    <ID>TooGenericExceptionCaught:PerformanceConfiguration.kt$PerformanceConfiguration.Loader$exc: Exception</ID>
+  </CurrentIssues>
+</SmellBaseline>

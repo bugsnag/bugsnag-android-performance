@@ -24,11 +24,12 @@ public object ComposeActivityLifecycleCallbacks : ActivityLifecycleCallbacks {
         activity: Activity,
         savedInstanceState: Bundle?,
     ) {
-        val viewLoadSpan: SpanImpl = SpanContext.DEFAULT_STORAGE
-            ?.currentStack
-            ?.filterIsInstance<SpanImpl>()
-            ?.find { it.category == SpanCategory.VIEW_LOAD }
-            ?: return
+        val viewLoadSpan: SpanImpl =
+            SpanContext.defaultStorage
+                ?.currentStack
+                ?.filterIsInstance<SpanImpl>()
+                ?.find { it.category == SpanCategory.VIEW_LOAD }
+                ?: return
 
         val blockingCondition =
             viewLoadSpan.block(VIEW_LOAD_BLOCKING_TIMEOUT)

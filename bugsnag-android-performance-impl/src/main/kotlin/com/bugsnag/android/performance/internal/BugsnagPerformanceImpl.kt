@@ -161,7 +161,10 @@ public object BugsnagPerformanceImpl {
         moduleLoader.loadModule("com.bugsnag.android.performance.compose.ComposeModule")
     }
 
-    public fun startViewLoadSpan(activity: Activity, options: SpanOptions): Span {
+    public fun startViewLoadSpan(
+        activity: Activity,
+        options: SpanOptions,
+    ): Span {
         // create & track Activity referenced ViewLoad spans
         return instrumentedAppState.activityInstrumentation.startViewLoadSpan(activity, options)
     }

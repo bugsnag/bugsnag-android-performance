@@ -138,8 +138,10 @@ public class SpanOptions private constructor(
      * only the default metrics for the span (see [SpanMetrics] for more details).
      */
     @JvmOverloads
-    public fun withMetrics(spanMetrics: SpanMetrics? = SpanMetrics(rendering = true, cpu = true, memory = true)): SpanOptions =
-        SpanOptions(
+    public fun withMetrics(
+        spanMetrics: SpanMetrics? = SpanMetrics(rendering = true, cpu = true, memory = true),
+    ): SpanOptions {
+        return SpanOptions(
             optionsSet or OPT_METRICS,
             _startTime,
             _parentContext,
@@ -147,6 +149,7 @@ public class SpanOptions private constructor(
             _isFirstClass,
             spanMetrics,
         )
+    }
 
     override fun equals(other: Any?): Boolean {
         if (other === this) return true
@@ -262,11 +265,13 @@ public class SpanOptions private constructor(
 
         @JvmName("createAsCurrentContext")
         @JvmStatic
-        public fun makeCurrentContext(makeContext: Boolean): SpanOptions = DEFAULTS.makeCurrentContext(makeContext)
+        public fun makeCurrentContext(makeContext: Boolean): SpanOptions =
+            DEFAULTS.makeCurrentContext(makeContext)
 
         @JvmName("createFirstClass")
         @JvmStatic
-        public fun setFirstClass(isFirstClass: Boolean): SpanOptions = DEFAULTS.setFirstClass(isFirstClass)
+        public fun setFirstClass(isFirstClass: Boolean): SpanOptions =
+            DEFAULTS.setFirstClass(isFirstClass)
 
         @JvmName("createWithRenderingMetrics")
         @JvmStatic
@@ -278,6 +283,10 @@ public class SpanOptions private constructor(
         @JvmName("createWithMetrics")
         @JvmOverloads
         @JvmStatic
-        public fun withMetrics(metrics: SpanMetrics? = SpanMetrics(true, true, true)): SpanOptions = DEFAULTS.withMetrics(metrics)
+        public fun withMetrics(
+            metrics: SpanMetrics? = SpanMetrics(true, true, true),
+        ): SpanOptions {
+            return DEFAULTS.withMetrics(metrics)
+        }
     }
 }

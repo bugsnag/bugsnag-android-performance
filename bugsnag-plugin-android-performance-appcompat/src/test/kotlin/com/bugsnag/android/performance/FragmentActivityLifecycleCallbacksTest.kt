@@ -55,7 +55,7 @@ class FragmentActivityLifecycleCallbacksTest {
 
     @After
     fun shutdown() {
-        SpanContext.DEFAULT_STORAGE?.clear()
+        SpanContext.defaultStorage?.clear()
     }
 
     /**

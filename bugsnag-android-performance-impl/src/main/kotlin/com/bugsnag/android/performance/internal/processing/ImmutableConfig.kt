@@ -90,7 +90,6 @@ public class ImmutableConfig(
         configuration.attributeCountLimit,
     )
 
-
     internal companion object {
         private const val VALID_API_KEY_LENGTH = 32
 
@@ -110,7 +109,10 @@ public class ImmutableConfig(
             return out
         }
 
-        fun selectEndpoint(endpointUri: String, apiKey: String): String {
+        fun selectEndpoint(
+            endpointUri: String,
+            apiKey: String,
+        ): String {
             return if (endpointUri == DEFAULT_ENDPOINT) {
                 if (apiKey.startsWith(HUB_API_PREFIX)) {
                     HUB_ENDPOINT.format(apiKey)

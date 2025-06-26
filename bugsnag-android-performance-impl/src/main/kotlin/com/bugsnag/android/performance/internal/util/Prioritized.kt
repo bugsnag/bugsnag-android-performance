@@ -100,5 +100,6 @@ public class PrioritizedSet<T> private constructor(values: Array<Prioritized<T>>
     }
 
     public fun isEmpty(): Boolean = values.isEmpty()
+
     public fun isNotEmpty(): Boolean = values.isNotEmpty()
 }
