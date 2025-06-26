@@ -139,7 +139,8 @@ public class SpanOptions private constructor(
      */
     @JvmOverloads
     public fun withMetrics(
-        spanMetrics: SpanMetrics? = SpanMetrics(rendering = true, cpu = true, memory = true),
+        spanMetrics: SpanMetrics? =
+            SpanMetrics(rendering = true, cpu = true, memory = true),
     ): SpanOptions {
         return SpanOptions(
             optionsSet or OPT_METRICS,
@@ -257,21 +258,27 @@ public class SpanOptions private constructor(
 
         @JvmName("createWithStartTime")
         @JvmStatic
-        public fun startTime(startTime: Long): SpanOptions = DEFAULTS.startTime(startTime)
+        public fun startTime(startTime: Long): SpanOptions {
+            return DEFAULTS.startTime(startTime)
+        }
 
         @JvmName("createWithin")
         @JvmStatic
-        public fun within(parentContext: SpanContext?): SpanOptions = DEFAULTS.within(parentContext)
+        public fun within(parentContext: SpanContext?): SpanOptions {
+            return DEFAULTS.within(parentContext)
+        }
 
         @JvmName("createAsCurrentContext")
         @JvmStatic
-        public fun makeCurrentContext(makeContext: Boolean): SpanOptions =
-            DEFAULTS.makeCurrentContext(makeContext)
+        public fun makeCurrentContext(makeContext: Boolean): SpanOptions {
+            return DEFAULTS.makeCurrentContext(makeContext)
+        }
 
         @JvmName("createFirstClass")
         @JvmStatic
-        public fun setFirstClass(isFirstClass: Boolean): SpanOptions =
-            DEFAULTS.setFirstClass(isFirstClass)
+        public fun setFirstClass(isFirstClass: Boolean): SpanOptions {
+            return DEFAULTS.setFirstClass(isFirstClass)
+        }
 
         @JvmName("createWithRenderingMetrics")
         @JvmStatic
@@ -283,9 +290,7 @@ public class SpanOptions private constructor(
         @JvmName("createWithMetrics")
         @JvmOverloads
         @JvmStatic
-        public fun withMetrics(
-            metrics: SpanMetrics? = SpanMetrics(true, true, true),
-        ): SpanOptions {
+        public fun withMetrics(metrics: SpanMetrics? = SpanMetrics(true, true, true)): SpanOptions {
             return DEFAULTS.withMetrics(metrics)
         }
     }
