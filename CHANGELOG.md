@@ -1,3 +1,10 @@
+## TBD
+
+### Bug fixes
+
+* Stopped attempting to send CPU metrics when none could be collected for a span
+  [#404](https://github.com/bugsnag/bugsnag-android-performance/pull/404)
+
 ## 1.16.0 (2025-06-23)
 
 ### Changes

@@ -22,12 +22,12 @@ public class AppStartControlProvider(
     }
 
     private class AppStartSpanControlImpl(private val span: SpanImpl) : AppStartSpanControl {
-        override fun setType(name: String?) {
-            span.setAttribute("bugsnag.app_start.name", name)
+        override fun setType(appStartType: String?) {
+            span.setAttribute("bugsnag.app_start.name", appStartType)
             val terminator = span.name.indexOf(']')
             if (terminator < 0) return
             val spanNamePrefix = span.name.substring(0, terminator + 1)
-            span.name = spanNamePrefix + name.orEmpty()
+            span.name = spanNamePrefix + appStartType.orEmpty()
         }
     }
 }
