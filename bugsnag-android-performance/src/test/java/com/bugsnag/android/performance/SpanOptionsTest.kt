@@ -21,7 +21,7 @@ class SpanOptionsTest {
     @Before
     fun newSpanFactory() {
         spanFactory = SpanFactory(NoopSpanProcessor)
-        SpanContext.contextStack.clear()
+        SpanContext.defaultStorage?.clear()
     }
 
     @Test

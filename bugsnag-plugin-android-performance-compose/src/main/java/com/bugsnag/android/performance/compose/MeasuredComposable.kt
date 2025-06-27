@@ -14,7 +14,7 @@ import com.bugsnag.android.performance.BugsnagPerformance
 import com.bugsnag.android.performance.SpanContext
 import com.bugsnag.android.performance.SpanOptions
 import com.bugsnag.android.performance.ViewType
-import com.bugsnag.android.performance.internal.BugsnagPerformanceInternals
+import com.bugsnag.android.performance.internal.BugsnagPerformanceImpl
 import com.bugsnag.android.performance.internal.ViewLoadPhase
 
 @Immutable
@@ -65,7 +65,7 @@ public fun MeasuredComposable(
                 modifier then
                     Modifier.drawWithContent {
                         if (span?.isEnded() != true) {
-                            BugsnagPerformanceInternals.spanFactory.createViewLoadPhaseSpan(
+                            BugsnagPerformanceImpl.spanFactory.createViewLoadPhaseSpan(
                                 name,
                                 ViewType.COMPOSE,
                                 ViewLoadPhase.DRAW,

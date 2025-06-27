@@ -2,7 +2,7 @@ package com.bugsnag.mazeracer;
 
 import android.annotation.SuppressLint;
 
-import com.bugsnag.android.performance.BugsnagPerformance;
+import com.bugsnag.android.performance.internal.BugsnagPerformanceImpl;
 import com.bugsnag.android.performance.internal.InstrumentedAppState;
 import com.bugsnag.android.performance.internal.SpanProcessor;
 import com.bugsnag.android.performance.internal.processing.Tracer;
@@ -17,7 +17,7 @@ public class PerformanceTestUtils {
     @SuppressLint("RestrictedApi")
     public static void flushBatch() {
         LogKt.log("PerformanceTestUtils.flushBatch()");
-        InstrumentedAppState appState = BugsnagPerformance.INSTANCE.getInstrumentedAppState$internal();
+        InstrumentedAppState appState = BugsnagPerformanceImpl.INSTANCE.getInstrumentedAppState();
         SpanProcessor processor = appState.getSpanProcessor();
 
         try {

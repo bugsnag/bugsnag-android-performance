@@ -61,6 +61,7 @@ dependencies {
     compileOnly(libs.okhttp)
 
     implementation(project(":bugsnag-android-performance"))
+    implementation(project(":bugsnag-android-performance-impl"))
 
     implementation(libs.androidx.annotation)
 

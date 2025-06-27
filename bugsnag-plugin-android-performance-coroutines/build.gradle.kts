@@ -59,6 +59,7 @@ dependencies {
     api(libs.kotlin.stdlib)
 
     implementation(project(":bugsnag-android-performance"))
+    implementation(project(":bugsnag-android-performance-impl"))
 
     implementation(libs.androidx.annotation)
     implementation(libs.kotlinx.coroutines)

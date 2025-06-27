@@ -13,7 +13,7 @@ fi
 
 echo Bumping the version number to $VERSION
 sed -i '' "s/VERSION_NAME=.*/VERSION_NAME=$VERSION/" gradle.properties
-sed -i '' "s/const val VERSION: String = .*/const val VERSION: String = \"$VERSION\"/" bugsnag-android-performance/src/main/kotlin/com/bugsnag/android/performance/BugsnagPerformance.kt
+sed -i '' "s/const val VERSION: String = .*/const val VERSION: String = \"$VERSION\"/" bugsnag-android-performance-impl/src/main/kotlin/com/bugsnag/android/performance/internal/BugsnagPerformanceImpl.kt
 sed -i '' "s/bugsnag-android-performance:.*\"/bugsnag-android-performance:$VERSION\"/" examples/performance-example/app/build.gradle
 sed -i '' "s/bugsnag-android-performance-okhttp:.*\"/bugsnag-android-performance-okhttp:$VERSION\"/" examples/performance-example/app/build.gradle
 sed -i '' "s/bugsnag-android-performance-compose:.*\"/bugsnag-android-performance-compose:$VERSION\"/" examples/performance-example/app/build.gradle
