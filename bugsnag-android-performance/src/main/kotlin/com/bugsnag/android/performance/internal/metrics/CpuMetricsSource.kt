@@ -91,6 +91,11 @@ internal class CpuMetricsSource(
                     }
                 }
 
+                if (cpuUseSampleCount == 0) {
+                    // If no samples were taken, we can skip setting the attributes
+                    return@forEach
+                }
+
                 target.attributes["bugsnag.system.cpu_measures_total"] = processCpuSamples
 
                 if (cpuUseSampleCount > 0) {
