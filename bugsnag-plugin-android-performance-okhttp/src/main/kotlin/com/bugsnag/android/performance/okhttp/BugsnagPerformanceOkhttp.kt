@@ -8,6 +8,7 @@ import com.bugsnag.android.performance.encodeAsTraceParent
 import com.bugsnag.android.performance.internal.SpanImpl
 import com.bugsnag.android.performance.internal.SpanTracker
 import com.bugsnag.android.performance.okhttp.OkhttpModule.Companion.tracePropagationUrls
+import com.bugsnag.android.performance.okhttp.util.DelegateEventListener
 import okhttp3.Call
 import okhttp3.EventListener
 import okhttp3.Interceptor
@@ -16,8 +17,12 @@ import okhttp3.Protocol
 import okhttp3.Response
 import java.io.IOException
 
-public class BugsnagPerformanceOkhttp : EventListener(), Interceptor {
-    public companion object EventListenerFactory : EventListener.Factory {
+public class BugsnagPerformanceOkhttp(
+    delegateEventListener: EventListener? = null,
+) : DelegateEventListener(delegateEventListener), Interceptor {
+    public constructor() : this(null)
+
+    public companion object EventListenerFactory : Factory {
         override fun create(call: Call): EventListener {
             return BugsnagPerformanceOkhttp()
         }
@@ -28,6 +33,7 @@ public class BugsnagPerformanceOkhttp : EventListener(), Interceptor {
     private val spans = SpanTracker()
 
     override fun callStart(call: Call) {
+        super.callStart(call)
         val url = call.request().url.toUrl()
         val span =
             BugsnagPerformance.startNetworkRequestSpan(
@@ -49,6 +55,7 @@ public class BugsnagPerformanceOkhttp : EventListener(), Interceptor {
         call: Call,
         response: Response,
     ) {
+        super.responseHeadersEnd(call, response)
         val span = spans[call] ?: return
         NetworkRequestAttributes.setResponseCode(span, response.code)
         val contentLength = response.headers["Content-Length"]?.toLongOrNull() ?: -1L
@@ -71,6 +78,7 @@ public class BugsnagPerformanceOkhttp : EventListener(), Interceptor {
         call: Call,
         byteCount: Long,
     ) {
+        super.requestBodyEnd(call, byteCount)
         val span = spans[call] ?: return
 
         // we rewrite the http.response_content_length attribute here, since this byteCount
@@ -81,6 +89,7 @@ public class BugsnagPerformanceOkhttp : EventListener(), Interceptor {
     }
 
     override fun callEnd(call: Call) {
+        super.callEnd(call)
         spans.endSpan(call)
     }
 
@@ -88,11 +97,13 @@ public class BugsnagPerformanceOkhttp : EventListener(), Interceptor {
         call: Call,
         ioe: IOException,
     ) {
+        super.callFailed(call, ioe)
         // remove the span and discard
         spans.discardAllSpans(call)
     }
 
     override fun canceled(call: Call) {
+        super.canceled(call)
         // remove the span and discard
         spans.discardAllSpans(call)
     }
