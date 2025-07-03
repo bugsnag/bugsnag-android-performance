@@ -1,7 +1,5 @@
 package com.bugsnag.android.performance
 
-import com.bugsnag.android.performance.internal.SpanImpl
-
 /**
  * A container object for the well-known attributes for network request spans (started
  * with [BugsnagPerformance.startNetworkRequestSpan]).
@@ -18,7 +16,7 @@ public object NetworkRequestAttributes {
         span: Span,
         statusCode: Int,
     ) {
-        (span as? SpanImpl)?.attributes?.set("http.status_code", statusCode)
+        span.setAttribute("http.status_code", statusCode)
     }
 
     /**
@@ -32,7 +30,7 @@ public object NetworkRequestAttributes {
         span: Span,
         contentLength: Long,
     ) {
-        (span as? SpanImpl)?.attributes?.set("http.request_content_length", contentLength)
+        span.setAttribute("http.request_content_length", contentLength)
     }
 
     /**
@@ -46,7 +44,7 @@ public object NetworkRequestAttributes {
         span: Span,
         contentLength: Long,
     ) {
-        (span as? SpanImpl)?.attributes?.set("http.request_content_length_uncompressed", contentLength)
+        span.setAttribute("http.request_content_length_uncompressed", contentLength)
     }
 
     /**
@@ -60,7 +58,7 @@ public object NetworkRequestAttributes {
         span: Span,
         contentLength: Long,
     ) {
-        (span as? SpanImpl)?.attributes?.set("http.response_content_length", contentLength)
+        span.setAttribute("http.response_content_length", contentLength)
     }
 
     /**
@@ -74,10 +72,7 @@ public object NetworkRequestAttributes {
         span: Span,
         contentLength: Long,
     ) {
-        (span as? SpanImpl)?.attributes?.set(
-            "http.response_content_length_uncompressed",
-            contentLength,
-        )
+        span.setAttribute("http.response_content_length_uncompressed", contentLength)
     }
 
     /**
@@ -94,6 +89,6 @@ public object NetworkRequestAttributes {
         span: Span,
         httpFlavor: String,
     ) {
-        (span as? SpanImpl)?.attributes?.set("http.flavor", httpFlavor)
+        span.setAttribute("http.flavor", httpFlavor)
     }
 }

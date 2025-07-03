@@ -3,9 +3,7 @@ package com.bugsnag.android.performance
 import android.content.Context
 import android.util.AttributeSet
 import android.widget.FrameLayout
-import com.bugsnag.android.performance.internal.BugsnagPerformanceInternals
 import com.bugsnag.android.performance.internal.SpanCategory
-import com.bugsnag.android.performance.internal.SpanContextStack
 import com.bugsnag.android.performance.internal.SpanImpl
 import com.bugsnag.android.performance.internal.SpanImpl.Condition
 
@@ -53,8 +51,11 @@ public class LoadingIndicatorView
         private var condition: Condition?
 
         init {
-            val contextStack: SpanContextStack = BugsnagPerformanceInternals.currentSpanContextStack
-            val viewLoad: SpanImpl? = contextStack.current(SpanCategory.VIEW_LOAD)
+            val viewLoad: SpanImpl? =
+                SpanContext.defaultStorage?.currentStack
+                    ?.filterIsInstance<SpanImpl>()
+                    ?.find { it.category == SpanCategory.VIEW_LOAD }
+
             condition = viewLoad?.block(CONDITION_TIMEOUT)
         }
 

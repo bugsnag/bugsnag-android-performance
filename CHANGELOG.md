@@ -1,5 +1,10 @@
 ## TBD
 
+### Changes
+
+* Internal modularisation: moved the internal implementations of `bugsnag-android-performance` to the `bugsnag-android-performance-impl` module, and much of the API into the `bugsnag-android-performance-api` module. No changes are required to your dependencies and no code-changes are required.
+  [#406](https://github.com/bugsnag/bugsnag-android-performance/pull/406)
+
 ### Bug fixes
 
 * Stopped attempting to send CPU metrics when none could be collected for a span

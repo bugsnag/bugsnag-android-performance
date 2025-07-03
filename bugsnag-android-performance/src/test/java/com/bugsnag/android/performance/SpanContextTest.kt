@@ -1,6 +1,7 @@
 package com.bugsnag.android.performance
 
 import com.bugsnag.android.performance.internal.SpanFactory
+import com.bugsnag.android.performance.internal.context.ThreadLocalSpanContextStorage
 import com.bugsnag.android.performance.test.CollectingSpanProcessor
 import com.bugsnag.android.performance.test.task
 import org.junit.Assert.assertEquals
@@ -20,9 +21,7 @@ internal class SpanContextTest {
 
     @Before
     fun ensureContextClear() {
-        while (SpanContext.current != SpanContext.invalid) {
-            SpanContext.detach(SpanContext.current)
-        }
+        SpanContext.defaultStorage = ThreadLocalSpanContextStorage()
     }
 
     @Before
@@ -45,7 +44,7 @@ internal class SpanContextTest {
                     val expectedStack = mutableListOf<SpanContext>()
                     repeat(1000) {
                         val newContext = TestSpanContext(it.toLong(), UUID.randomUUID(), threadId)
-                        SpanContext.attach(newContext)
+                        SpanContext.defaultStorage?.attach(newContext)
                         expectedStack.add(newContext)
 
                         assertSame(newContext, SpanContext.current)
@@ -53,7 +52,7 @@ internal class SpanContextTest {
 
                     expectedStack.reversed().forEach { expectedContext ->
                         assertSame(expectedContext, SpanContext.current)
-                        SpanContext.detach(expectedContext)
+                        SpanContext.defaultStorage?.detach(expectedContext)
                     }
                 }
             }
@@ -100,11 +99,11 @@ internal class SpanContextTest {
             spanB.end()
         }.get()
 
-        assertEquals(2, SpanContext.contextStack.size)
+        assertEquals(2, currentContextStackSize())
 
         // SpanContext.current should not return closed contexts
         assertSame(SpanContext.invalid, SpanContext.current)
-        assertEquals(0, SpanContext.contextStack.size)
+        assertEquals(0, currentContextStackSize())
     }
 
     @Test
@@ -166,6 +165,11 @@ internal class SpanContextTest {
         name: String = "Test/test span",
         options: SpanOptions = SpanOptions.DEFAULTS,
     ) = spanFactory.createCustomSpan(name, options)
+
+    private fun currentContextStackSize(): Int {
+        val contextStorage = SpanContext.defaultStorage as? ThreadLocalSpanContextStorage
+        return contextStorage?.contextStack?.size ?: 0
+    }
 
     private data class TestSpanContext(
         override val spanId: Long,
