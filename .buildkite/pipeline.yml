@@ -15,8 +15,8 @@ steps:
     timeout_in_minutes: 20
     agents:
       queue: macos-15
-      env:
-        JAVA_VERSION: '17'
+    env:
+      JAVA_VERSION: '17'
     command: './gradlew apiCheck'
 
   - label: ':android: JVM tests'

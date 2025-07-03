@@ -1,0 +1,13 @@
+public final class com/bugsnag/android/performance/coroutines/BugsnagPerformanceCoroutinesKt {
+	public static final fun asCoroutineElement (Lcom/bugsnag/android/performance/SpanContext;)Lkotlin/coroutines/CoroutineContext$Element;
+	public static final fun plus (Lcom/bugsnag/android/performance/SpanContext;Lkotlin/coroutines/CoroutineContext;)Lkotlin/coroutines/CoroutineContext;
+	public static final fun plus (Lkotlin/coroutines/CoroutineContext;Lcom/bugsnag/android/performance/SpanContext;)Lkotlin/coroutines/CoroutineContext;
+}
+
+public final class com/bugsnag/android/performance/coroutines/BugsnagPerformanceScope : kotlinx/coroutines/CoroutineScope {
+	public fun <init> ()V
+	public fun <init> (Lkotlinx/coroutines/CoroutineDispatcher;)V
+	public synthetic fun <init> (Lkotlinx/coroutines/CoroutineDispatcher;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun getCoroutineContext ()Lkotlin/coroutines/CoroutineContext;
+}
+

@@ -1,0 +1,93 @@
+public final class com/bugsnag/android/performance/BugsnagPerformance {
+	public static final field INSTANCE Lcom/bugsnag/android/performance/BugsnagPerformance;
+	public static final field VERSION Ljava/lang/String;
+	public static final fun endViewLoadSpan (Landroid/app/Activity;)V
+	public static final fun endViewLoadSpan (Landroid/app/Activity;J)V
+	public static synthetic fun endViewLoadSpan$default (Landroid/app/Activity;JILjava/lang/Object;)V
+	public static final fun getSpanControls (Lcom/bugsnag/android/performance/controls/SpanQuery;)Ljava/lang/Object;
+	public static final fun reportApplicationClassLoaded ()V
+	public static final fun start (Landroid/content/Context;)V
+	public static final fun start (Landroid/content/Context;Ljava/lang/String;)V
+	public static final fun start (Lcom/bugsnag/android/performance/PerformanceConfiguration;)V
+	public static final fun startNetworkRequestSpan (Landroid/net/Uri;Ljava/lang/String;)Lcom/bugsnag/android/performance/Span;
+	public static final fun startNetworkRequestSpan (Landroid/net/Uri;Ljava/lang/String;Lcom/bugsnag/android/performance/SpanOptions;)Lcom/bugsnag/android/performance/Span;
+	public static final fun startNetworkRequestSpan (Ljava/net/URL;Ljava/lang/String;)Lcom/bugsnag/android/performance/Span;
+	public static final fun startNetworkRequestSpan (Ljava/net/URL;Ljava/lang/String;Lcom/bugsnag/android/performance/SpanOptions;)Lcom/bugsnag/android/performance/Span;
+	public static synthetic fun startNetworkRequestSpan$default (Landroid/net/Uri;Ljava/lang/String;Lcom/bugsnag/android/performance/SpanOptions;ILjava/lang/Object;)Lcom/bugsnag/android/performance/Span;
+	public static synthetic fun startNetworkRequestSpan$default (Ljava/net/URL;Ljava/lang/String;Lcom/bugsnag/android/performance/SpanOptions;ILjava/lang/Object;)Lcom/bugsnag/android/performance/Span;
+	public static final fun startSpan (Ljava/lang/String;)Lcom/bugsnag/android/performance/Span;
+	public static final fun startSpan (Ljava/lang/String;Lcom/bugsnag/android/performance/SpanOptions;)Lcom/bugsnag/android/performance/Span;
+	public static synthetic fun startSpan$default (Ljava/lang/String;Lcom/bugsnag/android/performance/SpanOptions;ILjava/lang/Object;)Lcom/bugsnag/android/performance/Span;
+	public static final fun startViewLoadSpan (Landroid/app/Activity;)Lcom/bugsnag/android/performance/Span;
+	public static final fun startViewLoadSpan (Landroid/app/Activity;Lcom/bugsnag/android/performance/SpanOptions;)Lcom/bugsnag/android/performance/Span;
+	public static final fun startViewLoadSpan (Lcom/bugsnag/android/performance/ViewType;Ljava/lang/String;)Lcom/bugsnag/android/performance/Span;
+	public static final fun startViewLoadSpan (Lcom/bugsnag/android/performance/ViewType;Ljava/lang/String;Lcom/bugsnag/android/performance/SpanOptions;)Lcom/bugsnag/android/performance/Span;
+	public static synthetic fun startViewLoadSpan$default (Landroid/app/Activity;Lcom/bugsnag/android/performance/SpanOptions;ILjava/lang/Object;)Lcom/bugsnag/android/performance/Span;
+	public static synthetic fun startViewLoadSpan$default (Lcom/bugsnag/android/performance/ViewType;Ljava/lang/String;Lcom/bugsnag/android/performance/SpanOptions;ILjava/lang/Object;)Lcom/bugsnag/android/performance/Span;
+}
+
+public final class com/bugsnag/android/performance/BugsnagPerformanceKt {
+	public static final fun measureSpan (Ljava/lang/String;Lkotlin/jvm/functions/Function0;)Ljava/lang/Object;
+}
+
+public final class com/bugsnag/android/performance/ContextAwareScheduledThreadPoolExecutor : java/util/concurrent/ScheduledThreadPoolExecutor {
+	public fun <init> (I)V
+	public fun <init> (ILjava/util/concurrent/RejectedExecutionHandler;)V
+	public fun <init> (ILjava/util/concurrent/ThreadFactory;)V
+	public fun <init> (ILjava/util/concurrent/ThreadFactory;Ljava/util/concurrent/RejectedExecutionHandler;)V
+	public fun schedule (Ljava/lang/Runnable;JLjava/util/concurrent/TimeUnit;)Ljava/util/concurrent/ScheduledFuture;
+	public fun schedule (Ljava/util/concurrent/Callable;JLjava/util/concurrent/TimeUnit;)Ljava/util/concurrent/ScheduledFuture;
+	public fun scheduleAtFixedRate (Ljava/lang/Runnable;JJLjava/util/concurrent/TimeUnit;)Ljava/util/concurrent/ScheduledFuture;
+	public fun scheduleWithFixedDelay (Ljava/lang/Runnable;JJLjava/util/concurrent/TimeUnit;)Ljava/util/concurrent/ScheduledFuture;
+}
+
+public final class com/bugsnag/android/performance/ContextAwareThreadPoolExecutor : java/util/concurrent/ThreadPoolExecutor {
+	public fun <init> (IIJLjava/util/concurrent/TimeUnit;Ljava/util/concurrent/BlockingQueue;)V
+	public fun <init> (IIJLjava/util/concurrent/TimeUnit;Ljava/util/concurrent/BlockingQueue;Ljava/util/concurrent/RejectedExecutionHandler;)V
+	public fun <init> (IIJLjava/util/concurrent/TimeUnit;Ljava/util/concurrent/BlockingQueue;Ljava/util/concurrent/ThreadFactory;)V
+	public fun <init> (IIJLjava/util/concurrent/TimeUnit;Ljava/util/concurrent/BlockingQueue;Ljava/util/concurrent/ThreadFactory;Ljava/util/concurrent/RejectedExecutionHandler;)V
+	public fun execute (Ljava/lang/Runnable;)V
+}
+
+public final class com/bugsnag/android/performance/LoadingIndicatorView : android/widget/FrameLayout {
+	public fun <init> (Landroid/content/Context;)V
+	public fun <init> (Landroid/content/Context;Landroid/util/AttributeSet;)V
+	public fun <init> (Landroid/content/Context;Landroid/util/AttributeSet;I)V
+	public synthetic fun <init> (Landroid/content/Context;Landroid/util/AttributeSet;IILkotlin/jvm/internal/DefaultConstructorMarker;)V
+}
+
+public final class com/bugsnag/android/performance/NetworkRequestAttributes {
+	public static final field INSTANCE Lcom/bugsnag/android/performance/NetworkRequestAttributes;
+	public static final fun setHttpFlavor (Lcom/bugsnag/android/performance/Span;Ljava/lang/String;)V
+	public static final fun setRequestContentLength (Lcom/bugsnag/android/performance/Span;J)V
+	public static final fun setResponseCode (Lcom/bugsnag/android/performance/Span;I)V
+	public static final fun setResponseContentLength (Lcom/bugsnag/android/performance/Span;J)V
+	public static final fun setUncompressedRequestContentLength (Lcom/bugsnag/android/performance/Span;J)V
+	public static final fun setUncompressedResponseContentLength (Lcom/bugsnag/android/performance/Span;J)V
+}
+
+public final class com/bugsnag/android/performance/RemoteSpanContext : com/bugsnag/android/performance/SpanContext {
+	public static final field Companion Lcom/bugsnag/android/performance/RemoteSpanContext$Companion;
+	public fun <init> (JLjava/util/UUID;)V
+	public static final fun encodeAsTraceParent (Lcom/bugsnag/android/performance/SpanContext;)Ljava/lang/String;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getSpanId ()J
+	public fun getTraceId ()Ljava/util/UUID;
+	public fun hashCode ()I
+	public static final fun parseTraceParent (Ljava/lang/String;)Lcom/bugsnag/android/performance/RemoteSpanContext;
+	public static final fun parseTraceParentOrNull (Ljava/lang/String;)Lcom/bugsnag/android/performance/RemoteSpanContext;
+	public fun toString ()Ljava/lang/String;
+	public fun wrap (Ljava/lang/Runnable;)Ljava/lang/Runnable;
+	public fun wrap (Ljava/util/concurrent/Callable;)Ljava/util/concurrent/Callable;
+}
+
+public final class com/bugsnag/android/performance/RemoteSpanContext$Companion {
+	public final fun encodeAsTraceParent (Lcom/bugsnag/android/performance/SpanContext;)Ljava/lang/String;
+	public final fun parseTraceParent (Ljava/lang/String;)Lcom/bugsnag/android/performance/RemoteSpanContext;
+	public final fun parseTraceParentOrNull (Ljava/lang/String;)Lcom/bugsnag/android/performance/RemoteSpanContext;
+}
+
+public final class com/bugsnag/android/performance/RemoteSpanContextKt {
+	public static final fun encodeAsTraceParent (Lcom/bugsnag/android/performance/SpanContext;)Ljava/lang/String;
+}
+
