@@ -2,7 +2,6 @@ package com.bugsnag.android.performance.internal
 
 import android.os.SystemClock
 import androidx.annotation.FloatRange
-import androidx.annotation.RestrictTo
 import com.bugsnag.android.performance.HasAttributes
 import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.SpanContext
@@ -20,7 +19,6 @@ import java.util.concurrent.atomic.AtomicInteger
 import kotlin.math.max
 
 @Suppress("LongParameterList", "TooManyFunctions")
-@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 public class SpanImpl(
     name: String,
     public val category: SpanCategory,
@@ -38,6 +36,32 @@ public class SpanImpl(
     private val processor: SpanProcessor,
 ) : Span, HasAttributes {
     public val attributes: Attributes = Attributes()
+
+    public constructor(
+        name: String,
+        category: String,
+        kind: SpanKind,
+        startTime: Long,
+        traceId: UUID,
+        spanId: Long,
+        parentSpanId: Long,
+        makeContext: Boolean,
+        timeoutExecutor: TimeoutExecutor,
+        processor: SpanProcessor,
+    ) : this(
+        name,
+        SpanCategory(category),
+        kind,
+        startTime,
+        traceId,
+        spanId,
+        parentSpanId,
+        makeContext,
+        null,
+        null,
+        timeoutExecutor,
+        processor,
+    )
 
     /**
      * The name of this `Span`
@@ -70,7 +94,7 @@ public class SpanImpl(
     @get:FloatRange(from = 0.0, to = 1.0)
     public var samplingProbability: Double = 1.0
         set(
-        @FloatRange(from = 0.0, to = 1.0) value,
+        @FloatRange(from = 0.0, to = 1.0) value
         ) {
             field = value.coerceIn(0.0, 1.0)
             attributes["bugsnag.sampling.p"] = field
@@ -168,7 +192,9 @@ public class SpanImpl(
 
     public fun isOpen(): Boolean = state.isOpen
 
-    public fun isBlocked(): Boolean = state.isBlocked && (conditions == null || conditions?.isNotEmpty() == true)
+    public fun isBlocked(): Boolean =
+        state.isBlocked &&
+            (conditions == null || conditions?.isNotEmpty() == true)
 
     internal fun toJson(json: JsonTraceWriter) {
         json.writeSpan(this) {

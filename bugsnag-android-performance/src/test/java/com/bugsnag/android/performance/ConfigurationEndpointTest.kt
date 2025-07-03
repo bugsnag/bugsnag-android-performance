@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.test.core.app.ApplicationProvider
 import com.bugsnag.android.performance.internal.plugins.PluginManager
 import com.bugsnag.android.performance.internal.processing.ImmutableConfig
+import com.bugsnag.android.performance.test.TestTimeoutExecutor
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -13,7 +14,7 @@ import org.robolectric.RobolectricTestRunner
 class ConfigurationEndpointTest {
     private val appContext: Application = ApplicationProvider.getApplicationContext()
 
-    private val pluginManager = PluginManager(emptyList())
+    private val pluginManager = PluginManager(emptyList(), TestTimeoutExecutor())
 
     private val hubApiKey = "00000abcdefabcdefabcdefabcdefabcd"
 
