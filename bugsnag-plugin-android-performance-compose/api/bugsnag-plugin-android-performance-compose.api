@@ -1,0 +1,27 @@
+public final class com/bugsnag/android/performance/compose/ComposeActivityLifecycleCallbacks : android/app/Application$ActivityLifecycleCallbacks {
+	public static final field $stable I
+	public static final field INSTANCE Lcom/bugsnag/android/performance/compose/ComposeActivityLifecycleCallbacks;
+	public fun onActivityCreated (Landroid/app/Activity;Landroid/os/Bundle;)V
+	public fun onActivityDestroyed (Landroid/app/Activity;)V
+	public fun onActivityPaused (Landroid/app/Activity;)V
+	public fun onActivityResumed (Landroid/app/Activity;)V
+	public fun onActivitySaveInstanceState (Landroid/app/Activity;Landroid/os/Bundle;)V
+	public fun onActivityStarted (Landroid/app/Activity;)V
+	public fun onActivityStopped (Landroid/app/Activity;)V
+}
+
+public final class com/bugsnag/android/performance/compose/ComposeModule : com/bugsnag/android/performance/internal/Module {
+	public static final field $stable I
+	public fun <init> ()V
+	public fun load (Lcom/bugsnag/android/performance/internal/InstrumentedAppState;)V
+	public fun unload ()V
+}
+
+public final class com/bugsnag/android/performance/compose/LoadingIndicatorKt {
+	public static final fun LoadingIndicator (Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function3;Landroidx/compose/runtime/Composer;II)V
+}
+
+public final class com/bugsnag/android/performance/compose/MeasuredComposableKt {
+	public static final fun MeasuredComposable (Ljava/lang/String;Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function3;Landroidx/compose/runtime/Composer;II)V
+}
+
