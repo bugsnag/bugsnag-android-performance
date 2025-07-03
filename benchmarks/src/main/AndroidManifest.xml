@@ -4,6 +4,5 @@
 
     <application
         android:debuggable="false"
-        tools:ignore="HardcodedDebugMode"
-        tools:replace="android:debuggable" />
+        tools:ignore="HardcodedDebugMode" />
 </manifest>
