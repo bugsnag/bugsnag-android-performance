@@ -1,0 +1,25 @@
+public final class com/bugsnag/android/performance/AppCompatModule : com/bugsnag/android/performance/internal/Module {
+	public fun <init> ()V
+	public fun load (Lcom/bugsnag/android/performance/internal/InstrumentedAppState;)V
+	public fun unload ()V
+}
+
+public final class com/bugsnag/android/performance/BugsnagPerformanceExtKt {
+	public static final fun startViewLoadSpan (Lcom/bugsnag/android/performance/BugsnagPerformance;Landroidx/fragment/app/Fragment;Lcom/bugsnag/android/performance/SpanOptions;)Lcom/bugsnag/android/performance/Span;
+	public static synthetic fun startViewLoadSpan$default (Lcom/bugsnag/android/performance/BugsnagPerformance;Landroidx/fragment/app/Fragment;Lcom/bugsnag/android/performance/SpanOptions;ILjava/lang/Object;)Lcom/bugsnag/android/performance/Span;
+}
+
+public final class com/bugsnag/android/performance/FragmentActivityLifecycleCallbacks : androidx/fragment/app/FragmentManager$FragmentLifecycleCallbacks, android/app/Application$ActivityLifecycleCallbacks {
+	public fun <init> (Lcom/bugsnag/android/performance/internal/SpanTracker;Lcom/bugsnag/android/performance/internal/SpanFactory;Lcom/bugsnag/android/performance/internal/AutoInstrumentationCache;)V
+	public fun onActivityCreated (Landroid/app/Activity;Landroid/os/Bundle;)V
+	public fun onActivityDestroyed (Landroid/app/Activity;)V
+	public fun onActivityPaused (Landroid/app/Activity;)V
+	public fun onActivityResumed (Landroid/app/Activity;)V
+	public fun onActivitySaveInstanceState (Landroid/app/Activity;Landroid/os/Bundle;)V
+	public fun onActivityStarted (Landroid/app/Activity;)V
+	public fun onActivityStopped (Landroid/app/Activity;)V
+	public fun onFragmentCreated (Landroidx/fragment/app/FragmentManager;Landroidx/fragment/app/Fragment;Landroid/os/Bundle;)V
+	public fun onFragmentPreCreated (Landroidx/fragment/app/FragmentManager;Landroidx/fragment/app/Fragment;Landroid/os/Bundle;)V
+	public fun onFragmentResumed (Landroidx/fragment/app/FragmentManager;Landroidx/fragment/app/Fragment;)V
+}
+

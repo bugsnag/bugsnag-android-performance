@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.detekt) apply false
     alias(libs.plugins.dokka) apply false
     alias(libs.plugins.licenseCheck) apply false
+    alias(libs.plugins.binaryCompatibility) apply false
 }
 
 tasks.create("clean") {
