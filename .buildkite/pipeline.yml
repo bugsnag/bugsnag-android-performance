@@ -11,6 +11,14 @@ steps:
       JAVA_VERSION: '17'
     command: './gradlew --continue license detekt lint ktlintCheck'
 
+  - label: ':android: Binary compatibility checks'
+    timeout_in_minutes: 20
+    agents:
+      queue: macos-15
+    env:
+      JAVA_VERSION: '17'
+    command: './gradlew apiCheck'
+
   - label: ':android: JVM tests'
     timeout_in_minutes: 10
     agents:

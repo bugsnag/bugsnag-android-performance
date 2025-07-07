@@ -1,0 +1,20 @@
+public final class com/bugsnag/android/performance/okhttp/BugsnagPerformanceOkhttp : okhttp3/EventListener, okhttp3/Interceptor {
+	public static final field EventListenerFactory Lcom/bugsnag/android/performance/okhttp/BugsnagPerformanceOkhttp$EventListenerFactory;
+	public fun <init> ()V
+	public fun callEnd (Lokhttp3/Call;)V
+	public fun callFailed (Lokhttp3/Call;Ljava/io/IOException;)V
+	public fun callStart (Lokhttp3/Call;)V
+	public fun canceled (Lokhttp3/Call;)V
+	public fun intercept (Lokhttp3/Interceptor$Chain;)Lokhttp3/Response;
+	public fun requestBodyEnd (Lokhttp3/Call;J)V
+	public fun responseHeadersEnd (Lokhttp3/Call;Lokhttp3/Response;)V
+}
+
+public final class com/bugsnag/android/performance/okhttp/BugsnagPerformanceOkhttp$EventListenerFactory : okhttp3/EventListener$Factory {
+	public fun create (Lokhttp3/Call;)Lokhttp3/EventListener;
+}
+
+public final class com/bugsnag/android/performance/okhttp/BugsnagPerformanceOkhttpKt {
+	public static final fun withBugsnagPerformance (Lokhttp3/OkHttpClient$Builder;)Lokhttp3/OkHttpClient$Builder;
+}
+
