@@ -12,6 +12,7 @@ import com.bugsnag.android.performance.PerformanceConfiguration
 import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.internal.plugins.PluginManager
 import com.bugsnag.android.performance.internal.processing.ImmutableConfig
+import com.bugsnag.android.performance.test.TestTimeoutExecutor
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotSame
@@ -51,7 +52,11 @@ class ImmutableConfigTest {
                 tracePropagationUrls = emptySet<Pattern>()
             }
 
-        val immutableConfig = ImmutableConfig(perfConfig, PluginManager(emptyList()))
+        val immutableConfig =
+            ImmutableConfig(
+                perfConfig,
+                PluginManager(TestTimeoutExecutor(), emptyList()),
+            )
 
         assertEquals(perfConfig.context, immutableConfig.application)
         assertEquals(perfConfig.apiKey, immutableConfig.apiKey)
@@ -70,7 +75,11 @@ class ImmutableConfigTest {
     @Test
     fun defaultEndpointHasApiKey() {
         val perfConfig = PerformanceConfiguration(mockedContext(), TEST_API_KEY)
-        val immutableConfig = ImmutableConfig(perfConfig, PluginManager(emptyList()))
+        val immutableConfig =
+            ImmutableConfig(
+                perfConfig,
+                PluginManager(TestTimeoutExecutor(), emptyList()),
+            )
 
         assertEquals(
             "https://$TEST_API_KEY.otlp.bugsnag.com/v1/traces",
@@ -84,7 +93,11 @@ class ImmutableConfigTest {
         val perfConfig = PerformanceConfiguration(mockedContext(), TEST_API_KEY)
         perfConfig.enabledReleaseStages = releaseStages
 
-        val immutableConfig = ImmutableConfig(perfConfig, PluginManager(emptyList()))
+        val immutableConfig =
+            ImmutableConfig(
+                perfConfig,
+                PluginManager(TestTimeoutExecutor(), emptyList()),
+            )
         assertNotSame(releaseStages, immutableConfig.enabledReleaseStages)
         assertEquals(releaseStages, immutableConfig.enabledReleaseStages)
 
@@ -98,14 +111,22 @@ class ImmutableConfigTest {
         perfConfig.releaseStage = "this is a very interesting releaseStage"
         perfConfig.enabledReleaseStages = null
 
-        val immutableConfig = ImmutableConfig(perfConfig, PluginManager(emptyList()))
+        val immutableConfig =
+            ImmutableConfig(
+                perfConfig,
+                PluginManager(TestTimeoutExecutor(), emptyList()),
+            )
         assertTrue(immutableConfig.isReleaseStageEnabled)
     }
 
     @Test
     fun versionCodeFromContext() {
         val perfConfig = PerformanceConfiguration(mockedContext(), TEST_API_KEY)
-        val immutableConfig = ImmutableConfig(perfConfig, PluginManager(emptyList()))
+        val immutableConfig =
+            ImmutableConfig(
+                perfConfig,
+                PluginManager(TestTimeoutExecutor(), emptyList()),
+            )
 
         assertEquals(TEST_VERSION_CODE.toLong(), immutableConfig.versionCode)
     }
@@ -113,7 +134,11 @@ class ImmutableConfigTest {
     @Test
     fun appVersionFromContext() {
         val perfConfig = PerformanceConfiguration(mockedContext(), TEST_API_KEY)
-        val immutableConfig = ImmutableConfig(perfConfig, PluginManager(emptyList()))
+        val immutableConfig =
+            ImmutableConfig(
+                perfConfig,
+                PluginManager(TestTimeoutExecutor(), emptyList()),
+            )
 
         assertEquals(TEST_VERSION_NAME, immutableConfig.appVersion)
     }
@@ -124,7 +149,10 @@ class ImmutableConfigTest {
         Logger.delegate = logger
 
         val perfConfig = PerformanceConfiguration(mockedContext(), "bad-api-key")
-        ImmutableConfig(perfConfig, PluginManager(emptyList()))
+        ImmutableConfig(
+            perfConfig,
+            PluginManager(TestTimeoutExecutor(), emptyList()),
+        )
 
         verify(logger).w(startsWith("Invalid configuration"))
     }
@@ -135,7 +163,10 @@ class ImmutableConfigTest {
         Logger.delegate = logger
 
         val perfConfig = PerformanceConfiguration(mockedContext(), TEST_API_KEY.uppercase())
-        ImmutableConfig(perfConfig, PluginManager(emptyList()))
+        ImmutableConfig(
+            perfConfig,
+            PluginManager(TestTimeoutExecutor(), emptyList()),
+        )
 
         verify(logger).w(startsWith("Invalid configuration"))
     }
@@ -146,7 +177,10 @@ class ImmutableConfigTest {
         Logger.delegate = logger
 
         val perfConfig = PerformanceConfiguration(mockedContext(), TEST_API_KEY.substring(0, 30))
-        ImmutableConfig(perfConfig, PluginManager(emptyList()))
+        ImmutableConfig(
+            perfConfig,
+            PluginManager(TestTimeoutExecutor(), emptyList()),
+        )
 
         verify(logger).w(startsWith("Invalid configuration"))
     }
@@ -157,7 +191,10 @@ class ImmutableConfigTest {
         Logger.delegate = logger
 
         val perfConfig = PerformanceConfiguration(mockedContext(), TEST_API_KEY + "bad")
-        ImmutableConfig(perfConfig, PluginManager(emptyList()))
+        ImmutableConfig(
+            perfConfig,
+            PluginManager(TestTimeoutExecutor(), emptyList()),
+        )
 
         verify(logger).w(startsWith("Invalid configuration"))
     }

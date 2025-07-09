@@ -1,6 +1,5 @@
 package com.bugsnag.android.performance
 
-import com.bugsnag.android.performance.test.NoopSpanProcessor
 import com.bugsnag.android.performance.test.TestSpanFactory
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -32,9 +31,8 @@ internal class RemoteSpanContextTest {
     fun testUnsampledSpanContext() {
         val span =
             spanFactory.newSpan(
-                traceId = UUID.fromString("12345678-90ab-cdef-1234-567890abcdef"),
-                spanId = 0x1234567890abcdefL,
-                processor = NoopSpanProcessor,
+                UUID.fromString("12345678-90ab-cdef-1234-567890abcdef"),
+                0x1234567890abcdefL,
             )
 
         // make sure the span is unsampled by forcing probability to 0

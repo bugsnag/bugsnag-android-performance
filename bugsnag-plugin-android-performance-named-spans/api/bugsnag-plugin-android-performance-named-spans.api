@@ -1,0 +1,23 @@
+public final class com/bugsnag/android/performance/controls/NamedSpanControlsPlugin : com/bugsnag/android/performance/Plugin {
+	public fun <init> ()V
+	public fun <init> (JLjava/util/concurrent/TimeUnit;Lcom/bugsnag/android/performance/controls/NamedSpanControlsPlugin$OnSpanTimeoutCallback;)V
+	public synthetic fun <init> (JLjava/util/concurrent/TimeUnit;Lcom/bugsnag/android/performance/controls/NamedSpanControlsPlugin$OnSpanTimeoutCallback;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun install (Lcom/bugsnag/android/performance/PluginContext;)V
+	public fun start ()V
+}
+
+public abstract interface class com/bugsnag/android/performance/controls/NamedSpanControlsPlugin$OnSpanTimeoutCallback {
+	public abstract fun onSpanTimeout (Lcom/bugsnag/android/performance/Span;)V
+}
+
+public final class com/bugsnag/android/performance/controls/NamedSpanQuery : com/bugsnag/android/performance/controls/SpanQuery {
+	public fun <init> (Ljava/lang/String;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;)Lcom/bugsnag/android/performance/controls/NamedSpanQuery;
+	public static synthetic fun copy$default (Lcom/bugsnag/android/performance/controls/NamedSpanQuery;Ljava/lang/String;ILjava/lang/Object;)Lcom/bugsnag/android/performance/controls/NamedSpanQuery;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getName ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
