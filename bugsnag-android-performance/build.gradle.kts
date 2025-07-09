@@ -8,6 +8,7 @@ plugins {
     id("com.github.hierynomus.license")
     id("org.jetbrains.dokka")
     id("maven-publish")
+    id("org.jetbrains.kotlinx.binary-compatibility-validator")
 }
 
 apply(from = "../gradle/release.gradle")
@@ -39,6 +40,10 @@ android {
         }
     }
 
+    testFixtures {
+        enable = true
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
@@ -57,8 +62,8 @@ project.tasks.withType(KotlinCompile::class.java).configureEach {
 
 dependencies {
     api(libs.kotlin.stdlib)
-
-    compileOnly(libs.bugsnag.android)
+    api(project(":bugsnag-android-performance-api"))
+    implementation(project(":bugsnag-android-performance-impl"))
 
     implementation(libs.androidx.annotation)
 
@@ -67,6 +72,7 @@ dependencies {
     testImplementation(libs.kotlin.reflect)
     testImplementation(libs.jsonSchemaFriend)
     testImplementation(libs.bugsnag.android)
+    testImplementation(testFixtures(project(":bugsnag-android-performance-impl")))
 }
 
 license {

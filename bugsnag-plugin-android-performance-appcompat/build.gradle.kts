@@ -8,6 +8,7 @@ plugins {
     id("com.github.hierynomus.license")
     id("org.jetbrains.dokka")
     id("maven-publish")
+    id("org.jetbrains.kotlinx.binary-compatibility-validator")
 }
 
 apply(from = "../gradle/release.gradle")
@@ -60,6 +61,7 @@ dependencies {
     api(libs.kotlin.stdlib)
 
     implementation(project(":bugsnag-android-performance"))
+    implementation(project(":bugsnag-android-performance-impl"))
 
     implementation(libs.androidx.annotation)
     implementation(libs.androidx.appcompat)

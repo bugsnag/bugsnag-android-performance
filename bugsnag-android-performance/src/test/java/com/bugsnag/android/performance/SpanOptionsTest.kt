@@ -20,8 +20,8 @@ class SpanOptionsTest {
 
     @Before
     fun newSpanFactory() {
-        spanFactory = SpanFactory(NoopSpanProcessor)
-        SpanContext.contextStack.clear()
+        spanFactory = SpanFactory(NoopSpanProcessor.INSTANCE)
+        SpanContext.defaultStorage?.clear()
     }
 
     @Test

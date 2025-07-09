@@ -1,6 +1,6 @@
 # Releasing a new version
 
-`bugsnag-android-performance` is released via [Sonatype](https://oss.sonatype.org/). If you are a project maintainer you can release a new version by unblocking the publish step on CI and following the steps below.
+`bugsnag-android-performance` is released via [Sonatype](https://central.sonatype.com/). If you are a project maintainer you can release a new version by unblocking the publish step on CI and following the steps below.
 
 ## Pre-release checklist
 
@@ -38,9 +38,9 @@ This contains a prompt of checks which you may want to test, depending on the ex
     - Release to GitHub:
         - [ ] Create *and tag* the release from `main` on [GitHub Releases](https://github.com/bugsnag/bugsnag-android-performance/releases)
     - Checkout `main` and pull the latest changes
-    - [ ] Test the Sonatype artefacts in the example app by adding the newly created 'combugsnag-XXXX' repository to the build.gradle:  `maven {url "https://oss.sonatype.org/service/local/repositories/combugsnag-XXXX/content/"}`
+    - [ ] Test by input `rm -rf ~/.m2/repository/com/bugsnag` and `./gradlew publishToMavenlocal` to terminal and test the changes in the example app
     - [ ] "Promote" the release build on Maven Central:
-        - Go to the [sonatype open source dashboard](https://oss.sonatype.org/index.html#stagingRepositories)
+        - Go to the [sonatype dashboard](https://central.sonatype.com/publishing/deployments)
         - Click the search box at the top right, and type “com.bugsnag”
         - Select the com.bugsnag staging repository
         - Ensure that AARs and POMs are present for each module, and that ProGuard rules are present for AARs which define ProGuard rules

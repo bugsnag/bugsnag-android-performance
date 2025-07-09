@@ -1,3 +1,17 @@
+## 2.0.0 (2025-07-09)
+
+### Changes
+
+* Internal modularisation: moved the internal implementations of `bugsnag-android-performance` to the `bugsnag-android-performance-impl` module, and much of the API into the `bugsnag-android-performance-api` module. No changes are required to your dependencies and no code-changes are required.
+  [#406](https://github.com/bugsnag/bugsnag-android-performance/pull/406)
+* New `bugsnag-plugin-android-performance-named-spans` plugin to track open spans by name, allowing you to easily retrieve them using `BugsnagPerformance.getSpanControls(NamedSpanQuery("spanName"))`
+  [#411](https://github.com/bugsnag/bugsnag-android-performance/pull/411)
+
+### Bug fixes
+
+* Stopped attempting to send CPU metrics when none could be collected for a span
+  [#404](https://github.com/bugsnag/bugsnag-android-performance/pull/404)
+
 ## 1.16.0 (2025-06-23)
 
 ### Changes

@@ -1,0 +1,847 @@
+public abstract class com/bugsnag/android/performance/internal/AbstractTask : com/bugsnag/android/performance/internal/Task {
+	public fun <init> ()V
+	protected final fun getWorker ()Lcom/bugsnag/android/performance/internal/Worker;
+	public fun onAttach (Lcom/bugsnag/android/performance/internal/Worker;)V
+	public fun onDetach (Lcom/bugsnag/android/performance/internal/Worker;)V
+}
+
+public final class com/bugsnag/android/performance/internal/AppStartPhase : java/lang/Enum {
+	public static final field FRAMEWORK Lcom/bugsnag/android/performance/internal/AppStartPhase;
+	public static fun valueOf (Ljava/lang/String;)Lcom/bugsnag/android/performance/internal/AppStartPhase;
+	public static fun values ()[Lcom/bugsnag/android/performance/internal/AppStartPhase;
+}
+
+public final class com/bugsnag/android/performance/internal/Attributes {
+	public fun <init> ()V
+	public final fun contains (Ljava/lang/String;)Z
+	public final fun get (Ljava/lang/String;)Ljava/lang/Object;
+	public final fun getEntries ()Ljava/util/Collection;
+	public final fun getKeys ()Ljava/util/Set;
+	public final fun getSize ()I
+	public final fun remove (Ljava/lang/String;)V
+	public final fun set (Ljava/lang/String;D)V
+	public final fun set (Ljava/lang/String;I)V
+	public final fun set (Ljava/lang/String;J)V
+	public final fun set (Ljava/lang/String;Ljava/lang/String;)V
+	public final fun set (Ljava/lang/String;Ljava/util/Collection;)V
+	public final fun set (Ljava/lang/String;Z)V
+	public final fun set (Ljava/lang/String;[D)V
+	public final fun set (Ljava/lang/String;[I)V
+	public final fun set (Ljava/lang/String;[J)V
+	public final fun set (Ljava/lang/String;[Ljava/lang/String;)V
+}
+
+public final class com/bugsnag/android/performance/internal/AutoInstrumentationCache {
+	public fun <init> ()V
+	public final fun configure (Ljava/util/Collection;Ljava/util/Collection;)V
+	public final fun isAppStartActivity (Ljava/lang/Class;)Z
+	public final fun isInstrumentationEnabled (Ljava/lang/Class;)Z
+}
+
+public final class com/bugsnag/android/performance/internal/BugsnagClock {
+	public static final field INSTANCE Lcom/bugsnag/android/performance/internal/BugsnagClock;
+	public final fun currentUnixNanoTime ()J
+	public final fun elapsedNanosToUnixTime (J)J
+	public final fun fromDate (Ljava/util/Date;)J
+	public final fun getBootTimeNano ()J
+	public final fun toDate ()Ljava/util/Date;
+	public final fun unixNanoTimeToElapsedRealtime (J)J
+}
+
+public final class com/bugsnag/android/performance/internal/BugsnagPerformanceImpl {
+	public static final field INSTANCE Lcom/bugsnag/android/performance/internal/BugsnagPerformanceImpl;
+	public static final field VERSION Ljava/lang/String;
+	public final fun getInstrumentedAppState ()Lcom/bugsnag/android/performance/internal/InstrumentedAppState;
+	public final fun getSpanControls (Lcom/bugsnag/android/performance/controls/SpanQuery;)Ljava/lang/Object;
+	public final fun getSpanFactory ()Lcom/bugsnag/android/performance/internal/SpanFactory;
+	public final fun reportApplicationClassLoaded ()V
+	public final fun startUnderLock (Lcom/bugsnag/android/performance/PerformanceConfiguration;)V
+	public final fun startViewLoadSpan (Landroid/app/Activity;Lcom/bugsnag/android/performance/SpanOptions;)Lcom/bugsnag/android/performance/Span;
+}
+
+public final class com/bugsnag/android/performance/internal/ContextExtensionsKt {
+	public static final field RELEASE_STAGE_DEVELOPMENT Ljava/lang/String;
+	public static final field RELEASE_STAGE_PRODUCTION Ljava/lang/String;
+	public static final fun getActivityManagerFrom (Landroid/content/Context;)Landroid/app/ActivityManager;
+	public static final fun getConnectivityManagerFrom (Landroid/content/Context;)Landroid/net/ConnectivityManager;
+	public static final fun getReleaseStage (Landroid/content/Context;)Ljava/lang/String;
+	public static final fun getTelephonyManagerFrom (Landroid/content/Context;)Landroid/telephony/TelephonyManager;
+	public static final fun registerReceiverSafe (Landroid/content/Context;Landroid/content/BroadcastReceiver;Landroid/content/IntentFilter;)Landroid/content/Intent;
+	public static final fun safeGetNetworkCapabilities (Landroid/net/ConnectivityManager;Landroid/net/Network;)Landroid/net/NetworkCapabilities;
+	public static final fun unregisterReceiverSafe (Landroid/content/Context;Landroid/content/BroadcastReceiver;)V
+}
+
+public final class com/bugsnag/android/performance/internal/DebugLogger : com/bugsnag/android/performance/Logger {
+	public static final field INSTANCE Lcom/bugsnag/android/performance/internal/DebugLogger;
+	public fun d (Ljava/lang/String;)V
+	public fun d (Ljava/lang/String;Ljava/lang/Throwable;)V
+	public fun e (Ljava/lang/String;)V
+	public fun e (Ljava/lang/String;Ljava/lang/Throwable;)V
+	public fun i (Ljava/lang/String;)V
+	public fun i (Ljava/lang/String;Ljava/lang/Throwable;)V
+	public fun w (Ljava/lang/String;)V
+	public fun w (Ljava/lang/String;Ljava/lang/Throwable;)V
+}
+
+public abstract interface class com/bugsnag/android/performance/internal/Delivery {
+	public abstract fun deliver (Lcom/bugsnag/android/performance/internal/TracePayload;)Lcom/bugsnag/android/performance/internal/DeliveryResult;
+	public abstract fun deliver (Ljava/util/Collection;Lcom/bugsnag/android/performance/internal/Attributes;)Lcom/bugsnag/android/performance/internal/DeliveryResult;
+	public abstract fun fetchCurrentProbability ()V
+	public abstract fun getNewProbabilityCallback ()Lcom/bugsnag/android/performance/internal/NewProbabilityCallback;
+	public abstract fun setNewProbabilityCallback (Lcom/bugsnag/android/performance/internal/NewProbabilityCallback;)V
+}
+
+public abstract class com/bugsnag/android/performance/internal/DeliveryResult {
+}
+
+public final class com/bugsnag/android/performance/internal/DeliveryResult$Failed : com/bugsnag/android/performance/internal/DeliveryResult {
+	public fun <init> (Lcom/bugsnag/android/performance/internal/TracePayload;Z)V
+	public final fun component1 ()Lcom/bugsnag/android/performance/internal/TracePayload;
+	public final fun component2 ()Z
+	public final fun copy (Lcom/bugsnag/android/performance/internal/TracePayload;Z)Lcom/bugsnag/android/performance/internal/DeliveryResult$Failed;
+	public static synthetic fun copy$default (Lcom/bugsnag/android/performance/internal/DeliveryResult$Failed;Lcom/bugsnag/android/performance/internal/TracePayload;ZILjava/lang/Object;)Lcom/bugsnag/android/performance/internal/DeliveryResult$Failed;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getCanRetry ()Z
+	public final fun getPayload ()Lcom/bugsnag/android/performance/internal/TracePayload;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/bugsnag/android/performance/internal/DeliveryResult$Success : com/bugsnag/android/performance/internal/DeliveryResult {
+	public static final field INSTANCE Lcom/bugsnag/android/performance/internal/DeliveryResult$Success;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/bugsnag/android/performance/internal/DeviceIdFilePersistence {
+	public static final field Companion Lcom/bugsnag/android/performance/internal/DeviceIdFilePersistence$Companion;
+	public fun <init> (Ljava/io/File;Lkotlin/jvm/functions/Function0;)V
+	public final fun loadDeviceId (Z)Ljava/lang/String;
+}
+
+public final class com/bugsnag/android/performance/internal/DeviceIdFilePersistence$Companion {
+	public final fun forContext (Landroid/content/Context;)Lcom/bugsnag/android/performance/internal/DeviceIdFilePersistence;
+}
+
+public final class com/bugsnag/android/performance/internal/DiscardingSampler : com/bugsnag/android/performance/internal/Sampler {
+	public static final field INSTANCE Lcom/bugsnag/android/performance/internal/DiscardingSampler;
+	public fun getSampleProbability ()D
+	public fun sampled (Ljava/util/Collection;)Ljava/util/Collection;
+	public fun shouldKeepSpan (Lcom/bugsnag/android/performance/internal/SpanImpl;)Z
+}
+
+public final class com/bugsnag/android/performance/internal/EncodingUtils {
+	public static final fun appendHexLong (Ljava/lang/StringBuilder;J)Ljava/lang/StringBuilder;
+	public static final fun appendHexPair (Ljava/lang/StringBuilder;I)Ljava/lang/StringBuilder;
+	public static final fun appendHexUUID (Ljava/lang/StringBuilder;Ljava/util/UUID;)Ljava/lang/StringBuilder;
+	public static final fun parseUnsignedLong (Ljava/lang/String;)J
+}
+
+public final class com/bugsnag/android/performance/internal/EnumExtensionsKt {
+	public static final fun getOtelName (Lcom/bugsnag/android/performance/SpanKind;)Ljava/lang/String;
+	public static final fun getOtelOrdinal (Lcom/bugsnag/android/performance/SpanKind;)I
+	public static final fun getSpanName (Lcom/bugsnag/android/performance/ViewType;)Ljava/lang/String;
+	public static final fun getTypeName (Lcom/bugsnag/android/performance/ViewType;)Ljava/lang/String;
+}
+
+public final class com/bugsnag/android/performance/internal/ForegroundTrackerKt {
+	public static final fun isInForeground (Landroid/app/Application;)Ljava/lang/Boolean;
+	public static synthetic fun isInForeground$default (Landroid/app/Application;ILjava/lang/Object;)Ljava/lang/Boolean;
+}
+
+public class com/bugsnag/android/performance/internal/HttpDelivery : com/bugsnag/android/performance/internal/Delivery {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Lcom/bugsnag/android/performance/internal/connectivity/Connectivity;ZLcom/bugsnag/android/performance/internal/processing/AttributeLimits;)V
+	public fun deliver (Lcom/bugsnag/android/performance/internal/TracePayload;)Lcom/bugsnag/android/performance/internal/DeliveryResult;
+	public fun deliver (Ljava/util/Collection;Lcom/bugsnag/android/performance/internal/Attributes;)Lcom/bugsnag/android/performance/internal/DeliveryResult;
+	public fun fetchCurrentProbability ()V
+	public fun getNewProbabilityCallback ()Lcom/bugsnag/android/performance/internal/NewProbabilityCallback;
+	public fun setNewProbabilityCallback (Lcom/bugsnag/android/performance/internal/NewProbabilityCallback;)V
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/bugsnag/android/performance/internal/InstrumentedAppState {
+	public fun <init> ()V
+	public final fun getApp ()Landroid/app/Application;
+	public final fun getAutoInstrumentationCache ()Lcom/bugsnag/android/performance/internal/AutoInstrumentationCache;
+	public final fun getSpanFactory ()Lcom/bugsnag/android/performance/internal/SpanFactory;
+	public final fun getSpanProcessor ()Lcom/bugsnag/android/performance/internal/SpanProcessor;
+	public final fun getSpanTracker ()Lcom/bugsnag/android/performance/internal/SpanTracker;
+	public final fun getTracePropagationUrls ()Ljava/util/Collection;
+	public final fun onBugsnagPerformanceStart ()V
+	public final fun setTracePropagationUrls (Ljava/util/Collection;)V
+}
+
+public final class com/bugsnag/android/performance/internal/InternalDebug {
+	public static final field INSTANCE Lcom/bugsnag/android/performance/internal/InternalDebug;
+	public final fun getDropSpansOlderThanMs ()J
+	public final fun getPValueExpireAfterMs ()I
+	public final fun getSpanBatchSizeSendTriggerPoint ()I
+	public final fun getWorkerSleepMs ()J
+	public final fun setDropSpansOlderThanMs (J)V
+	public final fun setPValueExpireAfterMs (I)V
+	public final fun setSpanBatchSizeSendTriggerPoint (I)V
+	public final fun setWorkerSleepMs (J)V
+}
+
+public final class com/bugsnag/android/performance/internal/LoadDeviceId : java/lang/Runnable {
+	public fun <init> (Landroid/content/Context;Lcom/bugsnag/android/performance/internal/Attributes;)V
+	public fun run ()V
+}
+
+public final class com/bugsnag/android/performance/internal/Loopers {
+	public static final field INSTANCE Lcom/bugsnag/android/performance/internal/Loopers;
+	public static final fun getMain ()Landroid/os/Looper;
+	public final fun getMainHandler ()Landroid/os/Handler;
+	public final fun isMainThread ()Z
+	public final fun newMainHandler ()Landroid/os/Handler;
+	public final fun newMainHandler (Landroid/os/Handler$Callback;)Landroid/os/Handler;
+	public final fun onMainThread (Lkotlin/jvm/functions/Function0;)V
+}
+
+public abstract interface class com/bugsnag/android/performance/internal/Module {
+	public abstract fun load (Lcom/bugsnag/android/performance/internal/InstrumentedAppState;)V
+	public abstract fun unload ()V
+}
+
+public final class com/bugsnag/android/performance/internal/Module$Loader : kotlin/jvm/functions/Function1 {
+	public fun <init> (Lcom/bugsnag/android/performance/internal/InstrumentedAppState;)V
+	public synthetic fun invoke (Ljava/lang/Object;)Ljava/lang/Object;
+	public fun invoke (Ljava/lang/String;)Lcom/bugsnag/android/performance/internal/Module;
+	public final fun loadModule (Ljava/lang/String;)Lcom/bugsnag/android/performance/internal/Module;
+}
+
+public abstract interface class com/bugsnag/android/performance/internal/NewProbabilityCallback {
+	public abstract fun onNewProbability (D)V
+}
+
+public final class com/bugsnag/android/performance/internal/NoopLogger : com/bugsnag/android/performance/Logger {
+	public static final field INSTANCE Lcom/bugsnag/android/performance/internal/NoopLogger;
+	public fun d (Ljava/lang/String;)V
+	public fun d (Ljava/lang/String;Ljava/lang/Throwable;)V
+	public fun e (Ljava/lang/String;)V
+	public fun e (Ljava/lang/String;Ljava/lang/Throwable;)V
+	public fun i (Ljava/lang/String;)V
+	public fun i (Ljava/lang/String;Ljava/lang/Throwable;)V
+	public fun w (Ljava/lang/String;)V
+	public fun w (Ljava/lang/String;Ljava/lang/Throwable;)V
+}
+
+public final class com/bugsnag/android/performance/internal/Persistence {
+	public fun <init> (Landroid/content/Context;)V
+	public final fun clear ()V
+	public final fun getContext ()Landroid/content/Context;
+	public final fun getPersistentState ()Lcom/bugsnag/android/performance/internal/PersistentState;
+	public final fun getRetryQueue ()Lcom/bugsnag/android/performance/internal/RetryQueue;
+	public final fun getTopLevelDirectory ()Ljava/io/File;
+}
+
+public final class com/bugsnag/android/performance/internal/PersistentState {
+	public fun <init> (Ljava/io/File;)V
+	public final fun getPValue ()D
+	public final fun getPValueExpiryTime ()J
+	public final fun save ()V
+	public final fun setPValue (D)V
+	public final fun setPValueExpiryTime (J)V
+	public final fun update (Lkotlin/jvm/functions/Function1;)V
+}
+
+public final class com/bugsnag/android/performance/internal/ProbabilitySampler : com/bugsnag/android/performance/internal/Sampler {
+	public fun <init> (D)V
+	public fun getSampleProbability ()D
+	public fun sampled (Ljava/util/Collection;)Ljava/util/Collection;
+	public fun setSampleProbability (D)V
+	public fun shouldKeepSpan (Lcom/bugsnag/android/performance/internal/SpanImpl;)Z
+}
+
+public final class com/bugsnag/android/performance/internal/ResourceAttributesKt {
+	public static final fun createResourceAttributes (Lcom/bugsnag/android/performance/internal/processing/ImmutableConfig;)Lcom/bugsnag/android/performance/internal/Attributes;
+}
+
+public final class com/bugsnag/android/performance/internal/RetryDelivery : com/bugsnag/android/performance/internal/Delivery {
+	public fun <init> (Lcom/bugsnag/android/performance/internal/RetryQueue;Lcom/bugsnag/android/performance/internal/Delivery;)V
+	public fun deliver (Lcom/bugsnag/android/performance/internal/TracePayload;)Lcom/bugsnag/android/performance/internal/DeliveryResult;
+	public fun deliver (Ljava/util/Collection;Lcom/bugsnag/android/performance/internal/Attributes;)Lcom/bugsnag/android/performance/internal/DeliveryResult;
+	public fun fetchCurrentProbability ()V
+	public fun getNewProbabilityCallback ()Lcom/bugsnag/android/performance/internal/NewProbabilityCallback;
+	public fun setNewProbabilityCallback (Lcom/bugsnag/android/performance/internal/NewProbabilityCallback;)V
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/bugsnag/android/performance/internal/RetryDeliveryTask : com/bugsnag/android/performance/internal/AbstractTask {
+	public fun <init> (Lcom/bugsnag/android/performance/internal/RetryQueue;Lcom/bugsnag/android/performance/internal/Delivery;Lcom/bugsnag/android/performance/internal/connectivity/Connectivity;)V
+	public fun execute ()Z
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/bugsnag/android/performance/internal/RetryQueue {
+	public fun <init> (Ljava/io/File;J)V
+	public synthetic fun <init> (Ljava/io/File;JILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun add (Lcom/bugsnag/android/performance/internal/TracePayload;)V
+	public final fun next ()Lcom/bugsnag/android/performance/internal/TracePayload;
+	public final fun remove (J)V
+	public final fun sweep ()V
+}
+
+public abstract interface class com/bugsnag/android/performance/internal/Sampler {
+	public abstract fun getSampleProbability ()D
+	public abstract fun sampled (Ljava/util/Collection;)Ljava/util/Collection;
+	public abstract fun shouldKeepSpan (Lcom/bugsnag/android/performance/internal/SpanImpl;)Z
+}
+
+public final class com/bugsnag/android/performance/internal/Sampler$DefaultImpls {
+	public static fun getSampleProbability (Lcom/bugsnag/android/performance/internal/Sampler;)D
+	public static fun sampled (Lcom/bugsnag/android/performance/internal/Sampler;Ljava/util/Collection;)Ljava/util/Collection;
+}
+
+public final class com/bugsnag/android/performance/internal/SamplerTask : com/bugsnag/android/performance/internal/NewProbabilityCallback, com/bugsnag/android/performance/internal/Task {
+	public fun <init> (Lcom/bugsnag/android/performance/internal/Delivery;Lcom/bugsnag/android/performance/internal/ProbabilitySampler;Lcom/bugsnag/android/performance/internal/PersistentState;)V
+	public fun execute ()Z
+	public fun onAttach (Lcom/bugsnag/android/performance/internal/Worker;)V
+	public fun onDetach (Lcom/bugsnag/android/performance/internal/Worker;)V
+	public fun onNewProbability (D)V
+}
+
+public final class com/bugsnag/android/performance/internal/SendBatchTask : com/bugsnag/android/performance/internal/AbstractTask {
+	public fun <init> (Lcom/bugsnag/android/performance/internal/Delivery;Lcom/bugsnag/android/performance/internal/processing/Tracer;Lcom/bugsnag/android/performance/internal/Attributes;)V
+	public fun execute ()Z
+	public final fun getDelivery ()Lcom/bugsnag/android/performance/internal/Delivery;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/bugsnag/android/performance/internal/SpanCategory {
+	public static final field CATEGORY_APP_START Ljava/lang/String;
+	public static final field CATEGORY_APP_START_PHASE Ljava/lang/String;
+	public static final field CATEGORY_CUSTOM Ljava/lang/String;
+	public static final field CATEGORY_NETWORK Ljava/lang/String;
+	public static final field CATEGORY_VIEW_LOAD Ljava/lang/String;
+	public static final field CATEGORY_VIEW_LOAD_PHASE Ljava/lang/String;
+	public static final field Companion Lcom/bugsnag/android/performance/internal/SpanCategory$Companion;
+	public static final synthetic fun box-impl (Ljava/lang/String;)Lcom/bugsnag/android/performance/internal/SpanCategory;
+	public fun equals (Ljava/lang/Object;)Z
+	public static fun equals-impl (Ljava/lang/String;Ljava/lang/Object;)Z
+	public static final fun equals-impl0 (Ljava/lang/String;Ljava/lang/String;)Z
+	public final fun getCategory ()Ljava/lang/String;
+	public fun hashCode ()I
+	public static fun hashCode-impl (Ljava/lang/String;)I
+	public fun toString ()Ljava/lang/String;
+	public static fun toString-impl (Ljava/lang/String;)Ljava/lang/String;
+	public final synthetic fun unbox-impl ()Ljava/lang/String;
+}
+
+public final class com/bugsnag/android/performance/internal/SpanCategory$Companion {
+	public final fun getAPP_START-haBhItc ()Ljava/lang/String;
+	public final fun getAPP_START_PHASE-haBhItc ()Ljava/lang/String;
+	public final fun getCUSTOM-haBhItc ()Ljava/lang/String;
+	public final fun getNETWORK-haBhItc ()Ljava/lang/String;
+	public final fun getVIEW_LOAD-haBhItc ()Ljava/lang/String;
+	public final fun getVIEW_LOAD_PHASE-haBhItc ()Ljava/lang/String;
+}
+
+public final class com/bugsnag/android/performance/internal/SpanContextStack {
+	public static final fun attach-impl (Ljava/util/Deque;Lcom/bugsnag/android/performance/SpanContext;)V
+	public static final synthetic fun box-impl (Ljava/util/Deque;)Lcom/bugsnag/android/performance/internal/SpanContextStack;
+	public static final fun clear-impl (Ljava/util/Deque;)V
+	public static fun constructor-impl (Ljava/util/Deque;)Ljava/util/Deque;
+	public static synthetic fun constructor-impl$default (Ljava/util/Deque;ILkotlin/jvm/internal/DefaultConstructorMarker;)Ljava/util/Deque;
+	public static final fun copy-07jRbR8 (Ljava/util/Deque;)Ljava/util/Deque;
+	public static final fun current-AYqBgNU (Ljava/util/Deque;Ljava/lang/String;)Lcom/bugsnag/android/performance/internal/SpanImpl;
+	public static final fun detach-impl (Ljava/util/Deque;Lcom/bugsnag/android/performance/SpanContext;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public static fun equals-impl (Ljava/util/Deque;Ljava/lang/Object;)Z
+	public static final fun equals-impl0 (Ljava/util/Deque;Ljava/util/Deque;)Z
+	public static final fun findSpan-impl (Ljava/util/Deque;Lkotlin/jvm/functions/Function1;)Lcom/bugsnag/android/performance/internal/SpanImpl;
+	public static final fun getSize-impl (Ljava/util/Deque;)I
+	public static final fun getTop-impl (Ljava/util/Deque;)Lcom/bugsnag/android/performance/SpanContext;
+	public fun hashCode ()I
+	public static fun hashCode-impl (Ljava/util/Deque;)I
+	public static final fun noSpansMatch-impl (Ljava/util/Deque;Lkotlin/jvm/functions/Function1;)Z
+	public fun toString ()Ljava/lang/String;
+	public static fun toString-impl (Ljava/util/Deque;)Ljava/lang/String;
+	public final synthetic fun unbox-impl ()Ljava/util/Deque;
+}
+
+public final class com/bugsnag/android/performance/internal/SpanFactory {
+	public fun <init> (Lcom/bugsnag/android/performance/internal/SpanProcessor;Lkotlin/jvm/functions/Function1;)V
+	public synthetic fun <init> (Lcom/bugsnag/android/performance/internal/SpanProcessor;Lkotlin/jvm/functions/Function1;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun createAppStartPhaseSpan (Lcom/bugsnag/android/performance/internal/AppStartPhase;Lcom/bugsnag/android/performance/SpanContext;Lcom/bugsnag/android/performance/internal/SpanProcessor;)Lcom/bugsnag/android/performance/internal/SpanImpl;
+	public static synthetic fun createAppStartPhaseSpan$default (Lcom/bugsnag/android/performance/internal/SpanFactory;Lcom/bugsnag/android/performance/internal/AppStartPhase;Lcom/bugsnag/android/performance/SpanContext;Lcom/bugsnag/android/performance/internal/SpanProcessor;ILjava/lang/Object;)Lcom/bugsnag/android/performance/internal/SpanImpl;
+	public final fun createAppStartSpan (Ljava/lang/String;Lcom/bugsnag/android/performance/internal/SpanProcessor;)Lcom/bugsnag/android/performance/internal/SpanImpl;
+	public static synthetic fun createAppStartSpan$default (Lcom/bugsnag/android/performance/internal/SpanFactory;Ljava/lang/String;Lcom/bugsnag/android/performance/internal/SpanProcessor;ILjava/lang/Object;)Lcom/bugsnag/android/performance/internal/SpanImpl;
+	public final fun createCustomSpan (Ljava/lang/String;)Lcom/bugsnag/android/performance/internal/SpanImpl;
+	public final fun createCustomSpan (Ljava/lang/String;Lcom/bugsnag/android/performance/SpanOptions;)Lcom/bugsnag/android/performance/internal/SpanImpl;
+	public final fun createCustomSpan (Ljava/lang/String;Lcom/bugsnag/android/performance/SpanOptions;Lcom/bugsnag/android/performance/internal/SpanProcessor;)Lcom/bugsnag/android/performance/internal/SpanImpl;
+	public static synthetic fun createCustomSpan$default (Lcom/bugsnag/android/performance/internal/SpanFactory;Ljava/lang/String;Lcom/bugsnag/android/performance/SpanOptions;Lcom/bugsnag/android/performance/internal/SpanProcessor;ILjava/lang/Object;)Lcom/bugsnag/android/performance/internal/SpanImpl;
+	public final fun createNetworkSpan (Ljava/lang/String;Ljava/lang/String;Lcom/bugsnag/android/performance/SpanOptions;Lcom/bugsnag/android/performance/internal/SpanProcessor;)Lcom/bugsnag/android/performance/internal/SpanImpl;
+	public static synthetic fun createNetworkSpan$default (Lcom/bugsnag/android/performance/internal/SpanFactory;Ljava/lang/String;Ljava/lang/String;Lcom/bugsnag/android/performance/SpanOptions;Lcom/bugsnag/android/performance/internal/SpanProcessor;ILjava/lang/Object;)Lcom/bugsnag/android/performance/internal/SpanImpl;
+	public final fun createViewLoadPhaseSpan (Landroid/app/Activity;Lcom/bugsnag/android/performance/internal/ViewLoadPhase;Lcom/bugsnag/android/performance/SpanOptions;Lcom/bugsnag/android/performance/internal/SpanProcessor;)Lcom/bugsnag/android/performance/internal/SpanImpl;
+	public final fun createViewLoadPhaseSpan (Ljava/lang/String;Lcom/bugsnag/android/performance/ViewType;Lcom/bugsnag/android/performance/internal/ViewLoadPhase;Lcom/bugsnag/android/performance/SpanOptions;Lcom/bugsnag/android/performance/internal/SpanProcessor;)Lcom/bugsnag/android/performance/internal/SpanImpl;
+	public static synthetic fun createViewLoadPhaseSpan$default (Lcom/bugsnag/android/performance/internal/SpanFactory;Landroid/app/Activity;Lcom/bugsnag/android/performance/internal/ViewLoadPhase;Lcom/bugsnag/android/performance/SpanOptions;Lcom/bugsnag/android/performance/internal/SpanProcessor;ILjava/lang/Object;)Lcom/bugsnag/android/performance/internal/SpanImpl;
+	public static synthetic fun createViewLoadPhaseSpan$default (Lcom/bugsnag/android/performance/internal/SpanFactory;Ljava/lang/String;Lcom/bugsnag/android/performance/ViewType;Lcom/bugsnag/android/performance/internal/ViewLoadPhase;Lcom/bugsnag/android/performance/SpanOptions;Lcom/bugsnag/android/performance/internal/SpanProcessor;ILjava/lang/Object;)Lcom/bugsnag/android/performance/internal/SpanImpl;
+	public final fun createViewLoadSpan (Landroid/app/Activity;Lcom/bugsnag/android/performance/SpanOptions;Lcom/bugsnag/android/performance/internal/SpanProcessor;)Lcom/bugsnag/android/performance/internal/SpanImpl;
+	public final fun createViewLoadSpan (Lcom/bugsnag/android/performance/ViewType;Ljava/lang/String;Lcom/bugsnag/android/performance/SpanOptions;Lcom/bugsnag/android/performance/internal/SpanProcessor;)Lcom/bugsnag/android/performance/internal/SpanImpl;
+	public static synthetic fun createViewLoadSpan$default (Lcom/bugsnag/android/performance/internal/SpanFactory;Landroid/app/Activity;Lcom/bugsnag/android/performance/SpanOptions;Lcom/bugsnag/android/performance/internal/SpanProcessor;ILjava/lang/Object;)Lcom/bugsnag/android/performance/internal/SpanImpl;
+	public static synthetic fun createViewLoadSpan$default (Lcom/bugsnag/android/performance/internal/SpanFactory;Lcom/bugsnag/android/performance/ViewType;Ljava/lang/String;Lcom/bugsnag/android/performance/SpanOptions;Lcom/bugsnag/android/performance/internal/SpanProcessor;ILjava/lang/Object;)Lcom/bugsnag/android/performance/internal/SpanImpl;
+	public final fun getNetworkRequestCallback ()Lcom/bugsnag/android/performance/NetworkRequestInstrumentationCallback;
+	public final fun getSampler ()Lcom/bugsnag/android/performance/internal/Sampler;
+	public final fun getSpanAttributeSource ()Lkotlin/jvm/functions/Function1;
+	public final fun getSpanProcessor ()Lcom/bugsnag/android/performance/internal/SpanProcessor;
+	public final fun setNetworkRequestCallback (Lcom/bugsnag/android/performance/NetworkRequestInstrumentationCallback;)V
+	public final fun setSampler (Lcom/bugsnag/android/performance/internal/Sampler;)V
+	public final fun setSpanProcessor (Lcom/bugsnag/android/performance/internal/SpanProcessor;)V
+}
+
+public final class com/bugsnag/android/performance/internal/SpanImpl : com/bugsnag/android/performance/HasAttributes, com/bugsnag/android/performance/Span {
+	public static final field Companion Lcom/bugsnag/android/performance/internal/SpanImpl$Companion;
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Lcom/bugsnag/android/performance/SpanKind;JLjava/util/UUID;JJZLcom/bugsnag/android/performance/internal/processing/AttributeLimits;Lcom/bugsnag/android/performance/internal/metrics/SpanMetricsSnapshot;Lcom/bugsnag/android/performance/internal/processing/TimeoutExecutor;Lcom/bugsnag/android/performance/internal/SpanProcessor;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Lcom/bugsnag/android/performance/SpanKind;JLjava/util/UUID;JJZLcom/bugsnag/android/performance/internal/processing/AttributeLimits;Lcom/bugsnag/android/performance/internal/metrics/SpanMetricsSnapshot;Lcom/bugsnag/android/performance/internal/processing/TimeoutExecutor;Lcom/bugsnag/android/performance/internal/SpanProcessor;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Lcom/bugsnag/android/performance/SpanKind;JLjava/util/UUID;JJZLcom/bugsnag/android/performance/internal/processing/TimeoutExecutor;Lcom/bugsnag/android/performance/internal/SpanProcessor;)V
+	public final fun block (J)Lcom/bugsnag/android/performance/internal/SpanImpl$Condition;
+	public fun close ()V
+	public final fun discard ()V
+	public fun end ()V
+	public fun end (J)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAttributes ()Lcom/bugsnag/android/performance/internal/Attributes;
+	public final fun getCategory-haBhItc ()Ljava/lang/String;
+	public fun getName ()Ljava/lang/String;
+	public final fun getParentSpanId ()J
+	public final fun getSamplingProbability ()D
+	public fun getSpanId ()J
+	public final fun getStartTime$internal ()J
+	public fun getTraceId ()Ljava/util/UUID;
+	public fun hashCode ()I
+	public final fun isBlocked ()Z
+	public fun isEnded ()Z
+	public final fun isOpen ()Z
+	public final fun isSampled ()Z
+	public fun setAttribute (Ljava/lang/String;D)V
+	public fun setAttribute (Ljava/lang/String;I)V
+	public fun setAttribute (Ljava/lang/String;J)V
+	public fun setAttribute (Ljava/lang/String;Ljava/lang/String;)V
+	public fun setAttribute (Ljava/lang/String;Ljava/util/Collection;)V
+	public fun setAttribute (Ljava/lang/String;Z)V
+	public fun setAttribute (Ljava/lang/String;[D)V
+	public fun setAttribute (Ljava/lang/String;[I)V
+	public fun setAttribute (Ljava/lang/String;[J)V
+	public fun setAttribute (Ljava/lang/String;[Ljava/lang/String;)V
+	public final fun setSamplingProbability (D)V
+	public fun toString ()Ljava/lang/String;
+	public fun wrap (Ljava/lang/Runnable;)Ljava/lang/Runnable;
+	public fun wrap (Ljava/util/concurrent/Callable;)Ljava/util/concurrent/Callable;
+}
+
+public final class com/bugsnag/android/performance/internal/SpanImpl$Companion {
+}
+
+public abstract interface class com/bugsnag/android/performance/internal/SpanImpl$Condition {
+	public abstract fun cancel ()V
+	public abstract fun close (J)V
+	public abstract fun upgrade ()Lcom/bugsnag/android/performance/SpanContext;
+	public abstract fun wrap (Lcom/bugsnag/android/performance/Span;)Lcom/bugsnag/android/performance/Span;
+}
+
+public final class com/bugsnag/android/performance/internal/SpanImpl$Condition$DefaultImpls {
+	public static synthetic fun close$default (Lcom/bugsnag/android/performance/internal/SpanImpl$Condition;JILjava/lang/Object;)V
+	public static fun wrap (Lcom/bugsnag/android/performance/internal/SpanImpl$Condition;Lcom/bugsnag/android/performance/Span;)Lcom/bugsnag/android/performance/Span;
+}
+
+public abstract interface class com/bugsnag/android/performance/internal/SpanProcessor {
+	public abstract fun onEnd (Lcom/bugsnag/android/performance/Span;)V
+}
+
+public final class com/bugsnag/android/performance/internal/SpanTracker {
+	public fun <init> ()V
+	public final fun associate (Ljava/lang/Object;Ljava/lang/Enum;Lcom/bugsnag/android/performance/internal/SpanImpl;)Lcom/bugsnag/android/performance/internal/SpanImpl;
+	public final fun associate (Ljava/lang/Object;Ljava/lang/Enum;Lkotlin/jvm/functions/Function0;)Lcom/bugsnag/android/performance/internal/SpanImpl;
+	public static synthetic fun associate$default (Lcom/bugsnag/android/performance/internal/SpanTracker;Ljava/lang/Object;Ljava/lang/Enum;Lcom/bugsnag/android/performance/internal/SpanImpl;ILjava/lang/Object;)Lcom/bugsnag/android/performance/internal/SpanImpl;
+	public static synthetic fun associate$default (Lcom/bugsnag/android/performance/internal/SpanTracker;Ljava/lang/Object;Ljava/lang/Enum;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)Lcom/bugsnag/android/performance/internal/SpanImpl;
+	public final fun discardAllSpans (Ljava/lang/Object;)V
+	public final fun endAllSpans (Ljava/lang/Object;J)V
+	public static synthetic fun endAllSpans$default (Lcom/bugsnag/android/performance/internal/SpanTracker;Ljava/lang/Object;JILjava/lang/Object;)V
+	public final fun endSpan (Ljava/lang/Object;Ljava/lang/Enum;J)V
+	public static synthetic fun endSpan$default (Lcom/bugsnag/android/performance/internal/SpanTracker;Ljava/lang/Object;Ljava/lang/Enum;JILjava/lang/Object;)V
+	public final fun get (Ljava/lang/Object;Ljava/lang/Enum;)Lcom/bugsnag/android/performance/internal/SpanImpl;
+	public static synthetic fun get$default (Lcom/bugsnag/android/performance/internal/SpanTracker;Ljava/lang/Object;Ljava/lang/Enum;ILjava/lang/Object;)Lcom/bugsnag/android/performance/internal/SpanImpl;
+	public final fun markSpanAutomaticEnd (Ljava/lang/Object;Ljava/lang/Enum;)V
+	public static synthetic fun markSpanAutomaticEnd$default (Lcom/bugsnag/android/performance/internal/SpanTracker;Ljava/lang/Object;Ljava/lang/Enum;ILjava/lang/Object;)V
+	public final fun markSpanLeaked (Ljava/lang/Object;Ljava/lang/Enum;)Z
+	public static synthetic fun markSpanLeaked$default (Lcom/bugsnag/android/performance/internal/SpanTracker;Ljava/lang/Object;Ljava/lang/Enum;ILjava/lang/Object;)Z
+	public final fun removeAssociation (Ljava/lang/Object;Ljava/lang/Enum;)Lcom/bugsnag/android/performance/internal/SpanImpl;
+	public static synthetic fun removeAssociation$default (Lcom/bugsnag/android/performance/internal/SpanTracker;Ljava/lang/Object;Ljava/lang/Enum;ILjava/lang/Object;)Lcom/bugsnag/android/performance/internal/SpanImpl;
+}
+
+public abstract interface class com/bugsnag/android/performance/internal/Task {
+	public abstract fun execute ()Z
+	public abstract fun onAttach (Lcom/bugsnag/android/performance/internal/Worker;)V
+	public abstract fun onDetach (Lcom/bugsnag/android/performance/internal/Worker;)V
+}
+
+public final class com/bugsnag/android/performance/internal/Task$DefaultImpls {
+	public static fun onAttach (Lcom/bugsnag/android/performance/internal/Task;Lcom/bugsnag/android/performance/internal/Worker;)V
+	public static fun onDetach (Lcom/bugsnag/android/performance/internal/Task;Lcom/bugsnag/android/performance/internal/Worker;)V
+}
+
+public final class com/bugsnag/android/performance/internal/TracePayload {
+	public static final field Encoder Lcom/bugsnag/android/performance/internal/TracePayload$Encoder;
+	public fun <init> (J[BLjava/util/Map;)V
+	public final fun component1 ()J
+	public final fun component2 ()[B
+	public final fun component3 ()Ljava/util/Map;
+	public final fun copy (J[BLjava/util/Map;)Lcom/bugsnag/android/performance/internal/TracePayload;
+	public static synthetic fun copy$default (Lcom/bugsnag/android/performance/internal/TracePayload;J[BLjava/util/Map;ILjava/lang/Object;)Lcom/bugsnag/android/performance/internal/TracePayload;
+	public static final fun createTracePayload (Ljava/lang/String;Ljava/util/Collection;Lcom/bugsnag/android/performance/internal/Attributes;ZLcom/bugsnag/android/performance/internal/processing/AttributeLimits;)Lcom/bugsnag/android/performance/internal/TracePayload;
+	public static final fun createTracePayload (Ljava/lang/String;[BLjava/util/Map;J)Lcom/bugsnag/android/performance/internal/TracePayload;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getBody ()[B
+	public final fun getHeaders ()Ljava/util/Map;
+	public final fun getTimestamp ()J
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/bugsnag/android/performance/internal/TracePayload$Encoder {
+	public final fun createTracePayload (Ljava/lang/String;Ljava/util/Collection;Lcom/bugsnag/android/performance/internal/Attributes;ZLcom/bugsnag/android/performance/internal/processing/AttributeLimits;)Lcom/bugsnag/android/performance/internal/TracePayload;
+	public final fun createTracePayload (Ljava/lang/String;[BLjava/util/Map;J)Lcom/bugsnag/android/performance/internal/TracePayload;
+	public static synthetic fun createTracePayload$default (Lcom/bugsnag/android/performance/internal/TracePayload$Encoder;Ljava/lang/String;[BLjava/util/Map;JILjava/lang/Object;)Lcom/bugsnag/android/performance/internal/TracePayload;
+}
+
+public final class com/bugsnag/android/performance/internal/ViewLoadPhase : java/lang/Enum {
+	public static final field CREATE Lcom/bugsnag/android/performance/internal/ViewLoadPhase;
+	public static final field DRAW Lcom/bugsnag/android/performance/internal/ViewLoadPhase;
+	public static final field RESUME Lcom/bugsnag/android/performance/internal/ViewLoadPhase;
+	public static final field START Lcom/bugsnag/android/performance/internal/ViewLoadPhase;
+	public final fun phaseNameFor (Lcom/bugsnag/android/performance/ViewType;)Ljava/lang/String;
+	public static fun valueOf (Ljava/lang/String;)Lcom/bugsnag/android/performance/internal/ViewLoadPhase;
+	public static fun values ()[Lcom/bugsnag/android/performance/internal/ViewLoadPhase;
+}
+
+public final class com/bugsnag/android/performance/internal/Worker : java/lang/Runnable {
+	public fun <init> ()V
+	public fun <init> (Lkotlin/jvm/functions/Function0;)V
+	public synthetic fun <init> (Lkotlin/jvm/functions/Function0;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun run ()V
+	public final fun start ()V
+	public final fun stop (Z)V
+	public static synthetic fun stop$default (Lcom/bugsnag/android/performance/internal/Worker;ZILjava/lang/Object;)V
+	public final fun wake ()V
+}
+
+public final class com/bugsnag/android/performance/internal/connectivity/ConnectionMetering : java/lang/Enum {
+	public static final field DISCONNECTED Lcom/bugsnag/android/performance/internal/connectivity/ConnectionMetering;
+	public static final field POTENTIALLY_METERED Lcom/bugsnag/android/performance/internal/connectivity/ConnectionMetering;
+	public static final field UNMETERED Lcom/bugsnag/android/performance/internal/connectivity/ConnectionMetering;
+	public static fun valueOf (Ljava/lang/String;)Lcom/bugsnag/android/performance/internal/connectivity/ConnectionMetering;
+	public static fun values ()[Lcom/bugsnag/android/performance/internal/connectivity/ConnectionMetering;
+}
+
+public abstract interface class com/bugsnag/android/performance/internal/connectivity/Connectivity {
+	public static final field Factory Lcom/bugsnag/android/performance/internal/connectivity/Connectivity$Factory;
+	public abstract fun getConnectivityStatus ()Lcom/bugsnag/android/performance/internal/connectivity/ConnectivityStatus;
+	public abstract fun registerForNetworkChanges ()V
+	public abstract fun unregisterForNetworkChanges ()V
+}
+
+public final class com/bugsnag/android/performance/internal/connectivity/Connectivity$Factory {
+	public final fun newInstance (Landroid/content/Context;Lkotlin/jvm/functions/Function1;)Lcom/bugsnag/android/performance/internal/connectivity/Connectivity;
+}
+
+public final class com/bugsnag/android/performance/internal/connectivity/ConnectivityKt {
+	public static final fun shouldAttemptDelivery (Lcom/bugsnag/android/performance/internal/connectivity/Connectivity;)Z
+}
+
+public final class com/bugsnag/android/performance/internal/connectivity/ConnectivityStatus {
+	public fun <init> (ZLcom/bugsnag/android/performance/internal/connectivity/ConnectionMetering;Lcom/bugsnag/android/performance/internal/connectivity/NetworkType;Ljava/lang/String;)V
+	public final fun component1 ()Z
+	public final fun component2 ()Lcom/bugsnag/android/performance/internal/connectivity/ConnectionMetering;
+	public final fun component3 ()Lcom/bugsnag/android/performance/internal/connectivity/NetworkType;
+	public final fun component4 ()Ljava/lang/String;
+	public final fun copy (ZLcom/bugsnag/android/performance/internal/connectivity/ConnectionMetering;Lcom/bugsnag/android/performance/internal/connectivity/NetworkType;Ljava/lang/String;)Lcom/bugsnag/android/performance/internal/connectivity/ConnectivityStatus;
+	public static synthetic fun copy$default (Lcom/bugsnag/android/performance/internal/connectivity/ConnectivityStatus;ZLcom/bugsnag/android/performance/internal/connectivity/ConnectionMetering;Lcom/bugsnag/android/performance/internal/connectivity/NetworkType;Ljava/lang/String;ILjava/lang/Object;)Lcom/bugsnag/android/performance/internal/connectivity/ConnectivityStatus;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getHasConnection ()Z
+	public final fun getMetering ()Lcom/bugsnag/android/performance/internal/connectivity/ConnectionMetering;
+	public final fun getNetworkSubType ()Ljava/lang/String;
+	public final fun getNetworkType ()Lcom/bugsnag/android/performance/internal/connectivity/NetworkType;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/bugsnag/android/performance/internal/connectivity/NetworkType : java/lang/Enum {
+	public static final field CELL Lcom/bugsnag/android/performance/internal/connectivity/NetworkType;
+	public static final field UNAVAILABLE Lcom/bugsnag/android/performance/internal/connectivity/NetworkType;
+	public static final field UNKNOWN Lcom/bugsnag/android/performance/internal/connectivity/NetworkType;
+	public static final field WIFI Lcom/bugsnag/android/performance/internal/connectivity/NetworkType;
+	public static final field WIRED Lcom/bugsnag/android/performance/internal/connectivity/NetworkType;
+	public final field otelName Ljava/lang/String;
+	public static fun valueOf (Ljava/lang/String;)Lcom/bugsnag/android/performance/internal/connectivity/NetworkType;
+	public static fun values ()[Lcom/bugsnag/android/performance/internal/connectivity/NetworkType;
+}
+
+public final class com/bugsnag/android/performance/internal/context/ThreadLocalSpanContextStorage : com/bugsnag/android/performance/SpanContextStorage {
+	public fun <init> ()V
+	public fun attach (Lcom/bugsnag/android/performance/SpanContext;)V
+	public fun clear ()V
+	public fun detach (Lcom/bugsnag/android/performance/SpanContext;)V
+	public final fun getContextStack-07jRbR8 ()Ljava/util/Deque;
+	public fun getCurrentContext ()Lcom/bugsnag/android/performance/SpanContext;
+	public fun getCurrentStack ()Lkotlin/sequences/Sequence;
+	public final fun setContextStack-jmkdIac (Ljava/util/Deque;)V
+}
+
+public final class com/bugsnag/android/performance/internal/controls/AppStartControlProvider : com/bugsnag/android/performance/controls/SpanControlProvider {
+	public fun <init> (Lcom/bugsnag/android/performance/internal/SpanTracker;)V
+	public fun get (Lcom/bugsnag/android/performance/controls/SpanQuery;)Lcom/bugsnag/android/performance/controls/AppStartSpanControl;
+	public synthetic fun get (Lcom/bugsnag/android/performance/controls/SpanQuery;)Ljava/lang/Object;
+}
+
+public final class com/bugsnag/android/performance/internal/controls/CompositeSpanControlProvider : com/bugsnag/android/performance/controls/SpanControlProvider {
+	public fun <init> ()V
+	public final fun addProvider (Lcom/bugsnag/android/performance/internal/util/Prioritized;)V
+	public final fun addProviders (Ljava/util/Collection;)V
+	public fun get (Lcom/bugsnag/android/performance/controls/SpanQuery;)Ljava/lang/Object;
+	public final fun getSize ()I
+}
+
+public final class com/bugsnag/android/performance/internal/framerate/FramerateMetricsSnapshot {
+	public fun <init> (JJJLcom/bugsnag/android/performance/internal/framerate/TimestampPairBuffer;I)V
+	public final fun forEachFrozenFrameUntil (Lcom/bugsnag/android/performance/internal/framerate/FramerateMetricsSnapshot;Lkotlin/jvm/functions/Function2;)V
+	public final fun getFirstFrozenFrameIndex ()I
+	public final fun getFrozenFrameCount ()J
+	public final fun getFrozenFrames ()Lcom/bugsnag/android/performance/internal/framerate/TimestampPairBuffer;
+	public final fun getSlowFrameCount ()J
+	public final fun getTotalFrameCount ()J
+}
+
+public final class com/bugsnag/android/performance/internal/framerate/TimestampPairBuffer {
+	public static final field DEFAULT_BUFFER_SIZE I
+	public fun <init> ()V
+	public fun <init> (I)V
+	public synthetic fun <init> (IILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun add (JJ)Z
+	public final fun getIndex ()I
+	public final fun getNext ()Lcom/bugsnag/android/performance/internal/framerate/TimestampPairBuffer;
+	public final fun getTimestamps ()[J
+	public final fun setNext (Lcom/bugsnag/android/performance/internal/framerate/TimestampPairBuffer;)V
+}
+
+public final class com/bugsnag/android/performance/internal/integration/NotifierIntegration {
+	public static final field INSTANCE Lcom/bugsnag/android/performance/internal/integration/NotifierIntegration;
+	public final fun link ()V
+	public final fun onSpanEnded (Lcom/bugsnag/android/performance/internal/SpanImpl;)V
+	public final fun onSpanStarted (Lcom/bugsnag/android/performance/internal/SpanImpl;)V
+}
+
+public final class com/bugsnag/android/performance/internal/metrics/CpuMetricsSnapshot : com/bugsnag/android/performance/internal/metrics/LinkedMetricsSnapshot {
+	public fun <init> (I)V
+	public final fun copy (I)Lcom/bugsnag/android/performance/internal/metrics/CpuMetricsSnapshot;
+	public static synthetic fun copy$default (Lcom/bugsnag/android/performance/internal/metrics/CpuMetricsSnapshot;IILjava/lang/Object;)Lcom/bugsnag/android/performance/internal/metrics/CpuMetricsSnapshot;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public class com/bugsnag/android/performance/internal/metrics/LinkedMetricsSnapshot {
+	public field blocking Lcom/bugsnag/android/performance/internal/SpanImpl$Condition;
+	public field next Lcom/bugsnag/android/performance/internal/metrics/LinkedMetricsSnapshot;
+	public field target Lcom/bugsnag/android/performance/internal/SpanImpl;
+	public fun <init> ()V
+}
+
+public final class com/bugsnag/android/performance/internal/metrics/MemoryMetricsSnapshot : com/bugsnag/android/performance/internal/metrics/LinkedMetricsSnapshot {
+	public fun <init> (I)V
+	public final fun copy (I)Lcom/bugsnag/android/performance/internal/metrics/MemoryMetricsSnapshot;
+	public static synthetic fun copy$default (Lcom/bugsnag/android/performance/internal/metrics/MemoryMetricsSnapshot;IILjava/lang/Object;)Lcom/bugsnag/android/performance/internal/metrics/MemoryMetricsSnapshot;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class com/bugsnag/android/performance/internal/metrics/MetricSource {
+	public abstract fun createStartMetrics ()Ljava/lang/Object;
+	public abstract fun endMetrics (Ljava/lang/Object;Lcom/bugsnag/android/performance/Span;)V
+}
+
+public final class com/bugsnag/android/performance/internal/metrics/SpanMetricsSnapshot {
+	public fun <init> (Lcom/bugsnag/android/performance/internal/metrics/MetricSource;Lcom/bugsnag/android/performance/internal/metrics/MetricSource;Lcom/bugsnag/android/performance/internal/metrics/MetricSource;)V
+	public final fun finish (Lcom/bugsnag/android/performance/internal/SpanImpl;)V
+}
+
+public final class com/bugsnag/android/performance/internal/metrics/SystemConfig {
+	public static final field INSTANCE Lcom/bugsnag/android/performance/internal/metrics/SystemConfig;
+	public final fun configure ()V
+	public final fun getClockTickHz ()D
+	public final fun getNumCores ()I
+}
+
+public final class com/bugsnag/android/performance/internal/plugins/PluginContextImpl : com/bugsnag/android/performance/PluginContext {
+	public fun <init> (Lcom/bugsnag/android/performance/PerformanceConfiguration;Lcom/bugsnag/android/performance/internal/processing/TimeoutExecutor;)V
+	public fun addOnSpanEndCallback (ILcom/bugsnag/android/performance/OnSpanEndCallback;)V
+	public fun addOnSpanEndCallback (Lcom/bugsnag/android/performance/OnSpanEndCallback;)V
+	public fun addOnSpanStartCallback (ILcom/bugsnag/android/performance/OnSpanStartCallback;)V
+	public fun addOnSpanStartCallback (Lcom/bugsnag/android/performance/OnSpanStartCallback;)V
+	public fun addSpanControlProvider (ILcom/bugsnag/android/performance/controls/SpanControlProvider;)V
+	public fun addSpanControlProvider (Lcom/bugsnag/android/performance/controls/SpanControlProvider;)V
+	public fun getConfiguration ()Lcom/bugsnag/android/performance/PerformanceConfiguration;
+	public final fun getTimeoutExecutor ()Lcom/bugsnag/android/performance/internal/processing/TimeoutExecutor;
+}
+
+public final class com/bugsnag/android/performance/internal/plugins/PluginManager {
+	public fun <init> (Ljava/util/Collection;Lcom/bugsnag/android/performance/internal/processing/TimeoutExecutor;)V
+	public final fun getCompleteContext ()Lcom/bugsnag/android/performance/internal/plugins/PluginContextImpl;
+	public final fun installPlugins (Lcom/bugsnag/android/performance/PerformanceConfiguration;)V
+	public final fun startPlugins ()V
+}
+
+public abstract interface class com/bugsnag/android/performance/internal/processing/AttributeLimits {
+	public abstract fun getAttributeArrayLengthLimit ()I
+	public abstract fun getAttributeCountLimit ()I
+	public abstract fun getAttributeStringValueLimit ()I
+}
+
+public class com/bugsnag/android/performance/internal/processing/BatchingSpanProcessor : com/bugsnag/android/performance/internal/SpanProcessor {
+	public fun <init> ()V
+	public final fun addToBatch (Lcom/bugsnag/android/performance/internal/SpanImpl;)I
+	public final fun getCurrentBatchSize ()I
+	public fun onEnd (Lcom/bugsnag/android/performance/Span;)V
+	public final fun takeBatch ()Ljava/util/Collection;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/bugsnag/android/performance/internal/processing/ImmutableConfig : com/bugsnag/android/performance/internal/processing/AttributeLimits {
+	public fun <init> (Landroid/app/Application;Ljava/lang/String;Ljava/lang/String;ZLcom/bugsnag/android/performance/AutoInstrument;Lcom/bugsnag/android/performance/EnabledMetrics;Ljava/lang/String;Ljava/lang/String;Ljava/util/Set;Ljava/lang/Long;Ljava/lang/String;Lcom/bugsnag/android/performance/NetworkRequestInstrumentationCallback;Ljava/util/Collection;Ljava/util/Collection;Ljava/util/Collection;Ljava/util/List;Ljava/util/List;Ljava/lang/Double;III)V
+	public fun <init> (Lcom/bugsnag/android/performance/PerformanceConfiguration;Lcom/bugsnag/android/performance/internal/plugins/PluginManager;)V
+	public final fun getApiKey ()Ljava/lang/String;
+	public final fun getAppVersion ()Ljava/lang/String;
+	public final fun getApplication ()Landroid/app/Application;
+	public fun getAttributeArrayLengthLimit ()I
+	public fun getAttributeCountLimit ()I
+	public fun getAttributeStringValueLimit ()I
+	public final fun getAutoInstrumentActivities ()Lcom/bugsnag/android/performance/AutoInstrument;
+	public final fun getAutoInstrumentAppStarts ()Z
+	public final fun getDoNotAutoInstrument ()Ljava/util/Collection;
+	public final fun getDoNotEndAppStart ()Ljava/util/Collection;
+	public final fun getEnabledMetrics ()Lcom/bugsnag/android/performance/EnabledMetrics;
+	public final fun getEnabledReleaseStages ()Ljava/util/Set;
+	public final fun getEndpoint ()Ljava/lang/String;
+	public final fun getNetworkRequestCallback ()Lcom/bugsnag/android/performance/NetworkRequestInstrumentationCallback;
+	public final fun getReleaseStage ()Ljava/lang/String;
+	public final fun getSamplingProbability ()Ljava/lang/Double;
+	public final fun getServiceName ()Ljava/lang/String;
+	public final fun getSpanEndCallbacks ()Ljava/util/List;
+	public final fun getSpanStartCallbacks ()Ljava/util/List;
+	public final fun getTracePropagationUrls ()Ljava/util/Collection;
+	public final fun getVersionCode ()Ljava/lang/Long;
+	public final fun isReleaseStageEnabled ()Z
+}
+
+public abstract interface class com/bugsnag/android/performance/internal/processing/SamplerExecutor {
+	public abstract fun addSampler (Ljava/lang/Runnable;J)V
+	public abstract fun removeSampler (Ljava/lang/Runnable;)V
+}
+
+public final class com/bugsnag/android/performance/internal/processing/SamplerExecutor$DefaultImpls {
+	public static synthetic fun addSampler$default (Lcom/bugsnag/android/performance/internal/processing/SamplerExecutor;Ljava/lang/Runnable;JILjava/lang/Object;)V
+}
+
+public abstract interface class com/bugsnag/android/performance/internal/processing/ScheduledAction : java/lang/Runnable, java/util/concurrent/Delayed {
+	public abstract fun compareTo (Ljava/util/concurrent/Delayed;)I
+}
+
+public final class com/bugsnag/android/performance/internal/processing/ScheduledAction$DefaultImpls {
+	public static fun compareTo (Lcom/bugsnag/android/performance/internal/processing/ScheduledAction;Ljava/util/concurrent/Delayed;)I
+}
+
+public final class com/bugsnag/android/performance/internal/processing/SpanTaskWorker : com/bugsnag/android/performance/internal/processing/SamplerExecutor, com/bugsnag/android/performance/internal/processing/TimeoutExecutor, java/lang/Runnable {
+	public fun <init> ()V
+	public fun addSampler (Ljava/lang/Runnable;J)V
+	public fun cancelTimeout (Lcom/bugsnag/android/performance/internal/processing/Timeout;)V
+	public fun removeSampler (Ljava/lang/Runnable;)V
+	public fun run ()V
+	public fun scheduleTimeout (Lcom/bugsnag/android/performance/internal/processing/Timeout;)V
+	public final fun start ()V
+	public final fun stop ()V
+}
+
+public abstract interface class com/bugsnag/android/performance/internal/processing/Timeout : com/bugsnag/android/performance/internal/processing/ScheduledAction {
+	public abstract fun getDelay (Ljava/util/concurrent/TimeUnit;)J
+	public abstract fun getRelativeMs ()J
+	public abstract fun getTarget ()J
+}
+
+public final class com/bugsnag/android/performance/internal/processing/Timeout$DefaultImpls {
+	public static fun compareTo (Lcom/bugsnag/android/performance/internal/processing/Timeout;Ljava/util/concurrent/Delayed;)I
+	public static fun getDelay (Lcom/bugsnag/android/performance/internal/processing/Timeout;Ljava/util/concurrent/TimeUnit;)J
+	public static fun getRelativeMs (Lcom/bugsnag/android/performance/internal/processing/Timeout;)J
+}
+
+public abstract interface class com/bugsnag/android/performance/internal/processing/TimeoutExecutor {
+	public abstract fun cancelTimeout (Lcom/bugsnag/android/performance/internal/processing/Timeout;)V
+	public abstract fun scheduleTimeout (Lcom/bugsnag/android/performance/internal/processing/Timeout;)V
+}
+
+public final class com/bugsnag/android/performance/internal/processing/Tracer : com/bugsnag/android/performance/internal/processing/BatchingSpanProcessor {
+	public fun <init> (Ljava/util/List;)V
+	public final fun forceCurrentBatch ()V
+	public fun onEnd (Lcom/bugsnag/android/performance/Span;)V
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract class com/bugsnag/android/performance/internal/startup/AbstractStartupProvider : android/content/ContentProvider {
+	public fun <init> ()V
+	protected final fun checkPrivilegeEscalation ()V
+	public final fun delete (Landroid/net/Uri;Ljava/lang/String;[Ljava/lang/String;)I
+	public final fun getType (Landroid/net/Uri;)Ljava/lang/String;
+	public final fun insert (Landroid/net/Uri;Landroid/content/ContentValues;)Landroid/net/Uri;
+	public fun onCreate ()Z
+	public final fun query (Landroid/net/Uri;[Ljava/lang/String;Ljava/lang/String;[Ljava/lang/String;Ljava/lang/String;)Landroid/database/Cursor;
+	public final fun update (Landroid/net/Uri;Landroid/content/ContentValues;Ljava/lang/String;[Ljava/lang/String;)I
+}
+
+public final class com/bugsnag/android/performance/internal/startup/BugsnagPerformanceProvider : com/bugsnag/android/performance/internal/startup/AbstractStartupProvider {
+	public static final field Companion Lcom/bugsnag/android/performance/internal/startup/BugsnagPerformanceProvider$Companion;
+	public fun <init> ()V
+	public fun onCreate ()Z
+}
+
+public final class com/bugsnag/android/performance/internal/startup/BugsnagPerformanceProvider$Companion {
+}
+
+public final class com/bugsnag/android/performance/internal/util/FixedRingBuffer {
+	public fun <init> ([Ljava/lang/Object;)V
+	public final fun countItemsBetween (II)I
+	public final fun forEach (IILkotlin/jvm/functions/Function1;)V
+	public final fun forEachIndexed (IILkotlin/jvm/functions/Function2;)V
+	public final fun getCurrentIndex ()I
+	public final fun getSize ()I
+	public final fun getValues ()[Ljava/lang/Object;
+	public final fun next ()Ljava/lang/Object;
+	public final fun put (Lkotlin/jvm/functions/Function1;)V
+}
+
+public final class com/bugsnag/android/performance/internal/util/Prioritized : java/lang/Comparable {
+	public fun <init> (ILjava/lang/Object;)V
+	public fun compareTo (Lcom/bugsnag/android/performance/internal/util/Prioritized;)I
+	public synthetic fun compareTo (Ljava/lang/Object;)I
+	public final fun component1 ()I
+	public final fun component2 ()Ljava/lang/Object;
+	public final fun copy (ILjava/lang/Object;)Lcom/bugsnag/android/performance/internal/util/Prioritized;
+	public static synthetic fun copy$default (Lcom/bugsnag/android/performance/internal/util/Prioritized;ILjava/lang/Object;ILjava/lang/Object;)Lcom/bugsnag/android/performance/internal/util/Prioritized;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getPriority ()I
+	public final fun getValue ()Ljava/lang/Object;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/bugsnag/android/performance/internal/util/PrioritizedSet {
+	public fun <init> ()V
+	public fun <init> (ILjava/util/List;)V
+	public fun <init> (Ljava/util/Collection;)V
+	public final fun add (Lcom/bugsnag/android/performance/internal/util/Prioritized;)Z
+	public final fun addAll (Ljava/util/Collection;)Z
+	public final fun forEach (Lkotlin/jvm/functions/Function1;)V
+	public final fun getSize ()I
+	public final fun getValues ()[Lcom/bugsnag/android/performance/internal/util/Prioritized;
+	public final fun isEmpty ()Z
+	public final fun isNotEmpty ()Z
+}
+
