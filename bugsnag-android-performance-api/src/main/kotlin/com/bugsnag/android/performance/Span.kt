@@ -10,7 +10,9 @@ import java.io.Closeable
  *
  * Spans may not be changed once they have been closed.
  *
- * The [Span] interface is not intended for third-party implementation.
+ * ### Not stable for inheritance
+ * **The `Span` interface is not stable for inheritance in third party libraries**. New methods
+ * might be added to this interface in the future. It is stable for use.
  *
  * @see BugsnagPerformance.startSpan
  */
