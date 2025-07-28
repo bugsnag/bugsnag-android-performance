@@ -1,0 +1,43 @@
+agents:
+  queue: opensource
+
+steps:
+  - label: ':android: Build and upload benchmarks'
+    key: 'benchmark-fixture'
+    timeout_in_minutes: 30
+    agents:
+      queue: macos-15
+    env:
+      JAVA_VERSION: '17'
+    artifact_paths:
+      - "build/benchmark_fixture_url.txt"
+    commands:
+      - make benchmark-fixture
+      - bundle install
+      - bundle exec upload-app --farm=bb --app=./build/benchmark-fixture.apk --app-id-file=build/benchmark_fixture_url.txt
+
+  - label: ':bitbar: Benchmarks'
+    depends_on: "benchmark-fixture"
+    timeout_in_minutes: 60
+    plugins:
+      artifacts#v1.9.0:
+        download: "build/benchmark_fixture_url.txt"
+        upload:
+          - "maze_output/failed/**/*"
+          - "maze_output/metrics.csv"
+      docker-compose#v4.8.0:
+        pull: android-maze-runner
+        run: android-maze-runner
+        service-ports: true
+        command:
+          - "features/benchmarks"
+          - "--app=@build/benchmark_fixture_url.txt"
+          - "--farm=bb"
+          - "--device='Google Pixel 9 -US WEST'"
+          - "--appium-version=1.22"
+          - "--no-tunnel"
+          - "--aws-public-ip"
+          - "--fail-fast"
+    concurrency: 25
+    concurrency_group: 'bitbar'
+    concurrency_method: eager

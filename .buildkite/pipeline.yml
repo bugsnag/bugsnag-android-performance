@@ -83,6 +83,7 @@ steps:
         run: android-maze-runner
         service-ports: true
         command:
+          - "features/full_tests"
           - "--app=@build/fixture_url.txt"
           - "--farm=bb"
           - "--device={{matrix}}"
