@@ -28,14 +28,21 @@ internal class NamedSpanControlProvider(
 
     override fun onSpanStart(span: Span) {
         val spanRef = SpanRef(span)
-        spansByName[span.name] = spanRef
+        val existingRef = spansByName.put(span.name, spanRef)
+        if (existingRef != null) {
+            // If a span with the same name already exists, we replace it
+            // and cancel the previous timeout.
+            timeoutExecutor.cancelTimeout(existingRef)
+        }
         timeoutExecutor.scheduleTimeout(spanRef)
     }
 
     override fun onSpanEnd(span: Span): Boolean {
         val ref = spansByName[span.name]
         if (ref?.span == span) {
-            spansByName.remove(span.name, ref)
+            if (spansByName.remove(span.name, ref)) {
+                timeoutExecutor.cancelTimeout(ref)
+            }
         }
 
         return true
