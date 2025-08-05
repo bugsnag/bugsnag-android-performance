@@ -1,3 +1,10 @@
+## TBD
+
+### Bug fixes
+
+* `NamedSpanControlsPlugin` better handles timeouts when spans have duplicate names, avoiding holding references for longer than required
+  [#423](https://github.com/bugsnag/bugsnag-android-performance/pull/423)
+
 ## 2.0.0 (2025-07-09)
 
 ### Changes
