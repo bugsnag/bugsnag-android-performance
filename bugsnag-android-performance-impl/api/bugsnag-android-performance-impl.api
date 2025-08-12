@@ -66,6 +66,7 @@ public final class com/bugsnag/android/performance/internal/ContextExtensionsKt 
 	public static final fun getConnectivityManagerFrom (Landroid/content/Context;)Landroid/net/ConnectivityManager;
 	public static final fun getReleaseStage (Landroid/content/Context;)Ljava/lang/String;
 	public static final fun getTelephonyManagerFrom (Landroid/content/Context;)Landroid/telephony/TelephonyManager;
+	public static final fun isDebuggable (Landroid/content/Context;)Ljava/lang/Boolean;
 	public static final fun registerReceiverSafe (Landroid/content/Context;Landroid/content/BroadcastReceiver;Landroid/content/IntentFilter;)Landroid/content/Intent;
 	public static final fun safeGetNetworkCapabilities (Landroid/net/ConnectivityManager;Landroid/net/Network;)Landroid/net/NetworkCapabilities;
 	public static final fun unregisterReceiverSafe (Landroid/content/Context;Landroid/content/BroadcastReceiver;)V

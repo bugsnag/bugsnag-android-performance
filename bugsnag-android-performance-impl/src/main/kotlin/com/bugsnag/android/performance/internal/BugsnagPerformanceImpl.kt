@@ -7,6 +7,7 @@ import com.bugsnag.android.performance.PerformanceConfiguration
 import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.SpanOptions
 import com.bugsnag.android.performance.controls.SpanQuery
+import com.bugsnag.android.performance.internal.InternalDebug.configure
 import com.bugsnag.android.performance.internal.connectivity.Connectivity
 import com.bugsnag.android.performance.internal.controls.AppStartControlProvider
 import com.bugsnag.android.performance.internal.controls.CompositeSpanControlProvider
@@ -43,6 +44,12 @@ public object BugsnagPerformanceImpl {
         pluginManager.installPlugins(externalConfiguration)
 
         val configuration = ImmutableConfig(externalConfiguration, pluginManager)
+
+        InternalDebug.configure(
+            inDevelopment = externalConfiguration.isDevelopment,
+            context = configuration.application,
+        )
+
         val tracer = instrumentedAppState.configure(configuration)
 
         if (configuration.autoInstrumentAppStarts) {

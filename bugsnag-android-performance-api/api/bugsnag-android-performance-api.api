@@ -118,6 +118,7 @@ public final class com/bugsnag/android/performance/PerformanceConfiguration {
 	public final fun getSpanStartCallbacks ()Ljava/util/Collection;
 	public final fun getTracePropagationUrls ()Ljava/util/Collection;
 	public final fun getVersionCode ()Ljava/lang/Long;
+	public final fun isDevelopment ()Ljava/lang/Boolean;
 	public static final fun load (Landroid/content/Context;)Lcom/bugsnag/android/performance/PerformanceConfiguration;
 	public static final fun load (Landroid/content/Context;Ljava/lang/String;)Lcom/bugsnag/android/performance/PerformanceConfiguration;
 	public final fun removeOnSpanEndCallback (Lcom/bugsnag/android/performance/OnSpanEndCallback;)V
@@ -131,6 +132,7 @@ public final class com/bugsnag/android/performance/PerformanceConfiguration {
 	public final fun setAutoInstrumentActivities (Lcom/bugsnag/android/performance/AutoInstrument;)V
 	public final fun setAutoInstrumentAppStarts (Z)V
 	public final fun setAutoInstrumentRendering (Z)V
+	public final fun setDevelopment (Ljava/lang/Boolean;)V
 	public final fun setDoNotAutoInstrument (Ljava/util/Collection;)V
 	public final fun setDoNotEndAppStart (Ljava/util/Collection;)V
 	public final fun setEnabledMetrics (Lcom/bugsnag/android/performance/EnabledMetrics;)V
