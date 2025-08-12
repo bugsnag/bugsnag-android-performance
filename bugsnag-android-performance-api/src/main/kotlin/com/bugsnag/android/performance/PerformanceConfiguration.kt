@@ -94,6 +94,8 @@ public class PerformanceConfiguration private constructor(public val context: Co
             field = if (value !in 1..1000) 128 else value
         }
 
+    public var isDevelopment: Boolean? = null
+
     public fun addPlugin(plugin: Plugin) {
         _plugins.add(plugin)
     }

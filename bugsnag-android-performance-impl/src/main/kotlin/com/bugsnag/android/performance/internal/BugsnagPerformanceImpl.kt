@@ -43,6 +43,9 @@ public object BugsnagPerformanceImpl {
         pluginManager.installPlugins(externalConfiguration)
 
         val configuration = ImmutableConfig(externalConfiguration, pluginManager)
+
+        setDebugTimout(externalConfiguration, configuration)
+
         val tracer = instrumentedAppState.configure(configuration)
 
         if (configuration.autoInstrumentAppStarts) {
@@ -178,5 +181,14 @@ public object BugsnagPerformanceImpl {
     public fun <C> getSpanControls(query: SpanQuery<C>): C? {
         @Suppress("UNCHECKED_CAST")
         return spanControlProvider[query as SpanQuery<Any>] as C
+    }
+}
+
+private fun setDebugTimout(
+    externalConfiguration: PerformanceConfiguration,
+    configuration: ImmutableConfig,
+) {
+    if ((externalConfiguration.isDevelopment ?: configuration.application.isDebuggable) == true) {
+        InternalDebug.workerSleepMs == 5000L
     }
 }

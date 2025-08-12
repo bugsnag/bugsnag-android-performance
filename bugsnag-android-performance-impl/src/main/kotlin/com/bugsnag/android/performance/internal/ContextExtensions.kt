@@ -95,3 +95,14 @@ public val Context.releaseStage: String
             RELEASE_STAGE_PRODUCTION
         }
     }
+
+public val Context.isDebuggable: Boolean?
+    get() {
+        val appInfo = applicationInfo ?: return null
+        // If the app is debuggable, we consider it to be in development mode.
+        return if (appInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0) {
+            true
+        } else {
+            false
+        }
+    }
