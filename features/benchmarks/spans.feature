@@ -4,7 +4,7 @@ Feature: Device Metrics
     When I run "SpanOpenCloseBenchmark" configured as <options>
     And I wait for 30 seconds
     And I wait to receive at least 1 metrics
-    And I discord the oldest metric
+    And I discard the oldest metric
 
     Examples:
       | options                          |
