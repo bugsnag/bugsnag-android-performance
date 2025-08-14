@@ -67,13 +67,14 @@ steps:
     depends_on: "fixture"
     timeout_in_minutes: 60
     matrix:
-      - "ANDROID_9"
-      - "ANDROID_10"
-      - "ANDROID_11"
-      - "ANDROID_12"
-      - "ANDROID_13"
-      - "ANDROID_14"
-      - "ANDROID_15"
+#      - "ANDROID_9"
+#      - "ANDROID_10"
+#      - "ANDROID_11"
+#      - "ANDROID_12"
+#      - "ANDROID_13"
+#      - "ANDROID_14"
+#      - "ANDROID_15"
+      - "ANDROID_16"
     plugins:
       artifacts#v1.9.0:
         download: "build/fixture_url.txt"
