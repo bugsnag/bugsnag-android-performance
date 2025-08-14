@@ -1,0 +1,1 @@
+-keep class * extends com.bugsnag.benchmarks.api.Benchmark

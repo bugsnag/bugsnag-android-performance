@@ -11,6 +11,10 @@ test-fixture: install
 	@./gradlew -p=features/fixtures/mazeracer assembleRelease -x check
 	@cp features/fixtures/mazeracer/app/build/outputs/apk/release/app-release.apk build/test-fixture.apk
 
+benchmark-fixture: install
+	@cd features/fixtures/benchmarks && ./gradlew assembleRelease -x check
+	@cp features/fixtures/benchmarks/app/build/outputs/apk/release/app-release.apk build/benchmark-fixture.apk
+
 bump:
 ifneq ($(shell git diff --staged),)
 	@git diff --staged
