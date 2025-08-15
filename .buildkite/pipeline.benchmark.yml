@@ -36,7 +36,7 @@ steps:
           - "features/benchmarks"
           - "--app=@build/benchmark_fixture_url.txt"
           - "--farm=bb"
-          - "--device='Google Pixel 9 -US WEST'"
+          - "--device=Google Pixel 8 Pro Android 14 -US West"
           - "--appium-version=1.22"
           - "--no-tunnel"
           - "--aws-public-ip"
