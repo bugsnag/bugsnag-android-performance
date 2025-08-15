@@ -14,7 +14,8 @@ steps:
     artifact_paths:
       - "build/benchmark_fixture_url.txt"
     commands:
-      - make benchmark-fixture
+# TODO: Reinstate when builds work on CI
+#      - make benchmark-fixture
       - bundle install
       - bundle exec upload-app --farm=bb --app=./build/benchmark-fixture.apk --app-id-file=build/benchmark_fixture_url.txt
 
