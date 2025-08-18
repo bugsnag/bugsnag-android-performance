@@ -43,6 +43,12 @@ public object BugsnagPerformanceImpl {
         pluginManager.installPlugins(externalConfiguration)
 
         val configuration = ImmutableConfig(externalConfiguration, pluginManager)
+
+        InternalDebug.configure(
+            inDevelopment = externalConfiguration.isDevelopment,
+            context = configuration.application,
+        )
+
         val tracer = instrumentedAppState.configure(configuration)
 
         if (configuration.autoInstrumentAppStarts) {

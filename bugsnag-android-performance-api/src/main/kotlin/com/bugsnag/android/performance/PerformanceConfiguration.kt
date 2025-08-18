@@ -94,6 +94,12 @@ public class PerformanceConfiguration private constructor(public val context: Co
             field = if (value !in 1..1000) 128 else value
         }
 
+    /**
+     * Whether the SDK should run in development-mode, making certain adjustments to make app
+     * development smoother. Defaults to the `android:debuggable` atttribute in `AndroidManifest`.
+     */
+    public var isDevelopment: Boolean? = null
+
     public fun addPlugin(plugin: Plugin) {
         _plugins.add(plugin)
     }

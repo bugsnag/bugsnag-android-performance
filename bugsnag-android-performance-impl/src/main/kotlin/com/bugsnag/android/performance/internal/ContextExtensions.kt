@@ -88,10 +88,15 @@ public fun Context.getTelephonyManager(): TelephonyManager? = safeGetSystemServi
 
 public val Context.releaseStage: String
     get() {
-        val appInfo = applicationInfo ?: return RELEASE_STAGE_PRODUCTION
-        return if (appInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0) {
+        return if (isDebuggable == true) {
             RELEASE_STAGE_DEVELOPMENT
         } else {
             RELEASE_STAGE_PRODUCTION
         }
+    }
+
+public val Context.isDebuggable: Boolean?
+    get() {
+        val appInfo = applicationInfo ?: return null
+        return (appInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
     }
