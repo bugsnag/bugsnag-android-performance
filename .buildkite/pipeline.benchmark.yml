@@ -37,7 +37,7 @@ steps:
           - "features/benchmarks"
           - "--app=@build/benchmark_fixture_url.txt"
           - "--farm=bb"
-          - "--device=Google Pixel 8 Pro Android 14 -US West"
+          - "--device=$TEST_DEVICE"
           - "--appium-version=1.22"
           - "--no-tunnel"
           - "--aws-public-ip"
@@ -52,6 +52,6 @@ steps:
     plugins:
       artifacts#v1.9.0:
         download: "maze_output/metrics.csv"
-    command:
+    commands:
       - bundle install
-      - bundle exec benchmarks-to-datadog --api-key API_KEY --app-key APP_KEY -csv-file /path/to/metrics.csv
+      - bundle exec benchmarks-to-datadog --api-key $$DD_API_KEY --app-key $$DD_APP_KEY -csv-file maze_output/metrics.csv
