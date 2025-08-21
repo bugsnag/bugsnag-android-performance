@@ -2,23 +2,23 @@ agents:
   queue: opensource
 
 steps:
-#  - label: ':android: Build and upload benchmarks'
-#    key: 'benchmark-fixture'
-#    timeout_in_minutes: 30
-#    agents:
-#      queue: macos-15
-#    env:
-#      JAVA_VERSION: '17'
-#      # TODO: Remove these once added to the Buildkite environment
+  - label: ':android: Build and upload benchmarks'
+    key: 'benchmark-fixture'
+    timeout_in_minutes: 30
+    agents:
+      queue: macos-15-1
+    env:
+      JAVA_VERSION: '17'
+      # TODO: Remove these once added to the Buildkite environment
 #      ANDROID_HOME: /Users/administrator/Library/Android/sdk
-#    artifact_paths:
-#      - "build/benchmark_fixture_url.txt"
-#    commands:
-## TODO: Reinstate when builds work on CI
-##      - make benchmark-fixture
-#      - bundle install
-#      - bundle exec upload-app --farm=bb --app=./build/benchmark-fixture.apk --app-id-file=build/benchmark_fixture_url.txt
-#
+    artifact_paths:
+      - "build/benchmark_fixture_url.txt"
+    commands:
+# TODO: Reinstate when builds work on CI
+      - make benchmark-fixture
+      - bundle install
+      - bundle exec upload-app --farm=bb --app=./build/benchmark-fixture.apk --app-id-file=build/benchmark_fixture_url.txt
+
 #  - label: ':bitbar: Benchmarks'
 #    depends_on: "benchmark-fixture"
 #    key: 'benchmark-tests'
@@ -45,15 +45,15 @@ steps:
 #    concurrency: 25
 #    concurrency_group: 'bitbar'
 #    concurrency_method: eager
-
-  - label: 'Send results to Datadog'
+#
+#  - label: 'Send results to Datadog'
 #    depends_on: "benchmark-tests"
-    timeout_in_minutes: 10
-    agents:
-      queue: macos-15
+#    timeout_in_minutes: 10
+#    agents:
+#      queue: macos-15
 #    plugins:
 #      artifacts#v1.9.0:
 #        download: "maze_output/metrics.csv"
-    commands:
-      - bundle install
-      - bundle exec benchmarks-to-datadog --api-key $$DD_API_KEY --app-key $$DD_APP_KEY -csv-file maze_output/metrics.csv
+#    commands:
+#      - bundle install
+#      - bundle exec benchmarks-to-datadog --api-key "$$DD_API_KEY" --app-key "$$DD_APP_KEY" -csv-file maze_output/metrics.csv
