@@ -56,4 +56,4 @@ steps:
       queue: macos-15
     commands:
       - bundle install
-      - bundle exec benchmarks-to-datadog --api-key $$DD_API_KEY --app-key $$DD_APP_KEY -csv-file maze_output/metrics.csv
+      - bundle exec benchmarks-to-datadog --csv-file maze_output/metrics.csv
