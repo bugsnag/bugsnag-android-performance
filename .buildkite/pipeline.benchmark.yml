@@ -20,6 +20,8 @@ steps:
     depends_on: "benchmark-fixture"
     key: 'benchmark-tests'
     timeout_in_minutes: 30
+    env:
+      RUN_BENCHMARKS: "1"
     plugins:
       artifacts#v1.9.0:
         download: "build/benchmark_fixture_url.txt"

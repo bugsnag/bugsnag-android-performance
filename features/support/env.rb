@@ -4,8 +4,10 @@ BeforeAll do
 end
 
 Maze.hooks.before_all do
-  # TODO: PLAT-14759 Do not use Maze.driver directly
-  Maze.driver.execute_script('mobile: shell', command: 'cmd package compile -m speed -f com.bugsnag.benchmarks.android')
+  if ENV['RUN_BENCHMARKS']
+    # TODO: PLAT-14759 Do not use Maze.driver directly
+    Maze.driver.execute_script('mobile: shell', command: 'cmd package compile -m speed -f com.bugsnag.benchmarks.android')
+  end
 end
 
 Before('@skip') do |scenario|
