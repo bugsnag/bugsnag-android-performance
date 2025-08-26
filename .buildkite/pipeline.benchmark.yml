@@ -9,13 +9,10 @@ steps:
       queue: macos-15
     env:
       JAVA_VERSION: '17'
-      # TODO: Remove these once added to the Buildkite environment
-      ANDROID_HOME: /Users/administrator/Library/Android/sdk
     artifact_paths:
       - "build/benchmark_fixture_url.txt"
     commands:
-# TODO: Reinstate when builds work on CI
-#      - make benchmark-fixture
+      - make benchmark-fixture
       - bundle install
       - bundle exec upload-app --farm=bb --app=./build/benchmark-fixture.apk --app-id-file=build/benchmark_fixture_url.txt
 
