@@ -18,7 +18,10 @@ steps:
 
   - label: ':bitbar: Benchmarks'
     depends_on: "benchmark-fixture"
-    timeout_in_minutes: 60
+    key: 'benchmark-tests'
+    timeout_in_minutes: 30
+    env:
+      RUN_BENCHMARKS: "1"
     plugins:
       artifacts#v1.9.0:
         download: "build/benchmark_fixture_url.txt"
@@ -33,7 +36,7 @@ steps:
           - "features/benchmarks"
           - "--app=@build/benchmark_fixture_url.txt"
           - "--farm=bb"
-          - "--device='Google Pixel 9 -US WEST'"
+          - "--device=$TEST_DEVICE"
           - "--appium-version=1.22"
           - "--no-tunnel"
           - "--aws-public-ip"
@@ -41,3 +44,15 @@ steps:
     concurrency: 25
     concurrency_group: 'bitbar'
     concurrency_method: eager
+
+  - label: 'Send results to Datadog'
+    depends_on: "benchmark-tests"
+    timeout_in_minutes: 10
+    plugins:
+      artifacts#v1.9.0:
+        download: "maze_output/metrics.csv"
+    agents:
+      queue: macos-15
+    commands:
+      - bundle install
+      - bundle exec benchmarks-to-datadog --csv-file maze_output/metrics.csv
