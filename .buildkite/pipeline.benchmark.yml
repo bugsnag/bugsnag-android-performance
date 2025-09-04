@@ -44,6 +44,10 @@ steps:
     concurrency: 25
     concurrency_group: 'bitbar'
     concurrency_method: eager
+    retry:
+      automatic:
+        - exit_status: 103  # Appium session failed
+          limit: 2
 
   - label: 'Send results to Datadog'
     depends_on: "benchmark-tests"
