@@ -2,9 +2,10 @@ Feature: Device Metrics
 
   Scenario Outline:
     When I run "SpanOpenCloseBenchmark" configured as <options>
-    And I wait for 30 seconds
-    And I wait to receive at least 1 metrics
-    And I discard the oldest metric
+    * I wait for 30 seconds
+    * I wait to receive at least 1 metrics
+    * I discard the oldest metric
+    * I relaunch the app after shutdown
 
     Examples:
       | options                          |

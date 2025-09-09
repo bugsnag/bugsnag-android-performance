@@ -19,6 +19,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.Date
+import kotlin.system.exitProcess
 
 const val BENCHMARK_PACKAGE_NAME = "com.bugsnag.benchmarks.suite"
 const val PERFORMANCE_API_KEY = "a35a2a72bd230ac0aa0f52715bbdc6aa"
@@ -101,6 +102,8 @@ class BenchmarkActivity : Activity(), CoroutineScope by MainScope() {
 
             val results = benchmarkRunner.runBenchmark(benchmark)
             reportBenchmarkResults(results)
+
+            exitProcess(0)
         }
     }
 
