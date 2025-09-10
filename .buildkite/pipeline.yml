@@ -58,23 +58,24 @@ steps:
       JAVA_VERSION: '17'
     artifact_paths:
       - "build/fixture_url.txt"
+      - "build/fixture_bs_url.txt"
     commands:
       - make test-fixture
       - bundle install
       - bundle exec upload-app --farm=bb --app=./build/test-fixture.apk --app-id-file=build/fixture_url.txt
+      - bundle exec upload-app --farm=bs --app=./build/test-fixture.apk --app-id-file=build/fixture_bs_url.txt
 
   - label: ':bitbar: {{matrix}} tests'
     depends_on: "fixture"
     timeout_in_minutes: 60
     matrix:
-#      - "ANDROID_9"
-#      - "ANDROID_10"
-#      - "ANDROID_11"
-#      - "ANDROID_12"
-#      - "ANDROID_13"
-#      - "ANDROID_14"
-#      - "ANDROID_15"
-      - "ANDROID_16"
+      - "ANDROID_9"
+      - "ANDROID_10"
+      - "ANDROID_11"
+      - "ANDROID_12"
+      - "ANDROID_13"
+      - "ANDROID_14"
+      - "ANDROID_15"
     plugins:
       artifacts#v1.9.0:
         download: "build/fixture_url.txt"
@@ -88,7 +89,7 @@ steps:
           - "--app=@build/fixture_url.txt"
           - "--farm=bb"
           - "--device={{matrix}}"
-#          - "--appium-version=1.22"
+          - "--appium-version=1.22"
           - "--no-tunnel"
           - "--aws-public-ip"
           - "--fail-fast"
@@ -100,6 +101,36 @@ steps:
         branch: "^main|next$$"
     concurrency: 25
     concurrency_group: 'bitbar'
+    concurrency_method: eager
+
+  - label: ':browserstack: {{matrix}} tests'
+    depends_on: "fixture"
+    timeout_in_minutes: 60
+    matrix:
+      - "ANDROID_16"
+    plugins:
+      artifacts#v1.9.0:
+        download: "build/fixture_bs_url.txt"
+        upload: "maze_output/failed/**/*"
+      docker-compose#v4.8.0:
+        pull: android-maze-runner
+        run: android-maze-runner
+        service-ports: true
+        command:
+          - "features/full_tests"
+          - "--app=@build/fixture_bs_url.txt"
+          - "--farm=bs"
+          - "--device={{matrix}}"
+          - "--appium-version=1.22.0"
+          - "--fail-fast"
+          - "--app-activity=com.bugsnag.mazeracer.SplashScreenActivity"
+          - "--app-package=com.bugsnag.mazeracer"
+      test-collector#v1.10.2:
+        files: "reports/TEST-*.xml"
+        format: "junit"
+        branch: "^main|next$$"
+    concurrency: 5
+    concurrency_group: 'browserstack-app'
     concurrency_method: eager
 
   # If this is the 'main' branch activate a manual publishing step
