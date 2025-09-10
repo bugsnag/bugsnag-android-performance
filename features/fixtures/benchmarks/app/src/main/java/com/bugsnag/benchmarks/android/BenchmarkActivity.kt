@@ -1,5 +1,6 @@
 package com.bugsnag.benchmarks.android
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.os.Bundle
 import android.util.Log
@@ -18,12 +19,17 @@ import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.text.SimpleDateFormat
 import java.util.Date
+import kotlin.system.exitProcess
 
 const val BENCHMARK_PACKAGE_NAME = "com.bugsnag.benchmarks.suite"
 const val PERFORMANCE_API_KEY = "a35a2a72bd230ac0aa0f52715bbdc6aa"
 
 class BenchmarkActivity : Activity(), CoroutineScope by MainScope() {
+    @SuppressLint("SimpleDateFormat")
+    private val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")
+
     private val startTime = Date()
     private val resultsPrinter = ResultsTablePrinter {
         Log.i("BenchmarkResults", it)
@@ -101,12 +107,14 @@ class BenchmarkActivity : Activity(), CoroutineScope by MainScope() {
 
             val results = benchmarkRunner.runBenchmark(benchmark)
             reportBenchmarkResults(results)
+
+            exitProcess(0)
         }
     }
 
     private suspend fun reportBenchmarkResults(results: BenchmarkResults) {
         val resultsMap = LinkedHashMap<String, String>()
-        resultsMap["timestamp"] = startTime.toString()
+        resultsMap["timestamp"] = dateFormat.format(startTime)
         resultsMap["benchmark"] = results.benchmarkName
 
         results.configFlags.forEach { flag ->
