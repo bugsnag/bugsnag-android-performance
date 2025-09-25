@@ -166,6 +166,16 @@ steps:
     env:
       BUILDKITE_PLUGIN_S3_SECRETS_BUCKET_PREFIX: bugsnag-android-publish
     plugins:
+      artifacts#v1.9.0:
+        upload:
+          - bugsnag-android-performance/build/outputs/aar/bugsnag-android-performance-release.aar
+          - bugsnag-android-performance-api/build/outputs/aar/bugsnag-android-performance-api-release.aar
+          - bugsnag-android-performance-appcompat/build/outputs/aar/bugsnag-android-performance-appcompat-release.aar
+          - bugsnag-android-performance-compose/build/outputs/aar/bugsnag-android-performance-compose-release.aar
+          - bugsnag-android-performance-coroutines/build/outputs/aar/bugsnag-android-performance-coroutines-release.aar
+          - bugsnag-android-performance-impl/build/outputs/aar/bugsnag-android-performance-impl-release.aar
+          - bugsnag-android-performance-okhttp/build/outputs/aar/bugsnag-android-performance-okhttp-release.aar
+          - bugsnag-plugin-android-performance-named-spans/build/outputs/aar/bugsnag-plugin-android-performance-named-spans-release.aar
       docker-compose#v4.7.0:
         no-cache: true
         run: android-publisher
