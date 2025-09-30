@@ -23,10 +23,10 @@ class ConfigurationEndpointTest {
     private val customEndpoint = "https://example.com/custom/endpoint"
 
     @Test
-    fun defaultEndpoint_keyStartsWithHubPrefix_usesInsightHubFormat() {
+    fun defaultEndpoint_keyStartsWithHubPrefix_usesBugsnagFormat() {
         val perfConfig = PerformanceConfiguration(appContext, hubApiKey)
         val immutable = ImmutableConfig(perfConfig, pluginManager)
-        val expected = "https://$hubApiKey.otlp.insighthub.smartbear.com/v1/traces"
+        val expected = "https://$hubApiKey.otlp.bugsnag.smartbear.com/v1/traces"
         assertEquals(expected, immutable.endpoint)
     }
 
