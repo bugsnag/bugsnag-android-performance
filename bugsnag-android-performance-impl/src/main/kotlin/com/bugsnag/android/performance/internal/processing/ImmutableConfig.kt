@@ -94,7 +94,7 @@ public class ImmutableConfig(
         private const val VALID_API_KEY_LENGTH = 32
 
         private const val BUGSNAG_ENDPOINT = "https://%s.otlp.bugsnag.com/v1/traces"
-        private const val HUB_ENDPOINT = "https://%s.otlp.insighthub.smartbear.com/v1/traces"
+        private const val HUB_ENDPOINT = "https://%s.otlp.bugsnag.smartbear.com/v1/traces"
         private const val HUB_API_PREFIX = "00000"
 
         internal fun EnabledMetrics.copy() = EnabledMetrics(rendering, cpu, memory)
