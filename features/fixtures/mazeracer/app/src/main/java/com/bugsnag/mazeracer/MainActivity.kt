@@ -141,7 +141,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     // Checks general internet and secure tunnel connectivity
-    private fun checkNetwork() {
+    private fun checkNetwork(mazeAddress: String?) {
         log("Checking network connectivity")
         try {
             URL("https://www.google.com").readText()
@@ -150,11 +150,12 @@ class MainActivity : AppCompatActivity() {
             log("Connection to www.google.com FAILED", e)
         }
 
+        val address = "http://${mazeAddress}"
         try {
-            URL("http://bs-local.com:9339").readText()
-            log("Connection to Maze Runner seems ok")
+            URL(address).readText()
+            log("Connection to Maze Runner (${address}) seems ok")
         } catch (e: Exception) {
-            log("Connection to Maze Runner FAILED", e)
+            log("Connection to Maze Runner (${address}) FAILED", e)
         }
     }
 
@@ -402,7 +403,7 @@ class MainActivity : AppCompatActivity() {
             lastCommandUuid = getStoredCommandUUID()
             clearStoredCommandUUID()
         }
-        checkNetwork()
+        checkNetwork(mazeAddress)
         startBugsnag()
     }
 
