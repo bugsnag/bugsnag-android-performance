@@ -28,7 +28,7 @@ import java.net.HttpURLConnection
 import java.net.URL
 import kotlin.concurrent.thread
 
-const val CONFIG_FILE_TIMEOUT = 5000
+const val CONFIG_FILE_TIMEOUT = 30000
 
 class MainActivity : AppCompatActivity() {
     private val apiKeyKey = "BUGSNAG_API_KEY"
@@ -109,22 +109,28 @@ class MainActivity : AppCompatActivity() {
         val context = MazeRacerApplication.applicationContext()
         val externalFilesDir = context.getExternalFilesDir(null)
         val configFile = File(externalFilesDir, "fixture_config.json")
-        log("Attempting to read Maze Runner address from config file ${configFile.path}")
 
         // Poll for the fixture config file
         val pollEnd = System.currentTimeMillis() + CONFIG_FILE_TIMEOUT
         while (System.currentTimeMillis() < pollEnd) {
-            if (configFile.exists()) {
-                val fileContents = configFile.readText()
-                val fixtureConfig = runCatching { JSONObject(fileContents) }.getOrNull()
-                mazeAddress = getStringSafely(fixtureConfig, "maze_address")
-                if (!mazeAddress.isNullOrBlank()) {
-                    log("Maze Runner address set from config file: $mazeAddress")
-                    break
+            try {
+                log("Attempting to read Maze Runner address from config file ${configFile.path}")
+                if (configFile.exists()) {
+                    val fileContents = configFile.readText()
+                    val fixtureConfig = runCatching { JSONObject(fileContents) }.getOrNull()
+                    mazeAddress = getStringSafely(fixtureConfig, "maze_address")
+                    if (!mazeAddress.isNullOrBlank()) {
+                        log("Maze Runner address set from config file: $mazeAddress")
+                        break
+                    }
+                } else {
+                    log("Config file does not exist yet")
                 }
+            } catch (e: Exception) {
+                log("Failed to read Maze Runner address from config file", e)
             }
 
-            Thread.sleep(250)
+            Thread.sleep(1000)
         }
 
         // Assume we are running in legacy mode on BrowserStack
