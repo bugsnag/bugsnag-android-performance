@@ -14,6 +14,8 @@ def execute_command(action, scenario_name = '', scenario_metadata = '')
 
   command = {
     action: action,
+    cucumber_scenario_name: Maze.scenario.name,
+    cucumber_scenario_location: Maze.scenario.location,
     scenario_name: scenario_name,
     scenario_metadata: scenario_metadata,
     endpoint: "http://#{address}/traces",
