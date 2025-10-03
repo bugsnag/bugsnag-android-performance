@@ -198,14 +198,15 @@ class MainActivity : AppCompatActivity() {
                 try {
                     // Get the next command from Maze Runner
                     val lastUuid = lastCommandUuid.orEmpty()
-                    val commandStr = readCommand(lastUuid)
+                    val commandUrl = "http://$mazeAddress/command?after=$lastUuid"
+                    val commandStr = readCommand(commandUrl)
                     if (commandStr == "null") {
                         log("No Maze Runner commands queued")
                         continue
                     }
 
                     // Log the received command
-                    log("Received command: $commandStr")
+                    log("Received command from ${commandUrl}\n$commandStr")
                     val command = JSONObject(commandStr)
                     val action = command.getString("action")
 
@@ -295,8 +296,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun readCommand(after: String): String {
-        val commandUrl = "http://$mazeAddress/command?after=$after"
+    private fun readCommand(commandUrl: String): String {
         val urlConnection = URL(commandUrl).openConnection() as HttpURLConnection
         try {
             return urlConnection.inputStream.use { it.reader().readText() }
