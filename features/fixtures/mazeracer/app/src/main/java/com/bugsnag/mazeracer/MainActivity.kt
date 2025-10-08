@@ -105,6 +105,26 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun readFixtureConfig(configFile: File): String? {
+        try {
+            log("Attempting to read Maze Runner address from config file ${configFile.path}")
+            if (configFile.exists()) {
+                val fileContents = configFile.readText()
+                val fixtureConfig = runCatching { JSONObject(fileContents) }.getOrNull()
+                val address = getStringSafely(fixtureConfig, "maze_address")
+                if (!address.isNullOrBlank()) {
+                    log("Setting Maze Runner address from config file: $mazeAddress")
+                    return address
+                }
+            } else {
+                log("Config file does not exist yet")
+            }
+        } catch (e: Exception) {
+            log("Failed to read Maze Runner address from config file", e)
+        }
+        return null
+    }
+
     private fun setMazeRunnerAddress() {
         val context = MazeRacerApplication.applicationContext()
         val externalFilesDir = context.getExternalFilesDir(null)
@@ -113,23 +133,10 @@ class MainActivity : AppCompatActivity() {
         // Poll for the fixture config file
         val pollEnd = System.currentTimeMillis() + CONFIG_FILE_TIMEOUT
         while (System.currentTimeMillis() < pollEnd) {
-            try {
-                log("Attempting to read Maze Runner address from config file ${configFile.path}")
-                if (configFile.exists()) {
-                    val fileContents = configFile.readText()
-                    val fixtureConfig = runCatching { JSONObject(fileContents) }.getOrNull()
-                    mazeAddress = getStringSafely(fixtureConfig, "maze_address")
-                    if (!mazeAddress.isNullOrBlank()) {
-                        log("Maze Runner address set from config file: $mazeAddress")
-                        break
-                    }
-                } else {
-                    log("Config file does not exist yet")
-                }
-            } catch (e: Exception) {
-                log("Failed to read Maze Runner address from config file", e)
+            mazeAddress = readFixtureConfig(configFile)
+            if (mazeAddress != null) {
+                break
             }
-
             Thread.sleep(1000)
         }
 
@@ -150,12 +157,12 @@ class MainActivity : AppCompatActivity() {
             log("Connection to www.google.com FAILED", e)
         }
 
-        val address = "http://${mazeAddress}"
+        val address = "http://$mazeAddress"
         try {
             URL(address).readText()
-            log("Connection to Maze Runner (${address}) seems ok")
+            log("Connection to Maze Runner ($address) seems ok")
         } catch (e: Exception) {
-            log("Connection to Maze Runner (${address}) FAILED", e)
+            log("Connection to Maze Runner ($address) FAILED", e)
         }
     }
 
