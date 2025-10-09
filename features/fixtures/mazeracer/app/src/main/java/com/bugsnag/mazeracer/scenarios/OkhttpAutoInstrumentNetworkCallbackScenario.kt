@@ -36,9 +36,9 @@ class OkhttpAutoInstrumentNetworkCallbackScenario(
                         .eventListenerFactory(BugsnagPerformanceOkhttp)
                         .build()
 
-                makeCall(client, "https://bugsnag.com/")
-                makeCall(client, "https://bugsnag.com/changeme")
-                makeCall(client, "https://google.com/")
+                makeCall(client, "https://www.bugsnag.com/")
+                makeCall(client, "https://www.bugsnag.com/changeme")
+                makeCall(client, "https://www.google.com/")
             }
         }
     }

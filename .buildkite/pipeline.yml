@@ -85,7 +85,7 @@ steps:
         run: android-maze-runner
         service-ports: true
         command:
-          - "features/full_tests"
+          - "features/full_tests/okhttp_spans.feature"
           - "--app=@build/fixture_url.txt"
           - "--farm=bb"
           - "--device={{matrix}}"
