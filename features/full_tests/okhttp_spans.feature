@@ -24,6 +24,8 @@ Feature: OkHttp EventListener
     And I wait to receive a sampling request
     Then I should receive no traces
 
+  # TODO: Skipped on BitBar with Android 14/15 pending PLAT-15024
+  @skip_bb_android_14_15
   Scenario: Auto-Instrument Network with Callback
     Given I run "OkhttpAutoInstrumentNetworkCallbackScenario"
     And I wait to receive at least 2 spans
@@ -37,6 +39,8 @@ Feature: OkHttp EventListener
     * a span string attribute "http.url" equals "https://bugsnag.com/"
     * a span string attribute "http.url" equals "https://bugsnag.com/changed"
 
+  # TODO: Skipped on BitBar with Android 14/15 pending PLAT-15024
+  @skip_bb_android_14_15
   Scenario: Manual-Instrument Network with Callback
     Given I run "OkhttpManualNetworkCallbackScenario"
     And I wait to receive at least 2 spans

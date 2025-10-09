@@ -17,6 +17,7 @@ captures/
 
 # Mazerunner
 maze_output
+maze-runner.log
 
 # Misc
 .DS_Store

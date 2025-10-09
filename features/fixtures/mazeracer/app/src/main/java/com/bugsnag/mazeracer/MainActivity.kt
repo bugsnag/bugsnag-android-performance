@@ -28,7 +28,7 @@ import java.net.HttpURLConnection
 import java.net.URL
 import kotlin.concurrent.thread
 
-const val CONFIG_FILE_TIMEOUT = 5000
+const val CONFIG_FILE_TIMEOUT = 30000
 
 class MainActivity : AppCompatActivity() {
     private val apiKeyKey = "BUGSNAG_API_KEY"
@@ -105,26 +105,39 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun readFixtureConfig(configFile: File): String? {
+        try {
+            log("Attempting to read Maze Runner address from config file ${configFile.path}")
+            if (configFile.exists()) {
+                val fileContents = configFile.readText()
+                val fixtureConfig = runCatching { JSONObject(fileContents) }.getOrNull()
+                val address = getStringSafely(fixtureConfig, "maze_address")
+                if (!address.isNullOrBlank()) {
+                    log("Setting Maze Runner address from config file: $mazeAddress")
+                    return address
+                }
+            } else {
+                log("Config file does not exist yet")
+            }
+        } catch (e: Exception) {
+            log("Failed to read Maze Runner address from config file", e)
+        }
+        return null
+    }
+
     private fun setMazeRunnerAddress() {
         val context = MazeRacerApplication.applicationContext()
         val externalFilesDir = context.getExternalFilesDir(null)
         val configFile = File(externalFilesDir, "fixture_config.json")
-        log("Attempting to read Maze Runner address from config file ${configFile.path}")
 
         // Poll for the fixture config file
         val pollEnd = System.currentTimeMillis() + CONFIG_FILE_TIMEOUT
         while (System.currentTimeMillis() < pollEnd) {
-            if (configFile.exists()) {
-                val fileContents = configFile.readText()
-                val fixtureConfig = runCatching { JSONObject(fileContents) }.getOrNull()
-                mazeAddress = getStringSafely(fixtureConfig, "maze_address")
-                if (!mazeAddress.isNullOrBlank()) {
-                    log("Maze Runner address set from config file: $mazeAddress")
-                    break
-                }
+            mazeAddress = readFixtureConfig(configFile)
+            if (mazeAddress != null) {
+                break
             }
-
-            Thread.sleep(250)
+            Thread.sleep(1000)
         }
 
         // Assume we are running in legacy mode on BrowserStack
@@ -135,7 +148,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     // Checks general internet and secure tunnel connectivity
-    private fun checkNetwork() {
+    private fun checkNetwork(mazeAddress: String?) {
         log("Checking network connectivity")
         try {
             URL("https://www.google.com").readText()
@@ -144,11 +157,12 @@ class MainActivity : AppCompatActivity() {
             log("Connection to www.google.com FAILED", e)
         }
 
+        val address = "http://$mazeAddress"
         try {
-            URL("http://bs-local.com:9339").readText()
-            log("Connection to Maze Runner seems ok")
+            URL(address).readText()
+            log("Connection to Maze Runner ($address) seems ok")
         } catch (e: Exception) {
-            log("Connection to Maze Runner FAILED", e)
+            log("Connection to Maze Runner ($address) FAILED", e)
         }
     }
 
@@ -191,14 +205,15 @@ class MainActivity : AppCompatActivity() {
                 try {
                     // Get the next command from Maze Runner
                     val lastUuid = lastCommandUuid.orEmpty()
-                    val commandStr = readCommand(lastUuid)
+                    val commandUrl = "http://$mazeAddress/command?after=$lastUuid"
+                    val commandStr = readCommand(commandUrl)
                     if (commandStr == "null") {
                         log("No Maze Runner commands queued")
                         continue
                     }
 
                     // Log the received command
-                    log("Received command: $commandStr")
+                    log("Received command from ${commandUrl}\n$commandStr")
                     val command = JSONObject(commandStr)
                     val action = command.getString("action")
 
@@ -288,8 +303,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun readCommand(after: String): String {
-        val commandUrl = "http://$mazeAddress/command?after=$after"
+    private fun readCommand(commandUrl: String): String {
         val urlConnection = URL(commandUrl).openConnection() as HttpURLConnection
         try {
             return urlConnection.inputStream.use { it.reader().readText() }
@@ -396,7 +410,7 @@ class MainActivity : AppCompatActivity() {
             lastCommandUuid = getStoredCommandUUID()
             clearStoredCommandUUID()
         }
-        checkNetwork()
+        checkNetwork(mazeAddress)
         startBugsnag()
     }
 
