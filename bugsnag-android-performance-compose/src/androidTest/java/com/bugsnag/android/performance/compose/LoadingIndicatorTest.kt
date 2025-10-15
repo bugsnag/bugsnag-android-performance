@@ -17,6 +17,7 @@ import com.bugsnag.android.performance.durationMillis
 import com.bugsnag.android.performance.takeCurrentBatch
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
@@ -56,42 +57,78 @@ class LoadingIndicatorTest {
             }
         }
 
-    private inline fun testExtendedViewLoad(crossinline loadingIndicator: @Composable () -> Unit) =
-        runBlocking {
-            var viewLoadSpan: Span? = null
-
-            composeTestRule.setContent {
-                viewLoadSpan =
-                    BugsnagPerformance.startViewLoadSpan(
-                        ViewType.COMPOSE,
-                        "TestView",
-                    )
-
-                loadingIndicator()
-            }
-
-            composeTestRule.awaitIdle()
-            viewLoadSpan!!.end()
-
-            assertTrue("ViewLoad should have ended", viewLoadSpan!!.isEnded())
-
-            with(composeTestRule) {
-                // wait for the LoadingIndicator to appear
-                waitUntil {
-                    onAllNodes(hasText(LOADING_MESSAGE)).fetchSemanticsNodes().isNotEmpty()
+    @Test
+    fun createsChildSpanWithSpanName() =
+        testExtendedViewLoad(expectedChildSpanName = "LoadingData") {
+            LoadingIndicatorWrapper {
+                LoadingIndicator(spanName = "LoadingData") {
+                    Text(LOADING_MESSAGE)
                 }
-                // wait for it to finish and disappear again
-                waitUntil { onAllNodes(hasText(LOADING_MESSAGE)).fetchSemanticsNodes().isEmpty() }
-                awaitIdle()
             }
+        }
 
+    private inline fun testExtendedViewLoad(
+        expectedChildSpanName: String? = null,
+        crossinline loadingIndicator: @Composable () -> Unit,
+    ) = runBlocking {
+        var viewLoadSpan: Span? = null
+
+        composeTestRule.setContent {
+            viewLoadSpan =
+                BugsnagPerformance.startViewLoadSpan(
+                    ViewType.COMPOSE,
+                    "TestView",
+                )
+
+            loadingIndicator()
+        }
+
+        composeTestRule.awaitIdle()
+        viewLoadSpan!!.end()
+
+        assertTrue("ViewLoad should have ended", viewLoadSpan!!.isEnded())
+
+        with(composeTestRule) {
+            // wait for the LoadingIndicator to appear
+            waitUntil {
+                onAllNodes(hasText(LOADING_MESSAGE)).fetchSemanticsNodes().isNotEmpty()
+            }
+            // wait for it to finish and disappear again
+            waitUntil { onAllNodes(hasText(LOADING_MESSAGE)).fetchSemanticsNodes().isEmpty() }
+            awaitIdle()
+        }
+
+        assertTrue(
+            "LoadingIndicator should have extended the ViewLoad " +
+                "duration >=${VIEW_LOAD_EXTENDED_TIME}ms " +
+                "(was ${viewLoadSpan!!.durationMillis}ms)",
+            viewLoadSpan!!.durationMillis >= VIEW_LOAD_EXTENDED_TIME,
+        )
+
+        val batch = BugsnagPerformance.takeCurrentBatch()
+        if (expectedChildSpanName != null) {
+            val loadingSpan = batch.find { it.name == expectedChildSpanName }
+
+            assertTrue("$expectedChildSpanName span should exist", loadingSpan != null)
             assertTrue(
-                "LoadingIndicator should have extended the ViewLoad " +
-                    "duration >=${VIEW_LOAD_EXTENDED_TIME}ms " +
-                    "(was ${viewLoadSpan!!.durationMillis}ms)",
-                viewLoadSpan!!.durationMillis >= VIEW_LOAD_EXTENDED_TIME,
+                "$expectedChildSpanName span should have extended duration >=${VIEW_LOAD_EXTENDED_TIME}ms " +
+                    "(was ${loadingSpan!!.durationMillis}ms)",
+                loadingSpan.durationMillis >= VIEW_LOAD_EXTENDED_TIME,
+            )
+            assertEquals(
+                "$expectedChildSpanName span should be a child of the ViewLoad span",
+                viewLoadSpan!!.spanId,
+                loadingSpan.parentSpanId,
+            )
+        } else {
+            // if no spanName was provided, ensure no child spans were created
+            assertEquals(
+                "No child spans should have been created",
+                1,
+                batch.count(),
             )
         }
+    }
 }
 
 @Composable
