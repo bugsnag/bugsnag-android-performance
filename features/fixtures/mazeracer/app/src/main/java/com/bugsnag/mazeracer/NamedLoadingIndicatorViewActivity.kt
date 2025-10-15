@@ -19,7 +19,7 @@ class NamedLoadingIndicatorViewActivity : AppCompatActivity() {
         super.onStart()
         handler.postDelayed(
             Runnable {
-                val v = findViewById<View>(R.id.loading_indicator)
+                val v = findViewById<View>(R.id.named_loading_indicator)
                 (v.parent as ViewGroup).removeView(v)
             },
             100L,

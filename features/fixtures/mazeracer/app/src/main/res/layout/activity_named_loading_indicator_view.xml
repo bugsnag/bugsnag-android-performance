@@ -6,8 +6,8 @@
     android:orientation="vertical">
 
     <com.bugsnag.android.performance.LoadingIndicatorView
-        android:id="@+id/loading_indicator"
-        bugsnag:spanName="LoadingIndicatorSpan"
+        android:id="@+id/named_loading_indicator"
+        bugsnag:span_name="LoadingIndicatorSpan"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 </LinearLayout>

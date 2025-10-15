@@ -63,7 +63,7 @@ public class LoadingIndicatorView
 
             attrs?.let {
                 val a = context.obtainStyledAttributes(it, R.styleable.LoadingIndicatorView, 0, 0)
-                spanName = a.getString(R.styleable.LoadingIndicatorView_spanName)
+                spanName = a.getString(R.styleable.LoadingIndicatorView_span_name)
                 a.recycle()
             }
         }
