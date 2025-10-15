@@ -60,10 +60,10 @@ public fun LoadingIndicator(
         val spanContext = condition?.upgrade()
 
         val loadingSpan =
-            spanName?.let { name ->
-                spanContext?.let { context ->
-                    BugsnagPerformance.startSpan(name, loadingSpanOptions.within(context))
-                }
+            if (spanName != null && spanContext != null) {
+                BugsnagPerformance.startSpan(spanName, loadingSpanOptions.within(spanContext))
+            } else {
+                null
             }
 
         onDispose {
