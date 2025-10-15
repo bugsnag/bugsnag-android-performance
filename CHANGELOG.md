@@ -1,5 +1,10 @@
 ## TBD
 
+### Changes
+
+* Added an optional `spanName` to `LoadingIndicator` and `LoadingIndicatorView` to create a child span of the blocked `ViewLoad` span
+  [#458](https://github.com/bugsnag/bugsnag-android-performance/pull/458)
+
 ### Bug fixes
 
 * `NamedSpanControlsPlugin` better handles timeouts when spans have duplicate names, avoiding holding references for longer than required
