@@ -5,7 +5,9 @@ import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Modifier
+import com.bugsnag.android.performance.BugsnagPerformance
 import com.bugsnag.android.performance.SpanContext
+import com.bugsnag.android.performance.SpanOptions
 import com.bugsnag.android.performance.internal.SpanCategory
 import com.bugsnag.android.performance.internal.SpanImpl
 
@@ -40,22 +42,33 @@ private const val CONDITION_TIMEOUT = 100L
  *
  * @param modifier any modifier to be passed down to the Box that will wrap [content]
  * @param content option content for this LoadingIndicator
+ * @param spanName optional name for a Span that will be opened for the duration of this LoadingIndicator
  */
 @Composable
 public fun LoadingIndicator(
     modifier: Modifier = Modifier,
+    spanName: String? = null,
     content: (@Composable BoxScope.() -> Unit)? = null,
 ) {
-    DisposableEffect(Unit) {
+    DisposableEffect(spanName) {
         val viewLoad: SpanImpl? =
             SpanContext.defaultStorage?.currentStack
                 ?.filterIsInstance<SpanImpl>()
                 ?.find { it.category == SpanCategory.VIEW_LOAD }
 
-        val condition = viewLoad?.block(CONDITION_TIMEOUT)?.apply { upgrade() }
+        val condition = viewLoad?.block(CONDITION_TIMEOUT)
+        val spanContext = condition?.upgrade()
+
+        val loadingSpan =
+            spanName?.let { name ->
+                spanContext?.let { context ->
+                    BugsnagPerformance.startSpan(name, loadingSpanOptions.within(context))
+                }
+            }
 
         onDispose {
             condition?.close()
+            loadingSpan?.close()
         }
     }
 
@@ -65,3 +78,5 @@ public fun LoadingIndicator(
         }
     }
 }
+
+private val loadingSpanOptions = SpanOptions.setFirstClass(false)

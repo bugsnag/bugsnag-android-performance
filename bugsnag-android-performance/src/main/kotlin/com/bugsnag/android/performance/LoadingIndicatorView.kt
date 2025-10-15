@@ -22,7 +22,8 @@ private const val CONDITION_TIMEOUT = 100L
  *     android:id="@+id/loadingIndicator"
  *     android:layout_width="match_parent"
  *     android:layout_height="match_parent"
- *     android:gravity="center">
+ *     android:gravity="center"
+ *     app:spanName="My Loading Task">
  *
  *     <ProgressBar
  *         android:id="@+id/progressBar"
@@ -49,6 +50,8 @@ public class LoadingIndicatorView
         defStyleAttr: Int = 0,
     ) : FrameLayout(context, attrs, defStyleAttr) {
         private var condition: Condition?
+        private var loadingSpan: Span? = null
+        private var spanName: String? = null
 
         init {
             val viewLoad: SpanImpl? =
@@ -57,15 +60,38 @@ public class LoadingIndicatorView
                     ?.find { it.category == SpanCategory.VIEW_LOAD }
 
             condition = viewLoad?.block(CONDITION_TIMEOUT)
+
+            attrs?.let {
+                val a = context.obtainStyledAttributes(it, R.styleable.LoadingIndicatorView, 0, 0)
+                spanName = a.getString(R.styleable.LoadingIndicatorView_spanName)
+                a.recycle()
+            }
         }
 
         override fun onAttachedToWindow() {
             super.onAttachedToWindow()
-            condition?.upgrade()
+            val spanContext = condition?.upgrade()
+
+            // if there is a valid spanName and spanContext, start a span as a child of ViewLoad
+            spanName?.let { name ->
+                spanContext?.let { context ->
+                    loadingSpan =
+                        BugsnagPerformance.startSpan(
+                            name,
+                            loadingSpanOptions.within(context),
+                        )
+                }
+            }
         }
 
         override fun onDetachedFromWindow() {
             super.onDetachedFromWindow()
             condition?.close()
+            loadingSpan?.close()
+            loadingSpan = null
+        }
+
+        internal companion object {
+            val loadingSpanOptions = SpanOptions.setFirstClass(false)
         }
     }
