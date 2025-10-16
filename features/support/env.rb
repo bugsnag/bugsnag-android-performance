@@ -21,7 +21,3 @@ end
 Before('@skip_below_android_10') do |scenario|
   skip_this_scenario("Skipping scenario") if Maze.config.os_version < 10
 end
-
-Before('@skip_bb_android_14_15') do |scenario|
-  skip_this_scenario("Skipping scenario") if Maze.config.farm == :bb && (Maze.config.os_version == 14 || Maze.config.os_version == 15)
-end

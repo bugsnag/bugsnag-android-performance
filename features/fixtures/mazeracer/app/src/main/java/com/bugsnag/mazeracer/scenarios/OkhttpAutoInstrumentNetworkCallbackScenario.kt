@@ -35,10 +35,11 @@ class OkhttpAutoInstrumentNetworkCallbackScenario(
                     OkHttpClient.Builder()
                         .eventListenerFactory(BugsnagPerformanceOkhttp)
                         .build()
-
-                makeCall(client, "https://bugsnag.com/")
-                makeCall(client, "https://bugsnag.com/changeme")
-                makeCall(client, "https://google.com/")
+                // bugsnag.com was originally used here, but some BitBar devices didn't have the certificate
+                // for the issuing CA installed, causing the requests to fail.  See SDCB-16840.
+                makeCall(client, "https://www.google.com/")
+                makeCall(client, "https://www.google.com/changeme")
+                makeCall(client, "https://www.google.com/")
             }
         }
     }
