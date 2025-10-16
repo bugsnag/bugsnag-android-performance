@@ -33,6 +33,8 @@
         <activity android:name=".NestedSpansActivity" />
         <activity android:name=".AnimatedActivity" />
         <activity android:name=".LoadingIndicatorViewActivity"/>
+        <activity android:name=".NamedLoadingIndicatorViewActivity"/>
+
 
         <receiver
             android:name=".MazeRacerAlarmReceiver"

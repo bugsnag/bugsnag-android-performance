@@ -1,5 +1,6 @@
 package com.bugsnag.android.performance;
 
+import com.bugsnag.android.performance.internal.BugsnagPerformanceImpl;
 import com.bugsnag.android.performance.internal.SpanImpl;
 import com.bugsnag.android.performance.internal.processing.BatchingSpanProcessor;
 import com.bugsnag.android.performance.internal.processing.ForwardingSpanProcessor;
@@ -9,9 +10,9 @@ import java.util.Collection;
 class BugsnagPerformanceHooks {
     static Collection<SpanImpl> takeCurrentBatch() {
         ForwardingSpanProcessor forwardingSpanProcessor =
-                (ForwardingSpanProcessor) BugsnagPerformance
+                (ForwardingSpanProcessor) BugsnagPerformanceImpl
                         .INSTANCE
-                        .getInstrumentedAppState$internal()
+                        .getInstrumentedAppState()
                         .getSpanProcessor();
 
         // forward the current batch to the new BatchingSpanProcessor
