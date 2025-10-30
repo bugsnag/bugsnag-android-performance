@@ -2,6 +2,8 @@
 <SmellBaseline>
   <ManuallySuppressedIssues/>
   <CurrentIssues>
+    <ID>ExplicitGarbageCollectionCall:GlobalSpanContextStorageTest.kt$GlobalSpanContextStorageTest$gc()</ID>
+    <ID>ReturnCount:GlobalSpanContextStorage.kt$GlobalSpanContextStorage$override fun detach(spanContext: SpanContext)</ID>
     <ID>TooManyFunctions:BugsnagPerformance.kt$BugsnagPerformance</ID>
   </CurrentIssues>
 </SmellBaseline>
