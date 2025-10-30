@@ -134,6 +134,13 @@ open class MazeRunnerClient(
                 return null
             }
 
+            if (command.isResetUuid) {
+                log("Latest command ID reset to empty string")
+                latestCommandId = ""
+                // immediately loop around
+                return null
+            }
+
             return command
         } catch (e: Exception) {
             log("Failed to fetch command from Maze Runner", e)
@@ -167,9 +174,10 @@ open class MazeRunnerClient(
     }
 
     private fun readCommand(after: String): String {
-        val commandUrl = "http://$mazeAddress/command?after=$after"
+        val commandUrl = "http://$mazeAddress/idem-command?after=$after"
         val urlConnection = URL(commandUrl).openConnection() as HttpURLConnection
         try {
+            log("Fetching Maze Runner command from $commandUrl")
             return urlConnection.inputStream.use { it.reader().readText() }
         } catch (ioe: IOException) {
             try {

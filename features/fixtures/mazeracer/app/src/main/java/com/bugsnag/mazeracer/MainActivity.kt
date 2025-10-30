@@ -205,7 +205,7 @@ class MainActivity : AppCompatActivity() {
                 try {
                     // Get the next command from Maze Runner
                     val lastUuid = lastCommandUuid.orEmpty()
-                    val commandUrl = "http://$mazeAddress/command?after=$lastUuid"
+                    val commandUrl = "http://$mazeAddress/idem-command?after=$lastUuid"
                     val commandStr = readCommand(commandUrl)
                     if (commandStr == "null") {
                         log("No Maze Runner commands queued")
@@ -220,6 +220,13 @@ class MainActivity : AppCompatActivity() {
                     if (action == "noop") {
                         log("noop - looping around for another poll()")
                         // immediately loop around
+                        continue
+                    }
+
+                    if (action == "reset_uuid") {
+                        log("Resetting stored command UUID and looping around")
+                        this.lastCommandUuid = ""
+                        clearStoredCommandUUID()
                         continue
                     }
 
