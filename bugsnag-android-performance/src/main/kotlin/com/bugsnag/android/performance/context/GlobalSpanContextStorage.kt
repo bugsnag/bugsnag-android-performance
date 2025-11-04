@@ -25,6 +25,10 @@ import java.util.concurrent.atomic.AtomicReference
  *     }
  * ```
  *
+ * __WARNING__: This class is inherently unsafe with coroutines and will likely lead to misleading
+ * traces as the context can remain active when the coroutines suspend. We recommend using the
+ * [HybridSpanContextStorage] instead to avoid coroutine spans unexpectedly affecting context.
+ *
  * @see HybridSpanContextStorage
  */
 public class GlobalSpanContextStorage : SpanContextStorage {

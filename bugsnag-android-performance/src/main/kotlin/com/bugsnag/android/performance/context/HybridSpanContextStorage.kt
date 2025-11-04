@@ -1,8 +1,8 @@
 package com.bugsnag.android.performance.context
 
 import com.bugsnag.android.performance.SpanContext
-import com.bugsnag.android.performance.SpanContextStorage
 import com.bugsnag.android.performance.internal.SpanContextStack
+import com.bugsnag.android.performance.internal.context.ThreadAwareSpanContextStorage
 
 /**
  * `SpanContextStorage` with a composite structure where a single global `SpanContext` stack is
@@ -21,7 +21,7 @@ import com.bugsnag.android.performance.internal.SpanContextStack
  *
  * @see GlobalSpanContextStorage
  */
-public class HybridSpanContextStorage : SpanContextStorage {
+public class HybridSpanContextStorage : ThreadAwareSpanContextStorage {
     private val globalSpanContextStorage = GlobalSpanContextStorage()
     private val threadLocalStack = ThreadLocal<SpanContextStack>()
 
@@ -33,6 +33,12 @@ public class HybridSpanContextStorage : SpanContextStorage {
             } else {
                 globalSpanContextStorage.currentContext
             }
+        }
+
+    override var localContextStack: SpanContextStack?
+        get() = threadLocalStack.get()
+        set(value) {
+            threadLocalStack.set(value)
         }
 
     override val currentStack: Sequence<SpanContext>

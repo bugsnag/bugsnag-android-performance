@@ -578,7 +578,23 @@ public final class com/bugsnag/android/performance/internal/connectivity/Network
 	public static fun values ()[Lcom/bugsnag/android/performance/internal/connectivity/NetworkType;
 }
 
-public final class com/bugsnag/android/performance/internal/context/ThreadLocalSpanContextStorage : com/bugsnag/android/performance/SpanContextStorage {
+public final class com/bugsnag/android/performance/internal/context/ContextAwareThreadFactory : java/util/concurrent/ThreadFactory {
+	public static final field Companion Lcom/bugsnag/android/performance/internal/context/ContextAwareThreadFactory$Companion;
+	public fun <init> (Ljava/util/concurrent/ThreadFactory;)V
+	public fun newThread (Ljava/lang/Runnable;)Ljava/lang/Thread;
+}
+
+public final class com/bugsnag/android/performance/internal/context/ContextAwareThreadFactory$Companion {
+	public final fun getDefaultContextAwareThreadFactory ()Ljava/util/concurrent/ThreadFactory;
+	public final fun wrap (Ljava/util/concurrent/ThreadFactory;)Ljava/util/concurrent/ThreadFactory;
+}
+
+public abstract interface class com/bugsnag/android/performance/internal/context/ThreadAwareSpanContextStorage : com/bugsnag/android/performance/SpanContextStorage {
+	public abstract fun getLocalContextStack-SzmQrho ()Ljava/util/Deque;
+	public abstract fun setLocalContextStack-_8UO57Q (Ljava/util/Deque;)V
+}
+
+public final class com/bugsnag/android/performance/internal/context/ThreadLocalSpanContextStorage : com/bugsnag/android/performance/internal/context/ThreadAwareSpanContextStorage {
 	public fun <init> ()V
 	public fun attach (Lcom/bugsnag/android/performance/SpanContext;)V
 	public fun clear ()V
@@ -586,7 +602,9 @@ public final class com/bugsnag/android/performance/internal/context/ThreadLocalS
 	public final fun getContextStack-07jRbR8 ()Ljava/util/Deque;
 	public fun getCurrentContext ()Lcom/bugsnag/android/performance/SpanContext;
 	public fun getCurrentStack ()Lkotlin/sequences/Sequence;
+	public fun getLocalContextStack-SzmQrho ()Ljava/util/Deque;
 	public final fun setContextStack-jmkdIac (Ljava/util/Deque;)V
+	public fun setLocalContextStack-_8UO57Q (Ljava/util/Deque;)V
 }
 
 public final class com/bugsnag/android/performance/internal/controls/AppStartControlProvider : com/bugsnag/android/performance/controls/SpanControlProvider {

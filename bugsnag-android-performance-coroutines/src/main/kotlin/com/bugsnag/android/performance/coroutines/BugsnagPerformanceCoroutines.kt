@@ -2,7 +2,7 @@ package com.bugsnag.android.performance.coroutines
 
 import com.bugsnag.android.performance.SpanContext
 import com.bugsnag.android.performance.internal.SpanContextStack
-import com.bugsnag.android.performance.internal.context.ThreadLocalSpanContextStorage
+import com.bugsnag.android.performance.internal.context.ThreadAwareSpanContextStorage
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -27,12 +27,12 @@ private class ContextAwareCoroutineContextElement(
         // coroutine starting/resuming - grab the current SpanContext stack for this thread
         // so that we can restore it when the coroutine is suspended
         val threadLocalSpanContextStorage =
-            SpanContext.defaultStorage as? ThreadLocalSpanContextStorage
+            SpanContext.defaultStorage as? ThreadAwareSpanContextStorage
                 ?: return null
-        val previousStack = threadLocalSpanContextStorage.contextStack
+        val previousStack = threadLocalSpanContextStorage.localContextStack
 
         // Replace with the coroutine SpanContext stack
-        threadLocalSpanContextStorage.contextStack = coroutineContextStack ?: SpanContextStack()
+        threadLocalSpanContextStorage.localContextStack = coroutineContextStack ?: SpanContextStack()
 
         return previousStack
     }
@@ -43,15 +43,14 @@ private class ContextAwareCoroutineContextElement(
     ) {
         // coroutine suspended - restore this thread's previous SpanContext stack
         val threadLocalSpanContextStorage =
-            SpanContext.defaultStorage as? ThreadLocalSpanContextStorage
+            SpanContext.defaultStorage as? ThreadAwareSpanContextStorage
                 ?: return
         // If the old state is null, we are resuming a coroutine that was started without a SpanContext
         if (oldState == null) {
             threadLocalSpanContextStorage.clear()
-            return
         }
         // Restore the previous SpanContext stack
-        threadLocalSpanContextStorage.contextStack = oldState
+        threadLocalSpanContextStorage.localContextStack = oldState
     }
 
     companion object Key : CoroutineContext.Key<ContextAwareCoroutineContextElement>

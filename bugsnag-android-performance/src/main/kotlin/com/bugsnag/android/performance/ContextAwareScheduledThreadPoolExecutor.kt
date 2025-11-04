@@ -1,5 +1,6 @@
 package com.bugsnag.android.performance
 
+import com.bugsnag.android.performance.internal.context.ContextAwareThreadFactory
 import java.util.concurrent.Callable
 import java.util.concurrent.RejectedExecutionHandler
 import java.util.concurrent.ScheduledFuture
@@ -13,22 +14,26 @@ import java.util.concurrent.TimeUnit
  * when the task was scheduled.
  */
 public class ContextAwareScheduledThreadPoolExecutor : ScheduledThreadPoolExecutor {
-    public constructor(corePoolSize: Int) : super(corePoolSize)
-    public constructor(corePoolSize: Int, threadFactory: ThreadFactory?) : super(
+    public constructor(corePoolSize: Int) : super(
         corePoolSize,
-        threadFactory,
+        ContextAwareThreadFactory.defaultContextAwareThreadFactory,
     )
 
-    public constructor(corePoolSize: Int, handler: RejectedExecutionHandler?) : super(
-        corePoolSize,
-        handler,
-    )
+    public constructor(corePoolSize: Int, threadFactory: ThreadFactory?) :
+        super(corePoolSize, ContextAwareThreadFactory.wrap(threadFactory))
+
+    public constructor(corePoolSize: Int, handler: RejectedExecutionHandler?) :
+        super(corePoolSize, ContextAwareThreadFactory.defaultContextAwareThreadFactory, handler)
 
     public constructor(
         corePoolSize: Int,
         threadFactory: ThreadFactory?,
         handler: RejectedExecutionHandler?,
-    ) : super(corePoolSize, threadFactory, handler)
+    ) : super(
+        corePoolSize,
+        ContextAwareThreadFactory.wrap(threadFactory),
+        handler,
+    )
 
     override fun schedule(
         command: Runnable?,
@@ -52,7 +57,12 @@ public class ContextAwareScheduledThreadPoolExecutor : ScheduledThreadPoolExecut
         delay: Long,
         unit: TimeUnit?,
     ): ScheduledFuture<*> {
-        return super.scheduleWithFixedDelay(command?.let { SpanContext.current.wrap(it) }, initialDelay, delay, unit)
+        return super.scheduleWithFixedDelay(
+            command?.let { SpanContext.current.wrap(it) },
+            initialDelay,
+            delay,
+            unit,
+        )
     }
 
     override fun scheduleAtFixedRate(
@@ -61,6 +71,11 @@ public class ContextAwareScheduledThreadPoolExecutor : ScheduledThreadPoolExecut
         period: Long,
         unit: TimeUnit?,
     ): ScheduledFuture<*> {
-        return super.scheduleAtFixedRate(command?.let { SpanContext.current.wrap(it) }, initialDelay, period, unit)
+        return super.scheduleAtFixedRate(
+            command?.let { SpanContext.current.wrap(it) },
+            initialDelay,
+            period,
+            unit,
+        )
     }
 }
