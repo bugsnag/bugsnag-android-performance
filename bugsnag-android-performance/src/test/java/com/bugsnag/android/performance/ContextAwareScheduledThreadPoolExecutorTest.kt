@@ -137,9 +137,10 @@ class ContextAwareScheduledThreadPoolExecutorTest {
 
         assertNotNull(sync.poll(500, TimeUnit.MILLISECONDS))
         scheduledExecutor.shutdownNow()
+        scheduledExecutor.awaitTermination(1000, TimeUnit.MILLISECONDS)
 
         val collectedSpans = spanProcessor.toList()
-        assertSame(3, collectedSpans.size)
+        assertSame("unexpected span list: $collectedSpans", 3, collectedSpans.size)
         assertEquals(collectedSpans[0].spanId, collectedSpans[1].parentSpanId)
         assertEquals(0, collectedSpans[2].parentSpanId)
     }

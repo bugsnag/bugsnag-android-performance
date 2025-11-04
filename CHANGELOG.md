@@ -4,6 +4,8 @@
 
 * Added an optional `spanName` to `LoadingIndicator` and `LoadingIndicatorView` to create a child span of the `ViewLoad` span
   [#458](https://github.com/bugsnag/bugsnag-android-performance/pull/458)
+* Introduced `GlobalSpanContextStorage` and `HybridSpanContextStorage` for more flexible trace parentage
+  [#465](https://github.com/bugsnag/bugsnag-android-performance/pull/465)
 
 ### Bug fixes
 

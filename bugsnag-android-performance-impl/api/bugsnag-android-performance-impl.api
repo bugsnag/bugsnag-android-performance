@@ -355,6 +355,7 @@ public final class com/bugsnag/android/performance/internal/SpanContextStack {
 	public fun hashCode ()I
 	public static fun hashCode-impl (Ljava/util/Deque;)I
 	public static final fun noSpansMatch-impl (Ljava/util/Deque;Lkotlin/jvm/functions/Function1;)Z
+	public static final fun stackSequence-impl (Ljava/util/Deque;)Lkotlin/sequences/Sequence;
 	public fun toString ()Ljava/lang/String;
 	public static fun toString-impl (Ljava/util/Deque;)Ljava/lang/String;
 	public final synthetic fun unbox-impl ()Ljava/util/Deque;
