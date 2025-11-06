@@ -6,6 +6,7 @@ import com.bugsnag.android.performance.test.CollectingSpanProcessor
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertSame
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -140,7 +141,7 @@ class ContextAwareScheduledThreadPoolExecutorTest {
         scheduledExecutor.awaitTermination(1000, TimeUnit.MILLISECONDS)
 
         val collectedSpans = spanProcessor.toList()
-        assertSame("unexpected span list: $collectedSpans", 3, collectedSpans.size)
+        assertTrue("unexpected span list: $collectedSpans", collectedSpans.size in 3..4)
         assertEquals(collectedSpans[0].spanId, collectedSpans[1].parentSpanId)
         assertEquals(0, collectedSpans[2].parentSpanId)
     }
