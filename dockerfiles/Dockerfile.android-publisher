@@ -11,11 +11,12 @@ COPY build.gradle.kts settings.gradle.kts /app/
 COPY bugsnag-android-performance/ bugsnag-android-performance/
 COPY bugsnag-android-performance-api/ bugsnag-android-performance-api/
 COPY bugsnag-android-performance-impl/ bugsnag-android-performance-impl/
-COPY bugsnag-plugin-android-performance-appcompat/ bugsnag-plugin-android-performance-appcompat/
-COPY bugsnag-plugin-android-performance-compose/ bugsnag-plugin-android-performance-compose/
-COPY bugsnag-plugin-android-performance-coroutines/ bugsnag-plugin-android-performance-coroutines/
+COPY bugsnag-android-performance-appcompat/ bugsnag-android-performance-appcompat/
+COPY bugsnag-android-performance-compose/ bugsnag-android-performance-compose/
+COPY bugsnag-android-performance-coroutines/ bugsnag-android-performance-coroutines/
+COPY bugsnag-android-performance-okhttp/ bugsnag-android-performance-okhttp/
+
 COPY bugsnag-plugin-android-performance-named-spans/ bugsnag-plugin-android-performance-named-spans/
-COPY bugsnag-plugin-android-performance-okhttp/ bugsnag-plugin-android-performance-okhttp/
 COPY scripts/ scripts/
 COPY LICENSE LICENSE
 
