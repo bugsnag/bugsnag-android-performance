@@ -2,11 +2,10 @@ package com.bugsnag.android.performance.internal.context
 
 import androidx.annotation.RestrictTo
 import com.bugsnag.android.performance.SpanContext
-import com.bugsnag.android.performance.SpanContextStorage
 import com.bugsnag.android.performance.internal.SpanContextStack
 
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP_PREFIX)
-public class ThreadLocalSpanContextStorage : SpanContextStorage {
+public class ThreadLocalSpanContextStorage : ThreadAwareSpanContextStorage {
     private val threadLocalStorage =
         object : ThreadLocal<SpanContextStack>() {
             override fun initialValue(): SpanContextStack = SpanContextStack()
@@ -16,6 +15,12 @@ public class ThreadLocalSpanContextStorage : SpanContextStorage {
         get() = threadLocalStorage.get() as SpanContextStack
         set(value) {
             threadLocalStorage.set(value)
+        }
+
+    override var localContextStack: SpanContextStack?
+        get() = contextStack
+        set(value) {
+            contextStack = value ?: SpanContextStack()
         }
 
     override val currentContext: SpanContext?
