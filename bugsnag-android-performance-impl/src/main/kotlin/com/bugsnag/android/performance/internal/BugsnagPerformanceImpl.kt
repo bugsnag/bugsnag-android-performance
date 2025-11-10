@@ -18,7 +18,7 @@ import com.bugsnag.android.performance.internal.util.Prioritized
 
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 public object BugsnagPerformanceImpl {
-    public const val VERSION: String = "2.0.0"
+    public const val VERSION: String = "2.1.0"
 
     public val instrumentedAppState: InstrumentedAppState = InstrumentedAppState()
 
@@ -43,6 +43,12 @@ public object BugsnagPerformanceImpl {
         pluginManager.installPlugins(externalConfiguration)
 
         val configuration = ImmutableConfig(externalConfiguration, pluginManager)
+
+        InternalDebug.configure(
+            inDevelopment = externalConfiguration.isDevelopment,
+            context = configuration.application,
+        )
+
         val tracer = instrumentedAppState.configure(configuration)
 
         if (configuration.autoInstrumentAppStarts) {

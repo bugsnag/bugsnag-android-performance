@@ -14,8 +14,7 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.PerformanceExample"
-        tools:targetApi="31">
+        android:theme="@style/Theme.PerformanceExample">
         <activity
             android:name=".LoadingActivity"
             android:exported="false" />

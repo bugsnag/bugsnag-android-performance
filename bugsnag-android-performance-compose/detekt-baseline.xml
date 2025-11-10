@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>FunctionNaming:LoadingIndicator.kt$@Composable public fun LoadingIndicator( modifier: Modifier = Modifier, spanName: String? = null, content: (@Composable BoxScope.() -> Unit)? = null, )</ID>
+    <ID>FunctionNaming:MeasuredComposable.kt$@Composable public fun MeasuredComposable( name: String, modifier: Modifier = Modifier, content: @Composable BoxScope.() -> Unit, )</ID>
+    <ID>MatchingDeclarationName:MeasuredComposable.kt$ValueContainer&lt;T></ID>
+  </CurrentIssues>
+</SmellBaseline>

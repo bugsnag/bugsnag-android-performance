@@ -36,9 +36,9 @@ class OkhttpManualNetworkCallbackScenario(
                     OkHttpClient.Builder()
                         .build()
 
-                makeCall(client, "https://bugsnag.com/")
-                makeCall(client, "https://bugsnag.com/changeme")
-                makeCall(client, "https://google.com/")
+                makeCall(client, "https://www.google.com/")
+                makeCall(client, "https://www.google.com/changeme")
+                makeCall(client, "https://www.google.com/")
             }
         }
     }

@@ -91,3 +91,35 @@ public final class com/bugsnag/android/performance/RemoteSpanContextKt {
 	public static final fun encodeAsTraceParent (Lcom/bugsnag/android/performance/SpanContext;)Ljava/lang/String;
 }
 
+public final class com/bugsnag/android/performance/context/GlobalSpanContextStorage : com/bugsnag/android/performance/SpanContextStorage {
+	public fun <init> ()V
+	public fun attach (Lcom/bugsnag/android/performance/SpanContext;)V
+	public fun clear ()V
+	public fun detach (Lcom/bugsnag/android/performance/SpanContext;)V
+	public fun getCurrentContext ()Lcom/bugsnag/android/performance/SpanContext;
+	public fun getCurrentStack ()Lkotlin/sequences/Sequence;
+}
+
+public final class com/bugsnag/android/performance/context/HybridSpanContextStorage : com/bugsnag/android/performance/internal/context/ThreadAwareSpanContextStorage {
+	public static final field Companion Lcom/bugsnag/android/performance/context/HybridSpanContextStorage$Companion;
+	public fun <init> ()V
+	public fun attach (Lcom/bugsnag/android/performance/SpanContext;)V
+	public fun clear ()V
+	public fun detach (Lcom/bugsnag/android/performance/SpanContext;)V
+	public final fun endThreadLocalTrace ()V
+	public fun getCurrentContext ()Lcom/bugsnag/android/performance/SpanContext;
+	public fun getCurrentStack ()Lkotlin/sequences/Sequence;
+	public fun getLocalContextStack-SzmQrho ()Ljava/util/Deque;
+	public fun setLocalContextStack-_8UO57Q (Ljava/util/Deque;)V
+	public final fun startThreadLocalTrace ()Z
+	public static final fun threadLocalTrace (Lkotlin/jvm/functions/Function0;)Ljava/lang/Object;
+	public static final fun tryEndThreadLocalTrace ()V
+	public static final fun tryStartThreadLocalTrace ()Z
+}
+
+public final class com/bugsnag/android/performance/context/HybridSpanContextStorage$Companion {
+	public final fun threadLocalTrace (Lkotlin/jvm/functions/Function0;)Ljava/lang/Object;
+	public final fun tryEndThreadLocalTrace ()V
+	public final fun tryStartThreadLocalTrace ()Z
+}
+

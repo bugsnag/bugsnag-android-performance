@@ -1,3 +1,17 @@
+## 2.1.0 (2025-11-10)
+
+### Changes
+
+* Added an optional `spanName` to `LoadingIndicator` and `LoadingIndicatorView` to create a child span of the `ViewLoad` span
+  [#458](https://github.com/bugsnag/bugsnag-android-performance/pull/458)
+* Introduced `GlobalSpanContextStorage` and `HybridSpanContextStorage` for more flexible trace parentage
+  [#465](https://github.com/bugsnag/bugsnag-android-performance/pull/465)
+
+### Bug fixes
+
+* `NamedSpanControlsPlugin` better handles timeouts when spans have duplicate names, avoiding holding references for longer than required
+  [#423](https://github.com/bugsnag/bugsnag-android-performance/pull/423)
+
 ## 2.0.0 (2025-07-09)
 
 ### Changes

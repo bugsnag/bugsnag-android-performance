@@ -61,6 +61,11 @@ public value class SpanContextStack(
         stack.clear()
     }
 
+    public fun stackSequence(): Sequence<SpanContext> {
+        return stack.asSequence()
+            .mapNotNull { it.get() }
+    }
+
     public fun copy(): SpanContextStack {
         return SpanContextStack(ArrayDeque(stack))
     }
