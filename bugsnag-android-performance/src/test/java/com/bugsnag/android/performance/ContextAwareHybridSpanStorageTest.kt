@@ -49,7 +49,7 @@ class ContextAwareHybridSpanStorageTest {
         // submit a task while the root span is active
         executor.submit {
             repeat(9000) {
-                assertNotNull(storage.localContextStack)
+                assertNotNull(storage.currentThreadSpanContextStorage)
                 spanFactory.createCustomSpan("task 1").use { taskSpan ->
                     assertEquals(rootSpan.spanId, taskSpan.parentSpanId)
                 }

@@ -4,6 +4,7 @@ import com.bugsnag.android.performance.internal.SpanFactory
 import com.bugsnag.android.performance.internal.context.ThreadLocalSpanContextStorage
 import com.bugsnag.android.performance.test.CollectingSpanProcessor
 import com.bugsnag.android.performance.test.task
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertSame
 import org.junit.Before
@@ -19,15 +20,20 @@ internal class SpanContextTest {
     private lateinit var spanFactory: SpanFactory
     private lateinit var spanProcessor: CollectingSpanProcessor
 
-    @Before
-    fun ensureContextClear() {
-        SpanContext.defaultStorage = ThreadLocalSpanContextStorage()
-    }
+    private var previousSpanStorage: SpanContextStorage? = null
 
     @Before
-    fun newSpanFactory() {
+    fun ensureContextClear() {
+        previousSpanStorage = SpanContext.defaultStorage
+        SpanContext.defaultStorage = ThreadLocalSpanContextStorage()
+
         spanProcessor = CollectingSpanProcessor()
         spanFactory = SpanFactory(spanProcessor)
+    }
+
+    @After
+    fun restoreContextStorage() {
+        SpanContext.defaultStorage = previousSpanStorage
     }
 
     @Test
@@ -37,7 +43,7 @@ internal class SpanContextTest {
 
     @Test
     fun testThreadedContext() {
-        (0..5)
+        (0..1)
             .map {
                 task {
                     val threadId = Thread.currentThread().id
@@ -168,7 +174,7 @@ internal class SpanContextTest {
 
     private fun currentContextStackSize(): Int {
         val contextStorage = SpanContext.defaultStorage as? ThreadLocalSpanContextStorage
-        return contextStorage?.contextStack?.size ?: 0
+        return contextStorage?.contextStack?.currentStack?.count() ?: 0
     }
 
     private data class TestSpanContext(

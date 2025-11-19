@@ -1,8 +1,11 @@
 package com.bugsnag.android.performance.context
 
 import com.bugsnag.android.performance.SpanContext
+import com.bugsnag.android.performance.SpanContextStorage
+import com.bugsnag.android.performance.context.HybridSpanContextStorage.Companion.threadLocalTrace
+import com.bugsnag.android.performance.context.HybridSpanContextStorage.Companion.tryEndThreadLocalTrace
+import com.bugsnag.android.performance.context.HybridSpanContextStorage.Companion.tryStartThreadLocalTrace
 import com.bugsnag.android.performance.internal.SpanContextStack
-import com.bugsnag.android.performance.internal.context.ThreadAwareSpanContextStorage
 
 /**
  * `SpanContextStorage` with a composite structure where a single global `SpanContext` stack is
@@ -23,19 +26,19 @@ import com.bugsnag.android.performance.internal.context.ThreadAwareSpanContextSt
  */
 public class HybridSpanContextStorage : ThreadAwareSpanContextStorage {
     private val globalSpanContextStorage = GlobalSpanContextStorage()
-    private val threadLocalStack = ThreadLocal<SpanContextStack>()
+    private val threadLocalStack = ThreadLocal<SpanContextStorage>()
 
     override val currentContext: SpanContext?
         get() {
             val stack = threadLocalStack.get()
             return if (stack != null) {
-                stack.top
+                stack.currentContext
             } else {
                 globalSpanContextStorage.currentContext
             }
         }
 
-    override var localContextStack: SpanContextStack?
+    override var currentThreadSpanContextStorage: SpanContextStorage?
         get() = threadLocalStack.get()
         set(value) {
             threadLocalStack.set(value)
@@ -44,7 +47,7 @@ public class HybridSpanContextStorage : ThreadAwareSpanContextStorage {
     override val currentStack: Sequence<SpanContext>
         get() {
             val stack = threadLocalStack.get()
-            return stack?.stackSequence() ?: globalSpanContextStorage.currentStack
+            return stack?.currentStack ?: globalSpanContextStorage.currentStack
         }
 
     override fun clear() {

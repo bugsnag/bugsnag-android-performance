@@ -309,6 +309,11 @@ public final class com/bugsnag/android/performance/ViewType : java/lang/Enum {
 	public static fun values ()[Lcom/bugsnag/android/performance/ViewType;
 }
 
+public abstract interface class com/bugsnag/android/performance/context/ThreadAwareSpanContextStorage : com/bugsnag/android/performance/SpanContextStorage {
+	public abstract fun getCurrentThreadSpanContextStorage ()Lcom/bugsnag/android/performance/SpanContextStorage;
+	public abstract fun setCurrentThreadSpanContextStorage (Lcom/bugsnag/android/performance/SpanContextStorage;)V
+}
+
 public abstract interface class com/bugsnag/android/performance/controls/AppStartSpanControl {
 	public abstract fun clearType ()V
 	public abstract fun setType (Ljava/lang/String;)V

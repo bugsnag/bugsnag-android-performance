@@ -337,28 +337,26 @@ public final class com/bugsnag/android/performance/internal/SpanCategory$Compani
 	public final fun getVIEW_LOAD_PHASE-haBhItc ()Ljava/lang/String;
 }
 
-public final class com/bugsnag/android/performance/internal/SpanContextStack {
-	public static final fun attach-impl (Ljava/util/Deque;Lcom/bugsnag/android/performance/SpanContext;)V
-	public static final synthetic fun box-impl (Ljava/util/Deque;)Lcom/bugsnag/android/performance/internal/SpanContextStack;
-	public static final fun clear-impl (Ljava/util/Deque;)V
-	public static fun constructor-impl (Ljava/util/Deque;)Ljava/util/Deque;
-	public static synthetic fun constructor-impl$default (Ljava/util/Deque;ILkotlin/jvm/internal/DefaultConstructorMarker;)Ljava/util/Deque;
-	public static final fun copy-07jRbR8 (Ljava/util/Deque;)Ljava/util/Deque;
-	public static final fun current-AYqBgNU (Ljava/util/Deque;Ljava/lang/String;)Lcom/bugsnag/android/performance/internal/SpanImpl;
-	public static final fun detach-impl (Ljava/util/Deque;Lcom/bugsnag/android/performance/SpanContext;)V
-	public fun equals (Ljava/lang/Object;)Z
-	public static fun equals-impl (Ljava/util/Deque;Ljava/lang/Object;)Z
-	public static final fun equals-impl0 (Ljava/util/Deque;Ljava/util/Deque;)Z
-	public static final fun findSpan-impl (Ljava/util/Deque;Lkotlin/jvm/functions/Function1;)Lcom/bugsnag/android/performance/internal/SpanImpl;
-	public static final fun getSize-impl (Ljava/util/Deque;)I
-	public static final fun getTop-impl (Ljava/util/Deque;)Lcom/bugsnag/android/performance/SpanContext;
-	public fun hashCode ()I
-	public static fun hashCode-impl (Ljava/util/Deque;)I
-	public static final fun noSpansMatch-impl (Ljava/util/Deque;Lkotlin/jvm/functions/Function1;)Z
-	public static final fun stackSequence-impl (Ljava/util/Deque;)Lkotlin/sequences/Sequence;
-	public fun toString ()Ljava/lang/String;
-	public static fun toString-impl (Ljava/util/Deque;)Ljava/lang/String;
-	public final synthetic fun unbox-impl ()Ljava/util/Deque;
+public final class com/bugsnag/android/performance/internal/SpanContextStack : java/util/ArrayDeque, com/bugsnag/android/performance/SpanContextStorage {
+	public fun <init> ()V
+	public fun <init> (Ljava/util/Collection;)V
+	public synthetic fun <init> (Ljava/util/Collection;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun attach (Lcom/bugsnag/android/performance/SpanContext;)V
+	public final fun contains (Ljava/lang/Object;)Z
+	public fun contains (Ljava/lang/ref/WeakReference;)Z
+	public final fun copy ()Lcom/bugsnag/android/performance/internal/SpanContextStack;
+	public final fun current-AYqBgNU (Ljava/lang/String;)Lcom/bugsnag/android/performance/internal/SpanImpl;
+	public fun detach (Lcom/bugsnag/android/performance/SpanContext;)V
+	public final fun findSpan (Lkotlin/jvm/functions/Function1;)Lcom/bugsnag/android/performance/internal/SpanImpl;
+	public fun getCurrentContext ()Lcom/bugsnag/android/performance/SpanContext;
+	public fun getCurrentStack ()Lkotlin/sequences/Sequence;
+	public fun getSize ()I
+	public final fun getTop ()Lcom/bugsnag/android/performance/SpanContext;
+	public final fun noSpansMatch (Lkotlin/jvm/functions/Function1;)Z
+	public final fun remove (Ljava/lang/Object;)Z
+	public fun remove (Ljava/lang/ref/WeakReference;)Z
+	public final fun size ()I
+	public final fun stackSequence ()Lkotlin/sequences/Sequence;
 }
 
 public final class com/bugsnag/android/performance/internal/SpanFactory {
@@ -589,22 +587,17 @@ public final class com/bugsnag/android/performance/internal/context/ContextAware
 	public final fun wrap (Ljava/util/concurrent/ThreadFactory;)Ljava/util/concurrent/ThreadFactory;
 }
 
-public abstract interface class com/bugsnag/android/performance/internal/context/ThreadAwareSpanContextStorage : com/bugsnag/android/performance/SpanContextStorage {
-	public abstract fun getLocalContextStack-SzmQrho ()Ljava/util/Deque;
-	public abstract fun setLocalContextStack-_8UO57Q (Ljava/util/Deque;)V
-}
-
-public final class com/bugsnag/android/performance/internal/context/ThreadLocalSpanContextStorage : com/bugsnag/android/performance/internal/context/ThreadAwareSpanContextStorage {
+public final class com/bugsnag/android/performance/internal/context/ThreadLocalSpanContextStorage : com/bugsnag/android/performance/context/ThreadAwareSpanContextStorage {
 	public fun <init> ()V
 	public fun attach (Lcom/bugsnag/android/performance/SpanContext;)V
 	public fun clear ()V
 	public fun detach (Lcom/bugsnag/android/performance/SpanContext;)V
-	public final fun getContextStack-07jRbR8 ()Ljava/util/Deque;
+	public final fun getContextStack ()Lcom/bugsnag/android/performance/SpanContextStorage;
 	public fun getCurrentContext ()Lcom/bugsnag/android/performance/SpanContext;
 	public fun getCurrentStack ()Lkotlin/sequences/Sequence;
-	public fun getLocalContextStack-SzmQrho ()Ljava/util/Deque;
-	public final fun setContextStack-jmkdIac (Ljava/util/Deque;)V
-	public fun setLocalContextStack-_8UO57Q (Ljava/util/Deque;)V
+	public fun getCurrentThreadSpanContextStorage ()Lcom/bugsnag/android/performance/SpanContextStorage;
+	public final fun setContextStack (Lcom/bugsnag/android/performance/SpanContextStorage;)V
+	public fun setCurrentThreadSpanContextStorage (Lcom/bugsnag/android/performance/SpanContextStorage;)V
 }
 
 public final class com/bugsnag/android/performance/internal/controls/AppStartControlProvider : com/bugsnag/android/performance/controls/SpanControlProvider {
