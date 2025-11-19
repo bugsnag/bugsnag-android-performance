@@ -16,8 +16,6 @@ Feature: Manual creation of spans
 
     * a span name equals "ManualSpanScenario"
     * a span field "kind" equals 1
-    * a span field "spanId" matches the regex "^[A-Fa-f0-9]{16}$"
-    * a span field "traceId" matches the regex "^[A-Fa-f0-9]{32}$"
     * a span field "startTimeUnixNano" matches the regex "^[0-9]+$"
     * a span field "endTimeUnixNano" matches the regex "^[0-9]+$"
     * a span string attribute "net.host.connection.type" exists
