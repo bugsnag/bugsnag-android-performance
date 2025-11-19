@@ -1,11 +1,12 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
+    id 'org.jetbrains.kotlin.plugin.compose'
 }
 
 android {
-    namespace 'com.example.bugsnag.performance'
-    compileSdk 35
+    namespace = 'com.example.bugsnag.performance'
+    compileSdk = 35
 
     defaultConfig {
         applicationId "com.example.bugsnag.performance"
@@ -30,7 +31,7 @@ android {
         release {
             minifyEnabled true
             proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
-            signingConfig signingConfigs.config
+            signingConfig = signingConfigs.config
         }
     }
 
@@ -44,11 +45,7 @@ android {
     }
 
     buildFeatures {
-        compose true
-    }
-
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.13"
+        compose = true
     }
 }
 
