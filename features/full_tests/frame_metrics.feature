@@ -8,8 +8,7 @@ Scenario: Slow & Frozen Frames are reported
   * a span name equals "FrozenFrame"
 
   # The FrozenFrame span should be a child of Slow Animation
-  * the "Slow Animation" span field "spanId" is stored as the value "slow_animation_spanId"
-  * the "FrozenFrame" span field "parentSpanId" equals the stored value "slow_animation_spanId"
+  * a span named "FrozenFrame" has a parent named "Slow Animation"
 
   * the "Slow Animation" span integer attribute "bugsnag.rendering.slow_frames" is greater than 0
   * the "Slow Animation" span integer attribute "bugsnag.rendering.frozen_frames" is greater than 0
