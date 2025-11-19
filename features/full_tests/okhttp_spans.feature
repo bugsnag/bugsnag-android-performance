@@ -2,8 +2,7 @@ Feature: OkHttp EventListener
 
   Scenario: NetworkRequest spans are logged for requests
     Given I run "OkhttpSpanScenario"
-    And I wait to receive a trace
-    * a span name equals "[HTTP/GET]"
+    And I wait to receive a span named "[HTTP/GET]"
     * a span field "kind" equals 3
     * a span field "startTimeUnixNano" matches the regex "^[0-9]+$"
     * a span field "endTimeUnixNano" matches the regex "^[0-9]+$"

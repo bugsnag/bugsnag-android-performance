@@ -3,7 +3,9 @@ Feature: Plugins
   Scenario: Plugins can automatically update spans
     Given I run "PluginScenario"
     And I wait to receive a sampling request
-    And I wait to receive a trace
+    And I wait to receive a span named "Span 1"
+    And I wait to receive a span named "Span 2"
+    And I wait to receive a span named "Span 3"
 
     Then a span named "Span 1" contains the attributes:
       | attribute | type        | value |

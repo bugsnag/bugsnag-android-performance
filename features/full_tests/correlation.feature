@@ -2,10 +2,9 @@ Feature: Manual creation of spans
 
 Scenario: Errors notified within a span include the correlation data
   Given I run "CorrelatedErrorScenario"
-  And I wait to receive a trace
+  And I wait to receive a span named "CorrelatedError Span"
   And I wait to receive an error
 
-  * a span name equals "CorrelatedError Span"
   * a span field "kind" equals 1
   * a span field "startTimeUnixNano" matches the regex "^[0-9]+$"
   * a span field "endTimeUnixNano" matches the regex "^[0-9]+$"
