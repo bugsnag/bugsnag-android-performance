@@ -1,3 +1,10 @@
+## TBD
+
+### Changes
+
+* System metrics are now reported for first-class `ViewLoad` spans
+  [#475](https://github.com/bugsnag/bugsnag-android-performance/pull/475)
+
 ## 2.1.1 (2025-11-20)
 
 ### Bug fixes
