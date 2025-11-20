@@ -1,73 +1,68 @@
 package com.bugsnag.android.performance.internal
 
-import androidx.annotation.RestrictTo
 import com.bugsnag.android.performance.SpanContext
+import com.bugsnag.android.performance.SpanContextStorage
 import java.lang.ref.WeakReference
 import java.util.ArrayDeque
-import java.util.Deque
 
 /**
  * WeakReference stack of SpanContexts used by [SpanContext.Storage].
  */
-@JvmInline
-@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
-public value class SpanContextStack(
-    @PublishedApi
-    internal val stack: Deque<WeakReference<SpanContext>> = ArrayDeque(),
-) {
+public class SpanContextStack(
+    contents: Collection<WeakReference<SpanContext>> = emptyList(),
+) : ArrayDeque<WeakReference<SpanContext>>(contents),
+    SpanContextStorage {
     /**
      * The current top of the stack or `null` if none is valid or the stack is empty.
      */
     public val top: SpanContext?
         get() {
             while (true) {
-                if (stack.isEmpty()) {
+                if (isEmpty()) {
                     return null
                 }
 
-                val contextRef = stack.peekFirst()
+                val contextRef = peekFirst()
                 val context = contextRef?.get()
 
                 if (context == null || (context as? SpanImpl)?.isEnded() == true) {
-                    stack.removeFirst()
+                    removeFirst()
                 } else {
                     return context
                 }
             }
         }
 
-    public val size: Int get() = stack.size
+    override val currentContext: SpanContext? by this::top
+    override val currentStack: Sequence<SpanContext>
+        get() = stackSequence()
 
-    public fun attach(spanContext: SpanContext) {
+    public override fun attach(spanContext: SpanContext) {
         if (spanContext == SpanContext.invalid) {
             return
         }
 
-        stack.push(WeakReference(spanContext))
+        push(WeakReference(spanContext))
     }
 
-    public fun detach(spanContext: SpanContext) {
+    public override fun detach(spanContext: SpanContext) {
         // assume that the top of the stack is 'spanContext' and 'poll' it off
         // since poll returns null instead of throwing an exception
-        val top = stack.pollFirst() ?: return
+        val top = pollFirst() ?: return
 
         if (top.get() != spanContext) {
             // oops! the top of the stack wasn't what we expected so we put it back here
-            stack.push(top)
+            push(top)
         }
     }
 
-    public fun clear() {
-        stack.clear()
-    }
-
     public fun stackSequence(): Sequence<SpanContext> {
-        return stack.asSequence()
+        return asSequence()
             .mapNotNull { it.get() }
     }
 
     public fun copy(): SpanContextStack {
-        return SpanContextStack(ArrayDeque(stack))
+        return SpanContextStack(this)
     }
 
     /**
@@ -85,11 +80,11 @@ public value class SpanContextStack(
      * Returns `true` if [predicate] only returned `false`, otherwise `false`.
      */
     public inline fun noSpansMatch(predicate: (SpanImpl) -> Boolean): Boolean {
-        return stack.none { (it.get() as? SpanImpl)?.let(predicate) == true }
+        return none { (it.get() as? SpanImpl)?.let(predicate) == true }
     }
 
     public inline fun findSpan(predicate: (SpanImpl) -> Boolean): SpanImpl? {
-        for (contextRef in stack) {
+        for (contextRef in this) {
             val spanImpl = contextRef.get() as? SpanImpl
             if (spanImpl != null && predicate(spanImpl)) {
                 return spanImpl

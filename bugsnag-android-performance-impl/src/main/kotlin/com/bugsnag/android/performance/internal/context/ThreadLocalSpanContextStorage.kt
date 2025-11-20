@@ -2,32 +2,34 @@ package com.bugsnag.android.performance.internal.context
 
 import androidx.annotation.RestrictTo
 import com.bugsnag.android.performance.SpanContext
+import com.bugsnag.android.performance.SpanContextStorage
+import com.bugsnag.android.performance.context.ThreadAwareSpanContextStorage
 import com.bugsnag.android.performance.internal.SpanContextStack
 
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP_PREFIX)
 public class ThreadLocalSpanContextStorage : ThreadAwareSpanContextStorage {
-    private val threadLocalStorage =
-        object : ThreadLocal<SpanContextStack>() {
-            override fun initialValue(): SpanContextStack = SpanContextStack()
+    private val threadLocal =
+        object : ThreadLocal<SpanContextStorage>() {
+            override fun initialValue(): SpanContextStorage = SpanContextStack()
         }
 
-    public var contextStack: SpanContextStack
-        get() = threadLocalStorage.get() as SpanContextStack
+    public var contextStack: SpanContextStorage
+        get() = threadLocal.get() as SpanContextStorage
         set(value) {
-            threadLocalStorage.set(value)
+            threadLocal.set(value)
         }
 
-    override var localContextStack: SpanContextStack?
+    override var currentThreadSpanContextStorage: SpanContextStorage?
         get() = contextStack
         set(value) {
             contextStack = value ?: SpanContextStack()
         }
 
     override val currentContext: SpanContext?
-        get() = contextStack.top
+        get() = contextStack.currentContext
 
     override val currentStack: Sequence<SpanContext>
-        get() = contextStack.stackSequence()
+        get() = contextStack.currentStack
 
     override fun clear() {
         contextStack.clear()
