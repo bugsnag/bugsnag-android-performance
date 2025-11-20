@@ -1,8 +1,9 @@
 package com.bugsnag.android.performance.coroutines
 
 import com.bugsnag.android.performance.SpanContext
+import com.bugsnag.android.performance.SpanContextStorage
+import com.bugsnag.android.performance.context.ThreadAwareSpanContextStorage
 import com.bugsnag.android.performance.internal.SpanContextStack
-import com.bugsnag.android.performance.internal.context.ThreadAwareSpanContextStorage
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -13,7 +14,7 @@ import kotlin.coroutines.EmptyCoroutineContext
 
 private class ContextAwareCoroutineContextElement(
     private val coroutineContextStack: SpanContextStack?,
-) : ThreadContextElement<SpanContextStack?> {
+) : ThreadContextElement<SpanContextStorage?> {
     constructor(spanContext: SpanContext) : this(
         SpanContextStack().apply { attach(spanContext) },
     )
@@ -23,23 +24,24 @@ private class ContextAwareCoroutineContextElement(
 
     fun copy() = ContextAwareCoroutineContextElement(coroutineContextStack?.copy())
 
-    override fun updateThreadContext(context: CoroutineContext): SpanContextStack? {
+    override fun updateThreadContext(context: CoroutineContext): SpanContextStorage? {
         // coroutine starting/resuming - grab the current SpanContext stack for this thread
         // so that we can restore it when the coroutine is suspended
         val threadLocalSpanContextStorage =
             SpanContext.defaultStorage as? ThreadAwareSpanContextStorage
                 ?: return null
-        val previousStack = threadLocalSpanContextStorage.localContextStack
+        val previousStack = threadLocalSpanContextStorage.currentThreadSpanContextStorage
 
         // Replace with the coroutine SpanContext stack
-        threadLocalSpanContextStorage.localContextStack = coroutineContextStack ?: SpanContextStack()
+        threadLocalSpanContextStorage.currentThreadSpanContextStorage =
+            coroutineContextStack ?: SpanContextStack()
 
         return previousStack
     }
 
     override fun restoreThreadContext(
         context: CoroutineContext,
-        oldState: SpanContextStack?,
+        oldState: SpanContextStorage?,
     ) {
         // coroutine suspended - restore this thread's previous SpanContext stack
         val threadLocalSpanContextStorage =
@@ -50,7 +52,7 @@ private class ContextAwareCoroutineContextElement(
             threadLocalSpanContextStorage.clear()
         }
         // Restore the previous SpanContext stack
-        threadLocalSpanContextStorage.localContextStack = oldState
+        threadLocalSpanContextStorage.currentThreadSpanContextStorage = oldState
     }
 
     companion object Key : CoroutineContext.Key<ContextAwareCoroutineContextElement>

@@ -1,4 +1,4 @@
-.PHONY: install test-fixture check bump
+.PHONY: check install test-fixture example-app bump
 
 check:
 	@./gradlew --continue license detekt lint ktlintCheck test
@@ -14,6 +14,11 @@ test-fixture: install
 benchmark-fixture: install
 	@cd features/fixtures/benchmarks && ./gradlew assembleRelease -x check
 	@cp features/fixtures/benchmarks/app/build/outputs/apk/release/app-release.apk build/benchmark-fixture.apk
+
+example-app:
+	@./gradlew assembleRelease publishToMavenLocal -x check
+	# Build example app
+	@cd ./examples/performance-example/ && ./gradlew clean assembleRelease
 
 bump:
 ifneq ($(shell git diff --staged),)

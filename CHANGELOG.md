@@ -1,3 +1,10 @@
+## 2.1.1 (2025-11-20)
+
+### Bug fixes
+
+* Made the new `ThreadAwareSpanContextStorage` interface public API
+  [#474](https://github.com/bugsnag/bugsnag-android-performance/pull/474)
+
 ## 2.1.0 (2025-11-10)
 
 ### Changes

@@ -49,6 +49,14 @@ steps:
       JAVA_VERSION: '17'
     command: scripts/run-sizer.sh
 
+  - label: ':android: Build Example App'
+    timeout_in_minutes: 10
+    agents:
+      queue: macos-15
+    command: 'make example-app'
+    env:
+      JAVA_VERSION: 17
+
   - label: ':android: Build and upload test fixture'
     key: 'fixture'
     timeout_in_minutes: 30

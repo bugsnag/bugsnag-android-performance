@@ -1,11 +1,12 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
+    id 'org.jetbrains.kotlin.plugin.compose'
 }
 
 android {
-    namespace 'com.example.bugsnag.performance'
-    compileSdk 35
+    namespace = 'com.example.bugsnag.performance'
+    compileSdk = 35
 
     defaultConfig {
         applicationId "com.example.bugsnag.performance"
@@ -30,7 +31,7 @@ android {
         release {
             minifyEnabled true
             proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
-            signingConfig signingConfigs.config
+            signingConfig = signingConfigs.config
         }
     }
 
@@ -44,18 +45,14 @@ android {
     }
 
     buildFeatures {
-        compose true
-    }
-
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.13"
+        compose = true
     }
 }
 
 dependencies {
-    implementation "com.bugsnag:bugsnag-android-performance:2.1.0"
-    implementation "com.bugsnag:bugsnag-android-performance-okhttp:2.1.0"
-    implementation "com.bugsnag:bugsnag-android-performance-compose:2.1.0"
+    implementation "com.bugsnag:bugsnag-android-performance:2.1.1"
+    implementation "com.bugsnag:bugsnag-android-performance-okhttp:2.1.1"
+    implementation "com.bugsnag:bugsnag-android-performance-compose:2.1.1"
 
     implementation 'androidx.core:core-ktx:1.7.0'
     implementation 'androidx.appcompat:appcompat:1.5.1'
