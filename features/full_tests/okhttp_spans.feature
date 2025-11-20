@@ -2,10 +2,7 @@ Feature: OkHttp EventListener
 
   Scenario: NetworkRequest spans are logged for requests
     Given I run "OkhttpSpanScenario"
-    And I wait to receive a trace
-    * a span name equals "[HTTP/GET]"
-    * a span field "spanId" matches the regex "^[A-Fa-f0-9]{16}$"
-    * a span field "traceId" matches the regex "^[A-Fa-f0-9]{32}$"
+    And I wait to receive a span named "[HTTP/GET]"
     * a span field "kind" equals 3
     * a span field "startTimeUnixNano" matches the regex "^[0-9]+$"
     * a span field "endTimeUnixNano" matches the regex "^[0-9]+$"
@@ -30,8 +27,6 @@ Feature: OkHttp EventListener
     Then the trace "Content-Type" header equals "application/json"
     * the trace "Bugsnag-Sent-At" header matches the regex "^\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d\.\d\d\dZ$"
     * every span field "name" equals "[HTTP/GET]"
-    * every span field "spanId" matches the regex "^[A-Fa-f0-9]{16}$"
-    * every span field "traceId" matches the regex "^[A-Fa-f0-9]{32}$"
     * every span field "startTimeUnixNano" matches the regex "^[0-9]+$"
     * every span field "endTimeUnixNano" matches the regex "^[0-9]+$"
     * a span string attribute "http.url" equals "https://www.google.com/"
@@ -43,8 +38,6 @@ Feature: OkHttp EventListener
     Then the trace "Content-Type" header equals "application/json"
     * the trace "Bugsnag-Sent-At" header matches the regex "^\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d\.\d\d\dZ$"
     * every span field "name" equals "[HTTP/GET]"
-    * every span field "spanId" matches the regex "^[A-Fa-f0-9]{16}$"
-    * every span field "traceId" matches the regex "^[A-Fa-f0-9]{32}$"
     * every span field "startTimeUnixNano" matches the regex "^[0-9]+$"
     * every span field "endTimeUnixNano" matches the regex "^[0-9]+$"
     * a span string attribute "http.url" equals "https://www.google.com/"

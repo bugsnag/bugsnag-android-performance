@@ -268,5 +268,4 @@ Feature: Automatic creation of spans
       | bugsnag.span.category | stringValue | view_load  |
       | bugsnag.view.type     | stringValue | compose    |
       | bugsnag.view.name     | stringValue | Composable |
-    * the "[ViewLoad/Activity]ComposeViewLoadActivity" span field "spanId" is stored as the value "activity_load_span_id"
-    * the "[ViewLoad/Compose]Composable" span field "parentSpanId" equals the stored value "activity_load_span_id"
+    * a span named "[ViewLoad/Compose]Composable" has a parent named "[ViewLoad/Activity]ComposeViewLoadActivity"
