@@ -20,6 +20,9 @@ class AppStartScenario(
     override fun startScenario() {
         config.autoInstrumentAppStarts = true
         config.autoInstrumentActivities = AutoInstrument.FULL
+        config.enabledMetrics.cpu = true
+        config.enabledMetrics.memory = true
+        config.enabledMetrics.rendering = true
 
         launch {
             context.saveStartupConfig(config)
