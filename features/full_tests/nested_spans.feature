@@ -3,7 +3,19 @@ Feature: Nested spans
   @skip_below_android_10
   Scenario: Nested spans
     Given I run "NestedSpansScenario"
-    And I wait to receive a trace
+    And I wait to receive a span named "[ViewLoadPhase/ActivityCreate]NestedSpansActivity"
+    * I wait to receive a span named "[ViewLoadPhase/ActivityStart]NestedSpansActivity"
+    * I wait to receive a span named "[ViewLoad/Fragment]FirstFragment"
+    * I wait to receive a span named "[ViewLoadPhase/FragmentCreate]FirstFragment"
+    * I wait to receive a span named "[ViewLoad/Fragment]SecondFragment"
+    * I wait to receive a span named "[ViewLoadPhase/FragmentCreate]SecondFragment"
+    * I wait to receive a span named "[ViewLoadPhase/ActivityResume]NestedSpansActivity"
+    * I wait to receive a span named "[AppStart/AndroidCold]SplashScreen"
+    * I wait to receive a span named "[ViewLoad/Activity]NestedSpansActivity"
+    * I wait to receive a span named "DoStuff"
+    * I wait to receive a span named "LoadData"
+    * I wait to receive a span named "CustomRoot"
+
     # Check we have received all the spans we are expecting
     * a span named "[ViewLoadPhase/ActivityCreate]NestedSpansActivity" contains the attributes:
                 | attribute                         | type        | value               |

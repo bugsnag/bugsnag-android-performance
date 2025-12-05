@@ -2,7 +2,11 @@ Feature: Device Metrics
 
   Scenario: CPU & Memory Test
     When I run "DeviceMetricsScenario" configured as "all"
-    * I wait to receive a trace
+    * I wait to receive a span named "FirstClass"
+    * I wait to receive a span named "No Metrics"
+    * I wait to receive a span named "Not FirstClass"
+    * I wait to receive a span named "CPU Metrics Only"
+    * I wait to receive a span named "Memory Metrics Only"
 
     # Check CPU Metrics on first class spans
     * the "FirstClass" span has double attribute named "bugsnag.system.cpu_mean_total"
@@ -101,7 +105,11 @@ Feature: Device Metrics
 
   Scenario: Configured for CPU Metrics only
     When I run "DeviceMetricsScenario" configured as "cpu"
-    * I wait to receive a trace
+    * I wait to receive a span named "FirstClass"
+    * I wait to receive a span named "No Metrics"
+    * I wait to receive a span named "Not FirstClass"
+    * I wait to receive a span named "CPU Metrics Only"
+    * I wait to receive a span named "Memory Metrics Only"
 
     # Check CPU Metrics on first class spans
     * the "FirstClass" span has double attribute named "bugsnag.system.cpu_mean_total"
@@ -198,7 +206,11 @@ Feature: Device Metrics
 
   Scenario: Configured for Memory Metrics only
     When I run "DeviceMetricsScenario" configured as "memory"
-    * I wait to receive a trace
+    * I wait to receive a span named "FirstClass"
+    * I wait to receive a span named "No Metrics"
+    * I wait to receive a span named "Not FirstClass"
+    * I wait to receive a span named "CPU Metrics Only"
+    * I wait to receive a span named "Memory Metrics Only"
 
     # Check there are no CPU Metrics on first class spans
     * the "FirstClass" span has no "bugsnag.system.cpu_mean_total" attribute
