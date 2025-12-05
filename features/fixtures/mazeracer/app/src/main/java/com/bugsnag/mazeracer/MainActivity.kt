@@ -18,6 +18,7 @@ import com.bugsnag.android.Configuration
 import com.bugsnag.android.EndpointConfiguration
 import com.bugsnag.android.performance.AutoInstrument
 import com.bugsnag.android.performance.PerformanceConfiguration
+import com.bugsnag.mazeracer.debug.UnclosedSpansTracker
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -101,7 +102,14 @@ class MainActivity : AppCompatActivity() {
 
         if (requestCode == REQUEST_CODE_FINISH_ON_RETURN) {
             log("Activity requested shutdown of the test fixture - will call finish()")
-            Handler(Looper.getMainLooper()).postDelayed({ finish() }, 250L)
+            Handler(Looper.getMainLooper()).postDelayed(
+                {
+                    PerformanceTestUtils.flushBatch()
+                    UnclosedSpansTracker.dumpUnclosedSpans(this::class.java.simpleName)
+                    finish()
+                },
+                250L,
+            )
         }
     }
 
@@ -278,6 +286,7 @@ class MainActivity : AppCompatActivity() {
 
                 "load_scenario" -> {
                     scenario = loadScenario(scenarioName, scenarioMetadata, endpointUrl)
+                    scenario?.onLoadOnly()
                 }
 
                 "invoke" -> {
@@ -342,6 +351,8 @@ class MainActivity : AppCompatActivity() {
             config.autoInstrumentAppStarts = false
             config.autoInstrumentActivities = AutoInstrument.OFF
             config.logger = DebugLogger
+            config.addOnSpanStartCallback(UnclosedSpansTracker)
+            config.addOnSpanEndCallback(UnclosedSpansTracker)
         }
     }
 

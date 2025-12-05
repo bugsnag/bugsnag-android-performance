@@ -10,6 +10,7 @@ install:
 test-fixture: install
 	@./gradlew -p=features/fixtures/mazeracer assembleRelease -x check
 	@cp features/fixtures/mazeracer/app/build/outputs/apk/release/app-release.apk build/test-fixture.apk
+	@cp features/fixtures/mazeracer/app/build/outputs/mapping/release/mapping.txt build/mapping.txt
 
 benchmark-fixture: install
 	@cd features/fixtures/benchmarks && ./gradlew assembleRelease -x check

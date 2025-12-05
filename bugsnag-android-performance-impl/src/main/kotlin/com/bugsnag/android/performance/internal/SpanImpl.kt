@@ -196,6 +196,8 @@ public class SpanImpl(
         state.isBlocked &&
             (conditions == null || conditions?.isNotEmpty() == true)
 
+    public fun isDiscarded(): Boolean = state.isDiscarded
+
     internal fun toJson(json: JsonTraceWriter) {
         json.writeSpan(this) {
             name("name").value(name)

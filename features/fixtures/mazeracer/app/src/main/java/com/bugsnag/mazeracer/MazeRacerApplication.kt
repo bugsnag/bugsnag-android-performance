@@ -5,13 +5,16 @@ import android.content.Context
 import android.os.StrictMode
 import android.util.Log
 import com.bugsnag.android.performance.BugsnagPerformance
+import com.bugsnag.android.performance.SpanContext
 import com.bugsnag.android.performance.internal.InternalDebug
+import com.bugsnag.mazeracer.debug.UnclosedSpansTracker
 
 class MazeRacerApplication : Application() {
     init {
         instance = this
+        SpanContext.defaultStorage = UnclosedSpansTracker
         BugsnagPerformance.reportApplicationClassLoaded()
-        Log.i("MazeRacer", "MazeRacerApplication static init")
+        log("MazeRacerApplication static init")
     }
 
     companion object {
@@ -29,6 +32,8 @@ class MazeRacerApplication : Application() {
         // this is used to test things like app-start instrumentation
         readStartupConfig()?.let { config ->
             InternalDebug.workerSleepMs = 2000L
+            config.addOnSpanStartCallback(UnclosedSpansTracker)
+            config.addOnSpanEndCallback(UnclosedSpansTracker)
             BugsnagPerformance.start(config)
         }
 

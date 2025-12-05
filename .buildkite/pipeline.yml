@@ -67,6 +67,7 @@ steps:
     artifact_paths:
       - "build/fixture_url.txt"
       - "build/fixture_bs_url.txt"
+      - "build/mapping.txt"
     commands:
       - make test-fixture
       - bundle install

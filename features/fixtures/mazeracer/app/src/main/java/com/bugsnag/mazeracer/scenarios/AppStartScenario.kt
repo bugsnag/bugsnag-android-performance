@@ -4,6 +4,7 @@ import com.bugsnag.android.performance.AutoInstrument
 import com.bugsnag.android.performance.PerformanceConfiguration
 import com.bugsnag.android.performance.internal.InternalDebug
 import com.bugsnag.mazeracer.Scenario
+import com.bugsnag.mazeracer.log
 import com.bugsnag.mazeracer.saveStartupConfig
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -15,6 +16,12 @@ class AppStartScenario(
 ) : Scenario(config, scenarioMetadata) {
     init {
         InternalDebug.workerSleepMs = 5000L
+    }
+
+    override fun onLoadOnly() {
+        runAndFlush {
+            log("Flushing AppStartScenario")
+        }
     }
 
     override fun startScenario() {

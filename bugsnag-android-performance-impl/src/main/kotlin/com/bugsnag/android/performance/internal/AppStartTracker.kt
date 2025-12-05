@@ -2,6 +2,8 @@ package com.bugsnag.android.performance.internal
 
 import android.os.Handler
 import android.os.Message
+import com.bugsnag.android.performance.internal.AppStartTracker.Companion.APP_START_TIMEOUT_MS
+import com.bugsnag.android.performance.internal.AppStartTracker.Companion.MSG_DISCARD_APP_START
 
 internal class AppStartTracker(
     private val spanTracker: SpanTracker,
@@ -31,7 +33,7 @@ internal class AppStartTracker(
     }
 
     public fun onApplicationCreate() {
-        handler.sendMessageAtFrontOfQueue(handler.obtainMessage(MSG_APP_CLASS_COMPLETE))
+        handler.sendEmptyMessage(MSG_APP_CLASS_COMPLETE)
         spanTracker.endSpan(appStartToken, AppStartPhase.FRAMEWORK)
     }
 

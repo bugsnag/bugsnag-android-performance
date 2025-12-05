@@ -6,6 +6,7 @@ import android.content.Intent
 import android.os.Handler
 import android.os.Looper
 import com.bugsnag.android.performance.PerformanceConfiguration
+import com.bugsnag.mazeracer.debug.UnclosedSpansTracker
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 
@@ -19,6 +20,8 @@ abstract class Scenario(
     lateinit var context: Activity
 
     abstract fun startScenario()
+
+    open fun onLoadOnly() {}
 
     /**
      * Start the Activity specified by the given Intent, and then `finish()` the entire app
@@ -38,6 +41,7 @@ abstract class Scenario(
 
         mainHandler.post {
             PerformanceTestUtils.flushBatch()
+            UnclosedSpansTracker.dumpUnclosedSpans(this::class.java.simpleName)
         }
     }
 
