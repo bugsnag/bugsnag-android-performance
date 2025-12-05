@@ -39,7 +39,7 @@ steps:
       JAVA_VERSION: "17"
     commands:
       - "cd features/fixtures/mazeracer"
-      - ""./gradlew ktlintCheck detekt"
+      - "./gradlew ktlintCheck detekt"
 
   - label: ":android: Android size reporting"
     timeout_in_minutes: 10
