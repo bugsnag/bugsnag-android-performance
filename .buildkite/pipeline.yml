@@ -1,79 +1,79 @@
 agents:
-  queue: opensource
+  queue: "opensource"
 
 steps:
 
-  - label: ':android: Coding standards checks'
+  - label: ":android: Coding standards checks"
     timeout_in_minutes: 20
     agents:
-      queue: macos-15
+      queue: "macos-15"
     env:
-      JAVA_VERSION: '17'
-    command: './gradlew --continue license detekt lint ktlintCheck'
+      JAVA_VERSION: "17"
+    command: "./gradlew --continue license detekt lint ktlintCheck"
 
-  - label: ':android: Binary compatibility checks'
+  - label: ":android: Binary compatibility checks"
     timeout_in_minutes: 20
     agents:
-      queue: macos-15
+      queue: "macos-15"
     env:
-      JAVA_VERSION: '17'
-    command: './gradlew apiCheck'
+      JAVA_VERSION: "17"
+    command: "./gradlew apiCheck"
 
-  - label: ':android: JVM tests'
+  - label: ":android: JVM tests"
     timeout_in_minutes: 10
     agents:
-      queue: macos-15
+      queue: "macos-15"
     env:
-      JAVA_VERSION: '17'
-    command: './gradlew test'
+      JAVA_VERSION: "17"
+    command: "./gradlew test"
     plugins:
       artifacts#v1.9.0:
         upload: "bugsnag-android-performance/build/reports/tests/"
-        compressed: bugsnag-android-performance-test-reports.tgz
+        compressed: "bugsnag-android-performance-test-reports.tgz"
 
-  - label: ':android: Lint test scenarios'
+  - label: ":android: Lint test scenarios"
     timeout_in_minutes: 10
     agents:
-      queue: macos-15
+      queue: "macos-15"
     env:
-      JAVA_VERSION: '17'
+      JAVA_VERSION: "17"
     commands:
-      - cd features/fixtures/mazeracer
-      - ./gradlew ktlintCheck detekt
+      - "cd features/fixtures/mazeracer"
+      - ""./gradlew ktlintCheck detekt"
 
-  - label: ':android: Android size reporting'
+  - label: ":android: Android size reporting"
     timeout_in_minutes: 10
     agents:
-      queue: macos-15
+      queue: "macos-15"
     env:
-      JAVA_VERSION: '17'
-    command: scripts/run-sizer.sh
+      JAVA_VERSION: "17"
+    command: "scripts/run-sizer.sh"
 
-  - label: ':android: Build Example App'
+  - label: ":android: Build Example App"
     timeout_in_minutes: 10
     agents:
-      queue: macos-15
-    command: 'make example-app'
+      queue: "macos-15"
+    command: "make example-app"
     env:
-      JAVA_VERSION: 17
+      JAVA_VERSION: "17"
 
-  - label: ':android: Build and upload test fixture'
-    key: 'fixture'
+  - label: ":android: Build and upload test fixture"
+    key: "fixture"
     timeout_in_minutes: 30
     agents:
-      queue: macos-15
+      queue: "macos-15"
     env:
-      JAVA_VERSION: '17'
+      JAVA_VERSION: "17"
     artifact_paths:
       - "build/fixture_url.txt"
       - "build/fixture_bs_url.txt"
     commands:
-      - make test-fixture
-      - bundle install
-      - bundle exec upload-app --farm=bb --app=./build/test-fixture.apk --app-id-file=build/fixture_url.txt
-      - bundle exec upload-app --farm=bs --app=./build/test-fixture.apk --app-id-file=build/fixture_bs_url.txt
+      - "make test-fixture"
+      - "bundle install"
+      - "bundle exec upload-app --farm=bb --app=./build/test-fixture.apk --app-id-file=build/fixture_url.txt"
+      - "bundle exec upload-app --farm=bs --app=./build/test-fixture.apk --app-id-file=build/fixture_bs_url.txt"
 
-  - label: ':bitbar: {{matrix}} tests'
+  - label: ":bitbar: {{matrix}} tests"
     depends_on: "fixture"
     timeout_in_minutes: 60
     matrix:
@@ -92,8 +92,8 @@ steps:
           - "maze_output/failed/**/*"
           - "maze_output/maze_output.zip"
       docker-compose#v4.8.0:
-        pull: android-maze-runner
-        run: android-maze-runner
+        pull: "android-maze-runner"
+        run: "android-maze-runner"
         service-ports: true
         command:
           - "features/full_tests"
@@ -111,8 +111,8 @@ steps:
         format: "junit"
         branch: "^main|next$$"
     concurrency: 25
-    concurrency_group: 'bitbar'
-    concurrency_method: eager
+    concurrency_group: "bitbar"
+    concurrency_method: "eager"
     retry:
       automatic:
         - exit_status: -1  # Agent was lost
@@ -120,51 +120,51 @@ steps:
         - exit_status: 103  # Appium session failed
           limit: 2
 
-  # If this is the 'main' branch activate a manual publishing step
+  # If this is the "main" branch activate a manual publishing step
 
-  - block: 'Trigger package publish'
+  - block: "Trigger package publish"
     if: build.branch == "main"
-    key: trigger-publish
-    blocked_state: passed
+    key: "trigger-publish"
+    blocked_state: "passed"
 
-  - label: ':docker: Build Android base image'
+  - label: ":docker: Build Android base image"
     if: build.branch == "main"
-    key: 'android-common'
+    key: "android-common"
     timeout_in_minutes: 30
-    depends_on: 'trigger-publish'
+    depends_on: "trigger-publish"
     plugins:
       - docker-compose#v4.7.0:
           build:
-            - android-common
-          image-repository: 855461928731.dkr.ecr.us-west-1.amazonaws.com/android
+            - "android-common"
+          image-repository: "855461928731.dkr.ecr.us-west-1.amazonaws.com/android"
           cache-from:
-            - android-common:855461928731.dkr.ecr.us-west-1.amazonaws.com/android:performance-release
+            - "android-common:855461928731.dkr.ecr.us-west-1.amazonaws.com/android:performance-release"
           push:
-            - android-common:855461928731.dkr.ecr.us-west-1.amazonaws.com/android:performance-release
+            - "android-common:855461928731.dkr.ecr.us-west-1.amazonaws.com/android:performance-release"
 
-  - label: 'Publish :rocket:'
+  - label: "Publish :rocket:"
     if: build.branch == "main"
-    depends_on: 'android-common'
+    depends_on: "android-common"
     timeout_in_minutes: 30
     env:
-      BUILDKITE_PLUGIN_S3_SECRETS_BUCKET_PREFIX: bugsnag-android-publish
+      BUILDKITE_PLUGIN_S3_SECRETS_BUCKET_PREFIX: "bugsnag-android-publish"
     plugins:
       artifacts#v1.9.0:
         upload:
-          - bugsnag-android-performance/build/outputs/aar/bugsnag-android-performance-release.aar
-          - bugsnag-android-performance-api/build/outputs/aar/bugsnag-android-performance-api-release.aar
-          - bugsnag-android-performance-appcompat/build/outputs/aar/bugsnag-android-performance-appcompat-release.aar
-          - bugsnag-android-performance-compose/build/outputs/aar/bugsnag-android-performance-compose-release.aar
-          - bugsnag-android-performance-coroutines/build/outputs/aar/bugsnag-android-performance-coroutines-release.aar
-          - bugsnag-android-performance-impl/build/outputs/aar/bugsnag-android-performance-impl-release.aar
-          - bugsnag-android-performance-okhttp/build/outputs/aar/bugsnag-android-performance-okhttp-release.aar
-          - bugsnag-plugin-android-performance-named-spans/build/outputs/aar/bugsnag-plugin-android-performance-named-spans-release.aar
+          - "bugsnag-android-performance/build/outputs/aar/bugsnag-android-performance-release.aar"
+          - "bugsnag-android-performance-api/build/outputs/aar/bugsnag-android-performance-api-release.aar"
+          - "bugsnag-android-performance-appcompat/build/outputs/aar/bugsnag-android-performance-appcompat-release.aar"
+          - "bugsnag-android-performance-compose/build/outputs/aar/bugsnag-android-performance-compose-release.aar"
+          - "bugsnag-android-performance-coroutines/build/outputs/aar/bugsnag-android-performance-coroutines-release.aar"
+          - "bugsnag-android-performance-impl/build/outputs/aar/bugsnag-android-performance-impl-release.aar"
+          - "bugsnag-android-performance-okhttp/build/outputs/aar/bugsnag-android-performance-okhttp-release.aar"
+          - "bugsnag-plugin-android-performance-named-spans/build/outputs/aar/bugsnag-plugin-android-performance-named-spans-release.aar"
       docker-compose#v4.7.0:
-        no-cache: true
-        run: android-publisher
+        no-cache: "true"
+        run: "android-publisher"
 
-  - label: 'Conditionally include other pipelines'
+  - label: "Conditionally include other pipelines"
     agents:
-      queue: macos
-    command: sh -c .buildkite/pipeline_trigger.sh
+      queue: "macos"
+    command: "sh -c .buildkite/pipeline_trigger.sh"
     timeout_in_minutes: 10
