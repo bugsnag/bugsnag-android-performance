@@ -119,7 +119,7 @@ Then('every span string attribute {string} does not exist') do |attribute|
 end
 
 When("I relaunch the app after shutdown") do
-  max_attempts = 20
+  max_attempts = 40
   attempts = 0
   manager = Maze::Api::Appium::AppManager.new
   state = manager.state
@@ -128,7 +128,7 @@ When("I relaunch the app after shutdown") do
     state = manager.state
     sleep 0.5
   end
-  $logger.warn "App state #{state} instead of not_running after 10s" unless state == :not_running
+  $logger.warn "App state #{state} instead of not_running after 20s" unless state == :not_running
 
   manager.activate
 end
