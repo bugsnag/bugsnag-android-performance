@@ -148,6 +148,7 @@ steps:
     timeout_in_minutes: 30
     env:
       BUILDKITE_PLUGIN_S3_SECRETS_BUCKET_PREFIX: bugsnag-android-publish
+      RELEASING: "true"
     plugins:
       artifacts#v1.9.0:
         upload:

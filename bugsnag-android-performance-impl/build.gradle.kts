@@ -39,8 +39,10 @@ android {
         }
     }
 
-    testFixtures {
-        enable = true
+    if (System.getenv("RELEASING") == null) {
+        testFixtures {
+            enable = true
+        }
     }
 
     compileOptions {
