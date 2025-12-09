@@ -68,5 +68,7 @@ dependencies {
     implementation(project(":bugsnag-android-performance-impl"))
 
     testImplementation(libs.bundles.test.jvm)
-    testImplementation(testFixtures(project(":bugsnag-android-performance-impl")))
+    if (System.getenv("RELEASING") == null) {
+        testImplementation(testFixtures(project(":bugsnag-android-performance-impl")))
+    }
 }
