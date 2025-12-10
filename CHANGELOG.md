@@ -5,6 +5,11 @@
 * System metrics are now reported for first-class `ViewLoad` spans
   [#475](https://github.com/bugsnag/bugsnag-android-performance/pull/475)
 
+### Bug fixes
+
+* Fixed an issue where `onSpanEnd` callbacks were not invoked for sampled spans
+  [#486](https://github.com/bugsnag/bugsnag-android-performance/pull/486)
+
 ## 2.1.1 (2025-11-20)
 
 ### Bug fixes
