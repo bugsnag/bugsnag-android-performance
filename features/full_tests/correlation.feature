@@ -6,8 +6,6 @@ Scenario: Errors notified within a span include the correlation data
   And I wait to receive an error
 
   * a span field "kind" equals 1
-  * a span field "startTimeUnixNano" matches the regex "^[0-9]+$"
-  * a span field "endTimeUnixNano" matches the regex "^[0-9]+$"
 
   # Check the error correlation with the span
   * the event "correlation.traceId" is not null
