@@ -25,7 +25,7 @@ public final class com/bugsnag/android/performance/FragmentActivityLifecycleCall
 
 public final class com/bugsnag/android/performance/FragmentInstrumentation {
 	public static final field INSTANCE Lcom/bugsnag/android/performance/FragmentInstrumentation;
-	public final fun getEnabled ()Z
-	public final fun setEnabled (Z)V
+	public final fun getEnable ()Z
+	public final fun setEnable (Z)V
 }
 
