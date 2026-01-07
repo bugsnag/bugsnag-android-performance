@@ -23,3 +23,9 @@ public final class com/bugsnag/android/performance/FragmentActivityLifecycleCall
 	public fun onFragmentResumed (Landroidx/fragment/app/FragmentManager;Landroidx/fragment/app/Fragment;)V
 }
 
+public final class com/bugsnag/android/performance/FragmentInstrumentation {
+	public static final field INSTANCE Lcom/bugsnag/android/performance/FragmentInstrumentation;
+	public final fun getEnabled ()Z
+	public final fun setEnabled (Z)V
+}
+

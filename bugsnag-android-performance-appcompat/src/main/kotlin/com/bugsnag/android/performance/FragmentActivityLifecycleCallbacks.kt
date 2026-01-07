@@ -50,7 +50,9 @@ public class FragmentActivityLifecycleCallbacks(
         f: Fragment,
         savedInstanceState: Bundle?,
     ) {
-        if (autoInstrumentationCache.isInstrumentationEnabled(f::class.java)) {
+        if (FragmentInstrumentation.enable &&
+            autoInstrumentationCache.isInstrumentationEnabled(f::class.java)
+        ) {
             // we start both ViewLoad & ViewLoadPhase/Create at exactly the same timestamp
             val timestamp = SystemClock.elapsedRealtimeNanos()
             val viewLoad =
