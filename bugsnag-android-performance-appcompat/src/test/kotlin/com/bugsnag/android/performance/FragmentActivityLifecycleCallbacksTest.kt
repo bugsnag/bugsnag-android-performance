@@ -124,13 +124,13 @@ class FragmentActivityLifecycleCallbacksTest {
 
     @Test
     fun testDisableFragmentInstrument() {
-        FragmentInstrumentation.enabled = true
+        FragmentInstrumentation.enabled = false
         lifecycleCallbacks.onFragmentPreCreated(fm, fragment1, null)
 
         assertEquals(0, spanCollector.size)
 
         lifecycleCallbacks.onFragmentStarted(fm, fragment1)
         lifecycleCallbacks.onFragmentResumed(fm, fragment1)
-        assertEquals(2, spanCollector.size)
+        assertEquals(0, spanCollector.size)
     }
 }
