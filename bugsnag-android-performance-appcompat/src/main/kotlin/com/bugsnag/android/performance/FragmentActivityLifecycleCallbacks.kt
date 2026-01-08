@@ -50,7 +50,7 @@ public class FragmentActivityLifecycleCallbacks(
         f: Fragment,
         savedInstanceState: Bundle?,
     ) {
-        if (FragmentInstrumentation.enable &&
+        if (FragmentInstrumentation.enabled &&
             autoInstrumentationCache.isInstrumentationEnabled(f::class.java)
         ) {
             // we start both ViewLoad & ViewLoadPhase/Create at exactly the same timestamp

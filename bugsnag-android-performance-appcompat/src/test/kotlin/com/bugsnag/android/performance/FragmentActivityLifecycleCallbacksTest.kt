@@ -65,7 +65,7 @@ class FragmentActivityLifecycleCallbacksTest {
     @Test
     @Suppress("DestructuringDeclarationWithTooManyEntries")
     fun testInterleavedLifecycles() {
-        FragmentInstrumentation.enable = true
+        FragmentInstrumentation.enabled = true
         lifecycleCallbacks.onFragmentPreCreated(fm, fragment1, null)
         assertNotEquals(
             "Fragment.onCreate should have a valid SpanContext",
@@ -124,7 +124,7 @@ class FragmentActivityLifecycleCallbacksTest {
 
     @Test
     fun testDisableFragmentInstrument() {
-        FragmentInstrumentation.enable = true
+        FragmentInstrumentation.enabled = true
         lifecycleCallbacks.onFragmentPreCreated(fm, fragment1, null)
 
         assertEquals(0, spanCollector.size)
