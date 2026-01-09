@@ -339,3 +339,13 @@ Feature: Automatic creation of spans
       | bugsnag.view.type     | stringValue | compose    |
       | bugsnag.view.name     | stringValue | Composable |
     * a span named "[ViewLoad/Compose]Composable" has a parent named "[ViewLoad/Activity]ComposeViewLoadActivity"
+
+  Scenario: AppStart fragment instrumentation disabled with ViewLoad enabled
+    Given I run "FragmentInstrumentationDisabledScenario" configured as "FULL"
+    And I wait to receive a trace
+    Then a span named "[ViewLoad/Activity]ActivityViewLoadActivity" contains the attributes:
+      | attribute             | type        | value                    |
+      | bugsnag.span.category | stringValue | view_load                |
+      | bugsnag.view.type     | stringValue | activity                 |
+      | bugsnag.view.name     | stringValue | ActivityViewLoadActivity |
+    * I received no span named "[ViewLoad/Fragment]LoaderFragment"
