@@ -17,6 +17,9 @@ suspend fun Context.saveStartupConfig(config: PerformanceConfiguration) =
             .putString("endpoint", config.endpoint)
             .putBoolean("autoInstrumentAppStarts", config.autoInstrumentAppStarts)
             .putString("autoInstrumentActivities", config.autoInstrumentActivities.name)
+            .putBoolean("cpuMetrics", config.enabledMetrics.cpu)
+            .putBoolean("memoryMetrics", config.enabledMetrics.memory)
+            .putBoolean("renderingMetrics", config.enabledMetrics.rendering)
             .commit()
     }
 
@@ -40,6 +43,9 @@ fun Context.readStartupConfig(): PerformanceConfiguration? {
                         AutoInstrument.valueOf(
                             prefs.getString("autoInstrumentActivities", "OFF")!!,
                         )
+                    enabledMetrics.cpu = prefs.getBoolean("cpuMetrics", false)
+                    enabledMetrics.memory = prefs.getBoolean("memoryMetrics", false)
+                    enabledMetrics.rendering = prefs.getBoolean("renderingMetrics", false)
                 }
 
         log("got some config Dave: $config")
@@ -53,6 +59,9 @@ fun Context.readStartupConfig(): PerformanceConfiguration? {
             .remove("endpoint")
             .remove("autoInstrumentAppStarts")
             .remove("autoInstrumentActivities")
+            .remove("cpuMetrics")
+            .remove("memoryMetrics")
+            .remove("renderingMetrics")
             .apply()
     }
 }

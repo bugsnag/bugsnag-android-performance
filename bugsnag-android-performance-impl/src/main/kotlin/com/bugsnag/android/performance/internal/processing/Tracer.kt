@@ -55,7 +55,7 @@ public class Tracer(
     override fun onEnd(span: Span) {
         if (span !is SpanImpl) return
 
-        if (sampler.shouldKeepSpan(span) && callbacksKeepSpan(span)) {
+        if (callbacksKeepSpan(span) && sampler.shouldKeepSpan(span)) {
             span.isSealed = true
             val batchSize = addToBatch(span)
             if (batchSize >= InternalDebug.spanBatchSizeSendTriggerPoint) {

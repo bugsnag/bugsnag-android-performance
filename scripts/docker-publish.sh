@@ -67,6 +67,6 @@ fi
 
 echo "Repository $REPO_KEY closed successfully."
 
-echo "Go to https://oss.sonatype.org/ to release the final artefact."
+echo "Go to https://central.sonatype.com/ to release the final artefact."
 echo "For full release instructions, visit:"
 echo "https://github.com/bugsnag/bugsnag-android-performance/blob/next/docs/RELEASING.md"

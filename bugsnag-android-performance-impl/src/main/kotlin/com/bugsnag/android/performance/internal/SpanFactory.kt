@@ -152,7 +152,7 @@ public class SpanFactory internal constructor(
                 SpanCategory.VIEW_LOAD,
                 options.startTime,
                 options.parentContext,
-                options.isFirstClass,
+                isFirstClass,
                 options.makeContext,
                 options.spanMetrics,
                 spanProcessor,
@@ -240,7 +240,11 @@ public class SpanFactory internal constructor(
                 null,
                 isFirstClass = true,
                 makeContext = true,
-                SpanMetrics(rendering = true),
+                SpanMetrics(
+                    rendering = true,
+                    cpu = true,
+                    memory = true,
+                ),
                 spanProcessor,
             )
 

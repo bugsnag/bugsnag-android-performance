@@ -47,7 +47,13 @@ Feature: Automatic creation of spans
     Given I run "AppStartScenario"
     Then I relaunch the app after shutdown
     * I load scenario "AppStartScenario"
-    And I wait to receive at least 6 spans
+    * I wait to receive a span named "[AppStart/AndroidCold]SplashScreen"
+    * I wait to receive a span named "[AppStartPhase/Framework]"
+    * I wait to receive a span named "[ViewLoad/Activity]MainActivity"
+    * I wait to receive a span named "[ViewLoadPhase/ActivityCreate]MainActivity"
+    * I wait to receive a span named "[ViewLoadPhase/ActivityStart]MainActivity"
+    * I wait to receive a span named "[ViewLoadPhase/ActivityResume]MainActivity"
+
     * a span named "[AppStart/AndroidCold]SplashScreen" contains the attributes:
       | attribute                         | type        | value                |
       | bugsnag.span.category             | stringValue | app_start            |
@@ -83,12 +89,35 @@ Feature: Automatic creation of spans
       | bugsnag.phase         | stringValue | ActivityResume  |
       | bugsnag.view.name     | stringValue | MainActivity    |
 
+    # Check CPU Metrics on the ViewLoad span
+    * the "[ViewLoad/Activity]MainActivity" span has double attribute named "bugsnag.system.cpu_mean_total"
+    * the "[ViewLoad/Activity]MainActivity" span has double attribute named "bugsnag.system.cpu_mean_main_thread"
+    * the "[ViewLoad/Activity]MainActivity" span has double attribute named "bugsnag.system.cpu_mean_overhead"
+
+    * the "[ViewLoad/Activity]MainActivity" span has array attribute named "bugsnag.system.cpu_measures_total"
+    * the "[ViewLoad/Activity]MainActivity" span has array attribute named "bugsnag.system.cpu_measures_main_thread"
+    * the "[ViewLoad/Activity]MainActivity" span has array attribute named "bugsnag.system.cpu_measures_overhead"
+    * the "[ViewLoad/Activity]MainActivity" span has array attribute named "bugsnag.system.cpu_measures_timestamps"
+
+    # Check Memory Metrics on the ViewLoad span
+    * the "[ViewLoad/Activity]MainActivity" span has int attribute named "bugsnag.system.memory.spaces.art.size"
+    * the "[ViewLoad/Activity]MainActivity" span has int attribute named "bugsnag.device.physical_device_memory"
+    * the "[ViewLoad/Activity]MainActivity" span has int attribute named "bugsnag.system.memory.spaces.device.size"
+    * the "[ViewLoad/Activity]MainActivity" span has int attribute named "bugsnag.system.memory.spaces.device.mean"
+    * the "[ViewLoad/Activity]MainActivity" span has int attribute named "bugsnag.system.memory.spaces.art.mean"
+
+    * the "[ViewLoad/Activity]MainActivity" span has array attribute named "bugsnag.system.memory.spaces.device.used"
+    * the "[ViewLoad/Activity]MainActivity" span has array attribute named "bugsnag.system.memory.spaces.art.used"
+    * the "[ViewLoad/Activity]MainActivity" span has array attribute named "bugsnag.system.memory.timestamps"
+
   @skip_above_android_9
   Scenario: AppStart instrumentation
     Given I run "AppStartScenario"
     Then I relaunch the app after shutdown
     * I load scenario "AppStartScenario"
-    And I wait to receive at least 2 spans
+    And I wait to receive a span named "[AppStart/AndroidCold]SplashScreen"
+    And I wait to receive a span named "[ViewLoad/Activity]MainActivity"
+
     * a span named "[AppStart/AndroidCold]SplashScreen" contains the attributes:
       | attribute                         | type        | value                |
       | bugsnag.span.category             | stringValue | app_start            |
@@ -100,6 +129,27 @@ Feature: Automatic creation of spans
       | bugsnag.span.category | stringValue | view_load    |
       | bugsnag.view.type     | stringValue | activity     |
       | bugsnag.view.name     | stringValue | MainActivity |
+
+    # Check CPU Metrics on the ViewLoad span
+    * the "[ViewLoad/Activity]MainActivity" span has double attribute named "bugsnag.system.cpu_mean_total"
+    * the "[ViewLoad/Activity]MainActivity" span has double attribute named "bugsnag.system.cpu_mean_main_thread"
+    * the "[ViewLoad/Activity]MainActivity" span has double attribute named "bugsnag.system.cpu_mean_overhead"
+
+    * the "[ViewLoad/Activity]MainActivity" span has array attribute named "bugsnag.system.cpu_measures_total"
+    * the "[ViewLoad/Activity]MainActivity" span has array attribute named "bugsnag.system.cpu_measures_main_thread"
+    * the "[ViewLoad/Activity]MainActivity" span has array attribute named "bugsnag.system.cpu_measures_overhead"
+    * the "[ViewLoad/Activity]MainActivity" span has array attribute named "bugsnag.system.cpu_measures_timestamps"
+
+    # Check Memory Metrics on the ViewLoad span
+    * the "[ViewLoad/Activity]MainActivity" span has int attribute named "bugsnag.system.memory.spaces.art.size"
+    * the "[ViewLoad/Activity]MainActivity" span has int attribute named "bugsnag.device.physical_device_memory"
+    * the "[ViewLoad/Activity]MainActivity" span has int attribute named "bugsnag.system.memory.spaces.device.size"
+    * the "[ViewLoad/Activity]MainActivity" span has int attribute named "bugsnag.system.memory.spaces.device.mean"
+    * the "[ViewLoad/Activity]MainActivity" span has int attribute named "bugsnag.system.memory.spaces.art.mean"
+
+    * the "[ViewLoad/Activity]MainActivity" span has array attribute named "bugsnag.system.memory.spaces.device.used"
+    * the "[ViewLoad/Activity]MainActivity" span has array attribute named "bugsnag.system.memory.spaces.art.used"
+    * the "[ViewLoad/Activity]MainActivity" span has array attribute named "bugsnag.system.memory.timestamps"
 
   Scenario: AppStart instrumentation disabled with ViewLoad enabled
     Given I run "AppStartDisabledScenario"
@@ -119,7 +169,12 @@ Feature: Automatic creation of spans
   @skip_below_android_10
   Scenario: Activity load breakdown with full ViewLoad instrumentation
     Given I run "ActivityLoadInstrumentationScenario" configured as "FULL"
-    And I wait to receive at least 5 spans
+    And I wait to receive a span named "[ViewLoad/Activity]ActivityViewLoadActivity"
+    * I wait to receive a span named "[ViewLoadPhase/ActivityCreate]ActivityViewLoadActivity"
+    * I wait to receive a span named "[ViewLoadPhase/ActivityStart]ActivityViewLoadActivity"
+    * I wait to receive a span named "[ViewLoadPhase/ActivityResume]ActivityViewLoadActivity"
+    * I wait to receive a span named "[ViewLoad/Fragment]LoaderFragment"
+
     Then a span named "[ViewLoad/Activity]ActivityViewLoadActivity" contains the attributes:
       | attribute             | type        | value                    |
       | bugsnag.span.category | stringValue | view_load                |
@@ -153,7 +208,12 @@ Feature: Automatic creation of spans
   @skip_below_android_10
   Scenario: Activity load breakdown with start-only ViewLoad instrumentation
     Given I run "ActivityLoadInstrumentationScenario" configured as "START_ONLY"
-    And I wait to receive at least 5 spans
+    And I wait to receive a span named "[ViewLoad/Activity]ActivityViewLoadActivity"
+    * I wait to receive a span named "[ViewLoadPhase/ActivityCreate]ActivityViewLoadActivity"
+    * I wait to receive a span named "[ViewLoadPhase/ActivityStart]ActivityViewLoadActivity"
+    * I wait to receive a span named "[ViewLoadPhase/ActivityResume]ActivityViewLoadActivity"
+    * I wait to receive a span named "[ViewLoad/Fragment]LoaderFragment"
+
     Then a span named "[ViewLoad/Activity]ActivityViewLoadActivity" contains the attributes:
       | attribute             | type        | value                    |
       | bugsnag.span.category | stringValue | view_load                |
@@ -186,7 +246,7 @@ Feature: Automatic creation of spans
 
   Scenario: AppStart/AndroidCold is discarded for background starts
     Given I run "BackgroundAppStartScenario"
-    And I wait to receive at least 1 span
+    And I wait to receive a span named "AlarmReceiver"
     * a span named "AlarmReceiver" contains the attributes:
       | attribute                | type      | value |
       | bugsnag.span.first_class | boolValue | true  |
@@ -195,7 +255,7 @@ Feature: Automatic creation of spans
 
   Scenario: ViewLoad spans only appear with app start
     Given I run "DiscardViewLoadOnStopScenario"
-    And I wait to receive a trace
+    And I wait to receive a span named "[ViewLoad/Activity]ActivityViewLoadActivity"
     Then a span named "[ViewLoad/Activity]ActivityViewLoadActivity" contains the attributes:
       | attribute             | type        | value                    |
       | bugsnag.span.category | stringValue | view_load                |
@@ -207,7 +267,16 @@ Feature: Automatic creation of spans
     Given I run "AppStartScenario"
     Then I relaunch the app after shutdown
     * I load scenario "AppStartScenario"
-    And I wait to receive at least 9 spans
+    And I wait to receive a span named "[AppStart/AndroidCold]SplashScreen"
+    * I wait to receive a span named "[AppStartPhase/Framework]"
+    * I wait to receive a span named "[ViewLoad/Activity]MainActivity"
+    * I wait to receive a span named "[ViewLoadPhase/ActivityCreate]MainActivity"
+    * I wait to receive a span named "[ViewLoadPhase/ActivityStart]MainActivity"
+    * I wait to receive a span named "[ViewLoadPhase/ActivityResume]MainActivity"
+    * I wait to receive a span named "[ViewLoadPhase/ActivityCreate]SplashScreenActivity"
+    * I wait to receive a span named "[ViewLoadPhase/ActivityStart]SplashScreenActivity"
+    * I wait to receive a span named "[ViewLoadPhase/ActivityResume]SplashScreenActivity"
+
     * a span named "[AppStart/AndroidCold]SplashScreen" contains the attributes:
       | attribute                         | type        | value                |
       | bugsnag.span.category             | stringValue | app_start            |
@@ -242,6 +311,7 @@ Feature: Automatic creation of spans
       | bugsnag.span.category | stringValue | view_load_phase |
       | bugsnag.phase         | stringValue | ActivityResume  |
       | bugsnag.view.name     | stringValue | MainActivity    |
+
     * a span named "[ViewLoadPhase/ActivityCreate]SplashScreenActivity" contains the attributes:
       | attribute             | type        | value                |
       | bugsnag.span.category | stringValue | view_load_phase      |
@@ -262,11 +332,20 @@ Feature: Automatic creation of spans
 
   Scenario: Activity ViewLoad spans contain Compose ViewLoad spans
     Given I run "ComposeLoadInstrumentationScenario"
-    And I wait to receive a trace
+    And I wait to receive a span named "[ViewLoad/Compose]Composable"
     * a span named "[ViewLoad/Compose]Composable" contains the attributes:
       | attribute             | type        | value      |
       | bugsnag.span.category | stringValue | view_load  |
       | bugsnag.view.type     | stringValue | compose    |
       | bugsnag.view.name     | stringValue | Composable |
-    * the "[ViewLoad/Activity]ComposeViewLoadActivity" span field "spanId" is stored as the value "activity_load_span_id"
-    * the "[ViewLoad/Compose]Composable" span field "parentSpanId" equals the stored value "activity_load_span_id"
+    * a span named "[ViewLoad/Compose]Composable" has a parent named "[ViewLoad/Activity]ComposeViewLoadActivity"
+
+  Scenario: AppStart fragment instrumentation disabled with ViewLoad enabled
+    Given I run "FragmentInstrumentationDisabledScenario" configured as "FULL"
+    And I wait to receive a trace
+    Then a span named "[ViewLoad/Activity]ActivityViewLoadActivity" contains the attributes:
+      | attribute             | type        | value                    |
+      | bugsnag.span.category | stringValue | view_load                |
+      | bugsnag.view.type     | stringValue | activity                 |
+      | bugsnag.view.name     | stringValue | ActivityViewLoadActivity |
+    * I received no span named "[ViewLoad/Fragment]LoaderFragment"

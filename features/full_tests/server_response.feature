@@ -35,4 +35,3 @@ Feature: Server responses
     And I wait to receive 1 trace
     # 400 - Payload rejected, no retry
     Then a span name equals "span 1"
-    And I discard the oldest trace
