@@ -18,7 +18,7 @@ import com.bugsnag.android.performance.internal.util.Prioritized
 
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 public object BugsnagPerformanceImpl {
-    public const val VERSION: String = "2.1.1"
+    public const val VERSION: String = "2.2.0"
 
     public val instrumentedAppState: InstrumentedAppState = InstrumentedAppState()
 
