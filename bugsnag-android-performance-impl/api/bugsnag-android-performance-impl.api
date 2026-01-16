@@ -226,6 +226,11 @@ public final class com/bugsnag/android/performance/internal/NoopLogger : com/bug
 	public fun w (Ljava/lang/String;Ljava/lang/Throwable;)V
 }
 
+public final class com/bugsnag/android/performance/internal/ObjectNames {
+	public fun <init> ()V
+	public final fun get (Ljava/lang/Object;)Ljava/lang/String;
+}
+
 public final class com/bugsnag/android/performance/internal/Persistence {
 	public fun <init> (Landroid/content/Context;)V
 	public final fun clear ()V
