@@ -14,6 +14,8 @@ class ObjectNamesTest {
         val objectNames = ObjectNames()
         val annotated = AnnotatedClass()
         assertEquals("CustomName", objectNames[annotated])
+        // assert there are no visible side-effects
+        assertEquals("CustomName", objectNames[annotated])
     }
 
     @Test
