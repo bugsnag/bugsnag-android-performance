@@ -4,8 +4,10 @@
 
 * System metrics are now reported for first-class `ViewLoad` spans
   [#475](https://github.com/bugsnag/bugsnag-android-performance/pull/475)
-  * Enable runtime control of fragment instrumentation via a new `FragmentInstrumentation.enabled` flag
+* Enable runtime control of fragment instrumentation via a new `FragmentInstrumentation.enabled` flag
   [#490](https://github.com/bugsnag/bugsnag-android-performance/pull/490)
+* Option for customers to customise and retain names for view load spans
+  [#499](https://github.com/bugsnag/bugsnag-android-performance/pull/499)
 
 ### Bug fixes
 
