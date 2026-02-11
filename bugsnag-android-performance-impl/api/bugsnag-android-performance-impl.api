@@ -226,6 +226,11 @@ public final class com/bugsnag/android/performance/internal/NoopLogger : com/bug
 	public fun w (Ljava/lang/String;Ljava/lang/Throwable;)V
 }
 
+public final class com/bugsnag/android/performance/internal/ObjectNames {
+	public fun <init> ()V
+	public final fun get (Ljava/lang/Object;)Ljava/lang/String;
+}
+
 public final class com/bugsnag/android/performance/internal/Persistence {
 	public fun <init> (Landroid/content/Context;)V
 	public final fun clear ()V
@@ -381,6 +386,7 @@ public final class com/bugsnag/android/performance/internal/SpanFactory {
 	public static synthetic fun createViewLoadSpan$default (Lcom/bugsnag/android/performance/internal/SpanFactory;Landroid/app/Activity;Lcom/bugsnag/android/performance/SpanOptions;Lcom/bugsnag/android/performance/internal/SpanProcessor;ILjava/lang/Object;)Lcom/bugsnag/android/performance/internal/SpanImpl;
 	public static synthetic fun createViewLoadSpan$default (Lcom/bugsnag/android/performance/internal/SpanFactory;Lcom/bugsnag/android/performance/ViewType;Ljava/lang/String;Lcom/bugsnag/android/performance/SpanOptions;Lcom/bugsnag/android/performance/internal/SpanProcessor;ILjava/lang/Object;)Lcom/bugsnag/android/performance/internal/SpanImpl;
 	public final fun getNetworkRequestCallback ()Lcom/bugsnag/android/performance/NetworkRequestInstrumentationCallback;
+	public final fun getObjectNames ()Lcom/bugsnag/android/performance/internal/ObjectNames;
 	public final fun getSampler ()Lcom/bugsnag/android/performance/internal/Sampler;
 	public final fun getSpanAttributeSource ()Lkotlin/jvm/functions/Function1;
 	public final fun getSpanProcessor ()Lcom/bugsnag/android/performance/internal/SpanProcessor;
