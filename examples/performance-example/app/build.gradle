@@ -50,9 +50,9 @@ android {
 }
 
 dependencies {
-    implementation "com.bugsnag:bugsnag-android-performance:2.2.0"
-    implementation "com.bugsnag:bugsnag-android-performance-okhttp:2.2.0"
-    implementation "com.bugsnag:bugsnag-android-performance-compose:2.2.0"
+    implementation "com.bugsnag:bugsnag-android-performance:2.3.0"
+    implementation "com.bugsnag:bugsnag-android-performance-okhttp:2.3.0"
+    implementation "com.bugsnag:bugsnag-android-performance-compose:2.3.0"
 
     implementation 'androidx.core:core-ktx:1.7.0'
     implementation 'androidx.appcompat:appcompat:1.5.1'
