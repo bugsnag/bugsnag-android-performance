@@ -34,7 +34,7 @@
         <activity android:name=".AnimatedActivity" />
         <activity android:name=".LoadingIndicatorViewActivity"/>
         <activity android:name=".NamedLoadingIndicatorViewActivity"/>
-
+        <activity android:name=".AnnotatedActivity"/>
 
         <receiver
             android:name=".MazeRacerAlarmReceiver"

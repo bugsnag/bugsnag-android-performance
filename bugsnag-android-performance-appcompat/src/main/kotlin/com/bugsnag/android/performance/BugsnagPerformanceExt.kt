@@ -6,7 +6,7 @@ import com.bugsnag.android.performance.internal.SpanFactory
 import com.bugsnag.android.performance.internal.SpanImpl
 
 internal fun viewNameForFragment(fragment: Fragment): String {
-    return fragment.javaClass.simpleName
+    return BugsnagPerformanceImpl.spanFactory.objectNames[fragment]
 }
 
 internal fun SpanFactory.createViewLoadSpan(

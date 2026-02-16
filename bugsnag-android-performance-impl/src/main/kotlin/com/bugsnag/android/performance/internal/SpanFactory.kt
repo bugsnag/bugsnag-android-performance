@@ -31,6 +31,7 @@ public class SpanFactory internal constructor(
     public val spanAttributeSource: AttributeSource,
     internal val spanTaskWorker: SpanTaskWorker = SpanTaskWorker(),
     metricsContainer: MetricsContainer? = null,
+    public val objectNames: ObjectNames = ObjectNames(),
 ) {
     public var networkRequestCallback: NetworkRequestInstrumentationCallback? = null
 
@@ -133,7 +134,7 @@ public class SpanFactory internal constructor(
         options: SpanOptions = SpanOptions.DEFAULTS,
         spanProcessor: SpanProcessor = this.spanProcessor,
     ): SpanImpl {
-        val activityName = activity::class.java.simpleName
+        val activityName = objectNames[activity]
         return createViewLoadSpan(ViewType.ACTIVITY, activityName, options, spanProcessor)
     }
 
@@ -219,7 +220,7 @@ public class SpanFactory internal constructor(
         spanProcessor: SpanProcessor = this.spanProcessor,
     ): SpanImpl {
         return createViewLoadPhaseSpan(
-            activity::class.java.simpleName,
+            objectNames[activity],
             ViewType.ACTIVITY,
             phase,
             options,

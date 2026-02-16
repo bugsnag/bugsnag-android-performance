@@ -1,3 +1,10 @@
+## 2.3.0 (2026-02-16)
+
+### Changes
+
+* Introduce the `@BugsnagName` annotation to customise automatic span names for specific objects
+  [#499](https://github.com/bugsnag/bugsnag-android-performance/pull/499)
+
 ## 2.2.0 (2026-01-12)
 
 ### Changes
