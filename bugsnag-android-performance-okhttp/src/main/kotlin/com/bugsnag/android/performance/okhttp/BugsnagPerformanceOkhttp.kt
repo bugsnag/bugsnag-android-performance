@@ -1,6 +1,7 @@
 package com.bugsnag.android.performance.okhttp
 
 import com.bugsnag.android.performance.BugsnagPerformance
+import com.bugsnag.android.performance.Logger
 import com.bugsnag.android.performance.NetworkRequestAttributes
 import com.bugsnag.android.performance.SpanContext
 import com.bugsnag.android.performance.SpanOptions
@@ -15,6 +16,7 @@ import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.Protocol
 import okhttp3.Response
+import okio.Buffer
 import java.io.IOException
 
 public class BugsnagPerformanceOkhttp(
@@ -23,6 +25,9 @@ public class BugsnagPerformanceOkhttp(
     public constructor() : this(null)
 
     public companion object EventListenerFactory : Factory {
+        private val OPERATION_NAME_REGEX = "\"operationName\"\\s*:\\s*\"([^\"]+)\"".toRegex()
+        private val OPERATION_TYPE_REGEX = "\\b(query|mutation|subscription)\\b".toRegex()
+
         override fun create(call: Call): EventListener {
             return BugsnagPerformanceOkhttp()
         }
@@ -43,12 +48,34 @@ public class BugsnagPerformanceOkhttp(
             )
 
         if (span != null) {
+            logGraphQlPayload(call)
             val contentLength = call.request().body?.contentLength()
             if (contentLength != null) {
                 NetworkRequestAttributes.setRequestContentLength(span, contentLength)
             }
             spans.associate(call, span = span as SpanImpl)
         }
+    }
+
+    private fun logGraphQlPayload(call: Call) {
+        val bodyText = call.request().body?.let { requestBody ->
+            try {
+                Buffer().apply { requestBody.writeTo(this) }.readUtf8()
+            } catch (ignored: Exception) {
+                null
+            }
+        } ?: return
+
+        if (!bodyText.contains("\"query\"")) {
+            return
+        }
+
+        val operationName = OPERATION_NAME_REGEX.find(bodyText)?.groupValues?.getOrNull(1)
+        val operationType = OPERATION_TYPE_REGEX.find(bodyText)?.groupValues?.getOrNull(1)
+        Logger.d(
+            "Intercepted GraphQL payload: opType=${operationType ?: "unknown"}, " +
+                "opName=${operationName ?: "unnamed"}, body=$bodyText",
+        )
     }
 
     override fun responseHeadersEnd(
@@ -123,6 +150,7 @@ public class BugsnagPerformanceOkhttp(
                 .build(),
         )
     }
+
 }
 
 public fun OkHttpClient.Builder.withBugsnagPerformance(): OkHttpClient.Builder {

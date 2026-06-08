@@ -164,6 +164,7 @@ public object BugsnagPerformanceImpl {
         val moduleLoader = Module.Loader(instrumentedAppState)
         moduleLoader.loadModule("com.bugsnag.android.performance.AppCompatModule")
         moduleLoader.loadModule("com.bugsnag.android.performance.okhttp.OkhttpModule")
+        moduleLoader.loadModule("com.bugsnag.android.performance.apollo.ApolloModule")
         moduleLoader.loadModule("com.bugsnag.android.performance.compose.ComposeModule")
     }
 
