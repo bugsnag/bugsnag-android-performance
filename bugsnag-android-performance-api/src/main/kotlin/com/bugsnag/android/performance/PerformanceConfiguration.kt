@@ -22,6 +22,12 @@ public class PerformanceConfiguration private constructor(public val context: Co
 
     public var enabledMetrics: EnabledMetrics = EnabledMetrics(false)
 
+    /**
+     * Controls app-session behavior. Defaults to manual lifecycle mode.
+     */
+    public var appSessionConfig: AppSessionConfig = AppSessionConfig(autoStartSession = false)
+
+
     @Deprecated(
         message = "use enabledMetrics.rendering",
         replaceWith = ReplaceWith("enabledMetrics.rendering"),
@@ -157,7 +163,8 @@ public class PerformanceConfiguration private constructor(public val context: Co
             "apiKey=$apiKey, " +
             "endpoint='$endpoint', " +
             "autoInstrumentAppStarts=$autoInstrumentAppStarts, " +
-            "autoInstrumentActivities=$autoInstrumentActivities, " +
+            "autoInstrumentActivities=$autoInstrumentActivities, "+
+            "appSessionConfig=$appSessionConfig, " +
             "enabledMetrics=$enabledMetrics, " +
             "releaseStage=$releaseStage, " +
             "versionCode=$versionCode, " +
