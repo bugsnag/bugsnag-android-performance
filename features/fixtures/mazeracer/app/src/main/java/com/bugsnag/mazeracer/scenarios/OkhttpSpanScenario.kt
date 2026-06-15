@@ -26,7 +26,7 @@ class OkhttpSpanScenario(
                     Request.Builder()
                         .url(
                             scenarioMetadata.takeUnless { it.isBlank() }
-                                ?: "https://google.com/?test=true",
+                                ?: "https://www.google.com/?test=true",
                         )
                         .build()
 
