@@ -41,8 +41,8 @@ steps:
           - "--no-tunnel"
           - "--aws-public-ip"
           - "--fail-fast"
-          - "--app-activity=com.bugsnag.benchmarks"
-          - "--app-package=com.bugsnag.benchmarks"
+          - "--app-activity=.BenchmarkActivity"
+          - "--app-package=com.bugsnag.benchmarks.android"
     concurrency: 25
     concurrency_group: "bitbar"
     concurrency_method: "eager"
