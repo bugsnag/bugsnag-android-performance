@@ -1,3 +1,10 @@
+## 2.3.1 (2026-06-15)
+
+### Bug fixes
+
+* First-class `ViewLoad` spans now default to rendering metrics only (`cpu`/`memory` are disabled unless explicitly enabled via `SpanOptions.withMetrics(...)`) to avoid main-thread blocking during ViewLoad completion.
+  [#523](https://github.com/bugsnag/bugsnag-android-performance/pull/523)
+
 ## 2.3.0 (2026-02-16)
 
 ### Changes

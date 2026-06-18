@@ -145,6 +145,8 @@ public class SpanFactory internal constructor(
         spanProcessor: SpanProcessor = this.spanProcessor,
     ): SpanImpl {
         val isFirstClass = options.isFirstClass ?: defaultIsFirstClassViewLoad()
+        val spanMetrics =
+            options.spanMetrics ?: takeDefaultViewLoadMetrics(isFirstClass)
 
         val span =
             createSpan(
@@ -155,7 +157,7 @@ public class SpanFactory internal constructor(
                 options.parentContext,
                 isFirstClass,
                 options.makeContext,
-                options.spanMetrics,
+                spanMetrics,
                 spanProcessor,
             )
 
@@ -183,6 +185,10 @@ public class SpanFactory internal constructor(
             ?.filterIsInstance<SpanImpl>()
             ?.filter { it.category == SpanCategory.VIEW_LOAD }
             ?.none() == true
+    }
+
+    private fun takeDefaultViewLoadMetrics(isFirstClass: Boolean): SpanMetrics? {
+        return if (isFirstClass) DEFAULT_VIEW_LOAD_METRICS else null
     }
 
     public fun createViewLoadPhaseSpan(
@@ -333,4 +339,13 @@ public class SpanFactory internal constructor(
     }
 
     private fun UUID.isValidTraceId() = mostSignificantBits != 0L || leastSignificantBits != 0L
+
+    private companion object {
+        val DEFAULT_VIEW_LOAD_METRICS =
+            SpanMetrics(
+                rendering = true,
+                cpu = false,
+                memory = false,
+            )
+    }
 }
