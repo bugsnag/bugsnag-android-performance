@@ -1,6 +1,8 @@
 package com.example.bugsnag.performance
 
 import android.app.Application
+import android.os.Handler
+import android.os.Looper
 import com.bugsnag.android.performance.BugsnagPerformance
 import com.bugsnag.android.performance.PerformanceConfiguration
 import com.bugsnag.android.performance.SpanContext

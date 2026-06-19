@@ -98,6 +98,8 @@ public data class TracePayload(
             headers.putAll(baseHeaders)
 
             headers["Bugsnag-Api-Key"] = apiKey
+            headers["X-Bugsnag-API-Key"] = apiKey
+            headers["User-Agent"] = "bugsnag-android-performance/${BugsnagPerformanceImpl.VERSION}"
             headers["Content-Type"] = "application/json"
 
             computeSha1Digest(payloadBytes)?.let { digest ->
@@ -157,6 +159,7 @@ public data class TracePayload(
                 }
             }
         }
+
 
         private fun computeSha1Digest(payload: ByteArray): String? {
             runCatching {
