@@ -102,7 +102,7 @@ internal class AppSessionBuffer(
     fun add(data: AppSessionData) {
         heap.addLast(data)
         Logger.d("AppSessionBuffer: buffered app session #${data.index} " +
-                "(${data.state}${data.appSessionName?.let { " \"$it\"" } ?: ""}) " +
+                "(${data.appSessionName?.let { " \"$it\"" } ?: ""}) " +
                 "reason=${data.closeReason} heap_size=${heap.size}")
     }
 

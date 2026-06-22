@@ -84,17 +84,15 @@ public object BugsnagPerformance {
      * @param appSessionName optional human-readable label for this app session retained in the internal
      *   app-session buffer for local diagnostics / recovery. It is not emitted as a delivered span
      *   attribute. If null, uses [AppSessionConfig.manualSessionDefaultName] when configured.
-     * @param inForeground if true, starts a foreground segment; if false, background.
-     *   If null, uses [AppSessionConfig.manualSessionStartsInForeground] as default (true).
      */
     @JvmStatic
     @JvmOverloads
-    public fun startAppSessionSpan(appSessionName: String? = null, inForeground: Boolean? = null) {
+    public fun startAppSessionSpan(appSessionName: String? = null) {
         if (!isStarted) {
             logNotStarted("startAppSessionSpan")
             return
         }
-        BugsnagPerformanceImpl.startAppSessionSpan(appSessionName, inForeground)
+        BugsnagPerformanceImpl.startAppSessionSpan(appSessionName)
     }
 
     /**

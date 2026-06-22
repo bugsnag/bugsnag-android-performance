@@ -187,16 +187,13 @@ public object BugsnagPerformanceImpl {
      * @param appSessionName optional human-readable label for this app session retained in the internal
      *   app-session buffer for local diagnostics / recovery. It is not emitted as a delivered span
      *   attribute. If null, uses [AppSessionConfig.manualSessionDefaultName] when configured.
-     * @param inForeground if true, starts a foreground segment; if false, background.
-     *   If null, uses [AppSessionConfig.manualSessionStartsInForeground] as default.
      */
-    public fun startAppSessionSpan(appSessionName: String? = null, inForeground: Boolean? = null) {
+    public fun startAppSessionSpan(appSessionName: String? = null) {
         val options = resolveManualAppSessionStartOptions(
             appSessionConfig = appSessionSpanController?.sessionConfig,
             appSessionName = appSessionName,
-            inForeground = inForeground,
         )
-        appSessionSpanController?.startAppSessionSpan(options.inForeground, options.appSessionName)
+        appSessionSpanController?.startAppSessionSpan(appSessionName = options.appSessionName)
     }
 
     /**
@@ -236,19 +233,15 @@ public object BugsnagPerformanceImpl {
 
 internal data class ManualAppSessionStartOptions(
     val appSessionName: String?,
-    val inForeground: Boolean,
 )
 
 internal fun resolveManualAppSessionStartOptions(
     appSessionConfig: AppSessionConfig?,
     appSessionName: String?,
-    inForeground: Boolean?,
 ): ManualAppSessionStartOptions {
-    val resolvedInForeground = inForeground ?: appSessionConfig?.manualSessionStartsInForeground ?: true
     val resolvedAppSessionName = appSessionName ?: appSessionConfig?.manualSessionDefaultName
     return ManualAppSessionStartOptions(
         appSessionName = resolvedAppSessionName,
-        inForeground = resolvedInForeground,
     )
 }
 

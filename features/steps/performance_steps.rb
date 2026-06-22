@@ -167,3 +167,56 @@ Then('the {string} span took at least {int} {word}') do |span_name, min_duration
 
   Maze.check.operator(duration, :>=, min_duration)
 end
+
+Then('the {string} span metrics {string} satisfy min <= mean <= max') do |span_name, metric_prefix|
+  spans = spans_from_request_list(Maze::Server.list_for('traces'))
+  named_spans = spans.select { |s| s['name'].eql?(span_name) }
+
+  raise Test::Unit::AssertionFailedError.new "no span named #{span_name} found" if named_spans.empty?
+
+  named_spans.each do |span|
+    attributes = span['attributes']
+
+    min_attr = attributes.find { |a| a['key'] == "#{metric_prefix}.min" }
+    mean_attr = attributes.find { |a| a['key'] == "#{metric_prefix}.mean" }
+    max_attr = attributes.find { |a| a['key'] == "#{metric_prefix}.max" }
+
+    raise Test::Unit::AssertionFailedError.new "Missing min attribute for #{metric_prefix}" if min_attr.nil?
+    raise Test::Unit::AssertionFailedError.new "Missing mean attribute for #{metric_prefix}" if mean_attr.nil?
+    raise Test::Unit::AssertionFailedError.new "Missing max attribute for #{metric_prefix}" if max_attr.nil?
+
+    # Handle both doubleValue and intValue
+    min = min_attr['value']['doubleValue'] || min_attr['value']['intValue']
+    mean = mean_attr['value']['doubleValue'] || mean_attr['value']['intValue']
+    max = max_attr['value']['doubleValue'] || max_attr['value']['intValue']
+
+    min = min.to_f
+    mean = mean.to_f
+    max = max.to_f
+
+    Maze.check.operator(min, :<=, mean, "Min (#{min}) should be <= mean (#{mean})")
+    Maze.check.operator(mean, :<=, max, "Mean (#{mean}) should be <= max (#{max})")
+  end
+end
+
+Then('the {string} span metrics {string} are equal') do |span_name, metric_prefix|
+  spans = spans_from_request_list(Maze::Server.list_for('traces'))
+  named_spans = spans.select { |s| s['name'].eql?(span_name) }
+
+  raise Test::Unit::AssertionFailedError.new "no span named #{span_name} found" if named_spans.empty?
+
+  named_spans.each do |span|
+    attributes = span['attributes']
+
+    min_attr = attributes.find { |a| a['key'] == "#{metric_prefix}.min" }
+    mean_attr = attributes.find { |a| a['key'] == "#{metric_prefix}.mean" }
+    max_attr = attributes.find { |a| a['key'] == "#{metric_prefix}.max" }
+
+    min = min_attr['value']['doubleValue'] || min_attr['value']['intValue']
+    mean = mean_attr['value']['doubleValue'] || mean_attr['value']['intValue']
+    max = max_attr['value']['doubleValue'] || max_attr['value']['intValue']
+
+    Maze.check.equal(min, mean, "Min (#{min}) should equal mean (#{mean})")
+    Maze.check.equal(mean, max, "Mean (#{mean}) should equal max (#{max})")
+  end
+end

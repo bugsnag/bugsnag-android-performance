@@ -48,17 +48,6 @@ public class AppSessionConfig(
     public var maxSessionDurationMs: Long = 0L,
 
     /**
-      * When true (default), manual calls to [BugsnagPerformance.startAppSessionSpan]
-      * without an explicit `inForeground` parameter will start a foreground segment.
-      * When false, they will start a background segment instead.
-      *
-      * This setting is ignored if `inForeground` is explicitly provided to the start call.
-      *
-      * Default: **true**
-      */
-    public var manualSessionStartsInForeground: Boolean = true,
-
-    /**
       * Optional default custom app-session name used by manual
       * [BugsnagPerformance.startAppSessionSpan] calls when no `appSessionName` is provided.
       *

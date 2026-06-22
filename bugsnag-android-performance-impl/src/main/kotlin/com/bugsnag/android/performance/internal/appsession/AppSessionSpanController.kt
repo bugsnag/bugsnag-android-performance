@@ -6,6 +6,7 @@ import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.SpanOptions
 import com.bugsnag.android.performance.internal.BugsnagClock
 import com.bugsnag.android.performance.internal.SpanFactory
+import com.bugsnag.android.performance.internal.instrumentation.ForegroundState
 import java.util.UUID
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
@@ -14,9 +15,6 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 
 /**
- * Creates and ends [app_session.foreground] / [app_session.background] custom spans via
- * explicit SDK calls.
- *
  * ## Per-app-session immediate delivery
  *
  * Each time an app-session span is closed the controller:
@@ -80,6 +78,24 @@ internal class AppSessionSpanController(
             Thread(r, "bugsnag-session-timeout").apply { isDaemon = true }
         }
 
+    init {
+        if (sessionConfig.autoStartSession) {
+            ForegroundState.addForegroundChangedCallback { inForeground ->
+                if (inForeground) {
+                    startForegroundAppSessionSpan()
+                } else {
+                    startBackgroundAppSessionSpan()
+                }
+            }
+            // Start the initial segment based on current state
+            if (ForegroundState.isInForeground) {
+                startForegroundAppSessionSpan()
+            } else {
+                startBackgroundAppSessionSpan()
+            }
+        }
+    }
+
     @Volatile private var backgroundTimeoutFuture: Future<*>? = null
     @Volatile private var maxSessionFuture: Future<*>? = null
 
@@ -89,12 +105,12 @@ internal class AppSessionSpanController(
 
      /**
       * Starts an app-session segment span (foreground or background).
+      * The segment type is determined automatically based on the app's current foreground state.
       *
-      * @param inForeground if true, starts a foreground segment; if false, background.
       * @param appSessionName optional customer-supplied label retained in internal app-session storage.
       */
-     fun startAppSessionSpan(inForeground: Boolean, appSessionName: String? = null) {
-         if (inForeground) {
+     fun startAppSessionSpan(appSessionName: String? = null) {
+         if (ForegroundState.isInForeground) {
              startForegroundAppSessionSpan(appSessionName)
          } else {
              startBackgroundAppSessionSpan(appSessionName)
@@ -132,12 +148,12 @@ internal class AppSessionSpanController(
      }
 
      /**
-      * Ends the active foreground segment span (reason: `client_end_foreground`).
+      * Ends the active foreground segment span (reason: `client_end`).
       * No-op if no foreground span is active.
       */
      fun endForegroundAppSessionSpan() {
          if (activeSegmentType == SEGMENT_FOREGROUND) {
-             closeCurrentSegmentSpan(closeReason = "client_end_foreground")
+             closeCurrentSegmentSpan(closeReason = "client_end")
          }
      }
 
@@ -158,13 +174,13 @@ internal class AppSessionSpanController(
      }
 
      /**
-      * Ends the active background segment span (reason: `client_end_background`).
+      * Ends the active background segment span (reason: `client_end`).
       * Cancels any pending background timeout. No-op if no background span is active.
       */
      fun endBackgroundAppSessionSpan() {
          if (activeSegmentType == SEGMENT_BACKGROUND) {
              cancelBackgroundTimeout()
-             closeCurrentSegmentSpan(closeReason = "client_end_background")
+             closeCurrentSegmentSpan(closeReason = "client_end")
          }
      }
 
@@ -226,18 +242,15 @@ internal class AppSessionSpanController(
 
     private fun openAppSessionSpan(segmentType: String, appSessionName: String?) {
          val index = segmentIndex.incrementAndGet()
-         val inForeground = segmentType == SEGMENT_FOREGROUND
          val startMs = System.currentTimeMillis()
          val startUnixNano = BugsnagClock.currentUnixNanoTime()
 
          if (index == 1) scheduleMaxSessionTimeout()
 
          val span = spanFactory.createCustomSpan(
-             name = "app_session.$segmentType",
+             name = appSessionName ?: "app_session",
              options = SpanOptions.DEFAULTS,
          ).also { s ->
-             s.setAttribute("bugsnag.session.id", sessionId)
-             s.setAttribute("bugsnag.app.in_foreground", inForeground)
              s.setAttribute("bugsnag.session.start_unix_nano", startUnixNano)
              s.setAttribute("bugsnag.span.category", "app_session")
          }
@@ -257,7 +270,6 @@ internal class AppSessionSpanController(
     private fun closeCurrentSegmentSpan(closeReason: String?) {
         val span = activeSpan ?: return
         val collector = activeCollector ?: return
-        val segmentType = activeSegmentType ?: return
         val appSessionName = activeSegmentName
         val startMs = activeSegmentStartMs
         val startUnixNano = activeSegmentStartUnixNano
@@ -289,7 +301,6 @@ internal class AppSessionSpanController(
             AppSessionData(
                 sessionId = sessionId,
                 index = index,
-                state = segmentType,
                 appSessionName = appSessionName,
                 startTimeMs = startMs,
                 startTimeUnixNano = startUnixNano,

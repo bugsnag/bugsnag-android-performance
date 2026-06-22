@@ -23,9 +23,9 @@ public class PerformanceConfiguration private constructor(public val context: Co
     public var enabledMetrics: EnabledMetrics = EnabledMetrics(false)
 
     /**
-     * Controls app-session behavior. Defaults to manual lifecycle mode.
+     * Controls app-session behavior. Defaults to automatic lifecycle mode.
      */
-    public var appSessionConfig: AppSessionConfig = AppSessionConfig(autoStartSession = false)
+    public var appSessionConfig: AppSessionConfig = AppSessionConfig()
 
 
     @Deprecated(

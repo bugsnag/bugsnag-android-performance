@@ -9,7 +9,7 @@ import org.json.JSONObject
  * They are periodically persisted to disk by the buffer so that in-progress app sessions
  * are not lost if the process is killed before delivery.
  *
- * Each app session maps 1:1 with an `app_session.foreground` or `app_session.background` span
+ * Each app session maps 1:1 with an `app_session` span
  * that has already been sent via the Tracer, but a copy is kept here for:
  *   - Local querying / dashboards (e.g. "show me last 10 sessions")
  *   - Re-delivery if the initial batch delivery failed
@@ -21,9 +21,6 @@ internal data class AppSessionData(
 
      /** 1-based monotonic index of this app session within the logical session. */
      val index: Int,
-
-     /** `"foreground"` or `"background"` - indicates app session state */
-     val state: String,
 
      /**
       * Optional human-readable label supplied by the caller, e.g. `"checkout_flow"`.
@@ -78,7 +75,6 @@ internal data class AppSessionData(
     fun toJson(): JSONObject = JSONObject().apply {
          put(KEY_SESSION_ID, sessionId)
          put(KEY_INDEX, index)
-         put(KEY_STATE, state)
          putOpt(KEY_APP_SESSION_NAME, appSessionName)
          put(KEY_START_TIME_MS, startTimeMs)
          put(KEY_START_TIME_UNIX_NANO, startTimeUnixNano)
@@ -111,8 +107,6 @@ internal data class AppSessionData(
          // ── JSON keys ─────────────────────────────────────────────────────────
          private const val KEY_SESSION_ID = "sessionId"
          private const val KEY_INDEX = "index"
-         private const val KEY_STATE = "state"
-         private const val KEY_STATE_LEGACY = "segmentType"
          private const val KEY_APP_SESSION_NAME = "appSessionName"
          private const val KEY_APP_SESSION_NAME_LEGACY = "segmentName"
          private const val KEY_START_TIME_MS = "startTimeMs"
@@ -142,9 +136,6 @@ internal data class AppSessionData(
          fun fromJson(json: JSONObject): AppSessionData = AppSessionData(
              sessionId = json.getString(KEY_SESSION_ID),
              index = json.optInt(KEY_INDEX, json.optInt("segmentIndex")),
-             state = json.optString(KEY_STATE).ifEmpty {
-                 json.optString(KEY_STATE_LEGACY)
-             },
              appSessionName = json.optString(KEY_APP_SESSION_NAME)
                  .takeIf { it.isNotEmpty() }
                  ?: json.optString(KEY_APP_SESSION_NAME_LEGACY).takeIf { it.isNotEmpty() },

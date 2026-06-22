@@ -26,6 +26,10 @@ class PerformanceApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        BugsnagPerformance.start(PerformanceConfiguration.load(this))
+        val config = PerformanceConfiguration.load(this)
+        // Disable automatic session management for manual testing
+        config.appSessionConfig.autoStartSession = false
+        config.appSessionConfig.backgroundTimeoutMs = 0L // No automatic timeout
+        BugsnagPerformance.start(config)
     }
 }

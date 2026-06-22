@@ -1,0 +1,106 @@
+package com.bugsnag.mazeracer.scenarios
+
+import com.bugsnag.android.performance.BugsnagPerformance
+import com.bugsnag.android.performance.PerformanceConfiguration
+import com.bugsnag.android.performance.internal.BugsnagPerformanceImpl
+import com.bugsnag.android.performance.internal.InternalDebug
+import com.bugsnag.mazeracer.Scenario
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+
+class AppSessionScenario(
+    config: PerformanceConfiguration,
+    scenarioMetadata: String,
+) : Scenario(config, scenarioMetadata) {
+
+    init {
+        InternalDebug.spanBatchSizeSendTriggerPoint = 1
+        when (scenarioMetadata) {
+            "cpu_disabled" -> {
+                config.enabledMetrics.cpu = false
+                config.enabledMetrics.memory = true
+            }
+            "memory_disabled" -> {
+                config.enabledMetrics.cpu = true
+                config.enabledMetrics.memory = false
+            }
+            "all_enabled" -> {
+                config.enabledMetrics.cpu = true
+                config.enabledMetrics.memory = true
+            }
+        }
+        BugsnagPerformance.start(config)
+    }
+
+    override fun startScenario() {
+        when (scenarioMetadata) {
+            "aggregates" -> testAggregates()
+            "single_sample" -> testSingleSample()
+            "cpu_disabled" -> testManualSession()
+            "memory_disabled" -> testManualSession()
+            "sub_metrics" -> testSubMetrics()
+            "concurrent" -> testConcurrent()
+            "force_terminate" -> testForceTerminate()
+            "switch_off" -> testSwitchOff()
+            "all_enabled" -> testManualSession()
+        }
+    }
+
+    private fun testAggregates() {
+        launch {
+            BugsnagPerformance.startAppSessionSpan("Aggregates")
+            delay(2500) // Ensure multiple samples
+            BugsnagPerformance.endAppSessionSpan()
+        }
+    }
+
+    private fun testSingleSample() {
+        launch {
+            BugsnagPerformance.startAppSessionSpan("Single Sample")
+            delay(200) // End before second sample
+            BugsnagPerformance.endAppSessionSpan()
+        }
+    }
+
+    private fun testManualSession() {
+        launch {
+            BugsnagPerformance.startAppSessionSpan("Manual Session")
+            delay(1500)
+            BugsnagPerformance.endAppSessionSpan()
+        }
+    }
+
+    private fun testSubMetrics() {
+        launch {
+            BugsnagPerformance.startAppSessionSpan("Sub Metrics")
+            delay(1500)
+            BugsnagPerformance.endAppSessionSpan()
+        }
+    }
+
+    private fun testConcurrent() {
+        launch {
+            // This will start first session
+            BugsnagPerformance.startAppSessionSpan("Session 1")
+            delay(500)
+            // This should close Session 1 and start Session 2
+            BugsnagPerformance.startAppSessionSpan("Session 2")
+            delay(500)
+            BugsnagPerformance.endAppSessionSpan()
+        }
+    }
+
+    private fun testForceTerminate() {
+        launch {
+            BugsnagPerformance.startAppSessionSpan("Will Be Lost")
+            // No end called, app will be killed by Maze Runner
+        }
+    }
+
+    private fun testSwitchOff() {
+        launch {
+            BugsnagPerformance.startAppSessionSpan("Switch Off")
+            // App will be killed by Maze Runner
+        }
+    }
+}
