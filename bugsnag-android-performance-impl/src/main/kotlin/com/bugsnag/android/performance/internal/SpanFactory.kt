@@ -82,6 +82,25 @@ public class SpanFactory internal constructor(
     }
 
     @JvmOverloads
+    public fun createAppSessionSpan(
+        name: String,
+        options: SpanOptions = SpanOptions.DEFAULTS,
+        spanProcessor: SpanProcessor = this.spanProcessor,
+    ): SpanImpl {
+        return createSpan(
+            name,
+            SpanKind.INTERNAL,
+            SpanCategory.APP_SESSION,
+            options.startTime,
+            options.parentContext,
+            options.isFirstClass != false,
+            options.makeContext,
+            options.spanMetrics,
+            spanProcessor,
+        )
+    }
+
+    @JvmOverloads
     public fun createCustomSpan(
         name: String,
         options: SpanOptions = SpanOptions.DEFAULTS,

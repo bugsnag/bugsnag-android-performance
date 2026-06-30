@@ -15,18 +15,17 @@ class AppSessionScenario(
 
     init {
         InternalDebug.spanBatchSizeSendTriggerPoint = 1
+        config.appSessionConfig.autoStartSession = false
+        // Enable metrics by default unless specifically disabled
+        config.enabledMetrics.cpu = true
+        config.enabledMetrics.memory = true
+
         when (scenarioMetadata) {
             "cpu_disabled" -> {
                 config.enabledMetrics.cpu = false
-                config.enabledMetrics.memory = true
             }
             "memory_disabled" -> {
-                config.enabledMetrics.cpu = true
                 config.enabledMetrics.memory = false
-            }
-            "all_enabled" -> {
-                config.enabledMetrics.cpu = true
-                config.enabledMetrics.memory = true
             }
         }
         BugsnagPerformance.start(config)
@@ -43,6 +42,9 @@ class AppSessionScenario(
             "force_terminate" -> testForceTerminate()
             "switch_off" -> testSwitchOff()
             "all_enabled" -> testManualSession()
+            "high_cpu" -> testHighCpu()
+            "high_memory" -> testHighMemory()
+            "parenting" -> testParenting()
         }
     }
 
@@ -50,6 +52,40 @@ class AppSessionScenario(
         launch {
             BugsnagPerformance.startAppSessionSpan("Aggregates")
             delay(2500) // Ensure multiple samples
+            BugsnagPerformance.endAppSessionSpan()
+        }
+    }
+
+    private fun testHighCpu() {
+        launch {
+            BugsnagPerformance.startAppSessionSpan("High CPU")
+            val end = System.currentTimeMillis() + 2000
+            while (System.currentTimeMillis() < end) {
+                // Burn CPU
+                for (i in 0..1000) { Math.sqrt(i.toDouble()) }
+            }
+            BugsnagPerformance.endAppSessionSpan()
+        }
+    }
+
+    private fun testHighMemory() {
+        launch {
+            BugsnagPerformance.startAppSessionSpan("High Memory")
+            delay(500)
+            val list = mutableListOf<ByteArray>()
+            for (i in 0..10) {
+                list.add(ByteArray(1024 * 1024)) // 1MB each
+                delay(100)
+            }
+            BugsnagPerformance.endAppSessionSpan()
+        }
+    }
+
+    private fun testParenting() {
+        launch {
+            BugsnagPerformance.startAppSessionSpan("Parenting Test")
+            delay(500)
+            BugsnagPerformance.startSpan("ChildSpan").end()
             BugsnagPerformance.endAppSessionSpan()
         }
     }

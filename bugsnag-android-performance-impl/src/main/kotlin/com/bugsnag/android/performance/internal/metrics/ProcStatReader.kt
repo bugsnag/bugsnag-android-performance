@@ -1,7 +1,6 @@
 package com.bugsnag.android.performance.internal.metrics
 
 import java.io.FileInputStream
-import java.io.IOException
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
@@ -73,12 +72,16 @@ internal class ProcStatReader(
             }
 
             buffer.rewind()
+            if (!buffer.hasRemaining()) return false
 
             // skip until the end of the process name
-            skipUntil(')')
+            if (!skipUntil(')')) return false
+            if (!buffer.hasRemaining()) return false
             buffer.get() // skip the space
 
+            if (!buffer.hasRemaining()) return false
             target.state = (buffer.nextByte()).toChar()
+            if (!buffer.hasRemaining()) return false
             buffer.get() // skip the space
 
             repeat(FIELDS_TO_SKIP) {
@@ -96,8 +99,8 @@ internal class ProcStatReader(
             target.starttime = parseLong()
             target.vsize = parseLong()
             target.rss = parseLong()
-        } catch (ioe: IOException) {
-            // suppress
+        } catch (e: Throwable) {
+            // suppress all exceptions to avoid crashing the collector
             return false
         }
 
@@ -113,7 +116,7 @@ internal class ProcStatReader(
         get() = toInt() and BYTE_MASK
 
     companion object {
-        internal const val BUFFER_SIZE = 256
+        internal const val BUFFER_SIZE = 512
         internal const val ZERO_CODE = '0'.code
         internal const val NINE_CODE = '9'.code
 

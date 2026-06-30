@@ -2,6 +2,7 @@ package com.bugsnag.android.performance.internal.appsession
 
 import android.content.Context
 import com.bugsnag.android.performance.AppSessionConfig
+import com.bugsnag.android.performance.EnabledMetrics
 import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.SpanOptions
 import com.bugsnag.android.performance.internal.BugsnagClock
@@ -46,6 +47,7 @@ import java.util.concurrent.atomic.AtomicInteger
 internal class AppSessionSpanController(
     private val appContext: Context,
     private val spanFactory: SpanFactory,
+    private val enabledMetrics: EnabledMetrics = EnabledMetrics(false),
     internal val sessionConfig: AppSessionConfig = AppSessionConfig(),
     private val samplingIntervalMs: Long = DEFAULT_SAMPLING_INTERVAL_MS,
     /**
@@ -142,7 +144,7 @@ internal class AppSessionSpanController(
          if (activeSegmentType == SEGMENT_BACKGROUND) {
              closeCurrentSegmentSpan(closeReason = "segment_switched")
          }
-         if (activeSegmentType != SEGMENT_FOREGROUND) {
+         if (activeSegmentType != SEGMENT_FOREGROUND || appSessionName != null) {
              openAppSessionSpan(SEGMENT_FOREGROUND, appSessionName)
          }
      }
@@ -167,7 +169,7 @@ internal class AppSessionSpanController(
          if (activeSegmentType == SEGMENT_FOREGROUND) {
              closeCurrentSegmentSpan(closeReason = "segment_switched")
          }
-         if (activeSegmentType != SEGMENT_BACKGROUND) {
+         if (activeSegmentType != SEGMENT_BACKGROUND || appSessionName != null) {
              openAppSessionSpan(SEGMENT_BACKGROUND, appSessionName)
              scheduleBackgroundTimeout()
          }
@@ -241,21 +243,39 @@ internal class AppSessionSpanController(
     // ─────────────────────────────────────────────────────────────────────────
 
     private fun openAppSessionSpan(segmentType: String, appSessionName: String?) {
+         if (activeSpan != null) {
+             closeCurrentSegmentSpan(closeReason = "segment_switched")
+         }
          val index = segmentIndex.incrementAndGet()
          val startMs = System.currentTimeMillis()
          val startUnixNano = BugsnagClock.currentUnixNanoTime()
 
          if (index == 1) scheduleMaxSessionTimeout()
 
-         val span = spanFactory.createCustomSpan(
-             name = appSessionName ?: "app_session",
-             options = SpanOptions.DEFAULTS,
-         ).also { s ->
-             s.setAttribute("bugsnag.session.start_unix_nano", startUnixNano)
-             s.setAttribute("bugsnag.span.category", "app_session")
+         val spanName = if (appSessionName != null) {
+             "[AppSession/$appSessionName]"
+         } else {
+             "app_session.$segmentType"
          }
 
-        val collector = AppSessionMetricsCollector(appContext, samplingIntervalMs)
+         val span = spanFactory.createAppSessionSpan(
+             name = spanName,
+             options = SpanOptions.DEFAULTS
+                 .makeCurrentContext(false)
+                 .setFirstClass(true),
+         ).also { s ->
+             try {
+                 s.setAttribute("bugsnag.session.start_unix_nano", startUnixNano)
+                 s.setAttribute("bugsnag.session.start_unix_ms", startMs)
+                 if (appSessionName != null) {
+                     s.setAttribute("bugsnag.app_session.name", appSessionName)
+                 }
+             } catch (_: Exception) {
+                 // ignore attribute errors
+             }
+         }
+
+        val collector = AppSessionMetricsCollector(appContext, enabledMetrics, samplingIntervalMs)
         collector.start()
 
         activeSpan = span
@@ -289,12 +309,22 @@ internal class AppSessionSpanController(
         val endMs = System.currentTimeMillis()
         val endUnixNano = BugsnagClock.currentUnixNanoTime()
 
-        closeReason?.let { span.setAttribute("bugsnag.session.close_reason", it) }
-        span.setAttribute("bugsnag.session.end_unix_nano", endUnixNano)
+        try {
+            closeReason?.let { span.setAttribute("bugsnag.session.close_reason", it) }
+            span.setAttribute("bugsnag.session.end_unix_nano", endUnixNano)
+            span.setAttribute("bugsnag.session.end_unix_ms", endMs)
+            span.setAttribute("bugsnag.session.duration_ms", endMs - startMs)
+        } catch (_: Exception) {
+            // ignore attribute errors to ensure span.end() is called
+        }
         span.end()
 
         // ── 1. Immediate delivery: wake the Worker to send this segment NOW ──
-        onAppSessionReady?.invoke()
+        try {
+            onAppSessionReady?.invoke()
+        } catch (_: Exception) {
+            // ignore flush errors
+        }
 
         // ── 2. Store typed copy in heap buffer (+ periodic disk persistence) ─
         buffer?.add(
@@ -329,66 +359,60 @@ internal class AppSessionSpanController(
     // ─────────────────────────────────────────────────────────────────────────
 
     private fun attachMetrics(span: Span, m: AppSessionMetrics) {
-        if (m === AppSessionMetrics.EMPTY) return
-
-        if (m.cpuCount > 0) {
-            val cpuTimestamp = lastTimestampArray(m.cpuTimestamps)
+        if (enabledMetrics.cpu) {
             span.setAttribute("bugsnag.session.cpu.min", m.cpuMin)
             span.setAttribute("bugsnag.session.cpu.max", m.cpuMax)
             span.setAttribute("bugsnag.session.cpu.mean", m.cpuMean)
 
-            span.setAttribute("bugsnag.system.cpu_measures_total", singleDoubleValueArray(m.cpuMean))
+            span.setAttribute("bugsnag.system.cpu.measures", m.cpuSamples)
             if (m.cpuMainThreadSamples.isNotEmpty()) {
-                span.setAttribute("bugsnag.system.cpu_measures_main_thread", singleDoubleValueArray(m.cpuMainThreadMean))
+                span.setAttribute("bugsnag.system.cpu.main_thread.measures", m.cpuMainThreadSamples)
                 span.setAttribute("bugsnag.system.cpu_min_main_thread", m.cpuMainThreadMin)
                 span.setAttribute("bugsnag.system.cpu_max_main_thread", m.cpuMainThreadMax)
                 span.setAttribute("bugsnag.system.cpu_mean_main_thread", m.cpuMainThreadMean)
             }
             if (m.cpuOverheadSamples.isNotEmpty()) {
-                span.setAttribute("bugsnag.system.cpu_measures_overhead", singleDoubleValueArray(m.cpuOverheadMean))
+                span.setAttribute("bugsnag.system.cpu.overhead.measures", m.cpuOverheadSamples)
                 span.setAttribute("bugsnag.system.cpu_min_overhead", m.cpuOverheadMin)
                 span.setAttribute("bugsnag.system.cpu_max_overhead", m.cpuOverheadMax)
                 span.setAttribute("bugsnag.system.cpu_mean_overhead", m.cpuOverheadMean)
             }
-            if (cpuTimestamp.isNotEmpty()) {
-                span.setAttribute("bugsnag.system.cpu_measures_timestamps", cpuTimestamp)
+            if (m.cpuTimestamps.isNotEmpty()) {
+                span.setAttribute("bugsnag.system.cpu.timestamps", m.cpuTimestamps)
             }
             span.setAttribute("bugsnag.system.cpu_min_total", m.cpuMin)
             span.setAttribute("bugsnag.system.cpu_max_total", m.cpuMax)
             span.setAttribute("bugsnag.system.cpu_mean_total", m.cpuMean)
         }
-        if (m.runtimeMemoryCount > 0) {
-            val runtimeTimestamp = lastTimestampArray(m.runtimeMemoryTimestamps)
+
+        if (enabledMetrics.memory) {
             span.setAttribute("bugsnag.session.memory.runtime.min", m.runtimeMemoryMinBytes)
             span.setAttribute("bugsnag.session.memory.runtime.max", m.runtimeMemoryMaxBytes)
             span.setAttribute("bugsnag.session.memory.runtime.mean", m.runtimeMemoryMeanBytes)
 
             // ART values are the Android runtime heap aliases in OTEL payloads.
-            span.setAttribute("bugsnag.system.memory.spaces.art.used", singleLongValueArray(m.runtimeMemoryMeanBytes))
+            span.setAttribute("bugsnag.system.memory.spaces.art.used", m.runtimeMemorySamplesBytes)
             span.setAttribute("bugsnag.system.memory.spaces.art.min", m.runtimeMemoryMinBytes)
             span.setAttribute("bugsnag.system.memory.spaces.art.max", m.runtimeMemoryMaxBytes)
             span.setAttribute("bugsnag.system.memory.spaces.art.mean", m.runtimeMemoryMeanBytes)
-            if (runtimeTimestamp.isNotEmpty()) {
-                span.setAttribute("bugsnag.system.memory.timestamps", runtimeTimestamp)
-            }
-        }
-        if (m.deviceMemoryCount > 0) {
-            val deviceTimestamp = lastTimestampArray(m.deviceMemoryTimestamps)
+
             span.setAttribute("bugsnag.session.memory.device.min", m.deviceMemoryMinBytes)
             span.setAttribute("bugsnag.session.memory.device.max", m.deviceMemoryMaxBytes)
             span.setAttribute("bugsnag.session.memory.device.mean", m.deviceMemoryMeanBytes)
 
-            span.setAttribute("bugsnag.system.memory.spaces.device.used", singleLongValueArray(m.deviceMemoryMeanBytes))
+            span.setAttribute("bugsnag.system.memory.spaces.device.used", m.deviceMemorySamplesBytes)
             span.setAttribute("bugsnag.system.memory.spaces.device.min", m.deviceMemoryMinBytes)
             span.setAttribute("bugsnag.system.memory.spaces.device.max", m.deviceMemoryMaxBytes)
             span.setAttribute("bugsnag.system.memory.spaces.device.mean", m.deviceMemoryMeanBytes)
-            if (deviceTimestamp.isNotEmpty()) {
-                span.setAttribute("bugsnag.system.memory.timestamps", deviceTimestamp)
+            if (m.runtimeMemoryTimestamps.isNotEmpty() || m.deviceMemoryTimestamps.isNotEmpty()) {
+                // We prefer runtime timestamps if available, otherwise device
+                val ts = if (m.runtimeMemoryTimestamps.isNotEmpty()) m.runtimeMemoryTimestamps else m.deviceMemoryTimestamps
+                span.setAttribute("bugsnag.system.memory.timestamps", ts)
             }
-        }
-        if (m.deviceMemorySizeBytes > 0) {
-            span.setAttribute("bugsnag.device.physical_device_memory", m.deviceMemorySizeBytes)
-            span.setAttribute("bugsnag.system.memory.spaces.device.size", m.deviceMemorySizeBytes)
+            if (m.deviceMemorySizeBytes > 0) {
+                span.setAttribute("bugsnag.device.physical_device_memory", m.deviceMemorySizeBytes)
+                span.setAttribute("bugsnag.system.memory.spaces.device.size", m.deviceMemorySizeBytes)
+            }
         }
     }
 
@@ -399,15 +423,6 @@ internal class AppSessionSpanController(
 
         internal const val CLOSE_REASON_BG_TIMEOUT = "background_timeout"
         internal const val CLOSE_REASON_MAX_DURATION = "session_max_duration"
-    }
-
-    private fun singleDoubleValueArray(value: Double): DoubleArray = doubleArrayOf(value)
-
-    private fun singleLongValueArray(value: Long): LongArray = longArrayOf(value)
-
-    private fun lastTimestampArray(values: LongArray): LongArray {
-        val last = values.lastOrNull() ?: return longArrayOf()
-        return longArrayOf(last)
     }
 }
 

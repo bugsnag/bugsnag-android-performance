@@ -280,9 +280,32 @@ class MainActivity : AppCompatActivity() {
                     scenario = loadScenario(scenarioName, scenarioMetadata, endpointUrl)
                 }
 
+                "configure_bugsnag" -> {
+                    scenario!!::class.java.getMethod("configureBugsnag", String::class.java, String::class.java)
+                        .invoke(scenario, scenarioName, scenarioMetadata)
+                }
+
+                "configure_scenario" -> {
+                    scenario!!::class.java.getMethod("configureScenario", String::class.java, String::class.java)
+                        .invoke(scenario, scenarioName, scenarioMetadata)
+                }
+
+                "start_bugsnag" -> {
+                    scenario!!::class.java.getMethod("startBugsnag").invoke(scenario)
+                }
+
+                "run_loaded_scenario" -> {
+                    scenario!!.startScenario()
+                }
+
                 "invoke" -> {
                     log("invoke: $scenarioName")
-                    scenario!!::class.java.getMethod(scenarioName).invoke(scenario)
+                    val method = scenario!!::class.java.methods.find { it.name == scenarioName }
+                    if (method?.parameterTypes?.size == 1 && method.parameterTypes[0] == String::class.java) {
+                        method.invoke(scenario, scenarioMetadata)
+                    } else {
+                        method?.invoke(scenario)
+                    }
                 }
 
                 else -> throw IllegalArgumentException("Unknown action: $action")

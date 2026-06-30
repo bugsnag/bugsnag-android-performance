@@ -263,7 +263,7 @@ public class SpanImpl(
         name: String,
         value: Long,
     ) {
-        if (!isSealed) {
+        setAttributeImpl(name) {
             attributes[name] = value
         }
     }

@@ -74,6 +74,7 @@ public object BugsnagPerformanceImpl {
         appSessionSpanController = AppSessionSpanController(
             appContext = application,
             spanFactory = spanFactory,
+            enabledMetrics = configuration.enabledMetrics,
             sessionConfig = externalConfiguration.appSessionConfig,
             buffer = appSessionBuffer,
             onAppSessionReady = { tracer.forceCurrentBatch() },
@@ -244,4 +245,3 @@ internal fun resolveManualAppSessionStartOptions(
         appSessionName = resolvedAppSessionName,
     )
 }
-

@@ -160,6 +160,17 @@ class ProbabilitySamplerTest {
     }
 
     @Test
+    fun testAppSessionAlwaysSampled() {
+        val sampler = ProbabilitySampler(0.0)
+        val span = spanFactory.newSpan(
+            traceId = uuidWithUpper(Long.MAX_VALUE),
+            processor = spanProcessor,
+            category = SpanCategory.APP_SESSION
+        )
+        assertTrue("AppSession should always be sampled", sampler.shouldKeepSpan(span))
+    }
+
+    @Test
     fun testSpanReducedProbability() {
         val sampler = ProbabilitySampler(0.25)
         val span =

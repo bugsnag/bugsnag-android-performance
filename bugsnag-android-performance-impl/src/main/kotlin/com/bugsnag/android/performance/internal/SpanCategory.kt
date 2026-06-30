@@ -12,6 +12,7 @@ public value class SpanCategory internal constructor(public val category: String
         public const val CATEGORY_NETWORK: String = "network"
         public const val CATEGORY_APP_START: String = "app_start"
         public const val CATEGORY_APP_START_PHASE: String = "app_start_phase"
+        public const val CATEGORY_APP_SESSION: String = "app_session"
 
         public val CUSTOM: SpanCategory = SpanCategory(CATEGORY_CUSTOM)
         public val VIEW_LOAD: SpanCategory = SpanCategory(CATEGORY_VIEW_LOAD)
@@ -19,5 +20,6 @@ public value class SpanCategory internal constructor(public val category: String
         public val NETWORK: SpanCategory = SpanCategory(CATEGORY_NETWORK)
         public val APP_START: SpanCategory = SpanCategory(CATEGORY_APP_START)
         public val APP_START_PHASE: SpanCategory = SpanCategory(CATEGORY_APP_START_PHASE)
+        public val APP_SESSION: SpanCategory = SpanCategory(CATEGORY_APP_SESSION)
     }
 }
