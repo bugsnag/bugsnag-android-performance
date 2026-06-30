@@ -108,7 +108,6 @@ public object BugsnagPerformance {
         BugsnagPerformanceImpl.endAppSessionSpan()
     }
 
-
     /**
      * Open a custom span with a given name and options.
      *

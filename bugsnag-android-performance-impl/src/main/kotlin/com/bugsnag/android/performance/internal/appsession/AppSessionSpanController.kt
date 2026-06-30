@@ -51,15 +51,15 @@ internal class AppSessionSpanController(
     internal val sessionConfig: AppSessionConfig = AppSessionConfig(),
     private val samplingIntervalMs: Long = DEFAULT_SAMPLING_INTERVAL_MS,
     /**
-      * Invoked immediately after each app-session span ends so the delivery layer can flush the span
-      * without waiting for the normal batch timer. Wired to `tracer.forceCurrentBatch()` by
-      * [BugsnagPerformanceImpl].
-      */
+     * Invoked immediately after each app-session span ends so the delivery layer can flush the span
+     * without waiting for the normal batch timer. Wired to `tracer.forceCurrentBatch()` by
+     * [BugsnagPerformanceImpl].
+     */
     private val onAppSessionReady: (() -> Unit)? = null,
     /**
-      * Buffer that holds a typed copy of every completed segment.
-      * Periodically persisted to disk so data survives process death.
-      */
+     * Buffer that holds a typed copy of every completed segment.
+     * Periodically persisted to disk so data survives process death.
+     */
     private val buffer: AppSessionBuffer? = null,
 ) {
     // ── Session identity ─────────────────────────────────────────────────────
@@ -67,12 +67,23 @@ internal class AppSessionSpanController(
     private val segmentIndex = AtomicInteger(0)
 
     // ── Active segment state ─────────────────────────────────────────────────
-    @Volatile private var activeSpan: Span? = null
-    @Volatile private var activeCollector: AppSessionMetricsCollector? = null
-    @Volatile private var activeSegmentType: String? = null
-    @Volatile private var activeSegmentName: String? = null
-    @Volatile private var activeSegmentStartMs: Long = 0L
-    @Volatile private var activeSegmentStartUnixNano: Long = 0L
+    @Volatile
+    private var activeSpan: Span? = null
+
+    @Volatile
+    private var activeCollector: AppSessionMetricsCollector? = null
+
+    @Volatile
+    private var activeSegmentType: String? = null
+
+    @Volatile
+    private var activeSegmentName: String? = null
+
+    @Volatile
+    private var activeSegmentStartMs: Long = 0L
+
+    @Volatile
+    private var activeSegmentStartUnixNano: Long = 0L
 
     // ── Timeout scheduler ────────────────────────────────────────────────────
     private val scheduler: ScheduledExecutorService =
@@ -98,93 +109,96 @@ internal class AppSessionSpanController(
         }
     }
 
-    @Volatile private var backgroundTimeoutFuture: Future<*>? = null
-    @Volatile private var maxSessionFuture: Future<*>? = null
+    @Volatile
+    private var backgroundTimeoutFuture: Future<*>? = null
 
-     // ─────────────────────────────────────────────────────────────────────────
-     // Public API (Unified)
-     // ─────────────────────────────────────────────────────────────────────────
+    @Volatile
+    private var maxSessionFuture: Future<*>? = null
 
-     /**
-      * Starts an app-session segment span (foreground or background).
-      * The segment type is determined automatically based on the app's current foreground state.
-      *
-      * @param appSessionName optional customer-supplied label retained in internal app-session storage.
-      */
-     fun startAppSessionSpan(appSessionName: String? = null) {
-         if (ForegroundState.isInForeground) {
-             startForegroundAppSessionSpan(appSessionName)
-         } else {
-             startBackgroundAppSessionSpan(appSessionName)
-         }
-     }
+    // ─────────────────────────────────────────────────────────────────────────
+    // Public API (Unified)
+    // ─────────────────────────────────────────────────────────────────────────
 
-     /**
-      * Ends the currently active app-session segment span (foreground or background).
-      * The close reason will be `client_end_foreground` or `client_end_background` depending on
-      * which segment is currently active. No-op if no segment is active.
-      */
-     fun endAppSessionSpan() {
-         when (activeSegmentType) {
-             SEGMENT_FOREGROUND -> endForegroundAppSessionSpan()
-             SEGMENT_BACKGROUND -> endBackgroundAppSessionSpan()
-             else -> {} // no-op if nothing active
-         }
-     }
+    /**
+     * Starts an app-session segment span (foreground or background).
+     * The segment type is determined automatically based on the app's current foreground state.
+     *
+     * @param appSessionName optional customer-supplied label retained in internal app-session storage.
+     */
+    fun startAppSessionSpan(appSessionName: String? = null) {
+        if (ForegroundState.isInForeground) {
+            startForegroundAppSessionSpan(appSessionName)
+        } else {
+            startBackgroundAppSessionSpan(appSessionName)
+        }
+    }
 
-      /**
-       * Starts a foreground segment span. If a background segment is currently active it is
-       * closed immediately (reason: `segment_switched`) and any pending background timeout is
-       * cancelled before the new foreground span opens.
-       *
-       * @param appSessionName optional customer-supplied label retained in internal app-session storage.
-       */
-     fun startForegroundAppSessionSpan(appSessionName: String? = null) {
-         cancelBackgroundTimeout()
-         if (activeSegmentType == SEGMENT_BACKGROUND) {
-             closeCurrentSegmentSpan(closeReason = "segment_switched")
-         }
-         if (activeSegmentType != SEGMENT_FOREGROUND || appSessionName != null) {
-             openAppSessionSpan(SEGMENT_FOREGROUND, appSessionName)
-         }
-     }
+    /**
+     * Ends the currently active app-session segment span (foreground or background).
+     * The close reason will be `client_end_foreground` or `client_end_background` depending on
+     * which segment is currently active. No-op if no segment is active.
+     */
+    fun endAppSessionSpan() {
+        when (activeSegmentType) {
+            SEGMENT_FOREGROUND -> endForegroundAppSessionSpan()
+            SEGMENT_BACKGROUND -> endBackgroundAppSessionSpan()
+            else -> {} // no-op if nothing active
+        }
+    }
 
-     /**
-      * Ends the active foreground segment span (reason: `client_end`).
-      * No-op if no foreground span is active.
-      */
-     fun endForegroundAppSessionSpan() {
-         if (activeSegmentType == SEGMENT_FOREGROUND) {
-             closeCurrentSegmentSpan(closeReason = "client_end")
-         }
-     }
+    /**
+     * Starts a foreground segment span. If a background segment is currently active it is
+     * closed immediately (reason: `segment_switched`) and any pending background timeout is
+     * cancelled before the new foreground span opens.
+     *
+     * @param appSessionName optional customer-supplied label retained in internal app-session storage.
+     */
+    fun startForegroundAppSessionSpan(appSessionName: String? = null) {
+        cancelBackgroundTimeout()
+        if (activeSegmentType == SEGMENT_BACKGROUND) {
+            closeCurrentSegmentSpan(closeReason = "segment_switched")
+        }
+        if (activeSegmentType != SEGMENT_FOREGROUND || appSessionName != null) {
+            openAppSessionSpan(SEGMENT_FOREGROUND, appSessionName)
+        }
+    }
 
-      /**
-       * Starts a background segment span. A background-timeout task is scheduled to auto-close
-       * this span after [AppSessionConfig.backgroundTimeoutMs] if the user never returns.
-       *
-       * @param appSessionName optional customer-supplied label retained in internal app-session storage.
-       */
-     fun startBackgroundAppSessionSpan(appSessionName: String? = null) {
-         if (activeSegmentType == SEGMENT_FOREGROUND) {
-             closeCurrentSegmentSpan(closeReason = "segment_switched")
-         }
-         if (activeSegmentType != SEGMENT_BACKGROUND || appSessionName != null) {
-             openAppSessionSpan(SEGMENT_BACKGROUND, appSessionName)
-             scheduleBackgroundTimeout()
-         }
-     }
+    /**
+     * Ends the active foreground segment span (reason: `client_end`).
+     * No-op if no foreground span is active.
+     */
+    fun endForegroundAppSessionSpan() {
+        if (activeSegmentType == SEGMENT_FOREGROUND) {
+            closeCurrentSegmentSpan(closeReason = "client_end")
+        }
+    }
 
-     /**
-      * Ends the active background segment span (reason: `client_end`).
-      * Cancels any pending background timeout. No-op if no background span is active.
-      */
-     fun endBackgroundAppSessionSpan() {
-         if (activeSegmentType == SEGMENT_BACKGROUND) {
-             cancelBackgroundTimeout()
-             closeCurrentSegmentSpan(closeReason = "client_end")
-         }
-     }
+    /**
+     * Starts a background segment span. A background-timeout task is scheduled to auto-close
+     * this span after [AppSessionConfig.backgroundTimeoutMs] if the user never returns.
+     *
+     * @param appSessionName optional customer-supplied label retained in internal app-session storage.
+     */
+    fun startBackgroundAppSessionSpan(appSessionName: String? = null) {
+        if (activeSegmentType == SEGMENT_FOREGROUND) {
+            closeCurrentSegmentSpan(closeReason = "segment_switched")
+        }
+        if (activeSegmentType != SEGMENT_BACKGROUND || appSessionName != null) {
+            openAppSessionSpan(SEGMENT_BACKGROUND, appSessionName)
+            scheduleBackgroundTimeout()
+        }
+    }
+
+    /**
+     * Ends the active background segment span (reason: `client_end`).
+     * Cancels any pending background timeout. No-op if no background span is active.
+     */
+    fun endBackgroundAppSessionSpan() {
+        if (activeSegmentType == SEGMENT_BACKGROUND) {
+            cancelBackgroundTimeout()
+            closeCurrentSegmentSpan(closeReason = "client_end")
+        }
+    }
 
     /** Closes any open segment span and shuts down the scheduler and buffer. */
     fun stop() {
@@ -242,38 +256,42 @@ internal class AppSessionSpanController(
     // Segment span helpers
     // ─────────────────────────────────────────────────────────────────────────
 
-    private fun openAppSessionSpan(segmentType: String, appSessionName: String?) {
-         if (activeSpan != null) {
-             closeCurrentSegmentSpan(closeReason = "segment_switched")
-         }
-         val index = segmentIndex.incrementAndGet()
-         val startMs = System.currentTimeMillis()
-         val startUnixNano = BugsnagClock.currentUnixNanoTime()
+    private fun openAppSessionSpan(
+        segmentType: String,
+        appSessionName: String?,
+    ) {
+        if (activeSpan != null) {
+            closeCurrentSegmentSpan(closeReason = "segment_switched")
+        }
+        val index = segmentIndex.incrementAndGet()
+        val startMs = System.currentTimeMillis()
+        val startUnixNano = BugsnagClock.currentUnixNanoTime()
 
-         if (index == 1) scheduleMaxSessionTimeout()
+        if (index == 1) scheduleMaxSessionTimeout()
 
-         val spanName = if (appSessionName != null) {
-             "[AppSession/$appSessionName]"
-         } else {
-             "app_session.$segmentType"
-         }
+        val spanName = if (appSessionName != null) {
+            "[AppSession/$appSessionName]"
+        } else {
+            "app_session.$segmentType"
+        }
 
-         val span = spanFactory.createAppSessionSpan(
-             name = spanName,
-             options = SpanOptions.DEFAULTS
-                 .makeCurrentContext(false)
-                 .setFirstClass(true),
-         ).also { s ->
-             try {
-                 s.setAttribute("bugsnag.session.start_unix_nano", startUnixNano)
-                 s.setAttribute("bugsnag.session.start_unix_ms", startMs)
-                 if (appSessionName != null) {
-                     s.setAttribute("bugsnag.app_session.name", appSessionName)
-                 }
-             } catch (_: Exception) {
-                 // ignore attribute errors
-             }
-         }
+        val span = spanFactory.createAppSessionSpan(
+            name = spanName,
+            options = SpanOptions.DEFAULTS
+                .makeCurrentContext(false)
+                .setFirstClass(true),
+        ).also { s ->
+            @Suppress("TooGenericExceptionCaught")
+            try {
+                s.setAttribute("bugsnag.session.start_unix_nano", startUnixNano)
+                s.setAttribute("bugsnag.session.start_unix_ms", startMs)
+                if (appSessionName != null) {
+                    s.setAttribute("bugsnag.app_session.name", appSessionName)
+                }
+            } catch (_: Exception) {
+                // ignore attribute errors
+            }
+        }
 
         val collector = AppSessionMetricsCollector(appContext, enabledMetrics, samplingIntervalMs)
         collector.start()
@@ -309,6 +327,7 @@ internal class AppSessionSpanController(
         val endMs = System.currentTimeMillis()
         val endUnixNano = BugsnagClock.currentUnixNanoTime()
 
+        @Suppress("TooGenericExceptionCaught")
         try {
             closeReason?.let { span.setAttribute("bugsnag.session.close_reason", it) }
             span.setAttribute("bugsnag.session.end_unix_nano", endUnixNano)
@@ -320,6 +339,7 @@ internal class AppSessionSpanController(
         span.end()
 
         // ── 1. Immediate delivery: wake the Worker to send this segment NOW ──
+        @Suppress("TooGenericExceptionCaught")
         try {
             onAppSessionReady?.invoke()
         } catch (_: Exception) {
@@ -328,91 +348,132 @@ internal class AppSessionSpanController(
 
         // ── 2. Store typed copy in heap buffer (+ periodic disk persistence) ─
         buffer?.add(
-            AppSessionData(
-                sessionId = sessionId,
+            buildAppSessionData(
                 index = index,
                 appSessionName = appSessionName,
-                startTimeMs = startMs,
-                startTimeUnixNano = startUnixNano,
-                endTimeMs = endMs,
-                endTimeUnixNano = endUnixNano,
-                durationMs = endMs - startMs,
-                closeReason = closeReason ?: "unknown",
-                cpuCount = metrics.cpuCount,
-                cpuMin = metrics.cpuMin,
-                cpuMax = metrics.cpuMax,
-                cpuMean = metrics.cpuMean,
-                runtimeMemoryCount = metrics.runtimeMemoryCount,
-                runtimeMemoryMinBytes = metrics.runtimeMemoryMinBytes,
-                runtimeMemoryMaxBytes = metrics.runtimeMemoryMaxBytes,
-                runtimeMemoryMeanBytes = metrics.runtimeMemoryMeanBytes,
-                deviceMemoryCount = metrics.deviceMemoryCount,
-                deviceMemoryMinBytes = metrics.deviceMemoryMinBytes,
-                deviceMemoryMaxBytes = metrics.deviceMemoryMaxBytes,
-                deviceMemoryMeanBytes = metrics.deviceMemoryMeanBytes,
-            )
+                startMs = startMs,
+                startUnixNano = startUnixNano,
+                endMs = endMs,
+                endUnixNano = endUnixNano,
+                closeReason = closeReason,
+                metrics = metrics,
+            ),
         )
     }
+
+    private fun buildAppSessionData(
+        index: Int,
+        appSessionName: String?,
+        startMs: Long,
+        startUnixNano: Long,
+        endMs: Long,
+        endUnixNano: Long,
+        closeReason: String?,
+        metrics: AppSessionMetrics,
+    ) = AppSessionData(
+        sessionId = sessionId,
+        index = index,
+        appSessionName = appSessionName,
+        startTimeMs = startMs,
+        startTimeUnixNano = startUnixNano,
+        endTimeMs = endMs,
+        endTimeUnixNano = endUnixNano,
+        durationMs = endMs - startMs,
+        closeReason = closeReason ?: "unknown",
+        cpuCount = metrics.cpuCount,
+        cpuMin = metrics.cpuMin,
+        cpuMax = metrics.cpuMax,
+        cpuMean = metrics.cpuMean,
+        runtimeMemoryCount = metrics.runtimeMemoryCount,
+        runtimeMemoryMinBytes = metrics.runtimeMemoryMinBytes,
+        runtimeMemoryMaxBytes = metrics.runtimeMemoryMaxBytes,
+        runtimeMemoryMeanBytes = metrics.runtimeMemoryMeanBytes,
+        deviceMemoryCount = metrics.deviceMemoryCount,
+        deviceMemoryMinBytes = metrics.deviceMemoryMinBytes,
+        deviceMemoryMaxBytes = metrics.deviceMemoryMaxBytes,
+        deviceMemoryMeanBytes = metrics.deviceMemoryMeanBytes,
+    )
 
     // ─────────────────────────────────────────────────────────────────────────
     // Attach aggregated metrics as span attributes
     // ─────────────────────────────────────────────────────────────────────────
 
-    private fun attachMetrics(span: Span, m: AppSessionMetrics) {
+    private fun attachMetrics(
+        span: Span,
+        m: AppSessionMetrics,
+    ) {
         if (enabledMetrics.cpu) {
-            span.setAttribute("bugsnag.session.cpu.min", m.cpuMin)
-            span.setAttribute("bugsnag.session.cpu.max", m.cpuMax)
-            span.setAttribute("bugsnag.session.cpu.mean", m.cpuMean)
-
-            span.setAttribute("bugsnag.system.cpu.measures", m.cpuSamples)
-            if (m.cpuMainThreadSamples.isNotEmpty()) {
-                span.setAttribute("bugsnag.system.cpu.main_thread.measures", m.cpuMainThreadSamples)
-                span.setAttribute("bugsnag.system.cpu_min_main_thread", m.cpuMainThreadMin)
-                span.setAttribute("bugsnag.system.cpu_max_main_thread", m.cpuMainThreadMax)
-                span.setAttribute("bugsnag.system.cpu_mean_main_thread", m.cpuMainThreadMean)
-            }
-            if (m.cpuOverheadSamples.isNotEmpty()) {
-                span.setAttribute("bugsnag.system.cpu.overhead.measures", m.cpuOverheadSamples)
-                span.setAttribute("bugsnag.system.cpu_min_overhead", m.cpuOverheadMin)
-                span.setAttribute("bugsnag.system.cpu_max_overhead", m.cpuOverheadMax)
-                span.setAttribute("bugsnag.system.cpu_mean_overhead", m.cpuOverheadMean)
-            }
-            if (m.cpuTimestamps.isNotEmpty()) {
-                span.setAttribute("bugsnag.system.cpu.timestamps", m.cpuTimestamps)
-            }
-            span.setAttribute("bugsnag.system.cpu_min_total", m.cpuMin)
-            span.setAttribute("bugsnag.system.cpu_max_total", m.cpuMax)
-            span.setAttribute("bugsnag.system.cpu_mean_total", m.cpuMean)
+            attachCpuMetrics(span, m)
         }
-
         if (enabledMetrics.memory) {
-            span.setAttribute("bugsnag.session.memory.runtime.min", m.runtimeMemoryMinBytes)
-            span.setAttribute("bugsnag.session.memory.runtime.max", m.runtimeMemoryMaxBytes)
-            span.setAttribute("bugsnag.session.memory.runtime.mean", m.runtimeMemoryMeanBytes)
+            attachMemoryMetrics(span, m)
+        }
+    }
 
-            // ART values are the Android runtime heap aliases in OTEL payloads.
-            span.setAttribute("bugsnag.system.memory.spaces.art.used", m.runtimeMemorySamplesBytes)
-            span.setAttribute("bugsnag.system.memory.spaces.art.min", m.runtimeMemoryMinBytes)
-            span.setAttribute("bugsnag.system.memory.spaces.art.max", m.runtimeMemoryMaxBytes)
-            span.setAttribute("bugsnag.system.memory.spaces.art.mean", m.runtimeMemoryMeanBytes)
+    private fun attachCpuMetrics(
+        span: Span,
+        m: AppSessionMetrics,
+    ) {
+        span.setAttribute("bugsnag.session.cpu.min", m.cpuMin)
+        span.setAttribute("bugsnag.session.cpu.max", m.cpuMax)
+        span.setAttribute("bugsnag.session.cpu.mean", m.cpuMean)
 
-            span.setAttribute("bugsnag.session.memory.device.min", m.deviceMemoryMinBytes)
-            span.setAttribute("bugsnag.session.memory.device.max", m.deviceMemoryMaxBytes)
-            span.setAttribute("bugsnag.session.memory.device.mean", m.deviceMemoryMeanBytes)
+        span.setAttribute("bugsnag.system.cpu.measures", m.cpuSamples)
+        if (m.cpuMainThreadSamples.isNotEmpty()) {
+            span.setAttribute("bugsnag.system.cpu.main_thread.measures", m.cpuMainThreadSamples)
+            span.setAttribute("bugsnag.system.cpu_min_main_thread", m.cpuMainThreadMin)
+            span.setAttribute("bugsnag.system.cpu_max_main_thread", m.cpuMainThreadMax)
+            span.setAttribute("bugsnag.system.cpu_mean_main_thread", m.cpuMainThreadMean)
+        }
+        if (m.cpuOverheadSamples.isNotEmpty()) {
+            span.setAttribute("bugsnag.system.cpu.overhead.measures", m.cpuOverheadSamples)
+            span.setAttribute("bugsnag.system.cpu_min_overhead", m.cpuOverheadMin)
+            span.setAttribute("bugsnag.system.cpu_max_overhead", m.cpuOverheadMax)
+            span.setAttribute("bugsnag.system.cpu_mean_overhead", m.cpuOverheadMean)
+        }
+        if (m.cpuTimestamps.isNotEmpty()) {
+            span.setAttribute("bugsnag.system.cpu.timestamps", m.cpuTimestamps)
+        }
+        span.setAttribute("bugsnag.system.cpu_min_total", m.cpuMin)
+        span.setAttribute("bugsnag.system.cpu_max_total", m.cpuMax)
+        span.setAttribute("bugsnag.system.cpu_mean_total", m.cpuMean)
+    }
 
-            span.setAttribute("bugsnag.system.memory.spaces.device.used", m.deviceMemorySamplesBytes)
-            span.setAttribute("bugsnag.system.memory.spaces.device.min", m.deviceMemoryMinBytes)
-            span.setAttribute("bugsnag.system.memory.spaces.device.max", m.deviceMemoryMaxBytes)
-            span.setAttribute("bugsnag.system.memory.spaces.device.mean", m.deviceMemoryMeanBytes)
-            if (m.runtimeMemoryTimestamps.isNotEmpty() || m.deviceMemoryTimestamps.isNotEmpty()) {
-                // We prefer runtime timestamps if available, otherwise device
-                val ts = if (m.runtimeMemoryTimestamps.isNotEmpty()) m.runtimeMemoryTimestamps else m.deviceMemoryTimestamps
-                span.setAttribute("bugsnag.system.memory.timestamps", ts)
-            }
-            if (m.deviceMemorySizeBytes > 0) {
-                span.setAttribute("bugsnag.device.physical_device_memory", m.deviceMemorySizeBytes)
-                span.setAttribute("bugsnag.system.memory.spaces.device.size", m.deviceMemorySizeBytes)
-            }
+    private fun attachMemoryMetrics(
+        span: Span,
+        m: AppSessionMetrics,
+    ) {
+        span.setAttribute("bugsnag.session.memory.runtime.min", m.runtimeMemoryMinBytes)
+        span.setAttribute("bugsnag.session.memory.runtime.max", m.runtimeMemoryMaxBytes)
+        span.setAttribute("bugsnag.session.memory.runtime.mean", m.runtimeMemoryMeanBytes)
+
+        // ART values are the Android runtime heap aliases in OTEL payloads.
+        span.setAttribute("bugsnag.system.memory.spaces.art.used", m.runtimeMemorySamplesBytes)
+        span.setAttribute("bugsnag.system.memory.spaces.art.min", m.runtimeMemoryMinBytes)
+        span.setAttribute("bugsnag.system.memory.spaces.art.max", m.runtimeMemoryMaxBytes)
+        span.setAttribute("bugsnag.system.memory.spaces.art.mean", m.runtimeMemoryMeanBytes)
+
+        span.setAttribute("bugsnag.session.memory.device.min", m.deviceMemoryMinBytes)
+        span.setAttribute("bugsnag.session.memory.device.max", m.deviceMemoryMaxBytes)
+        span.setAttribute("bugsnag.session.memory.device.mean", m.deviceMemoryMeanBytes)
+
+        span.setAttribute("bugsnag.system.memory.spaces.device.used", m.deviceMemorySamplesBytes)
+        span.setAttribute("bugsnag.system.memory.spaces.device.min", m.deviceMemoryMinBytes)
+        span.setAttribute("bugsnag.system.memory.spaces.device.max", m.deviceMemoryMaxBytes)
+        span.setAttribute("bugsnag.system.memory.spaces.device.mean", m.deviceMemoryMeanBytes)
+        if (m.runtimeMemoryTimestamps.isNotEmpty() || m.deviceMemoryTimestamps.isNotEmpty()) {
+            // We prefer runtime timestamps if available, otherwise device
+            val ts =
+                if (m.runtimeMemoryTimestamps.isNotEmpty()) {
+                    m.runtimeMemoryTimestamps
+                } else {
+                    m.deviceMemoryTimestamps
+                }
+            span.setAttribute("bugsnag.system.memory.timestamps", ts)
+        }
+        if (m.deviceMemorySizeBytes > 0) {
+            span.setAttribute("bugsnag.device.physical_device_memory", m.deviceMemorySizeBytes)
+            span.setAttribute("bugsnag.system.memory.spaces.device.size", m.deviceMemorySizeBytes)
         }
     }
 
@@ -425,4 +486,3 @@ internal class AppSessionSpanController(
         internal const val CLOSE_REASON_MAX_DURATION = "session_max_duration"
     }
 }
-

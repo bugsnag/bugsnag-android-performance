@@ -1,6 +1,7 @@
 package com.bugsnag.android.performance.internal.metrics
 
 import java.io.FileInputStream
+import java.io.IOException
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
@@ -65,45 +66,51 @@ internal class ProcStatReader(
     }
 
     fun parse(target: Stat): Boolean {
-        try {
-            buffer.rewind()
-            FileInputStream(path).channel.use { channel ->
-                channel.read(buffer)
-            }
+        return try {
+            readStatFile()
+            parseBuffer(target)
+        } catch (e: IOException) {
+            // suppress IO exceptions to avoid crashing the collector
+            false
+        }
+    }
 
-            buffer.rewind()
-            if (!buffer.hasRemaining()) return false
+    private fun readStatFile() {
+        buffer.rewind()
+        FileInputStream(path).channel.use { channel ->
+            channel.read(buffer)
+        }
+        buffer.rewind()
+    }
 
-            // skip until the end of the process name
-            if (!skipUntil(')')) return false
-            if (!buffer.hasRemaining()) return false
-            buffer.get() // skip the space
+    private fun parseBuffer(target: Stat): Boolean {
+        if (!buffer.hasRemaining()) return false
 
-            if (!buffer.hasRemaining()) return false
-            target.state = (buffer.nextByte()).toChar()
-            if (!buffer.hasRemaining()) return false
-            buffer.get() // skip the space
+        // skip until the end of the process name
+        if (!skipUntil(')')) return false
+        if (!buffer.hasRemaining()) return false
+        buffer.get() // skip the space
 
-            repeat(FIELDS_TO_SKIP) {
-                skipUntil(' ')
-            }
+        if (!buffer.hasRemaining()) return false
+        target.state = (buffer.nextByte()).toChar()
+        if (!buffer.hasRemaining()) return false
+        buffer.get() // skip the space
 
-            target.utime = parseLong()
-            target.stime = parseLong()
-            target.cutime = parseLong()
-            target.cstime = parseLong()
-            target.counter = parseLong().toInt()
-            target.priority = parseLong().toInt()
-            target.timeout = parseLong()
-            target.itrealvalue = parseLong()
-            target.starttime = parseLong()
-            target.vsize = parseLong()
-            target.rss = parseLong()
-        } catch (e: Throwable) {
-            // suppress all exceptions to avoid crashing the collector
-            return false
+        repeat(FIELDS_TO_SKIP) {
+            skipUntil(' ')
         }
 
+        target.utime = parseLong()
+        target.stime = parseLong()
+        target.cutime = parseLong()
+        target.cstime = parseLong()
+        target.counter = parseLong().toInt()
+        target.priority = parseLong().toInt()
+        target.timeout = parseLong()
+        target.itrealvalue = parseLong()
+        target.starttime = parseLong()
+        target.vsize = parseLong()
+        target.rss = parseLong()
         return true
     }
 

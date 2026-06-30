@@ -205,7 +205,6 @@ public object BugsnagPerformanceImpl {
         appSessionSpanController?.endAppSessionSpan()
     }
 
-
     private fun loadModules() {
         val moduleLoader = Module.Loader(instrumentedAppState)
         moduleLoader.loadModule("com.bugsnag.android.performance.AppCompatModule")

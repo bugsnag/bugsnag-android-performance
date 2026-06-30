@@ -5,8 +5,8 @@ import com.bugsnag.android.performance.Logger
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
-import java.util.concurrent.ConcurrentLinkedDeque
 import java.util.concurrent.Executors
+import java.util.concurrent.LinkedBlockingDeque
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
@@ -21,7 +21,7 @@ import kotlin.concurrent.withLock
  * app session span ends
  *      │
  *      ▼
- * buffer.add(data)          ← stored in heap ConcurrentLinkedDeque (immediate, lock-free)
+ * buffer.add(data)          ← stored in heap LinkedBlockingDeque (immediate, blocking)
  *      │
  *      ├──────────────────────────────────────────────────────────────────────────┐
  *      │ every [persistIntervalMs]                                                │
@@ -37,7 +37,7 @@ import kotlin.concurrent.withLock
  * ```
  *
  * ## Thread safety
- * - [add] uses a [ConcurrentLinkedDeque] — lock-free, safe from any thread.
+ * - [add] uses a [LinkedBlockingDeque] — safe from any thread.
  * - [persistToDisk] and [loadFromDisk] are guarded by [diskLock] to prevent
  *   concurrent writes from the scheduler and the [stop] flush.
  * - [drain] drains atomically under [diskLock] and re-persists the now-empty state.
@@ -55,7 +55,7 @@ internal class AppSessionBuffer(
     private val persistIntervalMs: Long = DEFAULT_PERSIST_INTERVAL_MS,
 ) {
     // ── In-memory store ───────────────────────────────────────────────────────
-    private val heap = ConcurrentLinkedDeque<AppSessionData>()
+    private val heap = LinkedBlockingDeque<AppSessionData>()
 
     // ── Disk store ────────────────────────────────────────────────────────────
     private val bufferFile: File = File(
@@ -101,9 +101,11 @@ internal class AppSessionBuffer(
      */
     fun add(data: AppSessionData) {
         heap.addLast(data)
-        Logger.d("AppSessionBuffer: buffered app session #${data.index} " +
+        Logger.d(
+            "AppSessionBuffer: buffered app session #${data.index} " +
                 "(${data.appSessionName?.let { " \"$it\"" } ?: ""}) " +
-                "reason=${data.closeReason} heap_size=${heap.size}")
+                "reason=${data.closeReason} heap_size=${heap.size}",
+        )
     }
 
     /**
@@ -122,7 +124,7 @@ internal class AppSessionBuffer(
         while (true) {
             items += heap.pollFirst() ?: break
         }
-        persistUnderLock()          // persist empty state — clears the file
+        persistUnderLock() // persist empty state — clears the file
         return items
     }
 
@@ -132,7 +134,7 @@ internal class AppSessionBuffer(
      */
     fun stop() {
         persistFuture?.cancel(false)
-        persistToDisk()             // final flush
+        persistToDisk() // final flush
         scheduler.shutdownNow()
     }
 
@@ -201,4 +203,3 @@ internal class AppSessionBuffer(
         const val DEFAULT_PERSIST_INTERVAL_MS: Long = 30_000L
     }
 }
-

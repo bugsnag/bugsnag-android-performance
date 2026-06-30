@@ -12,16 +12,12 @@ import java.util.UUID
 public class AppSession internal constructor(
     /** Stable UUID that identifies this session across all delivered batches. */
     public val sessionId: String = UUID.randomUUID().toString(),
-
     /** Wall-clock start time in nanoseconds (System.nanoTime() epoch). */
     public val startTimeNano: Long,
-
     /** App version string at the time the session started. */
     public val appVersion: String,
-
     /** Android OS version (e.g. "15"). */
     public val osVersion: String,
-
     /** Device model name (e.g. "Pixel 8"). */
     public val deviceModel: String,
 ) {
@@ -71,4 +67,3 @@ public enum class CloseReason {
     /** The server-side TTL expired before the final batch was received. */
     TTL_EXPIRED,
 }
-
