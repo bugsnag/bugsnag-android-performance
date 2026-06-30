@@ -12,6 +12,7 @@ class AnnotatedActivityScenario(
 ) : Scenario(config, scenarioMetadata) {
     init {
         config.autoInstrumentActivities = AutoInstrument.FULL
+        config.appSessionConfig = AppSessionConfig(autoStartSession = false)
     }
 
     override fun startScenario() {

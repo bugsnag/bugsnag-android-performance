@@ -229,7 +229,7 @@ internal class AppSessionMetricsCollector(
         android.os.Debug.getMemoryInfo(memInfo)
 
         val pssBytes =
-            (memInfo.dalvikPss + memInfo.nativePss + memInfo.otherPss).toLong() * KILOBYTE
+            (memInfo.dalvikPss.toLong() + memInfo.nativePss + memInfo.otherPss) * KILOBYTE
 
         if (pssBytes > 0L) {
             accumulators.addDeviceMemorySample(pssBytes, timestamp)
@@ -415,10 +415,7 @@ internal class AppSessionMetricsCollector(
                 builder.runtimeCount = runtimeCount
                 builder.runtimeMin = runtimeMin
                 builder.runtimeMax = runtimeMax
-                val rtMean =
-                    (runtimeSum.toDouble() / runtimeCount)
-                        .coerceIn(runtimeMin.toDouble(), runtimeMax.toDouble())
-                        .toLong()
+                val rtMean = (runtimeSum / runtimeCount).coerceIn(runtimeMin, runtimeMax)
                 builder.runtimeMean = rtMean
                 builder.runtimeSamples = runtimeSamples.toLongArray()
                 builder.runtimeTimestamps = runtimeTimestamps.toLongArray()
@@ -427,10 +424,7 @@ internal class AppSessionMetricsCollector(
                 builder.deviceCount = deviceCount
                 builder.deviceMin = deviceMin
                 builder.deviceMax = deviceMax
-                val dvMean =
-                    (deviceSum.toDouble() / deviceCount)
-                        .coerceIn(deviceMin.toDouble(), deviceMax.toDouble())
-                        .toLong()
+                val dvMean = (deviceSum / deviceCount).coerceIn(deviceMin, deviceMax)
                 builder.deviceMean = dvMean
                 builder.deviceSamples = deviceSamples.toLongArray()
                 builder.deviceTimestamps = deviceTimestamps.toLongArray()
@@ -441,12 +435,11 @@ internal class AppSessionMetricsCollector(
             min: Double,
             max: Double,
         ): Double {
-            return if (this < min) {
-                min
-            } else if (this > max) {
-                max
-            } else {
-                this
+            return when {
+                this.isNaN() -> min
+                this < min -> min
+                this > max -> max
+                else -> this
             }
         }
     }
