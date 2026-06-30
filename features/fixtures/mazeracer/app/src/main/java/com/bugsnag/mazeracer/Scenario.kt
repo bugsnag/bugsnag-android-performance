@@ -5,6 +5,7 @@ import android.app.Application
 import android.content.Intent
 import android.os.Handler
 import android.os.Looper
+import com.bugsnag.android.performance.AppSessionConfig
 import com.bugsnag.android.performance.PerformanceConfiguration
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
@@ -15,6 +16,12 @@ abstract class Scenario(
 ) : CoroutineScope by MainScope() {
     protected val mainHandler = Handler(Looper.getMainLooper())
     protected val application get() = context.applicationContext as Application
+
+    init {
+        // Disable automatic app sessions by default in test scenarios.
+        // App-session-specific scenarios re-enable this in their own init block.
+        config.appSessionConfig = AppSessionConfig(autoStartSession = false)
+    }
 
     lateinit var context: Activity
 
