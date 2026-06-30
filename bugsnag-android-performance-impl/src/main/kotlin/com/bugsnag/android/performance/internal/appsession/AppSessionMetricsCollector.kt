@@ -24,6 +24,7 @@ import java.util.concurrent.TimeUnit
  *
  * All sampling runs on a single shared background thread to minimise overhead.
  */
+@Suppress("TooManyFunctions")
 internal class AppSessionMetricsCollector(
     private val appContext: Context,
     private val enabledMetrics: EnabledMetrics = EnabledMetrics(false),
@@ -70,12 +71,14 @@ internal class AppSessionMetricsCollector(
         // Prime the CPU samplers so the first delta is meaningful
         primeCpuSampler()
 
-        future = sharedScheduler.scheduleWithFixedDelay(
-            { takeSample() },
-            0, // Start immediately to prime overhead sampler on the background thread
-            samplingIntervalMs,
-            TimeUnit.MILLISECONDS,
-        )
+        future =
+            sharedScheduler.scheduleWithFixedDelay(
+                { takeSample() },
+                // Start immediately to prime overhead sampler on the background thread
+                0,
+                samplingIntervalMs,
+                TimeUnit.MILLISECONDS,
+            )
     }
 
     /**
@@ -160,16 +163,17 @@ internal class AppSessionMetricsCollector(
 
     @Synchronized
     private fun sampleMainThreadCpu(deltaUptime: Double) {
-        val reader = mainThreadStatReader ?: run {
-            val tid = mainThreadTid[0]
-            if (tid > 0) {
-                mainThreadStatReader = ProcStatReader("/proc/${Process.myPid()}/task/$tid/stat")
-                if (mainThreadStatReader?.parse(mainThreadStat) == true) {
-                    previousMainThreadCpuTime = mainThreadStat.totalCpuTime / SystemConfig.clockTickHz
+        val reader =
+            mainThreadStatReader ?: run {
+                val tid = mainThreadTid[0]
+                if (tid > 0) {
+                    mainThreadStatReader = ProcStatReader("/proc/${Process.myPid()}/task/$tid/stat")
+                    if (mainThreadStatReader?.parse(mainThreadStat) == true) {
+                        previousMainThreadCpuTime = mainThreadStat.totalCpuTime / SystemConfig.clockTickHz
+                    }
                 }
+                return
             }
-            return
-        }
         if (reader.parse(mainThreadStat)) {
             val totalCpuTime = mainThreadStat.totalCpuTime / SystemConfig.clockTickHz
             val deltaCpu = totalCpuTime - previousMainThreadCpuTime
@@ -184,14 +188,15 @@ internal class AppSessionMetricsCollector(
 
     @Synchronized
     private fun sampleOverheadCpu(deltaUptime: Double) {
-        val reader = overheadStatReader ?: run {
-            val tid = Process.myTid()
-            overheadStatReader = ProcStatReader("/proc/${Process.myPid()}/task/$tid/stat")
-            if (overheadStatReader?.parse(overheadStat) == true) {
-                previousOverheadCpuTime = overheadStat.totalCpuTime / SystemConfig.clockTickHz
+        val reader =
+            overheadStatReader ?: run {
+                val tid = Process.myTid()
+                overheadStatReader = ProcStatReader("/proc/${Process.myPid()}/task/$tid/stat")
+                if (overheadStatReader?.parse(overheadStat) == true) {
+                    previousOverheadCpuTime = overheadStat.totalCpuTime / SystemConfig.clockTickHz
+                }
+                return
             }
-            return
-        }
 
         if (reader.parse(overheadStat)) {
             val totalCpuTime = overheadStat.totalCpuTime / SystemConfig.clockTickHz
@@ -293,19 +298,40 @@ internal class AppSessionMetricsCollector(
         val deviceTimestamps = mutableListOf<Long>()
 
         fun reset() {
-            cpuCount = 0; cpuSum = 0.0; cpuMin = Double.MAX_VALUE; cpuMax = 0.0
-            cpuSamples.clear(); cpuTimestamps.clear()
-            cpuMainThreadMin = Double.MAX_VALUE; cpuMainThreadMax = 0.0
-            cpuMainThreadSum = 0.0; cpuMainThreadCount = 0; cpuMainThreadSamples.clear()
-            cpuOverheadMin = Double.MAX_VALUE; cpuOverheadMax = 0.0
-            cpuOverheadSum = 0.0; cpuOverheadCount = 0; cpuOverheadSamples.clear()
-            runtimeCount = 0; runtimeSum = 0L; runtimeMin = Long.MAX_VALUE; runtimeMax = Long.MIN_VALUE
-            runtimeSamples.clear(); runtimeTimestamps.clear()
-            deviceCount = 0; deviceSum = 0L; deviceMin = Long.MAX_VALUE; deviceMax = Long.MIN_VALUE
-            deviceSamples.clear(); deviceTimestamps.clear()
+            cpuCount = 0
+            cpuSum = 0.0
+            cpuMin = Double.MAX_VALUE
+            cpuMax = 0.0
+            cpuSamples.clear()
+            cpuTimestamps.clear()
+            cpuMainThreadMin = Double.MAX_VALUE
+            cpuMainThreadMax = 0.0
+            cpuMainThreadSum = 0.0
+            cpuMainThreadCount = 0
+            cpuMainThreadSamples.clear()
+            cpuOverheadMin = Double.MAX_VALUE
+            cpuOverheadMax = 0.0
+            cpuOverheadSum = 0.0
+            cpuOverheadCount = 0
+            cpuOverheadSamples.clear()
+            runtimeCount = 0
+            runtimeSum = 0L
+            runtimeMin = Long.MAX_VALUE
+            runtimeMax = Long.MIN_VALUE
+            runtimeSamples.clear()
+            runtimeTimestamps.clear()
+            deviceCount = 0
+            deviceSum = 0L
+            deviceMin = Long.MAX_VALUE
+            deviceMax = Long.MIN_VALUE
+            deviceSamples.clear()
+            deviceTimestamps.clear()
         }
 
-        fun addCpuSample(cpuPct: Double, timestamp: Long) {
+        fun addCpuSample(
+            cpuPct: Double,
+            timestamp: Long,
+        ) {
             cpuCount++
             cpuSum += cpuPct
             cpuMin = cpuMin.coerceAtMost(cpuPct)
@@ -330,7 +356,10 @@ internal class AppSessionMetricsCollector(
             cpuOverheadSamples.add(cpuPct)
         }
 
-        fun addRuntimeMemorySample(used: Long, timestamp: Long) {
+        fun addRuntimeMemorySample(
+            used: Long,
+            timestamp: Long,
+        ) {
             runtimeCount++
             runtimeSum += used
             runtimeMin = runtimeMin.coerceAtMost(used)
@@ -339,7 +368,10 @@ internal class AppSessionMetricsCollector(
             runtimeTimestamps.add(timestamp)
         }
 
-        fun addDeviceMemorySample(pss: Long, timestamp: Long) {
+        fun addDeviceMemorySample(
+            pss: Long,
+            timestamp: Long,
+        ) {
             deviceCount++
             deviceSum += pss
             deviceMin = deviceMin.coerceAtMost(pss)
@@ -360,13 +392,19 @@ internal class AppSessionMetricsCollector(
             if (cpuMainThreadCount > 0) {
                 builder.cpuMainThreadMin = cpuMainThreadMin
                 builder.cpuMainThreadMax = cpuMainThreadMax
-                builder.cpuMainThreadMean = (cpuMainThreadSum / cpuMainThreadCount).coerceIn(cpuMainThreadMin, cpuMainThreadMax)
+                val mtMean =
+                    (cpuMainThreadSum / cpuMainThreadCount)
+                        .coerceIn(cpuMainThreadMin, cpuMainThreadMax)
+                builder.cpuMainThreadMean = mtMean
                 builder.cpuMainThreadSamples = cpuMainThreadSamples.toDoubleArray()
             }
             if (cpuOverheadCount > 0) {
                 builder.cpuOverheadMin = cpuOverheadMin
                 builder.cpuOverheadMax = cpuOverheadMax
-                builder.cpuOverheadMean = (cpuOverheadSum / cpuOverheadCount).coerceIn(cpuOverheadMin, cpuOverheadMax)
+                val ohMean =
+                    (cpuOverheadSum / cpuOverheadCount)
+                        .coerceIn(cpuOverheadMin, cpuOverheadMax)
+                builder.cpuOverheadMean = ohMean
                 builder.cpuOverheadSamples = cpuOverheadSamples.toDoubleArray()
             }
             applyMemoryTo(builder)
@@ -377,7 +415,11 @@ internal class AppSessionMetricsCollector(
                 builder.runtimeCount = runtimeCount
                 builder.runtimeMin = runtimeMin
                 builder.runtimeMax = runtimeMax
-                builder.runtimeMean = (runtimeSum.toDouble() / runtimeCount).coerceIn(runtimeMin.toDouble(), runtimeMax.toDouble()).toLong()
+                val rtMean =
+                    (runtimeSum.toDouble() / runtimeCount)
+                        .coerceIn(runtimeMin.toDouble(), runtimeMax.toDouble())
+                        .toLong()
+                builder.runtimeMean = rtMean
                 builder.runtimeSamples = runtimeSamples.toLongArray()
                 builder.runtimeTimestamps = runtimeTimestamps.toLongArray()
             }
@@ -385,14 +427,27 @@ internal class AppSessionMetricsCollector(
                 builder.deviceCount = deviceCount
                 builder.deviceMin = deviceMin
                 builder.deviceMax = deviceMax
-                builder.deviceMean = (deviceSum.toDouble() / deviceCount).coerceIn(deviceMin.toDouble(), deviceMax.toDouble()).toLong()
+                val dvMean =
+                    (deviceSum.toDouble() / deviceCount)
+                        .coerceIn(deviceMin.toDouble(), deviceMax.toDouble())
+                        .toLong()
+                builder.deviceMean = dvMean
                 builder.deviceSamples = deviceSamples.toLongArray()
                 builder.deviceTimestamps = deviceTimestamps.toLongArray()
             }
         }
 
-        private fun Double.coerceIn(min: Double, max: Double): Double {
-            return if (this < min) min else if (this > max) max else this
+        private fun Double.coerceIn(
+            min: Double,
+            max: Double,
+        ): Double {
+            return if (this < min) {
+                min
+            } else if (this > max) {
+                max
+            } else {
+                this
+            }
         }
     }
 
@@ -429,35 +484,36 @@ internal class AppSessionMetricsCollector(
         var deviceTimestamps = LongArray(0)
         var physicalDeviceMemory = 0L
 
-        fun build() = AppSessionMetrics(
-            cpuCount = cpuCount,
-            cpuMin = cpuMin,
-            cpuMax = cpuMax,
-            cpuMean = cpuMean,
-            cpuSamples = cpuSamples,
-            cpuMainThreadSamples = cpuMainThreadSamples,
-            cpuOverheadSamples = cpuOverheadSamples,
-            cpuMainThreadMin = cpuMainThreadMin,
-            cpuMainThreadMax = cpuMainThreadMax,
-            cpuMainThreadMean = cpuMainThreadMean,
-            cpuOverheadMin = cpuOverheadMin,
-            cpuOverheadMax = cpuOverheadMax,
-            cpuOverheadMean = cpuOverheadMean,
-            cpuTimestamps = cpuTimestamps,
-            runtimeMemoryCount = runtimeCount,
-            runtimeMemoryMinBytes = runtimeMin,
-            runtimeMemoryMaxBytes = runtimeMax,
-            runtimeMemoryMeanBytes = runtimeMean,
-            runtimeMemorySamplesBytes = runtimeSamples,
-            runtimeMemoryTimestamps = runtimeTimestamps,
-            deviceMemoryCount = deviceCount,
-            deviceMemoryMinBytes = deviceMin,
-            deviceMemoryMaxBytes = deviceMax,
-            deviceMemoryMeanBytes = deviceMean,
-            deviceMemorySamplesBytes = deviceSamples,
-            deviceMemoryTimestamps = deviceTimestamps,
-            deviceMemorySizeBytes = physicalDeviceMemory,
-        )
+        fun build() =
+            AppSessionMetrics(
+                cpuCount = cpuCount,
+                cpuMin = cpuMin,
+                cpuMax = cpuMax,
+                cpuMean = cpuMean,
+                cpuSamples = cpuSamples,
+                cpuMainThreadSamples = cpuMainThreadSamples,
+                cpuOverheadSamples = cpuOverheadSamples,
+                cpuMainThreadMin = cpuMainThreadMin,
+                cpuMainThreadMax = cpuMainThreadMax,
+                cpuMainThreadMean = cpuMainThreadMean,
+                cpuOverheadMin = cpuOverheadMin,
+                cpuOverheadMax = cpuOverheadMax,
+                cpuOverheadMean = cpuOverheadMean,
+                cpuTimestamps = cpuTimestamps,
+                runtimeMemoryCount = runtimeCount,
+                runtimeMemoryMinBytes = runtimeMin,
+                runtimeMemoryMaxBytes = runtimeMax,
+                runtimeMemoryMeanBytes = runtimeMean,
+                runtimeMemorySamplesBytes = runtimeSamples,
+                runtimeMemoryTimestamps = runtimeTimestamps,
+                deviceMemoryCount = deviceCount,
+                deviceMemoryMinBytes = deviceMin,
+                deviceMemoryMaxBytes = deviceMax,
+                deviceMemoryMeanBytes = deviceMean,
+                deviceMemorySamplesBytes = deviceSamples,
+                deviceMemoryTimestamps = deviceTimestamps,
+                deviceMemorySizeBytes = physicalDeviceMemory,
+            )
     }
 
     companion object {

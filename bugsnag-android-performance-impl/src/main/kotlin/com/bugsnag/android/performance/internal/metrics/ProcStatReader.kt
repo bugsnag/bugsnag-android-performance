@@ -1,5 +1,6 @@
 package com.bugsnag.android.performance.internal.metrics
 
+import com.bugsnag.android.performance.Logger
 import java.io.FileInputStream
 import java.io.IOException
 import java.nio.ByteBuffer
@@ -71,6 +72,7 @@ internal class ProcStatReader(
             parseBuffer(target)
         } catch (e: IOException) {
             // suppress IO exceptions to avoid crashing the collector
+            Logger.w("ProcStatReader: failed to read stat file", e)
             false
         }
     }
@@ -83,6 +85,7 @@ internal class ProcStatReader(
         buffer.rewind()
     }
 
+    @Suppress("ReturnCount")
     private fun parseBuffer(target: Stat): Boolean {
         if (!buffer.hasRemaining()) return false
 
