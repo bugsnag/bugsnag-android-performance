@@ -34,9 +34,7 @@ class AppSessionResourceUsageScenario(
     }
 
     fun startBugsnag() {
-        log("startBugsnag called, endpoint=${config.endpoint}")
         BugsnagPerformance.start(config)
-        log("BugsnagPerformance.start completed")
     }
 
     override fun startScenario() {

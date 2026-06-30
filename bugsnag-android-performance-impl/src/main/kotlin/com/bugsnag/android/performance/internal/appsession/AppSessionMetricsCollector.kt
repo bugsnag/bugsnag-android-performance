@@ -86,7 +86,6 @@ internal class AppSessionMetricsCollector(
     /** Call from the thread that starts the session segment span. */
     @Synchronized
     fun start() {
-        Logger.d("AppSessionMetricsCollector.start: enabledMetrics=$enabledMetrics")
         if (!enabledMetrics.cpu && !enabledMetrics.memory) return
         
         // Immediate fallback: the main thread TID is usually the same as PID
@@ -172,7 +171,6 @@ internal class AppSessionMetricsCollector(
     private fun takeSample() {
         try {
             val timestamp = BugsnagClock.currentUnixNanoTime()
-            Logger.d("AppSessionMetricsCollector.takeSample: enabledMetrics.cpu=${enabledMetrics.cpu}")
             if (enabledMetrics.cpu) sampleCpu(timestamp)
             if (enabledMetrics.memory) {
                 sampleRuntimeMemory(timestamp)
