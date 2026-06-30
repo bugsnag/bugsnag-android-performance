@@ -12,8 +12,7 @@ public final class com/bugsnag/android/performance/BugsnagPerformance {
 	public static final fun start (Lcom/bugsnag/android/performance/PerformanceConfiguration;)V
 	public static final fun startAppSessionSpan ()V
 	public static final fun startAppSessionSpan (Ljava/lang/String;)V
-	public static final fun startAppSessionSpan (Ljava/lang/String;Ljava/lang/Boolean;)V
-	public static synthetic fun startAppSessionSpan$default (Ljava/lang/String;Ljava/lang/Boolean;ILjava/lang/Object;)V
+	public static synthetic fun startAppSessionSpan$default (Ljava/lang/String;ILjava/lang/Object;)V
 	public static final fun startNetworkRequestSpan (Landroid/net/Uri;Ljava/lang/String;)Lcom/bugsnag/android/performance/Span;
 	public static final fun startNetworkRequestSpan (Landroid/net/Uri;Ljava/lang/String;Lcom/bugsnag/android/performance/SpanOptions;)Lcom/bugsnag/android/performance/Span;
 	public static final fun startNetworkRequestSpan (Ljava/net/URL;Ljava/lang/String;)Lcom/bugsnag/android/performance/Span;
