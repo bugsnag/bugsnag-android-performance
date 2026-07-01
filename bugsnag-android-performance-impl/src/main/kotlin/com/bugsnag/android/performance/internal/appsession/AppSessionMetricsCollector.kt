@@ -152,7 +152,10 @@ internal class AppSessionMetricsCollector(
             previousCpuTime = totalCpuTime
             previousUptime = uptimeSec
 
-            val cpuPct = (PERCENT_100 * deltaCpu / deltaUptime) / SystemConfig.numCores
+            var cpuPct = (PERCENT_100 * deltaCpu / deltaUptime) / SystemConfig.numCores
+            // Defensive: clamp to [0.0, 100.0] to avoid spurious >100% readings due to timing
+            // or clock discrepancies. Tests and consumers expect a percentage in this range.
+            cpuPct = cpuPct.coerceIn(0.0, 100.0)
             if (cpuPct.isFinite() && cpuPct >= 0.0) {
                 accumulators.addCpuSample(cpuPct, timestamp)
                 sampleMainThreadCpu(deltaUptime)
@@ -179,7 +182,8 @@ internal class AppSessionMetricsCollector(
             val deltaCpu = totalCpuTime - previousMainThreadCpuTime
             previousMainThreadCpuTime = totalCpuTime
 
-            val cpuPct = (PERCENT_100 * deltaCpu / deltaUptime) / SystemConfig.numCores
+            var cpuPct = (PERCENT_100 * deltaCpu / deltaUptime) / SystemConfig.numCores
+            cpuPct = cpuPct.coerceIn(0.0, 100.0)
             if (cpuPct.isFinite() && cpuPct >= 0.0) {
                 accumulators.addMainThreadCpuSample(cpuPct)
             }
@@ -203,7 +207,8 @@ internal class AppSessionMetricsCollector(
             val deltaCpu = totalCpuTime - previousOverheadCpuTime
             previousOverheadCpuTime = totalCpuTime
 
-            val cpuPct = (PERCENT_100 * deltaCpu / deltaUptime) / SystemConfig.numCores
+            var cpuPct = (PERCENT_100 * deltaCpu / deltaUptime) / SystemConfig.numCores
+            cpuPct = cpuPct.coerceIn(0.0, 100.0)
             if (cpuPct.isFinite() && cpuPct >= 0.0) {
                 accumulators.addOverheadCpuSample(cpuPct)
             }
