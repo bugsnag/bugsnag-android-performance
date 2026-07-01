@@ -362,6 +362,7 @@ class MainActivity : AppCompatActivity() {
     ): PerformanceConfiguration {
         return PerformanceConfiguration.load(applicationContext, apiKey).also { config ->
             config.endpoint = endpoint
+            config.appSessionConfig.autoStartSession = false
             config.autoInstrumentAppStarts = false
             config.autoInstrumentActivities = AutoInstrument.OFF
             config.logger = DebugLogger
