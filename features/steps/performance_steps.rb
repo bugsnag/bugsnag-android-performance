@@ -325,6 +325,16 @@ Then('every span attribute {string} does not exist') do |attribute|
   end
 end
 
+Then('every span string attribute {string} does not exist') do |attribute|
+  # Delegate to the generic check; string-typed attribute absence is equivalent
+  # to attribute absence for our purposes.
+  spans = spans_from_request_list(Maze::Server.list_for('traces'))
+  spans.each do |span|
+    attr_obj = span['attributes'].find { |a| a['key'] == attribute }
+    raise Test::Unit::AssertionFailedError.new "Attribute #{attribute} exists in a span" unless attr_obj.nil?
+  end
+end
+
 Then('every span integer attribute {string} matches the regex {string}') do |attribute, pattern|
   regex = Regexp.new(pattern)
   spans = spans_from_request_list(Maze::Server.list_for('traces'))
