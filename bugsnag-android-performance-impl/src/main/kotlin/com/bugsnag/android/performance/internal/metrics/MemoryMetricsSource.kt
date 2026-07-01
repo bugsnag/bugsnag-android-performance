@@ -54,60 +54,61 @@ internal class MemoryMetricsSource(
                 val from = snapshot.bufferIndex
                 val to = endIndex
                 val sampleCount = buffer.countItemsBetween(from, to)
-
                 val deviceMemorySamples = LongArray(sampleCount)
                 var deviceUsedMemoryTotal = 0L
                 var deviceUsedMemoryCount = 0
-
+                var deviceMinMemory = Long.MAX_VALUE
+                var deviceMaxMemory = Long.MIN_VALUE
                 val artMemoryTimestamps = LongArray(sampleCount)
                 val artUsedMemorySamples = LongArray(sampleCount)
                 var artSizeMemory = 0L
                 var artUsedMemoryTotal = 0L
                 var artUsedMemoryCount = 0
-
+                var artMinMemory = Long.MAX_VALUE
+                var artMaxMemory = Long.MIN_VALUE
                 buffer.forEachIndexed(from, to) { index, sample ->
                     artMemoryTimestamps[index] = sample.timestamp
                     deviceMemorySamples[index] = sample.pss
-
                     val artUsedMemory = sample.totalMemory - sample.freeMemory
                     if (artUsedMemory > 0) {
                         artUsedMemorySamples[index] = artUsedMemory
                         artUsedMemoryTotal += artUsedMemory
                         artUsedMemoryCount++
+                        artMinMemory = artMinMemory.coerceAtMost(artUsedMemory)
+                        artMaxMemory = artMaxMemory.coerceAtLeast(artUsedMemory)
                     }
-
                     if (sample.pss > 0) {
                         deviceUsedMemoryTotal += sample.pss
                         deviceUsedMemoryCount++
+                        deviceMinMemory = deviceMinMemory.coerceAtMost(sample.pss)
+                        deviceMaxMemory = deviceMaxMemory.coerceAtLeast(sample.pss)
                     }
-
                     if (sample.totalMemory > artSizeMemory) {
                         artSizeMemory = sample.totalMemory
                     }
                 }
-
                 deviceMemory?.also {
                     target.attributes["bugsnag.device.physical_device_memory"] = it
                     target.attributes["bugsnag.system.memory.spaces.device.size"] = it
                 }
-
                 target.attributes["bugsnag.system.memory.spaces.device.used"] = deviceMemorySamples
-
                 if (deviceUsedMemoryCount > 0) {
+                    target.attributes["bugsnag.system.memory.spaces.device.min"] = deviceMinMemory       // ← NEW
+                    target.attributes["bugsnag.system.memory.spaces.device.max"] = deviceMaxMemory       // ← NEW
                     target.attributes["bugsnag.system.memory.spaces.device.mean"] =
-                        deviceUsedMemoryTotal / deviceUsedMemoryCount
+                        (deviceUsedMemoryTotal / deviceUsedMemoryCount)
+                            .coerceIn(deviceMinMemory, deviceMaxMemory)
                 }
-
                 target.attributes["bugsnag.system.memory.spaces.art.size"] = artSizeMemory
                 target.attributes["bugsnag.system.memory.spaces.art.used"] = artUsedMemorySamples
-
                 if (artUsedMemoryCount > 0) {
+                    target.attributes["bugsnag.system.memory.spaces.art.min"] = artMinMemory             // ← NEW
+                    target.attributes["bugsnag.system.memory.spaces.art.max"] = artMaxMemory             // ← NEW
                     target.attributes["bugsnag.system.memory.spaces.art.mean"] =
-                        artUsedMemoryTotal / artUsedMemoryCount
+                        (artUsedMemoryTotal / artUsedMemoryCount)
+                            .coerceIn(artMinMemory, artMaxMemory)
                 }
-
                 target.attributes["bugsnag.system.memory.timestamps"] = artMemoryTimestamps
-
                 snapshot.blocking?.cancel()
             }
         }

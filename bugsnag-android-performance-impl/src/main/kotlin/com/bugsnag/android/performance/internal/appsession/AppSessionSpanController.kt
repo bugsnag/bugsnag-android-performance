@@ -452,40 +452,22 @@ internal class AppSessionSpanController
             span: Span,
             m: AppSessionMetrics,
         ) {
+            // ── bugsnag.session.* namespace — app-session-only, no conflict ──
+            // ── bugsnag.session.* namespace — app-session only, no conflict ──
             span.setAttribute("bugsnag.session.memory.runtime.min", m.runtimeMemoryMinBytes)
             span.setAttribute("bugsnag.session.memory.runtime.max", m.runtimeMemoryMaxBytes)
             span.setAttribute("bugsnag.session.memory.runtime.mean", m.runtimeMemoryMeanBytes)
-
-            // ART values are the Android runtime heap aliases in OTEL payloads.
-            span.setAttribute("bugsnag.system.memory.spaces.art.used", m.runtimeMemorySamplesBytes)
-            span.setAttribute("bugsnag.system.memory.spaces.art.min", m.runtimeMemoryMinBytes)
-            span.setAttribute("bugsnag.system.memory.spaces.art.max", m.runtimeMemoryMaxBytes)
-            span.setAttribute("bugsnag.system.memory.spaces.art.mean", m.runtimeMemoryMeanBytes)
-
             span.setAttribute("bugsnag.session.memory.device.min", m.deviceMemoryMinBytes)
             span.setAttribute("bugsnag.session.memory.device.max", m.deviceMemoryMaxBytes)
             span.setAttribute("bugsnag.session.memory.device.mean", m.deviceMemoryMeanBytes)
-
-            span.setAttribute("bugsnag.system.memory.spaces.device.used", m.deviceMemorySamplesBytes)
-            span.setAttribute("bugsnag.system.memory.spaces.device.min", m.deviceMemoryMinBytes)
-            span.setAttribute("bugsnag.system.memory.spaces.device.max", m.deviceMemoryMaxBytes)
-            span.setAttribute("bugsnag.system.memory.spaces.device.mean", m.deviceMemoryMeanBytes)
-            if (m.runtimeMemoryTimestamps.isNotEmpty() || m.deviceMemoryTimestamps.isNotEmpty()) {
-                // We prefer runtime timestamps if available, otherwise device
-                val ts =
-                    if (m.runtimeMemoryTimestamps.isNotEmpty()) {
-                        m.runtimeMemoryTimestamps
-                    } else {
-                        m.deviceMemoryTimestamps
-                    }
-                span.setAttribute("bugsnag.system.memory.timestamps", ts)
-            }
+            // Physical device memory (safe — same value from both writers)
             if (m.deviceMemorySizeBytes > 0) {
                 span.setAttribute("bugsnag.device.physical_device_memory", m.deviceMemorySizeBytes)
-                span.setAttribute("bugsnag.system.memory.spaces.device.size", m.deviceMemorySizeBytes)
             }
+            // All bugsnag.system.memory.spaces.* keys are owned by MemoryMetricsSource.
+            // It runs on span.end() and writes min, max, mean, used, size, timestamps
+            // from its own consistent sample window.
         }
-
         companion object {
             private const val SEGMENT_FOREGROUND = "foreground"
             private const val SEGMENT_BACKGROUND = "background"
