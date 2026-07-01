@@ -6,7 +6,10 @@ import com.bugsnag.android.performance.SpanOptions
 import com.bugsnag.android.performance.internal.framerate.FramerateMetricsSnapshot
 import com.bugsnag.android.performance.internal.framerate.FramerateMetricsSource
 import com.bugsnag.android.performance.internal.framerate.TimestampPairBuffer
+import com.bugsnag.android.performance.internal.metrics.CpuMetricsSnapshot
 import com.bugsnag.android.performance.internal.metrics.MetricSource
+import com.bugsnag.android.performance.internal.metrics.MemoryMetricsSnapshot
+import com.bugsnag.android.performance.internal.metrics.SampledMetricSource
 import com.bugsnag.android.performance.test.NoopSpanProcessor
 import com.bugsnag.android.performance.test.TestMetricsContainer
 import org.junit.Assert.assertEquals
@@ -23,6 +26,8 @@ class SpanFactoryTest {
     private val baseOptions = SpanOptions.startTime(1L)
 
     private lateinit var frameMetrics: MetricSource<FramerateMetricsSnapshot>
+    private lateinit var cpuMetrics: SampledMetricSource<CpuMetricsSnapshot>
+    private lateinit var memoryMetrics: SampledMetricSource<MemoryMetricsSnapshot>
 
     private lateinit var spanFactory: SpanFactory
 
@@ -49,12 +54,38 @@ class SpanFactoryTest {
                 ) = Unit
             }
 
+        cpuMetrics =
+            object : SampledMetricSource<CpuMetricsSnapshot> {
+                override fun run() = Unit
+
+                override fun createStartMetrics(): CpuMetricsSnapshot = CpuMetricsSnapshot(0)
+
+                override fun endMetrics(
+                    startMetrics: CpuMetricsSnapshot,
+                    span: Span,
+                ) = Unit
+            }
+
+        memoryMetrics =
+            object : SampledMetricSource<MemoryMetricsSnapshot> {
+                override fun run() = Unit
+
+                override fun createStartMetrics(): MemoryMetricsSnapshot = MemoryMetricsSnapshot(0)
+
+                override fun endMetrics(
+                    startMetrics: MemoryMetricsSnapshot,
+                    span: Span,
+                ) = Unit
+            }
+
         spanFactory =
             SpanFactory(
                 NoopSpanProcessor,
                 spanAttributeSource = {},
                 metricsContainer =
                     TestMetricsContainer(
+                        cpu = cpuMetrics,
+                        memory = memoryMetrics,
                         frames = FramerateMetricsSource(),
                     ),
             )
@@ -139,5 +170,16 @@ class SpanFactoryTest {
 
         val span = spanFactory.createCustomSpan("Test", baseOptions)
         assertEquals(0.5, span.samplingProbability, 0.01)
+    }
+
+    @Test
+    fun testAppSessionSpansDoNotUseSampledMetrics() {
+        assertNull(
+            "app-session spans should not receive sampled CPU/memory snapshots",
+            spanFactory.createAppSessionSpan(
+                "App Session",
+                baseOptions.setFirstClass(true),
+            ).metrics,
+        )
     }
 }

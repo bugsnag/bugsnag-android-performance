@@ -56,7 +56,7 @@ public class SpanFactory internal constructor(
 
     init {
         if (SpanContext.defaultStorage == null) {
-            SpanContext.Storage.defaultStorage = ThreadLocalSpanContextStorage()
+            SpanContext.defaultStorage = ThreadLocalSpanContextStorage()
         }
     }
 
@@ -95,7 +95,11 @@ public class SpanFactory internal constructor(
             options.parentContext,
             options.isFirstClass != false,
             options.makeContext,
-            options.spanMetrics,
+            options.spanMetrics ?: SpanMetrics(
+                rendering = false,
+                cpu = false,
+                memory = false,
+            ),
             spanProcessor,
         )
     }

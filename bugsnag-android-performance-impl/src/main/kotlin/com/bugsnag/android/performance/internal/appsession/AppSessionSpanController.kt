@@ -29,8 +29,8 @@ import java.util.concurrent.atomic.AtomicInteger
  *
  * ## Custom app-session names
  *
- * Callers may supply an optional [appSessionName] on `startForegroundAppSessionSpan` /
- * `startBackgroundAppSessionSpan`. It is recorded in [AppSessionData] for local
+ * Callers may supply an optional `appSessionName` on `startForegroundAppSessionSpan` /
+ * `startBackgroundAppSessionSpan`. It is recorded in `AppSessionData` for local
  * diagnostics and recovery, but intentionally not emitted as a span attribute to keep
  * parity with the iOS app-session payload contract.
  *
@@ -56,7 +56,7 @@ internal class AppSessionSpanController
         /**
          * Invoked immediately after each app-session span ends so the delivery layer can flush the span
          * without waiting for the normal batch timer. Wired to `tracer.forceCurrentBatch()` by
-         * [BugsnagPerformanceImpl].
+         * `BugsnagPerformanceImpl`.
          */
         private val onAppSessionReady: (() -> Unit)? = null,
         /**
