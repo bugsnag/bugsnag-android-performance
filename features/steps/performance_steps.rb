@@ -98,11 +98,16 @@ def get_attribute_value(attribute_obj, type, index = nil)
               else type
               end
 
-  value_obj = attribute_obj['value'] || {}
+  # Defensive handling: attribute_obj may already be a primitive (String/Number/Bool)
+  return attribute_obj if attribute_obj.is_a?(String) || attribute_obj.is_a?(Numeric) || attribute_obj == true || attribute_obj == false
+
+  # If attribute_obj is a Hash, attempts to locate the value object in either
+  # attribute_obj['value'] (expected OTLP shape) or directly in attribute_obj
+  value_obj = (attribute_obj.is_a?(Hash) && (attribute_obj['value'] || attribute_obj)) || {}
 
   # Handle explicit array values
-  if value_obj.key?('arrayValue')
-    values = value_obj['arrayValue']['values'] || []
+  if value_obj.is_a?(Hash) && value_obj.key?('arrayValue')
+    values = (value_obj['arrayValue'] || {})['values'] || []
     # If an index was provided, return the specific element's underlying value
     if !index.nil?
       elem = values[index.to_i]
@@ -115,7 +120,12 @@ def get_attribute_value(attribute_obj, type, index = nil)
   end
 
   # Fallback to primitive value fields (intValue, boolValue, doubleValue, stringValue)
-  attribute_obj.dig('value', "#{real_type}Value") || attribute_obj.dig('value', 'stringValue') || attribute_obj.dig('value', 'intValue') || attribute_obj.dig('value', 'doubleValue') || attribute_obj.dig('value', 'boolValue')
+  if value_obj.is_a?(Hash)
+    value_obj["#{real_type}Value"] || value_obj['stringValue'] || value_obj['intValue'] || value_obj['doubleValue'] || value_obj['boolValue']
+  else
+    # Unknown shape: return nil to indicate unable to extract
+    nil
+  end
 end
 
 Then('the {string} span {word} attribute {string} is greater than {float}') do |span_name, type, attribute, expected|
