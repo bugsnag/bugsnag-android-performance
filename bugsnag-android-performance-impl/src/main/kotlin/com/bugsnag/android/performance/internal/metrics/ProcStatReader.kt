@@ -1,5 +1,6 @@
 package com.bugsnag.android.performance.internal.metrics
 
+import com.bugsnag.android.performance.Logger
 import java.io.FileInputStream
 import java.io.IOException
 import java.nio.ByteBuffer
@@ -66,41 +67,53 @@ internal class ProcStatReader(
     }
 
     fun parse(target: Stat): Boolean {
-        try {
-            buffer.rewind()
-            FileInputStream(path).channel.use { channel ->
-                channel.read(buffer)
-            }
+        return try {
+            readStatFile()
+            parseBuffer(target)
+        } catch (e: IOException) {
+            // suppress IO exceptions to avoid crashing the collector
+            Logger.w("ProcStatReader: failed to read stat file", e)
+            false
+        }
+    }
 
-            buffer.rewind()
+    private fun readStatFile() {
+        buffer.rewind()
+        FileInputStream(path).channel.use { channel ->
+            channel.read(buffer)
+        }
+        buffer.rewind()
+    }
 
-            // skip until the end of the process name
-            skipUntil(')')
-            buffer.get() // skip the space
+    @Suppress("ReturnCount")
+    private fun parseBuffer(target: Stat): Boolean {
+        if (!buffer.hasRemaining()) return false
 
-            target.state = (buffer.nextByte()).toChar()
-            buffer.get() // skip the space
+        // skip until the end of the process name
+        if (!skipUntil(')')) return false
+        if (!buffer.hasRemaining()) return false
+        buffer.get() // skip the space
 
-            repeat(FIELDS_TO_SKIP) {
-                skipUntil(' ')
-            }
+        if (!buffer.hasRemaining()) return false
+        target.state = (buffer.nextByte()).toChar()
+        if (!buffer.hasRemaining()) return false
+        buffer.get() // skip the space
 
-            target.utime = parseLong()
-            target.stime = parseLong()
-            target.cutime = parseLong()
-            target.cstime = parseLong()
-            target.counter = parseLong().toInt()
-            target.priority = parseLong().toInt()
-            target.timeout = parseLong()
-            target.itrealvalue = parseLong()
-            target.starttime = parseLong()
-            target.vsize = parseLong()
-            target.rss = parseLong()
-        } catch (ioe: IOException) {
-            // suppress
-            return false
+        repeat(FIELDS_TO_SKIP) {
+            skipUntil(' ')
         }
 
+        target.utime = parseLong()
+        target.stime = parseLong()
+        target.cutime = parseLong()
+        target.cstime = parseLong()
+        target.counter = parseLong().toInt()
+        target.priority = parseLong().toInt()
+        target.timeout = parseLong()
+        target.itrealvalue = parseLong()
+        target.starttime = parseLong()
+        target.vsize = parseLong()
+        target.rss = parseLong()
         return true
     }
 
@@ -113,7 +126,7 @@ internal class ProcStatReader(
         get() = toInt() and BYTE_MASK
 
     companion object {
-        internal const val BUFFER_SIZE = 256
+        internal const val BUFFER_SIZE = 512
         internal const val ZERO_CODE = '0'.code
         internal const val NINE_CODE = '9'.code
 

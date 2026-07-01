@@ -28,7 +28,6 @@ internal data class AppSessionMetrics(
     val cpuOverheadMax: Double,
     val cpuOverheadMean: Double,
     val cpuTimestamps: LongArray,
-
     // ── Runtime / ART heap memory ────────────────────────────────────────────
     val runtimeMemoryCount: Int,
     val runtimeMemoryMinBytes: Long,
@@ -36,7 +35,6 @@ internal data class AppSessionMetrics(
     val runtimeMemoryMeanBytes: Long,
     val runtimeMemorySamplesBytes: LongArray,
     val runtimeMemoryTimestamps: LongArray,
-
     // ── Device memory (PSS – physical memory used by this process) ───────────
     val deviceMemoryCount: Int,
     val deviceMemoryMinBytes: Long,
@@ -48,22 +46,22 @@ internal data class AppSessionMetrics(
 ) {
     companion object {
         /** Returned when a collector is stopped before any sample was taken. */
-        val EMPTY = AppSessionMetrics(
-            cpuCount = 0, cpuMin = 0.0, cpuMax = 0.0, cpuMean = 0.0,
-            cpuSamples = doubleArrayOf(),
-            cpuMainThreadSamples = doubleArrayOf(),
-            cpuOverheadSamples = doubleArrayOf(),
-            cpuMainThreadMin = 0.0, cpuMainThreadMax = 0.0, cpuMainThreadMean = 0.0,
-            cpuOverheadMin = 0.0, cpuOverheadMax = 0.0, cpuOverheadMean = 0.0,
-            cpuTimestamps = longArrayOf(),
-            runtimeMemoryCount = 0,
-            runtimeMemoryMinBytes = 0L, runtimeMemoryMaxBytes = 0L, runtimeMemoryMeanBytes = 0L,
-            runtimeMemorySamplesBytes = longArrayOf(), runtimeMemoryTimestamps = longArrayOf(),
-            deviceMemoryCount = 0,
-            deviceMemoryMinBytes = 0L, deviceMemoryMaxBytes = 0L, deviceMemoryMeanBytes = 0L,
-            deviceMemorySamplesBytes = longArrayOf(), deviceMemoryTimestamps = longArrayOf(),
-            deviceMemorySizeBytes = 0L,
-        )
+        val EMPTY =
+            AppSessionMetrics(
+                cpuCount = 0, cpuMin = 0.0, cpuMax = 0.0, cpuMean = 0.0,
+                cpuSamples = doubleArrayOf(),
+                cpuMainThreadSamples = doubleArrayOf(),
+                cpuOverheadSamples = doubleArrayOf(),
+                cpuMainThreadMin = 0.0, cpuMainThreadMax = 0.0, cpuMainThreadMean = 0.0,
+                cpuOverheadMin = 0.0, cpuOverheadMax = 0.0, cpuOverheadMean = 0.0,
+                cpuTimestamps = longArrayOf(),
+                runtimeMemoryCount = 0,
+                runtimeMemoryMinBytes = 0L, runtimeMemoryMaxBytes = 0L, runtimeMemoryMeanBytes = 0L,
+                runtimeMemorySamplesBytes = longArrayOf(), runtimeMemoryTimestamps = longArrayOf(),
+                deviceMemoryCount = 0,
+                deviceMemoryMinBytes = 0L, deviceMemoryMaxBytes = 0L, deviceMemoryMeanBytes = 0L,
+                deviceMemorySamplesBytes = longArrayOf(), deviceMemoryTimestamps = longArrayOf(),
+                deviceMemorySizeBytes = 0L,
+            )
     }
 }
-

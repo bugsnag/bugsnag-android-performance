@@ -30,18 +30,16 @@ public final class com/bugsnag/android/performance/AppSessionConfig {
 	public static final field Companion Lcom/bugsnag/android/performance/AppSessionConfig$Companion;
 	public static final field DEFAULT_BACKGROUND_TIMEOUT_MS J
 	public fun <init> ()V
-	public fun <init> (ZJJZLjava/lang/String;Ljava/util/List;)V
-	public synthetic fun <init> (ZJJZLjava/lang/String;Ljava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (ZJJLjava/lang/String;Ljava/util/List;)V
+	public synthetic fun <init> (ZJJLjava/lang/String;Ljava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getAutoStartSession ()Z
 	public final fun getBackgroundTimeoutMs ()J
 	public final fun getManualSessionDefaultName ()Ljava/lang/String;
-	public final fun getManualSessionStartsInForeground ()Z
 	public final fun getMaxSessionDurationMs ()J
 	public final fun getSessionCallbacks ()Ljava/util/List;
 	public final fun setAutoStartSession (Z)V
 	public final fun setBackgroundTimeoutMs (J)V
 	public final fun setManualSessionDefaultName (Ljava/lang/String;)V
-	public final fun setManualSessionStartsInForeground (Z)V
 	public final fun setMaxSessionDurationMs (J)V
 	public final fun setSessionCallbacks (Ljava/util/List;)V
 }

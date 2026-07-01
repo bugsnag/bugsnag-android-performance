@@ -19,6 +19,7 @@ class BackgroundAppStartScenario(
     scenarioMetadata: String,
 ) : Scenario(config, scenarioMetadata) {
     override fun startScenario() {
+        config.appSessionConfig.autoStartSession = false
         config.autoInstrumentAppStarts = true
         config.autoInstrumentActivities = AutoInstrument.FULL
 

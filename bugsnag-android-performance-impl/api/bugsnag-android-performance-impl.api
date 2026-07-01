@@ -51,10 +51,13 @@ public final class com/bugsnag/android/performance/internal/BugsnagClock {
 public final class com/bugsnag/android/performance/internal/BugsnagPerformanceImpl {
 	public static final field INSTANCE Lcom/bugsnag/android/performance/internal/BugsnagPerformanceImpl;
 	public static final field VERSION Ljava/lang/String;
+	public final fun endAppSessionSpan ()V
 	public final fun getInstrumentedAppState ()Lcom/bugsnag/android/performance/internal/InstrumentedAppState;
 	public final fun getSpanControls (Lcom/bugsnag/android/performance/controls/SpanQuery;)Ljava/lang/Object;
 	public final fun getSpanFactory ()Lcom/bugsnag/android/performance/internal/SpanFactory;
 	public final fun reportApplicationClassLoaded ()V
+	public final fun startAppSessionSpan (Ljava/lang/String;)V
+	public static synthetic fun startAppSessionSpan$default (Lcom/bugsnag/android/performance/internal/BugsnagPerformanceImpl;Ljava/lang/String;ILjava/lang/Object;)V
 	public final fun startUnderLock (Lcom/bugsnag/android/performance/PerformanceConfiguration;)V
 	public final fun startViewLoadSpan (Landroid/app/Activity;Lcom/bugsnag/android/performance/SpanOptions;)Lcom/bugsnag/android/performance/Span;
 }
@@ -314,6 +317,7 @@ public final class com/bugsnag/android/performance/internal/SendBatchTask : com/
 }
 
 public final class com/bugsnag/android/performance/internal/SpanCategory {
+	public static final field CATEGORY_APP_SESSION Ljava/lang/String;
 	public static final field CATEGORY_APP_START Ljava/lang/String;
 	public static final field CATEGORY_APP_START_PHASE Ljava/lang/String;
 	public static final field CATEGORY_CUSTOM Ljava/lang/String;
@@ -334,6 +338,7 @@ public final class com/bugsnag/android/performance/internal/SpanCategory {
 }
 
 public final class com/bugsnag/android/performance/internal/SpanCategory$Companion {
+	public final fun getAPP_SESSION-haBhItc ()Ljava/lang/String;
 	public final fun getAPP_START-haBhItc ()Ljava/lang/String;
 	public final fun getAPP_START_PHASE-haBhItc ()Ljava/lang/String;
 	public final fun getCUSTOM-haBhItc ()Ljava/lang/String;
@@ -367,6 +372,10 @@ public final class com/bugsnag/android/performance/internal/SpanContextStack : j
 public final class com/bugsnag/android/performance/internal/SpanFactory {
 	public fun <init> (Lcom/bugsnag/android/performance/internal/SpanProcessor;Lkotlin/jvm/functions/Function1;)V
 	public synthetic fun <init> (Lcom/bugsnag/android/performance/internal/SpanProcessor;Lkotlin/jvm/functions/Function1;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun createAppSessionSpan (Ljava/lang/String;)Lcom/bugsnag/android/performance/internal/SpanImpl;
+	public final fun createAppSessionSpan (Ljava/lang/String;Lcom/bugsnag/android/performance/SpanOptions;)Lcom/bugsnag/android/performance/internal/SpanImpl;
+	public final fun createAppSessionSpan (Ljava/lang/String;Lcom/bugsnag/android/performance/SpanOptions;Lcom/bugsnag/android/performance/internal/SpanProcessor;)Lcom/bugsnag/android/performance/internal/SpanImpl;
+	public static synthetic fun createAppSessionSpan$default (Lcom/bugsnag/android/performance/internal/SpanFactory;Ljava/lang/String;Lcom/bugsnag/android/performance/SpanOptions;Lcom/bugsnag/android/performance/internal/SpanProcessor;ILjava/lang/Object;)Lcom/bugsnag/android/performance/internal/SpanImpl;
 	public final fun createAppStartPhaseSpan (Lcom/bugsnag/android/performance/internal/AppStartPhase;Lcom/bugsnag/android/performance/SpanContext;Lcom/bugsnag/android/performance/internal/SpanProcessor;)Lcom/bugsnag/android/performance/internal/SpanImpl;
 	public static synthetic fun createAppStartPhaseSpan$default (Lcom/bugsnag/android/performance/internal/SpanFactory;Lcom/bugsnag/android/performance/internal/AppStartPhase;Lcom/bugsnag/android/performance/SpanContext;Lcom/bugsnag/android/performance/internal/SpanProcessor;ILjava/lang/Object;)Lcom/bugsnag/android/performance/internal/SpanImpl;
 	public final fun createAppStartSpan (Ljava/lang/String;Lcom/bugsnag/android/performance/internal/SpanProcessor;)Lcom/bugsnag/android/performance/internal/SpanImpl;

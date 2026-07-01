@@ -32,7 +32,7 @@ class AppSessionSpanControllerTest {
     fun testAutomaticSessionStartInForeground() {
         ForegroundState.isInForeground = true
         val config = AppSessionConfig(autoStartSession = true)
-        val controller = AppSessionSpanController(context, spanFactory, config)
+        val controller = AppSessionSpanController(context, spanFactory, sessionConfig = config)
 
         val spans = spanProcessor.toList()
         // One span should be started (foreground)
@@ -50,7 +50,7 @@ class AppSessionSpanControllerTest {
     fun testAutomaticSessionStartInBackground() {
         ForegroundState.isInForeground = false
         val config = AppSessionConfig(autoStartSession = true)
-        val controller = AppSessionSpanController(context, spanFactory, config)
+        val controller = AppSessionSpanController(context, spanFactory, sessionConfig = config)
 
         controller.endAppSessionSpan()
         val endedSpans = spanProcessor.toList()
@@ -63,7 +63,7 @@ class AppSessionSpanControllerTest {
     fun testAutomaticTransition() {
         ForegroundState.isInForeground = true
         val config = AppSessionConfig(autoStartSession = true)
-        val controller = AppSessionSpanController(context, spanFactory, config)
+        val controller = AppSessionSpanController(context, spanFactory, sessionConfig = config)
 
         // Transition to background
         ForegroundState.isInForeground = false
@@ -84,7 +84,7 @@ class AppSessionSpanControllerTest {
     @Test
     fun testManualStartUsesAutomaticDetection() {
         val config = AppSessionConfig(autoStartSession = false)
-        val controller = AppSessionSpanController(context, spanFactory, config)
+        val controller = AppSessionSpanController(context, spanFactory, sessionConfig = config)
 
         ForegroundState.isInForeground = true
         controller.startAppSessionSpan()
@@ -104,11 +104,23 @@ class AppSessionSpanControllerTest {
     }
 
     @Test
-    fun testAppSessionDataExcludesInForegroundFlag() {
+    fun testCategoryIsAppSession() {
+        ForegroundState.isInForeground = true
+        val config = AppSessionConfig(autoStartSession = true)
+        val controller = AppSessionSpanController(context, spanFactory, sessionConfig = config)
+
+        controller.endAppSessionSpan()
+        val endedSpans = spanProcessor.toList()
+        assertEquals(1, endedSpans.size)
+        // Check that the category is APP_SESSION
+        assertEquals(com.bugsnag.android.performance.internal.SpanCategory.APP_SESSION, endedSpans[0].category)
+    }
+
+    @Test
+    fun testAppSessionDataSerialization() {
         val data = AppSessionData(
             sessionId = "test-session",
             index = 1,
-            state = "foreground",
             appSessionName = "test-name",
             startTimeMs = 1000,
             endTimeMs = 2000,
@@ -117,9 +129,28 @@ class AppSessionSpanControllerTest {
         )
 
         val json = data.toJson()
-        assertFalse(json.has("inForeground"))
+        assertEquals("test-session", json.getString("sessionId"))
+        assertEquals(1, json.getInt("index"))
+        assertEquals("test-name", json.getString("appSessionName"))
 
         val fromJson = AppSessionData.fromJson(json)
-        assertEquals("foreground", fromJson.state)
+        assertEquals("test-session", fromJson.sessionId)
+        assertEquals(1, fromJson.index)
+        assertEquals("test-name", fromJson.appSessionName)
+    }
+
+    @Test
+    fun testCustomSessionNameFormat() {
+        val config = AppSessionConfig(autoStartSession = false)
+        val controller = AppSessionSpanController(context, spanFactory, sessionConfig = config)
+
+        ForegroundState.isInForeground = true
+        controller.startAppSessionSpan("user checkout-flow")
+        controller.endAppSessionSpan()
+
+        val spans = spanProcessor.toList()
+        assertEquals(1, spans.size)
+        assertEquals("[AppSession/user checkout-flow]", spans[0].name)
+        assertEquals("user checkout-flow", spans[0].getAttribute("bugsnag.app_session.name"))
     }
 }

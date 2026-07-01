@@ -18,6 +18,7 @@ class AppStartScenario(
     }
 
     override fun startScenario() {
+        config.appSessionConfig.autoStartSession = false
         config.autoInstrumentAppStarts = true
         config.autoInstrumentActivities = AutoInstrument.FULL
         config.enabledMetrics.cpu = true

@@ -5,8 +5,8 @@ import com.bugsnag.android.performance.Logger
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
-import java.util.concurrent.ConcurrentLinkedDeque
 import java.util.concurrent.Executors
+import java.util.concurrent.LinkedBlockingDeque
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
@@ -21,7 +21,7 @@ import kotlin.concurrent.withLock
  * app session span ends
  *      │
  *      ▼
- * buffer.add(data)          ← stored in heap ConcurrentLinkedDeque (immediate, lock-free)
+ * buffer.add(data)          ← stored in heap LinkedBlockingDeque (immediate, blocking)
  *      │
  *      ├──────────────────────────────────────────────────────────────────────────┐
  *      │ every [persistIntervalMs]                                                │
@@ -37,7 +37,7 @@ import kotlin.concurrent.withLock
  * ```
  *
  * ## Thread safety
- * - [add] uses a [ConcurrentLinkedDeque] — lock-free, safe from any thread.
+ * - [add] uses a [LinkedBlockingDeque] — safe from any thread.
  * - [persistToDisk] and [loadFromDisk] are guarded by [diskLock] to prevent
  *   concurrent writes from the scheduler and the [stop] flush.
  * - [drain] drains atomically under [diskLock] and re-persists the now-empty state.
@@ -55,19 +55,21 @@ internal class AppSessionBuffer(
     private val persistIntervalMs: Long = DEFAULT_PERSIST_INTERVAL_MS,
 ) {
     // ── In-memory store ───────────────────────────────────────────────────────
-    private val heap = ConcurrentLinkedDeque<AppSessionData>()
+    private val heap = LinkedBlockingDeque<AppSessionData>()
 
     // ── Disk store ────────────────────────────────────────────────────────────
-    private val bufferFile: File = File(
-        File(context.cacheDir, "bugsnag-performance/v1").apply { mkdirs() },
-        BUFFER_FILENAME,
-    )
+    private val bufferFile: File =
+        File(
+            File(context.cacheDir, "bugsnag-performance/v1").apply { mkdirs() },
+            BUFFER_FILENAME,
+        )
     private val diskLock = ReentrantLock()
 
     // ── Scheduler ─────────────────────────────────────────────────────────────
-    private val scheduler: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor { r ->
-        Thread(r, "bugsnag-app-session-buffer-persist").apply { isDaemon = true }
-    }
+    private val scheduler: ScheduledExecutorService =
+        Executors.newSingleThreadScheduledExecutor { r ->
+            Thread(r, "bugsnag-app-session-buffer-persist").apply { isDaemon = true }
+        }
     private var persistFuture: ScheduledFuture<*>? = null
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -81,12 +83,13 @@ internal class AppSessionBuffer(
     fun start() {
         loadFromDisk()
 
-        persistFuture = scheduler.scheduleWithFixedDelay(
-            ::persistToDisk,
-            persistIntervalMs,
-            persistIntervalMs,
-            TimeUnit.MILLISECONDS,
-        )
+        persistFuture =
+            scheduler.scheduleWithFixedDelay(
+                ::persistToDisk,
+                persistIntervalMs,
+                persistIntervalMs,
+                TimeUnit.MILLISECONDS,
+            )
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -101,9 +104,11 @@ internal class AppSessionBuffer(
      */
     fun add(data: AppSessionData) {
         heap.addLast(data)
-        Logger.d("AppSessionBuffer: buffered app session #${data.index} " +
+        Logger.d(
+            "AppSessionBuffer: buffered app session #${data.index} " +
                 "(${data.appSessionName?.let { " \"$it\"" } ?: ""}) " +
-                "reason=${data.closeReason} heap_size=${heap.size}")
+                "reason=${data.closeReason} heap_size=${heap.size}",
+        )
     }
 
     /**
@@ -117,14 +122,15 @@ internal class AppSessionBuffer(
      *
      * @return all app sessions that were in the buffer at the time of the call.
      */
-    fun drain(): List<AppSessionData> = diskLock.withLock {
-        val items = mutableListOf<AppSessionData>()
-        while (true) {
-            items += heap.pollFirst() ?: break
+    fun drain(): List<AppSessionData> =
+        diskLock.withLock {
+            val items = mutableListOf<AppSessionData>()
+            while (true) {
+                items += heap.pollFirst() ?: break
+            }
+            persistUnderLock() // persist empty state — clears the file
+            return items
         }
-        persistUnderLock()          // persist empty state — clears the file
-        return items
-    }
 
     /**
      * Immediately flush the heap buffer to disk and shut down the scheduler.
@@ -132,7 +138,7 @@ internal class AppSessionBuffer(
      */
     fun stop() {
         persistFuture?.cancel(false)
-        persistToDisk()             // final flush
+        persistToDisk() // final flush
         scheduler.shutdownNow()
     }
 
@@ -146,9 +152,10 @@ internal class AppSessionBuffer(
      * Called periodically by the scheduler and also on [stop].
      * Guarded by [diskLock] so concurrent calls from scheduler + [stop] are safe.
      */
-    fun persistToDisk() = diskLock.withLock {
-        persistUnderLock()
-    }
+    fun persistToDisk() =
+        diskLock.withLock {
+            persistUnderLock()
+        }
 
     private fun persistUnderLock() {
         @Suppress("TooGenericExceptionCaught")
@@ -169,29 +176,30 @@ internal class AppSessionBuffer(
      * Called once on [start] to recover any app sessions that were buffered but not yet
      * drained before the process was killed.
      */
-    private fun loadFromDisk() = diskLock.withLock {
-        if (!bufferFile.exists()) return@withLock
+    private fun loadFromDisk() =
+        diskLock.withLock {
+            if (!bufferFile.exists()) return@withLock
 
-        @Suppress("TooGenericExceptionCaught")
-        try {
-            val json = JSONObject(bufferFile.readText())
-            val array = json.optJSONArray(KEY_APP_SESSIONS) ?: return@withLock
-            var loaded = 0
-            for (i in 0 until array.length()) {
-                @Suppress("SwallowedException")
-                try {
-                    heap.addLast(AppSessionData.fromJson(array.getJSONObject(i)))
-                    loaded++
-                } catch (e: Exception) {
-                    Logger.w("AppSessionBuffer: skipping malformed app session entry at index $i")
+            @Suppress("TooGenericExceptionCaught")
+            try {
+                val json = JSONObject(bufferFile.readText())
+                val array = json.optJSONArray(KEY_APP_SESSIONS) ?: return@withLock
+                var loaded = 0
+                for (i in 0 until array.length()) {
+                    @Suppress("SwallowedException")
+                    try {
+                        heap.addLast(AppSessionData.fromJson(array.getJSONObject(i)))
+                        loaded++
+                    } catch (e: Exception) {
+                        Logger.w("AppSessionBuffer: skipping malformed app session entry at index $i")
+                    }
                 }
+                Logger.d("AppSessionBuffer: recovered $loaded app session(s) from disk")
+            } catch (ex: Exception) {
+                Logger.w("AppSessionBuffer: failed to load from disk — discarding file", ex)
+                bufferFile.delete()
             }
-            Logger.d("AppSessionBuffer: recovered $loaded app session(s) from disk")
-        } catch (ex: Exception) {
-            Logger.w("AppSessionBuffer: failed to load from disk — discarding file", ex)
-            bufferFile.delete()
         }
-    }
 
     companion object {
         private const val BUFFER_FILENAME = "app-session-buffer.json"
@@ -201,4 +209,3 @@ internal class AppSessionBuffer(
         const val DEFAULT_PERSIST_INTERVAL_MS: Long = 30_000L
     }
 }
-

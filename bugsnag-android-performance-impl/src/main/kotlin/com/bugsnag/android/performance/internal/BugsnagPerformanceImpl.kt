@@ -71,13 +71,15 @@ public object BugsnagPerformanceImpl {
         // ── Session controller wired for immediate per-app-session delivery ───
         // onAppSessionReady calls tracer.forceCurrentBatch() so each app-session span
         // is sent to Bugsnag as soon as it closes — not batched with later spans.
-        appSessionSpanController = AppSessionSpanController(
-            appContext = application,
-            spanFactory = spanFactory,
-            sessionConfig = externalConfiguration.appSessionConfig,
-            buffer = appSessionBuffer,
-            onAppSessionReady = { tracer.forceCurrentBatch() },
-        )
+        appSessionSpanController =
+            AppSessionSpanController(
+                appContext = application,
+                spanFactory = spanFactory,
+                enabledMetrics = configuration.enabledMetrics,
+                sessionConfig = externalConfiguration.appSessionConfig,
+                buffer = appSessionBuffer,
+                onAppSessionReady = { tracer.forceCurrentBatch() },
+            )
 
         // update isInForeground to a more accurate value (if accessible)
         instrumentedAppState.defaultAttributeSource.update {
@@ -189,10 +191,11 @@ public object BugsnagPerformanceImpl {
      *   attribute. If null, uses [AppSessionConfig.manualSessionDefaultName] when configured.
      */
     public fun startAppSessionSpan(appSessionName: String? = null) {
-        val options = resolveManualAppSessionStartOptions(
-            appSessionConfig = appSessionSpanController?.sessionConfig,
-            appSessionName = appSessionName,
-        )
+        val options =
+            resolveManualAppSessionStartOptions(
+                appSessionConfig = appSessionSpanController?.sessionConfig,
+                appSessionName = appSessionName,
+            )
         appSessionSpanController?.startAppSessionSpan(appSessionName = options.appSessionName)
     }
 
@@ -203,7 +206,6 @@ public object BugsnagPerformanceImpl {
     public fun endAppSessionSpan() {
         appSessionSpanController?.endAppSessionSpan()
     }
-
 
     private fun loadModules() {
         val moduleLoader = Module.Loader(instrumentedAppState)
@@ -244,4 +246,3 @@ internal fun resolveManualAppSessionStartOptions(
         appSessionName = resolvedAppSessionName,
     )
 }
-

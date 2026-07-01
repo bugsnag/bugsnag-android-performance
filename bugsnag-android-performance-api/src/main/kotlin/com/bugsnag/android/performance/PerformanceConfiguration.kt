@@ -27,7 +27,6 @@ public class PerformanceConfiguration private constructor(public val context: Co
      */
     public var appSessionConfig: AppSessionConfig = AppSessionConfig()
 
-
     @Deprecated(
         message = "use enabledMetrics.rendering",
         replaceWith = ReplaceWith("enabledMetrics.rendering"),
@@ -163,7 +162,7 @@ public class PerformanceConfiguration private constructor(public val context: Co
             "apiKey=$apiKey, " +
             "endpoint='$endpoint', " +
             "autoInstrumentAppStarts=$autoInstrumentAppStarts, " +
-            "autoInstrumentActivities=$autoInstrumentActivities, "+
+            "autoInstrumentActivities=$autoInstrumentActivities, " +
             "appSessionConfig=$appSessionConfig, " +
             "enabledMetrics=$enabledMetrics, " +
             "releaseStage=$releaseStage, " +

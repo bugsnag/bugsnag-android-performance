@@ -160,7 +160,6 @@ public data class TracePayload(
             }
         }
 
-
         private fun computeSha1Digest(payload: ByteArray): String? {
             runCatching {
                 val shaDigest = MessageDigest.getInstance("SHA-1")
