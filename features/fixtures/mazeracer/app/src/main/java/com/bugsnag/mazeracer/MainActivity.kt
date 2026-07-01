@@ -375,6 +375,7 @@ class MainActivity : AppCompatActivity() {
         endpoint: String,
     ): Scenario {
         log("loadScenario($scenarioName, $scenarioMetadata, $endpoint)")
+        PerformanceTestUtils.clearBugsnagPerformanceState()
         val apiKeyField = findViewById<EditText>(R.id.manualApiKey)
 
         val manualMode = apiKeyField.text.isNotEmpty()

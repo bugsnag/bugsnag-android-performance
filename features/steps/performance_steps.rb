@@ -273,7 +273,7 @@ Then('a span bool attribute {string} is {word}') do |attribute, expected|
   raise Test::Unit::AssertionFailedError.new "No span found where attribute #{attribute} is #{expected}" if found.nil?
 end
 
-Then(/^a span (integer|float|bool|string) attribute "([^"]+)" is greater than or equal to (\d+\.?\d*)$/) do |type, attribute, expected|
+Then(/^a span (integer|float|bool) attribute "([^"]+)" is greater than or equal to (\d+\.?\d*)$/) do |type, attribute, expected|
   spans = spans_from_request_list(Maze::Server.list_for('traces'))
   found = spans.find do |span|
     attr_obj = span['attributes'].find { |a| a['key'] == attribute }
@@ -287,7 +287,7 @@ Then(/^a span (integer|float|bool|string) attribute "([^"]+)" is greater than or
   raise Test::Unit::AssertionFailedError.new "No span found where attribute #{attribute} is >= #{expected}" if found.nil?
 end
 
-Then(/^a span (integer|float|bool|string) attribute "([^"]+)" is less than or equal to (\d+\.?\d*)$/) do |type, attribute, expected|
+Then(/^a span (integer|float|bool) attribute "([^"]+)" is less than or equal to (\d+\.?\d*)$/) do |type, attribute, expected|
   spans = spans_from_request_list(Maze::Server.list_for('traces'))
   found = spans.find do |span|
     attr_obj = span['attributes'].find { |a| a['key'] == attribute }
@@ -496,4 +496,66 @@ Then('I dump all received spans') do
       $logger.info "  #{attr['key']} => #{attr['value']}"
     end
   end
+end
+
+Then('a trace resource string attribute {string} equals {string}') do |attribute, expected|
+  list = Maze::Server.list_for('traces')
+  raise Test::Unit::AssertionFailedError.new "No traces received" if list.all.empty?
+
+  found = list.all.any? do |req|
+    resource_attrs = req[:body]['resourceSpans'][0]['resource']['attributes']
+    attr_obj = resource_attrs.find { |a| a['key'] == attribute }
+    attr_obj && attr_obj['value']['stringValue'] == expected
+  end
+
+  raise Test::Unit::AssertionFailedError.new "No trace found with resource attribute #{attribute} = #{expected}" unless found
+end
+
+Then('a trace resource string attribute {string} exists') do |attribute|
+  list = Maze::Server.list_for('traces')
+  raise Test::Unit::AssertionFailedError.new "No traces received" if list.all.empty?
+
+  found = list.all.any? do |req|
+    resource_attrs = req[:body]['resourceSpans'][0]['resource']['attributes']
+    resource_attrs.any? { |a| a['key'] == attribute }
+  end
+
+  raise Test::Unit::AssertionFailedError.new "No trace found with resource attribute #{attribute}" unless found
+end
+
+Then(/a span (integer|float|boolean|bool|double) attribute "([^"]+)" equals "([^"]+)"/) do |type, attribute, expected|
+  spans = spans_from_request_list(Maze::Server.list_for('traces'))
+  found = spans.find do |span|
+    attr_obj = span['attributes'].find { |a| a['key'] == attribute }
+    next if attr_obj.nil?
+    value = get_attribute_value(attr_obj, type)
+    value.to_s == expected
+  end
+  raise Test::Unit::AssertionFailedError.new "No span found where #{type} attribute #{attribute} equals #{expected}" if found.nil?
+end
+
+Then(/a span (integer|float|boolean|bool|double) attribute "([^"]+)" is greater than (\d+\.?\d*)/) do |type, attribute, expected|
+  spans = spans_from_request_list(Maze::Server.list_for('traces'))
+  found = spans.find do |span|
+    attr_obj = span['attributes'].find { |a| a['key'] == attribute }
+    next if attr_obj.nil?
+    value = get_attribute_value(attr_obj, type)
+    value.to_f > expected.to_f
+  end
+  raise Test::Unit::AssertionFailedError.new "No span found where #{type} attribute #{attribute} is > #{expected}" if found.nil?
+end
+
+Then(/a span (integer|float|boolean|bool|string|double) array attribute "([^"]+)" equals the array:/) do |type, attribute, expected_table|
+  expected_values = expected_table.raw.flatten
+  spans = spans_from_request_list(Maze::Server.list_for('traces'))
+
+  found = spans.find do |span|
+    attr_obj = span['attributes'].find { |a| a['key'] == attribute }
+    next if attr_obj.nil?
+
+    actual_values = get_attribute_value(attr_obj, type)
+    actual_values.is_a?(Array) && actual_values.map(&:to_s) == expected_values.map(&:to_s)
+  end
+
+  raise Test::Unit::AssertionFailedError.new "No span found where #{type} array attribute #{attribute} equals #{expected_values}" if found.nil?
 end
