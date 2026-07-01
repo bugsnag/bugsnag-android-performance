@@ -63,7 +63,9 @@ class SpanFactoryTest {
                 override fun endMetrics(
                     startMetrics: CpuMetricsSnapshot,
                     span: Span,
-                ) = Unit
+                ) {
+                    span.setAttribute("sampled.cpu.attached", true)
+                }
             }
 
         memoryMetrics =
@@ -75,7 +77,9 @@ class SpanFactoryTest {
                 override fun endMetrics(
                     startMetrics: MemoryMetricsSnapshot,
                     span: Span,
-                ) = Unit
+                ) {
+                    span.setAttribute("sampled.memory.attached", true)
+                }
             }
 
         spanFactory =
@@ -174,12 +178,21 @@ class SpanFactoryTest {
 
     @Test
     fun testAppSessionSpansDoNotUseSampledMetrics() {
-        assertNull(
-            "app-session spans should not receive sampled CPU/memory snapshots",
+        val span =
             spanFactory.createAppSessionSpan(
                 "App Session",
                 baseOptions.setFirstClass(true),
-            ).metrics,
+            )
+
+        span.end()
+
+        assertNull(
+            "app-session spans should not receive sampled CPU metrics",
+            span.attributes["sampled.cpu.attached"],
+        )
+        assertNotNull(
+            "app-session spans should still receive sampled memory metrics",
+            span.attributes["sampled.memory.attached"],
         )
     }
 }

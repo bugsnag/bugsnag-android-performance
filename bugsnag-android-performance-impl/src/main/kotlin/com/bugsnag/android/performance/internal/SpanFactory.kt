@@ -98,7 +98,7 @@ public class SpanFactory internal constructor(
             options.spanMetrics ?: SpanMetrics(
                 rendering = false,
                 cpu = false,
-                memory = false,
+                memory = true,
             ),
             spanProcessor,
         )
