@@ -1,6 +1,8 @@
 package com.example.bugsnag.performance
 
 import android.app.Application
+import android.os.Handler
+import android.os.Looper
 import com.bugsnag.android.performance.BugsnagPerformance
 import com.bugsnag.android.performance.PerformanceConfiguration
 import com.bugsnag.android.performance.SpanContext
@@ -24,6 +26,10 @@ class PerformanceApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        BugsnagPerformance.start(PerformanceConfiguration.load(this))
+        val config = PerformanceConfiguration.load(this)
+        // Disable automatic session management for manual testing
+        config.appSessionConfig.autoStartSession = false
+        config.appSessionConfig.backgroundTimeoutMs = 0L // No automatic timeout
+        BugsnagPerformance.start(config)
     }
 }

@@ -103,6 +103,14 @@ class HttpDeliveryTest {
             eq("Bugsnag-Api-Key"),
             eq("0123456789abcdef0123456789abcdef"),
         )
+        verify(connection).setRequestProperty(
+            eq("X-Bugsnag-API-Key"),
+            eq("0123456789abcdef0123456789abcdef"),
+        )
+        verify(connection).setRequestProperty(
+            eq("User-Agent"),
+            eq("bugsnag-android-performance/${BugsnagPerformanceImpl.VERSION}"),
+        )
     }
 
     @Test
@@ -168,6 +176,14 @@ class HttpDeliveryTest {
         verify(connection).setRequestProperty(
             eq("Bugsnag-Api-Key"),
             eq("0123456789abcdef0123456789abcdef"),
+        )
+        verify(connection).setRequestProperty(
+            eq("X-Bugsnag-API-Key"),
+            eq("0123456789abcdef0123456789abcdef"),
+        )
+        verify(connection).setRequestProperty(
+            eq("User-Agent"),
+            eq("bugsnag-android-performance/${BugsnagPerformanceImpl.VERSION}"),
         )
 
         assertNotNull(sentAtCaptor.lastValue)

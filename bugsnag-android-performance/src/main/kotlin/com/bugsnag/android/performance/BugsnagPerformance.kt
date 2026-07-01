@@ -70,6 +70,44 @@ public object BugsnagPerformance {
         Logger.w("BugsnagPerformance.start has already been called")
     }
 
+    private fun logNotStarted(methodName: String) {
+        Logger.w("BugsnagPerformance.$methodName called before BugsnagPerformance.start")
+    }
+
+    /**
+     * Manually start an app-session segment span (foreground or background).
+     *
+     * Each segment is sent to Bugsnag **immediately** when it ends (no batching with other
+     * segments). A typed copy is also stored in the SDK's internal app-session buffer and
+     * periodically persisted to disk so data survives process death.
+     *
+     * @param appSessionName optional human-readable label for this app session retained in the internal
+     *   app-session buffer for local diagnostics / recovery. It is not emitted as a delivered span
+     *   attribute. If null, uses [AppSessionConfig.manualSessionDefaultName] when configured.
+     */
+    @JvmStatic
+    @JvmOverloads
+    public fun startAppSessionSpan(appSessionName: String? = null) {
+        if (!isStarted) {
+            logNotStarted("startAppSessionSpan")
+            return
+        }
+        BugsnagPerformanceImpl.startAppSessionSpan(appSessionName)
+    }
+
+    /**
+     * Manually end the active app-session segment span.
+     * The span is sent immediately to Bugsnag upon calling this method.
+     */
+    @JvmStatic
+    public fun endAppSessionSpan() {
+        if (!isStarted) {
+            logNotStarted("endAppSessionSpan")
+            return
+        }
+        BugsnagPerformanceImpl.endAppSessionSpan()
+    }
+
     /**
      * Open a custom span with a given name and options.
      *

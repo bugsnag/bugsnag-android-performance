@@ -2,11 +2,14 @@ package com.bugsnag.android.performance.internal
 
 import android.app.Activity
 import androidx.annotation.RestrictTo
+import com.bugsnag.android.performance.AppSessionConfig
 import com.bugsnag.android.performance.Logger
 import com.bugsnag.android.performance.PerformanceConfiguration
 import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.SpanOptions
 import com.bugsnag.android.performance.controls.SpanQuery
+import com.bugsnag.android.performance.internal.appsession.AppSessionBuffer
+import com.bugsnag.android.performance.internal.appsession.AppSessionSpanController
 import com.bugsnag.android.performance.internal.connectivity.Connectivity
 import com.bugsnag.android.performance.internal.controls.AppStartControlProvider
 import com.bugsnag.android.performance.internal.controls.CompositeSpanControlProvider
@@ -25,6 +28,7 @@ public object BugsnagPerformanceImpl {
     public val spanFactory: SpanFactory get() = instrumentedAppState.spanFactory
 
     private lateinit var worker: Worker
+    private var appSessionSpanController: AppSessionSpanController? = null
 
     private val spanControlProvider =
         CompositeSpanControlProvider().apply {
@@ -52,7 +56,6 @@ public object BugsnagPerformanceImpl {
         val tracer = instrumentedAppState.configure(configuration)
 
         if (configuration.autoInstrumentAppStarts) {
-            // mark the app as "starting" (if it isn't already)
             synchronized(this) {
                 instrumentedAppState.onBugsnagPerformanceStart()
             }
@@ -61,6 +64,22 @@ public object BugsnagPerformanceImpl {
         }
 
         val application = configuration.application
+
+        // ── Per-app-session heap buffer + disk persistence ────────────────────
+        val appSessionBuffer = AppSessionBuffer(application).also { it.start() }
+
+        // ── Session controller wired for immediate per-app-session delivery ───
+        // onAppSessionReady calls tracer.forceCurrentBatch() so each app-session span
+        // is sent to Bugsnag as soon as it closes — not batched with later spans.
+        appSessionSpanController =
+            AppSessionSpanController(
+                appContext = application,
+                spanFactory = spanFactory,
+                enabledMetrics = configuration.enabledMetrics,
+                sessionConfig = externalConfiguration.appSessionConfig,
+                buffer = appSessionBuffer,
+                onAppSessionReady = { tracer.forceCurrentBatch() },
+            )
 
         // update isInForeground to a more accurate value (if accessible)
         instrumentedAppState.defaultAttributeSource.update {
@@ -138,13 +157,11 @@ public object BugsnagPerformanceImpl {
                     ),
                 )
 
-                // starting plugins is the last thing to do before starting the first tasks
                 pluginManager.startPlugins()
 
                 return@Worker workerTasks
             }
 
-        // register the Worker with the components that depend on it
         tracer.worker = bsgWorker
 
         loadModules()
@@ -160,6 +177,36 @@ public object BugsnagPerformanceImpl {
         NotifierIntegration.link()
     }
 
+    // ── Public session API ────────────────────────────────────────────────────
+
+    /**
+     * Manually start an app-session segment span (foreground or background).
+     *
+     * Each segment is sent to Bugsnag **immediately** when it ends (no batching with other
+     * segments). A typed copy is also stored in the SDK's internal app-session buffer and
+     * periodically persisted to disk so data survives process death.
+     *
+     * @param appSessionName optional human-readable label for this app session retained in the internal
+     *   app-session buffer for local diagnostics / recovery. It is not emitted as a delivered span
+     *   attribute. If null, uses [AppSessionConfig.manualSessionDefaultName] when configured.
+     */
+    public fun startAppSessionSpan(appSessionName: String? = null) {
+        val options =
+            resolveManualAppSessionStartOptions(
+                appSessionConfig = appSessionSpanController?.sessionConfig,
+                appSessionName = appSessionName,
+            )
+        appSessionSpanController?.startAppSessionSpan(appSessionName = options.appSessionName)
+    }
+
+    /**
+     * Manually end the active app-session segment span.
+     * The span is sent immediately to Bugsnag upon calling this method.
+     */
+    public fun endAppSessionSpan() {
+        appSessionSpanController?.endAppSessionSpan()
+    }
+
     private fun loadModules() {
         val moduleLoader = Module.Loader(instrumentedAppState)
         moduleLoader.loadModule("com.bugsnag.android.performance.AppCompatModule")
@@ -171,7 +218,6 @@ public object BugsnagPerformanceImpl {
         activity: Activity,
         options: SpanOptions,
     ): Span {
-        // create & track Activity referenced ViewLoad spans
         return instrumentedAppState.activityInstrumentation.startViewLoadSpan(activity, options)
     }
 
@@ -185,4 +231,18 @@ public object BugsnagPerformanceImpl {
         @Suppress("UNCHECKED_CAST")
         return spanControlProvider[query as SpanQuery<Any>] as C
     }
+}
+
+internal data class ManualAppSessionStartOptions(
+    val appSessionName: String?,
+)
+
+internal fun resolveManualAppSessionStartOptions(
+    appSessionConfig: AppSessionConfig?,
+    appSessionName: String?,
+): ManualAppSessionStartOptions {
+    val resolvedAppSessionName = appSessionName ?: appSessionConfig?.manualSessionDefaultName
+    return ManualAppSessionStartOptions(
+        appSessionName = resolvedAppSessionName,
+    )
 }

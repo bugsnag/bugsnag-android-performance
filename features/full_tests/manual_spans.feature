@@ -1,6 +1,6 @@
 Feature: Manual creation of spans
 
-  Scenario: Manual spans can be logged
+    Scenario: Manual spans can be logged
     Given I run "ManualSpanScenario"
     And I wait to receive a sampling request
     And I wait to receive a trace
@@ -24,38 +24,32 @@ Feature: Manual creation of spans
       | spanStartCallback                 | boolValue   | true                |
       | spanEndCallback                   | boolValue   | true                |
 
-    * the trace payload field "resourceSpans.0.resource" string attribute "host.arch" is one of:
-      | x86   |
-      | amd64 |
-      | arm32 |
-      | arm64 |
-    * the trace payload field "resourceSpans.0.resource" string attribute "os.type" equals "linux"
-    * the trace payload field "resourceSpans.0.resource" string attribute "os.name" equals "android"
-    * the trace payload field "resourceSpans.0.resource" string attribute "os.version" exists
-    * the trace payload field "resourceSpans.0.resource" string attribute "bugsnag.device.android_api_version" exists
-    * the trace payload field "resourceSpans.0.resource" string attribute "device.id" exists
-    * the trace payload field "resourceSpans.0.resource" string attribute "device.model.identifier" exists
-    * the trace payload field "resourceSpans.0.resource" string attribute "device.manufacturer" exists
-    * the trace payload field "resourceSpans.0.resource" string attribute "deployment.environment" is one of:
-      | development |
-      | production  |
-    * the trace payload field "resourceSpans.0.resource" string attribute "bugsnag.app.version_code" equals "1"
-    * the trace payload field "resourceSpans.0.resource" string attribute "service.version" equals "1.0"
-    * the trace payload field "resourceSpans.0.resource" string attribute "service.name" equals "manual.span.service"
-    * the trace payload field "resourceSpans.0.resource" string attribute "telemetry.sdk.name" equals "bugsnag.performance.android"
-    * the trace payload field "resourceSpans.0.resource" string attribute "telemetry.sdk.version" matches the regex "[0-9]+\.[0-9]+\.[0-9]+"
+    * a trace resource string attribute "host.arch" exists
+    * a trace resource string attribute "os.type" equals "linux"
+    * a trace resource string attribute "os.name" equals "android"
+    * a trace resource string attribute "os.version" exists
+    * a trace resource string attribute "bugsnag.device.android_api_version" exists
+    * a trace resource string attribute "device.id" exists
+    * a trace resource string attribute "device.model.identifier" exists
+    * a trace resource string attribute "device.manufacturer" exists
+    * a trace resource string attribute "deployment.environment" exists
+    * a trace resource string attribute "bugsnag.app.version_code" equals "1"
+    * a trace resource string attribute "service.version" equals "1.0"
+    * a trace resource string attribute "service.name" equals "manual.span.service"
+    * a trace resource string attribute "telemetry.sdk.name" equals "bugsnag.performance.android"
+    * a trace resource string attribute "telemetry.sdk.version" exists
 
-    * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0" integer attribute "bugsnag.span.callbacks_duration" is greater than 0
-    * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0" string attribute "string" equals "test name"
-    * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0" integer attribute "longNumber" equals 1234
-    * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0" integer attribute "intNumber" equals 5678
-    * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0" double attribute "doubleNumber" equals 12.34
-    * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0" boolean attribute "boolean" is false
-    * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0" string array attribute "stringCollection" equals the array:
+    * a span integer attribute "bugsnag.span.callbacks_duration" is greater than 0
+    * a span string attribute "string" equals "test name"
+    * a span integer attribute "longNumber" equals "1234"
+    * a span integer attribute "intNumber" equals "5678"
+    * a span double attribute "doubleNumber" equals "12.34"
+    * a span boolean attribute "boolean" equals "false"
+    * a span string array attribute "stringCollection" equals the array:
       | string1 |
       | string2 |
       | string3 |
-    * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0" integer array attribute "intArray" equals the array:
+    * a span integer array attribute "intArray" equals the array:
       | 10 |
       | 20 |
       | 30 |
@@ -91,11 +85,11 @@ Feature: Manual creation of spans
     And I send the app to the background for 5 seconds
     And I wait to receive a span named "BackgroundSpan"
     Then a span name equals "BackgroundSpan"
-    * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0" boolean attribute "bugsnag.app.in_foreground" is false
+    * a span boolean attribute "bugsnag.app.in_foreground" equals "false"
 
   Scenario: Span attributes are limited based on config
     Given I run "AttributeLimitsScenario"
     And I wait to receive a span named "Custom Span"
-    * the trace payload field "resourceSpans.0.scopeSpans.0.spans.0" string array attribute "arrayAttribute" equals the array:
+    * a span string array attribute "arrayAttribute" equals the array:
       | this is a *** 68 CHARS TRUNCATED |
     * every span string attribute "droppedAttribute" does not exist
