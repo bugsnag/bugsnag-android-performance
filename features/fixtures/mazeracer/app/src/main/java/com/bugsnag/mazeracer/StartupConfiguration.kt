@@ -15,6 +15,7 @@ suspend fun Context.saveStartupConfig(config: PerformanceConfiguration) =
             .putBoolean("configured", true)
             .putString("apiKey", config.apiKey)
             .putString("endpoint", config.endpoint)
+            .putBoolean("autoStartSession", config.appSessionConfig.autoStartSession)
             .putBoolean("autoInstrumentAppStarts", config.autoInstrumentAppStarts)
             .putString("autoInstrumentActivities", config.autoInstrumentActivities.name)
             .putBoolean("cpuMetrics", config.enabledMetrics.cpu)
@@ -38,6 +39,7 @@ fun Context.readStartupConfig(): PerformanceConfiguration? {
                 .load(this, prefs.getString("apiKey", "a35a2a72bd230ac0aa0f52715bbdc6aa"))
                 .apply {
                     endpoint = prefs.getString("endpoint", null)!!
+                    appSessionConfig.autoStartSession = prefs.getBoolean("autoStartSession", false)
                     autoInstrumentAppStarts = prefs.getBoolean("autoInstrumentAppStarts", false)
                     autoInstrumentActivities =
                         AutoInstrument.valueOf(
@@ -57,6 +59,7 @@ fun Context.readStartupConfig(): PerformanceConfiguration? {
             .putBoolean("configured", false)
             .remove("apiKey")
             .remove("endpoint")
+            .remove("autoStartSession")
             .remove("autoInstrumentAppStarts")
             .remove("autoInstrumentActivities")
             .remove("cpuMetrics")
