@@ -89,15 +89,33 @@ Then("the {string} span field {string} equals the stored value {string}") do |sp
   Maze.check.equal(Maze::Store.values[stored_key], value)
 end
 
-def get_attribute_value(attribute_obj, type)
-  # OTLP uses 'intValue', 'boolValue', 'doubleValue'
+def get_attribute_value(attribute_obj, type, index = nil)
+  # OTLP uses 'intValue', 'boolValue', 'doubleValue', and arrayValue for arrays
   real_type = case type
               when 'integer' then 'int'
               when 'boolean' then 'bool'
               when 'float' then 'double'
               else type
               end
-  attribute_obj.dig 'value', "#{real_type}Value"
+
+  value_obj = attribute_obj['value'] || {}
+
+  # Handle explicit array values
+  if value_obj.key?('arrayValue')
+    values = value_obj['arrayValue']['values'] || []
+    # If an index was provided, return the specific element's underlying value
+    if !index.nil?
+      elem = values[index.to_i]
+      return nil if elem.nil?
+      return elem['stringValue'] || elem['intValue'] || elem['doubleValue'] || elem['boolValue']
+    end
+
+    # No index: return an array of underlying primitive values
+    return values.map { |v| v['stringValue'] || v['intValue'] || v['doubleValue'] || v['boolValue'] }
+  end
+
+  # Fallback to primitive value fields (intValue, boolValue, doubleValue, stringValue)
+  attribute_obj.dig('value', "#{real_type}Value") || attribute_obj.dig('value', 'stringValue') || attribute_obj.dig('value', 'intValue') || attribute_obj.dig('value', 'doubleValue') || attribute_obj.dig('value', 'boolValue')
 end
 
 Then('the {string} span {word} attribute {string} is greater than {float}') do |span_name, type, attribute, expected|
