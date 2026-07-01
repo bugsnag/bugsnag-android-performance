@@ -153,10 +153,10 @@ internal class AppSessionMetricsCollector(
             previousUptime = uptimeSec
 
             var cpuPct = (PERCENT_100 * deltaCpu / deltaUptime) / SystemConfig.numCores
-            // Defensive: clamp to [0.0, 100.0] to avoid spurious >100% readings due to timing
+            // Defensive: clamp to [min, max] to avoid spurious >100% readings due to timing
             // or clock discrepancies. Tests and consumers expect a percentage in this range.
-            cpuPct = cpuPct.coerceIn(0.0, 100.0)
-            if (cpuPct.isFinite() && cpuPct >= 0.0) {
+            cpuPct = cpuPct.coerceIn(PERCENT_MIN, PERCENT_100)
+            if (cpuPct.isFinite() && cpuPct >= PERCENT_MIN) {
                 accumulators.addCpuSample(cpuPct, timestamp)
                 sampleMainThreadCpu(deltaUptime)
                 sampleOverheadCpu(deltaUptime)
@@ -183,8 +183,8 @@ internal class AppSessionMetricsCollector(
             previousMainThreadCpuTime = totalCpuTime
 
             var cpuPct = (PERCENT_100 * deltaCpu / deltaUptime) / SystemConfig.numCores
-            cpuPct = cpuPct.coerceIn(0.0, 100.0)
-            if (cpuPct.isFinite() && cpuPct >= 0.0) {
+            cpuPct = cpuPct.coerceIn(PERCENT_MIN, PERCENT_100)
+            if (cpuPct.isFinite() && cpuPct >= PERCENT_MIN) {
                 accumulators.addMainThreadCpuSample(cpuPct)
             }
         }
@@ -208,8 +208,8 @@ internal class AppSessionMetricsCollector(
             previousOverheadCpuTime = totalCpuTime
 
             var cpuPct = (PERCENT_100 * deltaCpu / deltaUptime) / SystemConfig.numCores
-            cpuPct = cpuPct.coerceIn(0.0, 100.0)
-            if (cpuPct.isFinite() && cpuPct >= 0.0) {
+            cpuPct = cpuPct.coerceIn(PERCENT_MIN, PERCENT_100)
+            if (cpuPct.isFinite() && cpuPct >= PERCENT_MIN) {
                 accumulators.addOverheadCpuSample(cpuPct)
             }
         }
@@ -518,6 +518,7 @@ internal class AppSessionMetricsCollector(
         private const val DEFAULT_INTERVAL_MS = 1_000L
         private const val KILOBYTE = 1024L
         private const val PERCENT_100 = 100.0
+        private const val PERCENT_MIN = 0.0
         private const val MS_PER_SECOND = 1000.0
 
         /**
