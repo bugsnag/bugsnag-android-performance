@@ -423,29 +423,41 @@ internal class AppSessionSpanController
             span: Span,
             m: AppSessionMetrics,
         ) {
-            span.setAttribute("bugsnag.session.cpu.min", m.cpuMin)
-            span.setAttribute("bugsnag.session.cpu.max", m.cpuMax)
-            span.setAttribute("bugsnag.session.cpu.mean", m.cpuMean)
+            val cpuMean = m.cpuMean.coerceIn(m.cpuMin, m.cpuMax)
+            val cpuMin = minOf(m.cpuMin, cpuMean)
+            val cpuMax = maxOf(m.cpuMax, cpuMean)
+
+            span.setAttribute("bugsnag.session.cpu.min", cpuMin)
+            span.setAttribute("bugsnag.session.cpu.max", cpuMax)
+            span.setAttribute("bugsnag.session.cpu.mean", cpuMean)
 
             span.setAttribute("bugsnag.system.cpu.measures", m.cpuSamples)
             if (m.cpuMainThreadSamples.isNotEmpty()) {
+                val mainThreadMean = m.cpuMainThreadMean.coerceIn(m.cpuMainThreadMin, m.cpuMainThreadMax)
+                val mainThreadMin = minOf(m.cpuMainThreadMin, mainThreadMean)
+                val mainThreadMax = maxOf(m.cpuMainThreadMax, mainThreadMean)
+
                 span.setAttribute("bugsnag.system.cpu.main_thread.measures", m.cpuMainThreadSamples)
-                span.setAttribute("bugsnag.system.cpu_min_main_thread", m.cpuMainThreadMin)
-                span.setAttribute("bugsnag.system.cpu_max_main_thread", m.cpuMainThreadMax)
-                span.setAttribute("bugsnag.system.cpu_mean_main_thread", m.cpuMainThreadMean)
+                span.setAttribute("bugsnag.system.cpu_min_main_thread", mainThreadMin)
+                span.setAttribute("bugsnag.system.cpu_max_main_thread", mainThreadMax)
+                span.setAttribute("bugsnag.system.cpu_mean_main_thread", mainThreadMean)
             }
             if (m.cpuOverheadSamples.isNotEmpty()) {
+                val overheadMean = m.cpuOverheadMean.coerceIn(m.cpuOverheadMin, m.cpuOverheadMax)
+                val overheadMin = minOf(m.cpuOverheadMin, overheadMean)
+                val overheadMax = maxOf(m.cpuOverheadMax, overheadMean)
+
                 span.setAttribute("bugsnag.system.cpu.overhead.measures", m.cpuOverheadSamples)
-                span.setAttribute("bugsnag.system.cpu_min_overhead", m.cpuOverheadMin)
-                span.setAttribute("bugsnag.system.cpu_max_overhead", m.cpuOverheadMax)
-                span.setAttribute("bugsnag.system.cpu_mean_overhead", m.cpuOverheadMean)
+                span.setAttribute("bugsnag.system.cpu_min_overhead", overheadMin)
+                span.setAttribute("bugsnag.system.cpu_max_overhead", overheadMax)
+                span.setAttribute("bugsnag.system.cpu_mean_overhead", overheadMean)
             }
             if (m.cpuTimestamps.isNotEmpty()) {
                 span.setAttribute("bugsnag.system.cpu.timestamps", m.cpuTimestamps)
             }
-            span.setAttribute("bugsnag.system.cpu_min_total", m.cpuMin)
-            span.setAttribute("bugsnag.system.cpu_max_total", m.cpuMax)
-            span.setAttribute("bugsnag.system.cpu_mean_total", m.cpuMean)
+            span.setAttribute("bugsnag.system.cpu_min_total", cpuMin)
+            span.setAttribute("bugsnag.system.cpu_max_total", cpuMax)
+            span.setAttribute("bugsnag.system.cpu_mean_total", cpuMean)
         }
 
         private fun attachMemoryMetrics(

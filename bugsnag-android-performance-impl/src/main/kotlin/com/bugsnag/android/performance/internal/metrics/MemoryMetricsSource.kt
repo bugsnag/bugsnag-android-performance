@@ -6,6 +6,7 @@ import android.os.Process
 import android.util.AndroidException
 import androidx.annotation.RestrictTo
 import com.bugsnag.android.performance.internal.BugsnagClock
+import com.bugsnag.android.performance.internal.SpanCategory
 import com.bugsnag.android.performance.internal.SpanImpl
 import com.bugsnag.android.performance.internal.getActivityManager
 import com.bugsnag.android.performance.internal.util.FixedRingBuffer
@@ -137,20 +138,26 @@ internal class MemoryMetricsSource(
         }
         target.attributes["bugsnag.system.memory.spaces.device.used"] = metrics.deviceMemorySamples
         if (metrics.deviceUsedMemoryCount > 0) {
-            target.attributes["bugsnag.system.memory.spaces.device.min"] = metrics.deviceMinMemory
-            target.attributes["bugsnag.system.memory.spaces.device.max"] = metrics.deviceMaxMemory
             target.attributes["bugsnag.system.memory.spaces.device.mean"] =
                 (metrics.deviceUsedMemoryTotal / metrics.deviceUsedMemoryCount)
                     .coerceIn(metrics.deviceMinMemory, metrics.deviceMaxMemory)
+
+            if (target.category == SpanCategory.APP_SESSION) {
+                target.attributes["bugsnag.system.memory.spaces.device.min"] = metrics.deviceMinMemory
+                target.attributes["bugsnag.system.memory.spaces.device.max"] = metrics.deviceMaxMemory
+            }
         }
         target.attributes["bugsnag.system.memory.spaces.art.size"] = metrics.artSizeMemory
         target.attributes["bugsnag.system.memory.spaces.art.used"] = metrics.artUsedMemorySamples
         if (metrics.artUsedMemoryCount > 0) {
-            target.attributes["bugsnag.system.memory.spaces.art.min"] = metrics.artMinMemory
-            target.attributes["bugsnag.system.memory.spaces.art.max"] = metrics.artMaxMemory
             target.attributes["bugsnag.system.memory.spaces.art.mean"] =
                 (metrics.artUsedMemoryTotal / metrics.artUsedMemoryCount)
                     .coerceIn(metrics.artMinMemory, metrics.artMaxMemory)
+
+            if (target.category == SpanCategory.APP_SESSION) {
+                target.attributes["bugsnag.system.memory.spaces.art.min"] = metrics.artMinMemory
+                target.attributes["bugsnag.system.memory.spaces.art.max"] = metrics.artMaxMemory
+            }
         }
         target.attributes["bugsnag.system.memory.timestamps"] = metrics.artMemoryTimestamps
     }
