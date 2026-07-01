@@ -89,7 +89,7 @@ Then("the {string} span field {string} equals the stored value {string}") do |sp
   Maze.check.equal(Maze::Store.values[stored_key], value)
 end
 
-def get_attribute_value(attribute_obj, type, index = nil)
+def get_span_attribute_value(attribute_obj, type, index = nil)
   # OTLP uses 'intValue', 'boolValue', 'doubleValue', and arrayValue for arrays
   real_type = case type
               when 'integer' then 'int'
@@ -138,7 +138,7 @@ Then('the {string} span {word} attribute {string} is greater than {float}') do |
     attribute_obj = attributes.find { |a| a['key'] == attribute }
     raise Test::Unit::AssertionFailedError.new "No attribute named #{attribute} was found in span #{span_name}" if attribute_obj.nil?
 
-    value = get_attribute_value(attribute_obj, type)
+    value = get_span_attribute_value(attribute_obj, type)
     raise Test::Unit::AssertionFailedError.new "Attribute #{attribute} in span #{span_name} is not of type #{type}" if value.nil?
 
     Maze.check.operator value.to_f, :>, expected.to_f,
@@ -156,7 +156,7 @@ Then('the {string} span {word} attribute {string} is less than or equal to {floa
     attribute_obj = attributes.find { |a| a['key'] == attribute }
     raise Test::Unit::AssertionFailedError.new "No attribute named #{attribute} was found in span #{span_name}" if attribute_obj.nil?
 
-    value = get_attribute_value(attribute_obj, type)
+    value = get_span_attribute_value(attribute_obj, type)
     raise Test::Unit::AssertionFailedError.new "Attribute #{attribute} in span #{span_name} is not of type #{type}" if value.nil?
 
     Maze.check.operator value.to_f, :<=, expected.to_f,
@@ -174,7 +174,7 @@ Then('the {string} span {word} attribute {string} is greater than or equal to {f
     attribute_obj = attributes.find { |a| a['key'] == attribute }
     raise Test::Unit::AssertionFailedError.new "No attribute named #{attribute} was found in span #{span_name}" if attribute_obj.nil?
 
-    value = get_attribute_value(attribute_obj, type)
+    value = get_span_attribute_value(attribute_obj, type)
     raise Test::Unit::AssertionFailedError.new "Attribute #{attribute} in span #{span_name} is not of type #{type}" if value.nil?
 
     Maze.check.operator value.to_f, :>=, expected.to_f,
@@ -195,8 +195,8 @@ Then('the {string} span {word} attribute {string} is less than or equal to the {
     raise Test::Unit::AssertionFailedError.new "Attribute #{attr1} not found in span #{span_name}" if val1_obj.nil?
     raise Test::Unit::AssertionFailedError.new "Attribute #{attr2} not found in span #{span_name}" if val2_obj.nil?
 
-    val1 = get_attribute_value(val1_obj, type1)
-    val2 = get_attribute_value(val2_obj, type2)
+    val1 = get_span_attribute_value(val1_obj, type1)
+    val2 = get_span_attribute_value(val2_obj, type2)
 
     Maze.check.operator val1.to_f, :<=, val2.to_f,
                           "The span '#{span_name}' attribute '#{attr1}' (#{val1}) is not <= '#{attr2}' (#{val2})"
@@ -225,7 +225,7 @@ Then('the {string} span has {word} attribute named {string}') do |span_name, att
   attribute_obj = attributes.find { |a| a['key'] == attribute }
   raise Test::Unit::AssertionFailedError.new "No attribute named #{attribute} was found in span #{span_name}" if attribute_obj.nil?
 
-  value = get_attribute_value(attribute_obj, attribute_type)
+  value = get_span_attribute_value(attribute_obj, attribute_type)
 
   Maze.check.not_nil value
 end
@@ -257,7 +257,7 @@ Then('the {string} span boolean attribute {string} is {word}') do |span_name, at
     attribute_obj = attributes.find { |a| a['key'] == attribute }
     raise Test::Unit::AssertionFailedError.new "No attribute named #{attribute} was found in span #{span_name}" if attribute_obj.nil?
 
-    value = get_attribute_value(attribute_obj, 'boolean')
+    value = get_span_attribute_value(attribute_obj, 'boolean')
     Maze.check.equal(expected_bool, value)
   end
 end
@@ -278,7 +278,7 @@ Then(/^a span (integer|float|bool) attribute "([^"]+)" is greater than or equal 
   found = spans.find do |span|
     attr_obj = span['attributes'].find { |a| a['key'] == attribute }
     if attr_obj
-      value = get_attribute_value(attr_obj, type)
+      value = get_span_attribute_value(attr_obj, type)
       value.to_f >= expected.to_f
     else
       false
@@ -292,7 +292,7 @@ Then(/^a span (integer|float|bool) attribute "([^"]+)" is less than or equal to 
   found = spans.find do |span|
     attr_obj = span['attributes'].find { |a| a['key'] == attribute }
     if attr_obj
-      value = get_attribute_value(attr_obj, type)
+      value = get_span_attribute_value(attr_obj, type)
       value.to_f <= expected.to_f
     else
       false
@@ -307,8 +307,8 @@ Then('a span {word} attribute {string} is less than or equal to span {word} attr
     val1_obj = span['attributes'].find { |a| a['key'] == attr1 }
     val2_obj = span['attributes'].find { |a| a['key'] == attr2 }
     if val1_obj && val2_obj
-      val1 = get_attribute_value(val1_obj, type1)
-      val2 = get_attribute_value(val2_obj, type2)
+      val1 = get_span_attribute_value(val1_obj, type1)
+      val2 = get_span_attribute_value(val2_obj, type2)
       val1.to_f <= val2.to_f
     else
       false
@@ -528,7 +528,7 @@ Then(/a span (integer|float|boolean|bool|double) attribute "([^"]+)" equals "([^
   found = spans.find do |span|
     attr_obj = span['attributes'].find { |a| a['key'] == attribute }
     next if attr_obj.nil?
-    value = get_attribute_value(attr_obj, type)
+    value = get_span_attribute_value(attr_obj, type)
     value.to_s == expected
   end
   raise Test::Unit::AssertionFailedError.new "No span found where #{type} attribute #{attribute} equals #{expected}" if found.nil?
@@ -539,7 +539,7 @@ Then(/a span (integer|float|boolean|bool|double) attribute "([^"]+)" is greater 
   found = spans.find do |span|
     attr_obj = span['attributes'].find { |a| a['key'] == attribute }
     next if attr_obj.nil?
-    value = get_attribute_value(attr_obj, type)
+    value = get_span_attribute_value(attr_obj, type)
     value.to_f > expected.to_f
   end
   raise Test::Unit::AssertionFailedError.new "No span found where #{type} attribute #{attribute} is > #{expected}" if found.nil?
@@ -553,7 +553,7 @@ Then(/a span (integer|float|boolean|bool|string|double) array attribute "([^"]+)
     attr_obj = span['attributes'].find { |a| a['key'] == attribute }
     next if attr_obj.nil?
 
-    actual_values = get_attribute_value(attr_obj, type)
+    actual_values = get_span_attribute_value(attr_obj, type)
     actual_values.is_a?(Array) && actual_values.map(&:to_s) == expected_values.map(&:to_s)
   end
 
