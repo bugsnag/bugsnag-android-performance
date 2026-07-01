@@ -93,6 +93,12 @@ Scenario: Normal custom span is not treated as app session span
     And I wait to receive 1 trace
     Then the "TestManualSpan" span string attribute "bugsnag.span.category" equals "custom"
     * the "TestManualSpan" span has no "bugsnag.app_session.name" attribute
+    * the "TestManualSpan" span has no "bugsnag.system.cpu_min_total" attribute
+    * the "TestManualSpan" span has no "bugsnag.system.cpu_max_total" attribute
+    * the "TestManualSpan" span has no "bugsnag.system.memory.spaces.device.min" attribute
+    * the "TestManualSpan" span has no "bugsnag.system.memory.spaces.device.max" attribute
+    * the "TestManualSpan" span has no "bugsnag.system.memory.spaces.art.min" attribute
+    * the "TestManualSpan" span has no "bugsnag.system.memory.spaces.art.max" attribute
 
 Scenario: Aborted app session span is not sent
     Given I load scenario "AppSessionResourceUsageScenario"
@@ -330,6 +336,7 @@ Scenario: App session span does not parent other spans
     Then a span field "name" equals "[AppSession/parent check session]"
     * a span string attribute "bugsnag.span.category" equals "app_session"
     * a span bool attribute "bugsnag.span.first_class" is true
+    * a span field "parentSpanId" is empty
     And a span field "name" equals "ChildSpanInsideSession"
     * a span string attribute "bugsnag.span.category" equals "custom"
     * a span field "parentSpanId" is empty
@@ -350,5 +357,15 @@ Scenario: Very short app session span produces valid metrics
     Then a span field "name" equals "[AppSession/short session]"
     * a span string attribute "bugsnag.span.category" equals "app_session"
     * a span bool attribute "bugsnag.span.first_class" is true
+    * a span float attribute "bugsnag.system.cpu_mean_total" is greater than or equal to 0.0
     * a span integer attribute "bugsnag.system.memory.spaces.device.min" is greater than or equal to 0
+    * a span integer attribute "bugsnag.system.memory.spaces.device.size" is greater than or equal to 0
+    * a span integer attribute "bugsnag.system.memory.spaces.device.mean" is greater than or equal to 0
+    * a span integer attribute "bugsnag.system.memory.spaces.device.max" is greater than or equal to 0
+    * a span integer attribute "bugsnag.system.memory.spaces.art.size" is greater than or equal to 0
     * a span float attribute "bugsnag.system.cpu_min_total" is greater than or equal to 0.0
+    * a span float attribute "bugsnag.system.cpu_max_total" is greater than or equal to 0.0
+    * a span float attribute "bugsnag.system.cpu_min_total" is less than or equal to span float attribute "bugsnag.system.cpu_mean_total"
+    * a span float attribute "bugsnag.system.cpu_mean_total" is less than or equal to span float attribute "bugsnag.system.cpu_max_total"
+    * a span integer attribute "bugsnag.system.memory.spaces.device.min" is less than or equal to span integer attribute "bugsnag.system.memory.spaces.device.mean"
+    * a span integer attribute "bugsnag.system.memory.spaces.device.mean" is less than or equal to span integer attribute "bugsnag.system.memory.spaces.device.max"

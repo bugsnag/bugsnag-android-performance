@@ -468,6 +468,7 @@ internal class AppSessionSpanController
             // It runs on span.end() and writes min, max, mean, used, size, timestamps
             // from its own consistent sample window.
         }
+
         companion object {
             private const val SEGMENT_FOREGROUND = "foreground"
             private const val SEGMENT_BACKGROUND = "background"
