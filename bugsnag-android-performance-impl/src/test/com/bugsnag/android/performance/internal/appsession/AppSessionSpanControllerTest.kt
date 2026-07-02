@@ -100,7 +100,7 @@ class AppSessionSpanControllerTest {
         
         val spans2 = spanProcessor.toList()
         assertEquals(2, spans2.size)
-        assertEquals("app_session.background", spans2[1].name)
+        assertEquals("[AppSession/background]", spans2[1].name)
     }
 
     @Test
