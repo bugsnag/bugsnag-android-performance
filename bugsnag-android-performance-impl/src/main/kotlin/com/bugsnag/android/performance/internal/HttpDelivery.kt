@@ -52,6 +52,29 @@ public open class HttpDelivery(
             return DeliveryResult.Failed(tracePayload, true)
         }
 
+        // Dump payload to temp file for debugging dashboards (only when running tests locally)
+        try {
+            val tmp = java.io.File(System.getProperty("java.io.tmpdir"), "http_delivery_payload.json")
+            tmp.printWriter().use { pw ->
+                pw.println("--- headers ---")
+                tracePayload.headers.forEach { (k, v) -> pw.println("$k: $v") }
+                pw.println("--- body (utf-8) ---")
+                // payload may be gzipped; attempt to decode if Content-Encoding is gzip
+                val bodyStr = try {
+                    if (tracePayload.headers["Content-Encoding"] == "gzip") {
+                        java.util.zip.GZIPInputStream(java.io.ByteArrayInputStream(tracePayload.body)).bufferedReader().use { it.readText() }
+                    } else {
+                        String(tracePayload.body)
+                    }
+                } catch (e: Exception) {
+                    String(tracePayload.body)
+                }
+                pw.println(bodyStr)
+            }
+        } catch (_: Exception) {
+            // ignore write failures
+        }
+
         TrafficStats.setThreadStatsTag(1)
         return try {
             val connection = openConnection()

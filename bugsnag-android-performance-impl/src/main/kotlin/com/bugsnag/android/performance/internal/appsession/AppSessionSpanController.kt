@@ -50,7 +50,7 @@ internal class AppSessionSpanController
     constructor(
         private val appContext: Context,
         private val spanFactory: SpanFactory,
-        private val enabledMetrics: EnabledMetrics = EnabledMetrics(false),
+        private val enabledMetrics: EnabledMetrics = EnabledMetrics(true),
         internal val sessionConfig: AppSessionConfig = AppSessionConfig(),
         private val samplingIntervalMs: Long = DEFAULT_SAMPLING_INTERVAL_MS,
         /**
@@ -278,7 +278,7 @@ internal class AppSessionSpanController
                 if (appSessionName != null) {
                     "[AppSession/$appSessionName]"
                 } else {
-                    "app_session.$segmentType"
+                    "[AppSession/$segmentType]"
                 }
 
             val span =

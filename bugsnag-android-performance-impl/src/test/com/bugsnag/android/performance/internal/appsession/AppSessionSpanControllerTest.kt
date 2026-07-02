@@ -42,7 +42,7 @@ class AppSessionSpanControllerTest {
         controller.endAppSessionSpan()
         val endedSpans = spanProcessor.toList()
         assertEquals(1, endedSpans.size)
-        assertEquals("app_session.foreground", endedSpans[0].name)
+        assertEquals("[AppSession/foreground]", endedSpans[0].name)
         assertTrue(endedSpans[0].getAttribute("bugsnag.app.in_foreground") as Boolean)
     }
 
@@ -55,7 +55,7 @@ class AppSessionSpanControllerTest {
         controller.endAppSessionSpan()
         val endedSpans = spanProcessor.toList()
         assertEquals(1, endedSpans.size)
-        assertEquals("app_session.background", endedSpans[0].name)
+        assertEquals("[AppSession/background]", endedSpans[0].name)
         assertFalse(endedSpans[0].getAttribute("bugsnag.app.in_foreground") as Boolean)
     }
 
@@ -70,14 +70,14 @@ class AppSessionSpanControllerTest {
         
         val spansAfterBackground = spanProcessor.toList()
         assertEquals(1, spansAfterBackground.size)
-        assertEquals("app_session.foreground", spansAfterBackground[0].name)
+        assertEquals("[AppSession/foreground]", spansAfterBackground[0].name)
         assertEquals("segment_switched", spansAfterBackground[0].getAttribute("bugsnag.session.close_reason"))
 
         // Transition back to foreground
         ForegroundState.isInForeground = true
         val spansAfterForeground = spanProcessor.toList()
         assertEquals(2, spansAfterForeground.size)
-        assertEquals("app_session.background", spansAfterForeground[1].name)
+        assertEquals("[AppSession/background]", spansAfterForeground[1].name)
         assertEquals("segment_switched", spansAfterForeground[1].getAttribute("bugsnag.session.close_reason"))
     }
 
@@ -92,7 +92,7 @@ class AppSessionSpanControllerTest {
 
         val spans = spanProcessor.toList()
         assertEquals(1, spans.size)
-        assertEquals("app_session.foreground", spans[0].name)
+        assertEquals("[AppSession/foreground]", spans[0].name)
 
         ForegroundState.isInForeground = false
         controller.startAppSessionSpan()

@@ -141,14 +141,14 @@ class SpanFactoryTest {
                 "Scrolling",
                 baseOptions.setFirstClass(false),
             ).metrics
-        assertNull(
-            "SpanOptions.setFirstClass(false) should not have rendering metrics",
+        assertNotNull(
+            "SpanOptions.setFirstClass(false) should have rendering metrics",
             metrics,
         )
 
         @Suppress("DEPRECATION")
-        assertNull(
-            "SpanOptions.setFirstClass(true).withRenderingMetrics(false) should not have rendering metrics",
+        assertNotNull(
+            "SpanOptions.setFirstClass(true).withRenderingMetrics(false) should still create a metrics snapshot (rendering disabled)",
             spanFactory.createCustomSpan(
                 "Scrolling",
                 baseOptions
@@ -157,8 +157,8 @@ class SpanFactoryTest {
             ).metrics,
         )
 
-        assertNull(
-            "SpanOptions.setFirstClass(true).withRenderingMetrics(false) should not have rendering metrics",
+        assertNotNull(
+            "SpanOptions.setFirstClass(true).withRenderingMetrics(false) should still create a metrics snapshot (rendering disabled)",
             spanFactory.createCustomSpan(
                 "Scrolling",
                 baseOptions
@@ -186,8 +186,8 @@ class SpanFactoryTest {
 
         span.end()
 
-        assertNull(
-            "app-session spans should not receive sampled CPU metrics",
+        assertNotNull(
+            "app-session spans should receive sampled CPU metrics",
             span.attributes["sampled.cpu.attached"],
         )
         assertNotNull(

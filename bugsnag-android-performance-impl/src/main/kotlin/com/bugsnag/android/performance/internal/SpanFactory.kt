@@ -96,8 +96,8 @@ public class SpanFactory internal constructor(
             options.isFirstClass != false,
             options.makeContext,
             options.spanMetrics ?: SpanMetrics(
-                rendering = false,
-                cpu = false,
+                rendering = true,
+                cpu = true,
                 memory = true,
             ),
             spanProcessor,
@@ -313,7 +313,8 @@ public class SpanFactory internal constructor(
     ): SpanImpl {
         val parent = parentContext?.takeIf { it.traceId.isValidTraceId() }
 
-        val metrics = metricsContainer.createSpanMetricsSnapshot(isFirstClass == true, spanMetrics)
+        // Default to attaching metrics for all spans (unless explicitly disabled) so they appear in dashboards
+        val metrics = metricsContainer.createSpanMetricsSnapshot(true, spanMetrics)
         val span =
             SpanImpl(
                 name = name,

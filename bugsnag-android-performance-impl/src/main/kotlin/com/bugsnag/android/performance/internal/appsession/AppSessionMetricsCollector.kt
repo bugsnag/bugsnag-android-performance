@@ -27,7 +27,7 @@ import java.util.concurrent.TimeUnit
 @Suppress("TooManyFunctions")
 internal class AppSessionMetricsCollector(
     private val appContext: Context,
-    private val enabledMetrics: EnabledMetrics = EnabledMetrics(false),
+    private val enabledMetrics: EnabledMetrics = EnabledMetrics(true),
     private val samplingIntervalMs: Long = DEFAULT_INTERVAL_MS,
 ) {
     // ── CPU state ─────────────────────────────────────────────────────────────

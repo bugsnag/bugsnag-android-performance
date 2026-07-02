@@ -37,6 +37,19 @@ class ImmutableConfigTest {
     }
 
     @Test
+    fun defaultEnabledMetricsAreEnabled() {
+        val enabledMetrics = EnabledMetrics()
+        assertTrue(enabledMetrics.rendering)
+        assertTrue(enabledMetrics.cpu)
+        assertTrue(enabledMetrics.memory)
+
+        val perfConfig = PerformanceConfiguration(mockedContext(), TEST_API_KEY)
+        assertTrue(perfConfig.enabledMetrics.rendering)
+        assertTrue(perfConfig.enabledMetrics.cpu)
+        assertTrue(perfConfig.enabledMetrics.memory)
+    }
+
+    @Test
     fun copyFromPerformanceConfiguration() {
         val perfConfig =
             PerformanceConfiguration(mockedContext(), TEST_API_KEY).apply {

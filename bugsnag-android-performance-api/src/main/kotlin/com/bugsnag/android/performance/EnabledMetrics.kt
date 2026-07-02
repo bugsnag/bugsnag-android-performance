@@ -1,22 +1,22 @@
 package com.bugsnag.android.performance
 
 /**
- * Sets which metrics (if any) are gathered and reported
+ * Sets which metrics (if any) are gathered and reported.
  */
 public class EnabledMetrics(
     /**
      * Determines whether rendering metrics (slow and frozen frames) are gathered and reported
      */
-    public var rendering: Boolean = false,
+    public var rendering: Boolean = true,
     /**
      * Determines whether CPU use is gathered and reported. When enabled, the CPU use is
      * sampled periodically for the app process and main thread.
      */
-    public var cpu: Boolean = false,
+    public var cpu: Boolean = true,
     /**
      * Determines whether memory consumption is gathered and reported.
      */
-    public var memory: Boolean = false,
+    public var memory: Boolean = true,
 ) {
     public constructor(enable: Boolean) : this(enable, enable, enable)
 
