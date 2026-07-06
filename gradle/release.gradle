@@ -53,9 +53,8 @@ project.afterEvaluate {
             }
         }
     }
-    if (!project.hasProperty('skipSigning')) {
-        signing {
-            sign publishing.publications
-        }
+
+    signing {
+        sign publishing.publications
     }
 }
