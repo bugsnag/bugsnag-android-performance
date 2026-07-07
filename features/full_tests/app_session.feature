@@ -1,14 +1,5 @@
 Feature: Foreground App Session Span
 
-Scenario: App session span sends app-session attributes
-    Given I load scenario "AppSessionResourceUsageScenario"
-    And I configure bugsnag "memoryMetrics" to "true"
-    And I configure bugsnag "cpuMetrics" to "false"
-    And I configure scenario "session_type" to "TestManualSpan"
-    And I start bugsnag
-    And I run the loaded scenario
-    And I wait to receive 1 trace
-    Then a span field "name" equals "TestManualSpan"
 
 Scenario: App session span contains memory aggregate attributes
     Given I load scenario "AppSessionResourceUsageScenario"

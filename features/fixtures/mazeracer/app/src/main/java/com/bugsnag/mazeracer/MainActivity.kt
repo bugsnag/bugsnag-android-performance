@@ -113,7 +113,7 @@ class MainActivity : AppCompatActivity() {
                 val fixtureConfig = runCatching { JSONObject(fileContents) }.getOrNull()
                 val address = getStringSafely(fixtureConfig, "maze_address")
                 if (!address.isNullOrBlank()) {
-                    log("Setting Maze Runner address from config file: $mazeAddress")
+                    log("Setting Maze Runner address from config file: $address")
                     return address
                 }
             } else {
@@ -170,8 +170,10 @@ class MainActivity : AppCompatActivity() {
     private fun getStringSafely(
         jsonObject: JSONObject?,
         key: String,
-    ): String {
-        return jsonObject?.optString(key) ?: ""
+    ): String? {
+        return jsonObject
+            ?.optString(key)
+            ?.takeIf { it.isNotBlank() && it != "null" }
     }
 
     private fun startBugsnag() {
@@ -334,25 +336,43 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun readCommand(commandUrl: String): String {
-        val urlConnection = URL(commandUrl).openConnection() as HttpURLConnection
+        val urlConnection = (URL(commandUrl).openConnection() as HttpURLConnection).apply {
+            connectTimeout = 5_000
+            readTimeout = 5_000
+            useCaches = false
+            requestMethod = "GET"
+        }
         try {
-            return urlConnection.inputStream.use { it.reader().readText() }
+            val responseBody =
+                if (urlConnection.responseCode in 200..299) {
+                    urlConnection.inputStream.bufferedReader().use { it.readText() }
+                } else {
+                    urlConnection.errorStream?.bufferedReader()?.use { it.readText() }.orEmpty()
+                }
+
+            return responseBody.takeIf { it.isNotBlank() } ?: "null"
         } catch (ioe: IOException) {
             try {
-                val errorMessage = urlConnection.errorStream.use { it.reader().readText() }
-                log(
-                    """
-                    Failed to GET $commandUrl (HTTP ${urlConnection.responseCode} ${urlConnection.responseMessage}):
-                    ${"-".repeat(errorMessage.width)}
-                    $errorMessage
-                    ${"-".repeat(errorMessage.width)}
-                    """.trimIndent(),
-                )
+                val errorMessage = urlConnection.errorStream?.bufferedReader()?.use { it.readText() }.orEmpty()
+                if (errorMessage.isNotBlank()) {
+                    log(
+                        """
+                        Failed to GET $commandUrl (HTTP ${urlConnection.responseCode} ${urlConnection.responseMessage}):
+                        ${"-".repeat(errorMessage.width)}
+                        $errorMessage
+                        ${"-".repeat(errorMessage.width)}
+                        """.trimIndent(),
+                    )
+                } else {
+                    log("Failed to GET $commandUrl; treating empty/invalid response as no command", ioe)
+                }
             } catch (e: Exception) {
                 log("Failed to retrieve error message from connection", e)
             }
 
-            throw ioe
+            return "null"
+        } finally {
+            urlConnection.disconnect()
         }
     }
 

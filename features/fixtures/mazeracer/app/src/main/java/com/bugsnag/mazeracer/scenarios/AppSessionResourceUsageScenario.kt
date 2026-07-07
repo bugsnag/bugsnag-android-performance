@@ -5,8 +5,6 @@ import com.bugsnag.android.performance.PerformanceConfiguration
 import com.bugsnag.android.performance.internal.InternalDebug
 import com.bugsnag.mazeracer.Scenario
 import com.bugsnag.mazeracer.log
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 class AppSessionResourceUsageScenario(
     config: PerformanceConfiguration,
@@ -49,26 +47,23 @@ class AppSessionResourceUsageScenario(
         val child = scenarioConfig["create_child_span"]?.toBoolean() ?: false
         val concurrent = scenarioConfig["concurrent_session_type"]
 
-        if (type == "TestManualSpan") {
-            launch {
-                delay(DELAY_MANUAL_SPAN)
+        runAndFlush {
+            if (type == "TestManualSpan") {
+                Thread.sleep(DELAY_MANUAL_SPAN)
                 val span = BugsnagPerformance.startSpan("TestManualSpan")
                 span.end()
+                return@runAndFlush
             }
-            return
-        }
 
-        // Start session span synchronously to ensure it's captured immediately
-        try {
-            BugsnagPerformance.startAppSessionSpan(type)
-        } catch (
-            @Suppress("TooGenericExceptionCaught")
-            e: Exception,
-        ) {
-            log("AppSessionResourceUsageScenario: Failed to start app session span", e)
-        }
+            try {
+                BugsnagPerformance.startAppSessionSpan(type)
+            } catch (
+                @Suppress("TooGenericExceptionCaught")
+                e: Exception,
+            ) {
+                log("AppSessionResourceUsageScenario: Failed to start app session span", e)
+            }
 
-        launch {
             if (workDuration > 0) {
                 val end = System.currentTimeMillis() + workDuration.toLong()
                 while (System.currentTimeMillis() < end) {
@@ -85,13 +80,13 @@ class AppSessionResourceUsageScenario(
             if (concurrent != null) {
                 // End session A first
                 BugsnagPerformance.endAppSessionSpan()
-                delay(DELAY_CONCURRENT)
+                Thread.sleep(DELAY_CONCURRENT)
                 // Start and run session B
                 BugsnagPerformance.startAppSessionSpan(concurrent)
-                delay(duration.toLong())
+                Thread.sleep(duration.toLong())
                 BugsnagPerformance.endAppSessionSpan()
             } else {
-                delay(duration.toLong())
+                Thread.sleep(duration.toLong())
                 if (!abort) {
                     BugsnagPerformance.endAppSessionSpan()
                 }

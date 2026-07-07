@@ -314,7 +314,7 @@ public class SpanFactory internal constructor(
         val parent = parentContext?.takeIf { it.traceId.isValidTraceId() }
 
         // Default to attaching metrics for all spans (unless explicitly disabled) so they appear in dashboards
-        val metrics = metricsContainer.createSpanMetricsSnapshot(true, spanMetrics)
+        val metrics = metricsContainer.createSpanMetricsSnapshot(isFirstClass != false, spanMetrics)
         val span =
             SpanImpl(
                 name = name,
