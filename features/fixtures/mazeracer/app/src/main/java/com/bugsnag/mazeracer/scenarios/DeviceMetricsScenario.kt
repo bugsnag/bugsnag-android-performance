@@ -34,17 +34,18 @@ class DeviceMetricsScenario(config: PerformanceConfiguration, scenarioMetadata: 
         BugsnagPerformance.start(config)
 
         runAndFlush {
+            val metricsDisabled = SpanMetrics(cpu = false, memory = false, rendering = false)
             val firstClass = SpanOptions.setFirstClass(true)
             val notFirstClass = SpanOptions.setFirstClass(false)
             BugsnagPerformance.startSpan("FirstClass", firstClass).use {
                 Thread.sleep(TEST_SPAN_TIME)
             }
 
-            BugsnagPerformance.startSpan("Not FirstClass", notFirstClass).use {
+            BugsnagPerformance.startSpan("Not FirstClass", notFirstClass.withMetrics(metricsDisabled)).use {
                 Thread.sleep(TEST_SPAN_TIME)
             }
 
-            BugsnagPerformance.startSpan("No Metrics", notFirstClass.withMetrics(null)).use {
+            BugsnagPerformance.startSpan("No Metrics", notFirstClass.withMetrics(metricsDisabled)).use {
                 Thread.sleep(TEST_SPAN_TIME)
             }
 
