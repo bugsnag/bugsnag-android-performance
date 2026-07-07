@@ -1,4 +1,4 @@
-# frozen_string_literal: true
+g# frozen_string_literal: true
 
 def execute_command(action, scenario_name = '', scenario_metadata = '')
 
@@ -322,6 +322,17 @@ Then('every span attribute {string} does not exist') do |attribute|
   spans.each do |span|
     attr_obj = span['attributes'].find { |a| a['key'] == attribute }
     raise Test::Unit::AssertionFailedError.new "Attribute #{attribute} exists in a span" unless attr_obj.nil?
+  end
+end
+
+ Then('every app_session span attribute {string} does not exist') do |attribute|
+  spans = spans_from_request_list(Maze::Server.list_for('traces'))
+  spans.each do |span|
+    category = span['attributes'].find { |a| a['key'] == 'bugsnag.span.category' }
+    next unless category && category['value']['stringValue'] == 'app_session'
+
+    attr_obj = span['attributes'].find { |a| a['key'] == attribute }
+    raise Test::Unit::AssertionFailedError.new "Attribute #{attribute} exists in an app_session span" unless attr_obj.nil?
   end
 end
 
