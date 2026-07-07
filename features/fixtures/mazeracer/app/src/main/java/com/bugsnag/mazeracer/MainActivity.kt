@@ -336,12 +336,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun readCommand(commandUrl: String): String {
-        val urlConnection = (URL(commandUrl).openConnection() as HttpURLConnection).apply {
-            connectTimeout = DEFAULT_HTTP_TIMEOUT
-            readTimeout = DEFAULT_HTTP_TIMEOUT
-            useCaches = false
-            requestMethod = "GET"
-        }
+        val urlConnection =
+            (URL(commandUrl).openConnection() as HttpURLConnection)
+                .apply {
+                    connectTimeout = DEFAULT_HTTP_TIMEOUT
+                    readTimeout = DEFAULT_HTTP_TIMEOUT
+                    useCaches = false
+                    requestMethod = "GET"
+                }
         try {
             val responseBody =
                 if (urlConnection.responseCode in HTTP_SUCCESS_START..HTTP_SUCCESS_END) {
