@@ -1,4 +1,4 @@
-g# frozen_string_literal: true
+# frozen_string_literal: true
 
 def execute_command(action, scenario_name = '', scenario_metadata = '')
 
