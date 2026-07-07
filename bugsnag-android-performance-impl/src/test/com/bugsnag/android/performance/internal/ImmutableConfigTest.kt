@@ -14,6 +14,7 @@ import com.bugsnag.android.performance.internal.plugins.PluginManager
 import com.bugsnag.android.performance.internal.processing.ImmutableConfig
 import com.bugsnag.android.performance.test.TestTimeoutExecutor
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotSame
 import org.junit.Assert.assertSame
@@ -37,16 +38,16 @@ class ImmutableConfigTest {
     }
 
     @Test
-    fun defaultEnabledMetricsAreEnabled() {
+    fun defaultEnabledMetricsAreDisabled() {
         val enabledMetrics = EnabledMetrics()
-        assertTrue(enabledMetrics.rendering)
-        assertTrue(enabledMetrics.cpu)
-        assertTrue(enabledMetrics.memory)
+        assertFalse(enabledMetrics.rendering)
+        assertFalse(enabledMetrics.cpu)
+        assertFalse(enabledMetrics.memory)
 
         val perfConfig = PerformanceConfiguration(mockedContext(), TEST_API_KEY)
-        assertTrue(perfConfig.enabledMetrics.rendering)
-        assertTrue(perfConfig.enabledMetrics.cpu)
-        assertTrue(perfConfig.enabledMetrics.memory)
+        assertFalse(perfConfig.enabledMetrics.rendering)
+        assertFalse(perfConfig.enabledMetrics.cpu)
+        assertFalse(perfConfig.enabledMetrics.memory)
     }
 
     @Test

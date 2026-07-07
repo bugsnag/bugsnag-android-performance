@@ -20,7 +20,7 @@ public class PerformanceConfiguration private constructor(public val context: Co
 
     public var autoInstrumentActivities: AutoInstrument = AutoInstrument.FULL
 
-    public var enabledMetrics: EnabledMetrics = EnabledMetrics(true)
+    public var enabledMetrics: EnabledMetrics = EnabledMetrics()
 
     /**
      * Controls app-session behavior. Defaults to automatic lifecycle mode.
