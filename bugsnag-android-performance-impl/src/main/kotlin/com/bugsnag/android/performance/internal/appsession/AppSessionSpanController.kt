@@ -13,8 +13,8 @@ import com.bugsnag.android.performance.SpanOptions
 import com.bugsnag.android.performance.internal.BugsnagClock
 import com.bugsnag.android.performance.internal.Loopers
 import com.bugsnag.android.performance.internal.SpanFactory
-import com.bugsnag.android.performance.internal.isInForeground
 import com.bugsnag.android.performance.internal.instrumentation.ForegroundState
+import com.bugsnag.android.performance.internal.isInForeground
 import com.bugsnag.android.performance.internal.processing.ImmutableConfig
 import java.util.UUID
 import java.util.concurrent.Executors
@@ -467,9 +467,7 @@ internal class AppSessionSpanController
             dispatchSessionCallback { callback, session -> callback.onSessionEnded(session) }
         }
 
-        private fun dispatchSessionCallback(
-            callbackAction: (AppSessionCallback, AppSession) -> Unit,
-        ) {
+        private fun dispatchSessionCallback(callbackAction: (AppSessionCallback, AppSession) -> Unit) {
             val callbacks = sessionConfig.sessionCallbacks.toList()
             if (callbacks.isEmpty()) return
 

@@ -1,4 +1,6 @@
 public final class com/bugsnag/android/performance/AppSession {
+	public static final field Companion Lcom/bugsnag/android/performance/AppSession$Companion;
+	public static final fun create (JLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Long;Lcom/bugsnag/android/performance/CloseReason;IZ)Lcom/bugsnag/android/performance/AppSession;
 	public final fun getAppVersion ()Ljava/lang/String;
 	public final fun getBatchIndex ()I
 	public final fun getCloseReason ()Lcom/bugsnag/android/performance/CloseReason;
@@ -10,6 +12,11 @@ public final class com/bugsnag/android/performance/AppSession {
 	public final fun isEnded ()Z
 	public final fun isInForeground ()Z
 	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/bugsnag/android/performance/AppSession$Companion {
+	public final fun create (JLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Long;Lcom/bugsnag/android/performance/CloseReason;IZ)Lcom/bugsnag/android/performance/AppSession;
+	public static synthetic fun create$default (Lcom/bugsnag/android/performance/AppSession$Companion;JLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Long;Lcom/bugsnag/android/performance/CloseReason;IZILjava/lang/Object;)Lcom/bugsnag/android/performance/AppSession;
 }
 
 public abstract interface class com/bugsnag/android/performance/AppSessionCallback {

@@ -16,7 +16,10 @@ internal class TestMetricsContainer(
     private val cpu: SampledMetricSource<CpuMetricsSnapshot>? = null,
     private val memory: SampledMetricSource<MemoryMetricsSnapshot>? = null,
     private val frames: MetricSource<FramerateMetricsSnapshot>? = null,
-) : MetricsContainer(TestSamplerExecutor(), SpanFactory(com.bugsnag.android.performance.test.NoopSpanProcessor.INSTANCE, {})) {
+) : MetricsContainer(
+        TestSamplerExecutor(),
+        SpanFactory(com.bugsnag.android.performance.test.NoopSpanProcessor.INSTANCE, {}),
+    ) {
     override fun createCpuMetricSource(application: Application): SampledMetricSource<CpuMetricsSnapshot>? {
         return cpu
     }

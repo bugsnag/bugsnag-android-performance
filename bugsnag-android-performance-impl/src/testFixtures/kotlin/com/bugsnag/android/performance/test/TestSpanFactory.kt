@@ -53,6 +53,7 @@ class TestSpanFactory {
             processor = NoopSpanProcessor.INSTANCE,
         )
 
+    @Suppress("LongParameterList")
     @JvmOverloads
     fun newSpan(
         name: String? = null,

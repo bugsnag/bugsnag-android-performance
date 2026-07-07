@@ -49,6 +49,7 @@ public class AppSession internal constructor(
          * Create an [AppSession] instance for internal SDK callbacks and diagnostics.
          */
         @JvmStatic
+        @Suppress("LongParameterList")
         public fun create(
             startTimeNano: Long,
             appVersion: String,
