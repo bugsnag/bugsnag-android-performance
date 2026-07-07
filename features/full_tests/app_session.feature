@@ -68,12 +68,12 @@ Scenario: App session span does not contain resource usage when metrics are disa
     And I wait to receive 1 trace
     Then a span field "name" equals "[AppSession/disabled metrics]"
     * a span string attribute "bugsnag.span.category" equals "app_session"
-    * every span attribute "bugsnag.system.memory.spaces.device.mean" does not exist
-    * every span attribute "bugsnag.system.memory.spaces.device.min" does not exist
-    * every span attribute "bugsnag.system.memory.spaces.device.max" does not exist
-    * every span attribute "bugsnag.system.cpu_mean_total" does not exist
-    * every span attribute "bugsnag.system.cpu_min_total" does not exist
-    * every span attribute "bugsnag.system.cpu_max_total" does not exist
+    * every app_session span attribute "bugsnag.system.memory.spaces.device.mean" does not exist
+    * every app_session span attribute "bugsnag.system.memory.spaces.device.min" does not exist
+    * every app_session span attribute "bugsnag.system.memory.spaces.device.max" does not exist
+    * every app_session span attribute "bugsnag.system.cpu_mean_total" does not exist
+    * every app_session span attribute "bugsnag.system.cpu_min_total" does not exist
+    * every app_session span attribute "bugsnag.system.cpu_max_total" does not exist
 
 Scenario: Normal custom span is not treated as app session span
     Given I load scenario "AppSessionResourceUsageScenario"
@@ -182,9 +182,9 @@ Scenario: CPU disabled but memory enabled produces CPU absent and memory present
     * a span integer attribute "bugsnag.system.memory.spaces.device.mean" is greater than or equal to 0
     * a span integer attribute "bugsnag.system.memory.spaces.device.min" is greater than or equal to 0
     * a span integer attribute "bugsnag.system.memory.spaces.device.max" is greater than or equal to 0
-    * every span attribute "bugsnag.system.cpu_mean_total" does not exist
-    * every span attribute "bugsnag.system.cpu_min_total" does not exist
-    * every span attribute "bugsnag.system.cpu_max_total" does not exist
+    * every app_session span attribute "bugsnag.system.cpu_mean_total" does not exist
+    * every app_session span attribute "bugsnag.system.cpu_min_total" does not exist
+    * every app_session span attribute "bugsnag.system.cpu_max_total" does not exist
 
 Scenario: Memory disabled but CPU enabled produces memory absent and CPU present
     Given I load scenario "AppSessionResourceUsageScenario"
@@ -204,9 +204,9 @@ Scenario: Memory disabled but CPU enabled produces memory absent and CPU present
     * a span float attribute "bugsnag.system.cpu_mean_total" is greater than or equal to 0.0
     * a span float attribute "bugsnag.system.cpu_min_total" is greater than or equal to 0.0
     * a span float attribute "bugsnag.system.cpu_max_total" is greater than or equal to 0.0
-    * every span attribute "bugsnag.system.memory.spaces.device.mean" does not exist
-    * every span attribute "bugsnag.system.memory.spaces.device.min" does not exist
-    * every span attribute "bugsnag.system.memory.spaces.device.max" does not exist
+    * every app_session span attribute "bugsnag.system.memory.spaces.device.mean" does not exist
+    * every app_session span attribute "bugsnag.system.memory.spaces.device.min" does not exist
+    * every app_session span attribute "bugsnag.system.memory.spaces.device.max" does not exist
 
 Scenario: App session span contains all CPU sub-metrics
     Given I load scenario "AppSessionResourceUsageScenario"
