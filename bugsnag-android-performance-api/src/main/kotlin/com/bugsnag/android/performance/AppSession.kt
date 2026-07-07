@@ -7,7 +7,7 @@ import java.util.UUID
  * until they leave or the session is explicitly ended.
  *
  * Sessions are controlled via [PerformanceConfiguration.appSessionConfig] and the manual APIs:
- * [BugsnagPerformance.startAppSessionSpan] and [BugsnagPerformance.endAppSessionSpan].
+ * `startAppSessionSpan` and `endAppSessionSpan`.
  */
 public class AppSession internal constructor(
     /** Stable UUID that identifies this session across all delivered batches. */
@@ -43,6 +43,37 @@ public class AppSession internal constructor(
     override fun toString(): String =
         "AppSession(sessionId=$sessionId, appVersion=$appVersion, " +
             "closeReason=$closeReason, isEnded=$isEnded)"
+
+    public companion object {
+        /**
+         * Create an [AppSession] instance for internal SDK callbacks and diagnostics.
+         */
+        @JvmStatic
+        public fun create(
+            startTimeNano: Long,
+            appVersion: String,
+            osVersion: String,
+            deviceModel: String,
+            sessionId: String = UUID.randomUUID().toString(),
+            endTimeNano: Long? = null,
+            closeReason: CloseReason? = null,
+            batchIndex: Int = 0,
+            isInForeground: Boolean = true,
+        ): AppSession {
+            return AppSession(
+                sessionId = sessionId,
+                startTimeNano = startTimeNano,
+                appVersion = appVersion,
+                osVersion = osVersion,
+                deviceModel = deviceModel,
+            ).apply {
+                this.endTimeNano = endTimeNano
+                this.closeReason = closeReason
+                this.batchIndex = batchIndex
+                this.isInForeground = isInForeground
+            }
+        }
+    }
 }
 
 /**

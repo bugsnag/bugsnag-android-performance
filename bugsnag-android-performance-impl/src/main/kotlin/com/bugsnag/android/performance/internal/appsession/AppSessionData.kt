@@ -50,6 +50,15 @@ internal data class AppSessionData(
     val runtimeMemoryMinBytes: Long = 0L,
     val runtimeMemoryMaxBytes: Long = 0L,
     val runtimeMemoryMeanBytes: Long = 0L,
+    /**
+     * ART heap aliases for the runtime memory aggregates.
+     * These mirror the runtime fields so the persisted app-session payload can expose
+     * the same naming as the span attributes owned by `MemoryMetricsSource`.
+     */
+    val artMemoryCount: Int = runtimeMemoryCount,
+    val artMemoryMinBytes: Long = runtimeMemoryMinBytes,
+    val artMemoryMaxBytes: Long = runtimeMemoryMaxBytes,
+    val artMemoryMeanBytes: Long = runtimeMemoryMeanBytes,
     val deviceMemoryCount: Int = 0,
     val deviceMemoryMinBytes: Long = 0L,
     val deviceMemoryMaxBytes: Long = 0L,
@@ -83,6 +92,12 @@ internal data class AppSessionData(
                 put(KEY_RT_MEM_MAX, runtimeMemoryMaxBytes)
                 put(KEY_RT_MEM_MEAN, runtimeMemoryMeanBytes)
             }
+            if (artMemoryCount > 0) {
+                put(KEY_ART_MEM_COUNT, artMemoryCount)
+                put(KEY_ART_MEM_MIN, artMemoryMinBytes)
+                put(KEY_ART_MEM_MAX, artMemoryMaxBytes)
+                put(KEY_ART_MEM_MEAN, artMemoryMeanBytes)
+            }
             if (deviceMemoryCount > 0) {
                 put(KEY_DEV_MEM_COUNT, deviceMemoryCount)
                 put(KEY_DEV_MEM_MIN, deviceMemoryMinBytes)
@@ -115,6 +130,11 @@ internal data class AppSessionData(
         private const val KEY_RT_MEM_MIN = "runtimeMemoryMinBytes"
         private const val KEY_RT_MEM_MAX = "runtimeMemoryMaxBytes"
         private const val KEY_RT_MEM_MEAN = "runtimeMemoryMeanBytes"
+
+        private const val KEY_ART_MEM_COUNT = "artMemoryCount"
+        private const val KEY_ART_MEM_MIN = "artMemoryMinBytes"
+        private const val KEY_ART_MEM_MAX = "artMemoryMaxBytes"
+        private const val KEY_ART_MEM_MEAN = "artMemoryMeanBytes"
 
         private const val KEY_DEV_MEM_COUNT = "deviceMemoryCount"
         private const val KEY_DEV_MEM_MIN = "deviceMemoryMinBytes"
@@ -151,6 +171,10 @@ internal data class AppSessionData(
                 runtimeMemoryMinBytes = json.optLong(KEY_RT_MEM_MIN),
                 runtimeMemoryMaxBytes = json.optLong(KEY_RT_MEM_MAX),
                 runtimeMemoryMeanBytes = json.optLong(KEY_RT_MEM_MEAN),
+                artMemoryCount = json.optInt(KEY_ART_MEM_COUNT, json.optInt(KEY_RT_MEM_COUNT)),
+                artMemoryMinBytes = json.optLong(KEY_ART_MEM_MIN, json.optLong(KEY_RT_MEM_MIN)),
+                artMemoryMaxBytes = json.optLong(KEY_ART_MEM_MAX, json.optLong(KEY_RT_MEM_MAX)),
+                artMemoryMeanBytes = json.optLong(KEY_ART_MEM_MEAN, json.optLong(KEY_RT_MEM_MEAN)),
                 deviceMemoryCount = json.optInt(KEY_DEV_MEM_COUNT),
                 deviceMemoryMinBytes = json.optLong(KEY_DEV_MEM_MIN),
                 deviceMemoryMaxBytes = json.optLong(KEY_DEV_MEM_MAX),

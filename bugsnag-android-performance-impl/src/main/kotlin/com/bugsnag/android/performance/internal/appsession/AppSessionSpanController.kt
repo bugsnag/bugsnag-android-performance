@@ -1,13 +1,21 @@
 package com.bugsnag.android.performance.internal.appsession
 
+import android.app.Application
 import android.content.Context
+import android.os.Build
+import com.bugsnag.android.performance.AppSession
+import com.bugsnag.android.performance.AppSessionCallback
 import com.bugsnag.android.performance.AppSessionConfig
+import com.bugsnag.android.performance.CloseReason
 import com.bugsnag.android.performance.EnabledMetrics
 import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.SpanOptions
 import com.bugsnag.android.performance.internal.BugsnagClock
+import com.bugsnag.android.performance.internal.Loopers
 import com.bugsnag.android.performance.internal.SpanFactory
+import com.bugsnag.android.performance.internal.isInForeground
 import com.bugsnag.android.performance.internal.instrumentation.ForegroundState
+import com.bugsnag.android.performance.internal.processing.ImmutableConfig
 import java.util.UUID
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
@@ -30,9 +38,10 @@ import java.util.concurrent.atomic.AtomicInteger
  * ## Custom app-session names
  *
  * Callers may supply an optional `appSessionName` on `startForegroundAppSessionSpan` /
- * `startBackgroundAppSessionSpan`. It is recorded in `AppSessionData` for local
- * diagnostics and recovery, but intentionally not emitted as a span attribute to keep
- * parity with the iOS app-session payload contract.
+ * `startBackgroundAppSessionSpan`, or configure a default name via
+ * [AppSessionConfig.manualSessionDefaultName]. The resolved value is recorded in
+ * `AppSessionData` for local diagnostics and recovery, and is also used in the delivered
+ * app-session span name as `[AppSession/<name>]`.
  *
  * ## Automatic timeout behaviour
  *
@@ -68,6 +77,7 @@ internal class AppSessionSpanController
         // ── Session identity ─────────────────────────────────────────────────────
         private var sessionId: String = UUID.randomUUID().toString()
         private val segmentIndex = AtomicInteger(0)
+        private var currentSessionState: SessionState? = null
 
         // ── Active segment state ─────────────────────────────────────────────────
         @Volatile
@@ -104,7 +114,10 @@ internal class AppSessionSpanController
                     }
                 }
                 // Start the initial segment based on current state
-                if (ForegroundState.isInForeground) {
+                val initialInForeground =
+                    isInForeground(appContext.applicationContext as? Application)
+                        ?: ForegroundState.isInForeground
+                if (initialInForeground) {
                     startForegroundAppSessionSpan()
                 } else {
                     startBackgroundAppSessionSpan()
@@ -157,12 +170,17 @@ internal class AppSessionSpanController
          * @param appSessionName optional customer-supplied label retained in internal app-session storage.
          */
         fun startForegroundAppSessionSpan(appSessionName: String? = null) {
+            val resolvedAppSessionName = resolveAppSessionName(appSessionName)
+            val wasBackground = activeSegmentType == SEGMENT_BACKGROUND
             cancelBackgroundTimeout()
             if (activeSegmentType == SEGMENT_BACKGROUND) {
                 closeCurrentSegmentSpan(closeReason = "segment_switched")
             }
-            if (activeSegmentType != SEGMENT_FOREGROUND || appSessionName != null) {
-                openAppSessionSpan(SEGMENT_FOREGROUND, appSessionName)
+            if (activeSegmentType != SEGMENT_FOREGROUND || activeSegmentName != resolvedAppSessionName) {
+                val sessionCreated = openAppSessionSpan(SEGMENT_FOREGROUND, resolvedAppSessionName)
+                if (wasBackground && !sessionCreated) {
+                    notifySessionForegrounded()
+                }
             }
         }
 
@@ -183,12 +201,17 @@ internal class AppSessionSpanController
          * @param appSessionName optional customer-supplied label retained in internal app-session storage.
          */
         fun startBackgroundAppSessionSpan(appSessionName: String? = null) {
+            val resolvedAppSessionName = resolveAppSessionName(appSessionName)
+            val wasForeground = activeSegmentType == SEGMENT_FOREGROUND
             if (activeSegmentType == SEGMENT_FOREGROUND) {
                 closeCurrentSegmentSpan(closeReason = "segment_switched")
             }
-            if (activeSegmentType != SEGMENT_BACKGROUND || appSessionName != null) {
-                openAppSessionSpan(SEGMENT_BACKGROUND, appSessionName)
+            if (activeSegmentType != SEGMENT_BACKGROUND || activeSegmentName != resolvedAppSessionName) {
+                val sessionCreated = openAppSessionSpan(SEGMENT_BACKGROUND, resolvedAppSessionName)
                 scheduleBackgroundTimeout()
+                if (wasForeground && !sessionCreated) {
+                    notifySessionBackgrounded()
+                }
             }
         }
 
@@ -264,7 +287,7 @@ internal class AppSessionSpanController
         private fun openAppSessionSpan(
             segmentType: String,
             appSessionName: String?,
-        ) {
+        ): Boolean {
             if (activeSpan != null) {
                 closeCurrentSegmentSpan(closeReason = "segment_switched")
             }
@@ -310,12 +333,27 @@ internal class AppSessionSpanController
             activeSegmentName = appSessionName
             activeSegmentStartMs = startMs
             activeSegmentStartUnixNano = startUnixNano
+
+            val sessionState = currentSessionState
+            if (sessionState == null) {
+                currentSessionState = createSessionState(startUnixNano, segmentType)
+                notifySessionStarted()
+                return true
+            }
+
+            sessionState.isInForeground = segmentType == SEGMENT_FOREGROUND
+            return false
+        }
+
+        private fun resolveAppSessionName(appSessionName: String?): String? {
+            return appSessionName ?: sessionConfig.manualSessionDefaultName
         }
 
         @Synchronized
         private fun closeCurrentSegmentSpan(closeReason: String?) {
             val span = activeSpan ?: return
             val collector = activeCollector ?: return
+            val segmentType = activeSegmentType
             val appSessionName = activeSegmentName
             val startMs = activeSegmentStartMs
             val startUnixNano = activeSegmentStartUnixNano
@@ -367,7 +405,120 @@ internal class AppSessionSpanController
                     metrics = metrics,
                 ),
             )
+
+            if (shouldEndSession(closeReason)) {
+                finalizeSession(
+                    closeReason = closeReason,
+                    endUnixNano = endUnixNano,
+                    wasForeground = segmentType == SEGMENT_FOREGROUND,
+                    index = index,
+                )
+            }
         }
+
+        private fun shouldEndSession(closeReason: String?): Boolean {
+            return closeReason != null && closeReason != "segment_switched"
+        }
+
+        private fun finalizeSession(
+            closeReason: String?,
+            endUnixNano: Long,
+            wasForeground: Boolean,
+            index: Int,
+        ) {
+            val sessionState = currentSessionState ?: return
+            sessionState.endTimeNano = endUnixNano
+            sessionState.closeReason = mapCloseReason(closeReason)
+            sessionState.batchIndex = index
+            sessionState.isInForeground = wasForeground
+            notifySessionEnded()
+            currentSessionState = null
+            sessionId = UUID.randomUUID().toString()
+            segmentIndex.set(0)
+        }
+
+        private fun createSessionState(
+            startTimeNano: Long,
+            segmentType: String,
+        ): SessionState {
+            return SessionState(
+                sessionId = sessionId,
+                startTimeNano = startTimeNano,
+                appVersion = ImmutableConfig.versionNameFor(appContext) ?: appContext.packageName,
+                osVersion = Build.VERSION.RELEASE ?: Build.VERSION.SDK_INT.toString(),
+                deviceModel = Build.MODEL,
+                isInForeground = segmentType == SEGMENT_FOREGROUND,
+            )
+        }
+
+        private fun notifySessionStarted() {
+            dispatchSessionCallback { callback, session -> callback.onSessionStarted(session) }
+        }
+
+        private fun notifySessionBackgrounded() {
+            dispatchSessionCallback { callback, session -> callback.onSessionBackgrounded(session) }
+        }
+
+        private fun notifySessionForegrounded() {
+            dispatchSessionCallback { callback, session -> callback.onSessionForegrounded(session) }
+        }
+
+        private fun notifySessionEnded() {
+            dispatchSessionCallback { callback, session -> callback.onSessionEnded(session) }
+        }
+
+        private fun dispatchSessionCallback(
+            callbackAction: (AppSessionCallback, AppSession) -> Unit,
+        ) {
+            val callbacks = sessionConfig.sessionCallbacks.toList()
+            if (callbacks.isEmpty()) return
+
+            val sessionSnapshot = currentSessionState?.toAppSession() ?: return
+            Loopers.onMainThread {
+                callbacks.forEach { callback ->
+                    @Suppress("TooGenericExceptionCaught")
+                    try {
+                        callbackAction(callback, sessionSnapshot)
+                    } catch (_: Exception) {
+                        // ignore callback failures
+                    }
+                }
+            }
+        }
+
+        private fun mapCloseReason(closeReason: String?): CloseReason? {
+            return when (closeReason) {
+                "client_end" -> CloseReason.CLIENT_END
+                CLOSE_REASON_BG_TIMEOUT -> CloseReason.BACKGROUND_TIMEOUT
+                else -> null
+            }
+        }
+
+        private fun SessionState.toAppSession(): AppSession {
+            return AppSession.create(
+                sessionId = sessionId,
+                startTimeNano = startTimeNano,
+                appVersion = appVersion,
+                osVersion = osVersion,
+                deviceModel = deviceModel,
+                endTimeNano = endTimeNano,
+                closeReason = closeReason,
+                batchIndex = batchIndex,
+                isInForeground = isInForeground,
+            )
+        }
+
+        private data class SessionState(
+            val sessionId: String,
+            val startTimeNano: Long,
+            val appVersion: String,
+            val osVersion: String,
+            val deviceModel: String,
+            var endTimeNano: Long? = null,
+            var closeReason: CloseReason? = null,
+            var batchIndex: Int = 0,
+            var isInForeground: Boolean = true,
+        )
 
         @Suppress("LongParameterList")
         private fun buildAppSessionData(
