@@ -119,7 +119,7 @@ enum class ActivityLifecycleStep {
         }
     }
 
-    internal fun ActivityLifecycleCallbacks.invokeLifecycleCallback(
+    private fun ActivityLifecycleCallbacks.invokeLifecycleCallback(
         methodName: String,
         activity: Activity,
         payload: Any? = null

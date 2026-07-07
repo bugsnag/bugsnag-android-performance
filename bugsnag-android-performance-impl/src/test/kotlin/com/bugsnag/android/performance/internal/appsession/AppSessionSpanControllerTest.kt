@@ -1,0 +1,271 @@
+package com.bugsnag.android.performance.internal.appsession
+
+import android.content.Context
+import androidx.test.core.app.ApplicationProvider
+import com.bugsnag.android.performance.AppSession
+import com.bugsnag.android.performance.AppSessionCallback
+import com.bugsnag.android.performance.AppSessionConfig
+import com.bugsnag.android.performance.CloseReason
+import com.bugsnag.android.performance.internal.SpanFactory
+import com.bugsnag.android.performance.internal.SpanImpl
+import com.bugsnag.android.performance.internal.SpanProcessor
+import com.bugsnag.android.performance.internal.instrumentation.ForegroundState
+import com.bugsnag.android.performance.internal.isInForeground
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.mockito.kotlin.mock
+import org.mockito.Mockito.mockStatic
+import org.robolectric.RobolectricTestRunner
+import java.util.concurrent.ConcurrentLinkedQueue
+
+@RunWith(RobolectricTestRunner::class)
+class AppSessionSpanControllerTest {
+    private class CollectingSpanProcessor : SpanProcessor {
+        private val spans = ConcurrentLinkedQueue<SpanImpl>()
+
+        fun toList(): List<SpanImpl> = spans.sortedBy { it.startTime }
+
+        override fun onEnd(span: com.bugsnag.android.performance.Span) {
+            spans.add(span as SpanImpl)
+        }
+    }
+
+    private data class SessionEvent(
+        val type: String,
+        val session: AppSession,
+    )
+
+    private class RecordingSessionCallback : AppSessionCallback {
+        val events = mutableListOf<SessionEvent>()
+
+        override fun onSessionStarted(session: AppSession) {
+            events.add(SessionEvent("started", session))
+        }
+
+        override fun onSessionBackgrounded(session: AppSession) {
+            events.add(SessionEvent("backgrounded", session))
+        }
+
+        override fun onSessionForegrounded(session: AppSession) {
+            events.add(SessionEvent("foregrounded", session))
+        }
+
+        override fun onSessionEnded(session: AppSession) {
+            events.add(SessionEvent("ended", session))
+        }
+    }
+
+    private lateinit var spanFactory: SpanFactory
+    private lateinit var spanProcessor: CollectingSpanProcessor
+    private lateinit var context: Context
+
+    @Before
+    fun setup() {
+        spanProcessor = CollectingSpanProcessor()
+        spanFactory =
+            SpanFactory(
+                spanProcessor,
+                { span ->
+                    span.attributes["bugsnag.app.in_foreground"] = ForegroundState.isInForeground
+                },
+            )
+        context = ApplicationProvider.getApplicationContext()
+    }
+
+    @Test
+    fun testAutomaticSessionStartInForeground() {
+        ForegroundState.isInForeground = true
+        val config = AppSessionConfig(autoStartSession = true)
+        val controller = AppSessionSpanController(context, spanFactory, sessionConfig = config)
+
+        controller.endAppSessionSpan()
+        val endedSpans = spanProcessor.toList()
+        assertEquals(1, endedSpans.size)
+        assertEquals("[AppSession/foreground]", endedSpans[0].name)
+        assertTrue(endedSpans[0].attributes["bugsnag.app.in_foreground"] as Boolean)
+    }
+
+    @Test
+    fun testAutomaticSessionStartInBackground() {
+        ForegroundState.isInForeground = false
+        val config = AppSessionConfig(autoStartSession = true)
+        val foregroundTrackerClass =
+            Class.forName("com.bugsnag.android.performance.internal.ForegroundTrackerKt")
+
+        @Suppress("UNCHECKED_CAST")
+        mockStatic(foregroundTrackerClass as Class<Any>).use { mockedForegroundTracker ->
+            mockedForegroundTracker.`when`<Boolean> { isInForeground(null) }.thenReturn(false)
+
+            AppSessionSpanController(context, spanFactory, sessionConfig = config).endAppSessionSpan()
+        }
+
+        val endedSpans = spanProcessor.toList()
+        assertEquals(1, endedSpans.size)
+        assertEquals("[AppSession/background]", endedSpans[0].name)
+        assertFalse(endedSpans[0].attributes["bugsnag.app.in_foreground"] as Boolean)
+    }
+
+    @Test
+    fun testAutomaticTransition() {
+        ForegroundState.isInForeground = true
+        val config = AppSessionConfig(autoStartSession = true)
+        AppSessionSpanController(context, spanFactory, sessionConfig = config)
+
+        // Transition to background
+        ForegroundState.isInForeground = false
+
+        val spansAfterBackground = spanProcessor.toList()
+        assertEquals(1, spansAfterBackground.size)
+        assertEquals("[AppSession/foreground]", spansAfterBackground[0].name)
+        assertEquals("segment_switched", spansAfterBackground[0].attributes["bugsnag.session.close_reason"])
+
+        // Transition back to foreground
+        ForegroundState.isInForeground = true
+        val spansAfterForeground = spanProcessor.toList()
+        assertEquals(2, spansAfterForeground.size)
+        assertEquals("[AppSession/background]", spansAfterForeground[1].name)
+        assertEquals("segment_switched", spansAfterForeground[1].attributes["bugsnag.session.close_reason"])
+    }
+
+    @Test
+    fun testManualStartUsesAutomaticDetection() {
+        val config = AppSessionConfig(autoStartSession = false)
+        val controller = AppSessionSpanController(context, spanFactory, sessionConfig = config)
+
+        ForegroundState.isInForeground = true
+        controller.startAppSessionSpan()
+        controller.endAppSessionSpan()
+
+        val spans = spanProcessor.toList()
+        assertEquals(1, spans.size)
+        assertEquals("[AppSession/foreground]", spans[0].name)
+
+        ForegroundState.isInForeground = false
+        controller.startAppSessionSpan()
+        controller.endAppSessionSpan()
+
+        val spans2 = spanProcessor.toList()
+        assertEquals(2, spans2.size)
+        assertEquals("[AppSession/background]", spans2[1].name)
+    }
+
+    @Test
+    fun testCategoryIsAppSession() {
+        ForegroundState.isInForeground = true
+        val config = AppSessionConfig(autoStartSession = true)
+        val controller = AppSessionSpanController(context, spanFactory, sessionConfig = config)
+
+        controller.endAppSessionSpan()
+        val endedSpans = spanProcessor.toList()
+        assertEquals(1, endedSpans.size)
+        // Check that the category is APP_SESSION
+        assertEquals("app_session", endedSpans[0].category.category)
+    }
+
+    @Test
+    fun testAppSessionDataSerialization() {
+        val data =
+            AppSessionData(
+                sessionId = "test-session",
+                index = 1,
+                appSessionName = "test-name",
+                startTimeMs = 1000,
+                endTimeMs = 2000,
+                durationMs = 1000,
+                closeReason = "test-reason",
+                runtimeMemoryCount = 3,
+                runtimeMemoryMinBytes = 100L,
+                runtimeMemoryMaxBytes = 300L,
+                runtimeMemoryMeanBytes = 200L,
+            )
+
+        val json = data.toJson()
+        assertEquals("test-session", json.getString("sessionId"))
+        assertEquals(1, json.getInt("index"))
+        assertEquals("test-name", json.getString("appSessionName"))
+        assertEquals(3, json.getInt("runtimeMemoryCount"))
+        assertEquals(100L, json.getLong("runtimeMemoryMinBytes"))
+        assertEquals(300L, json.getLong("runtimeMemoryMaxBytes"))
+        assertEquals(200L, json.getLong("runtimeMemoryMeanBytes"))
+        assertEquals(3, json.getInt("artMemoryCount"))
+        assertEquals(100L, json.getLong("artMemoryMinBytes"))
+        assertEquals(300L, json.getLong("artMemoryMaxBytes"))
+        assertEquals(200L, json.getLong("artMemoryMeanBytes"))
+
+        val fromJson = AppSessionData.fromJson(json)
+        assertEquals("test-session", fromJson.sessionId)
+        assertEquals(1, fromJson.index)
+        assertEquals("test-name", fromJson.appSessionName)
+        assertEquals(3, fromJson.runtimeMemoryCount)
+        assertEquals(100L, fromJson.runtimeMemoryMinBytes)
+        assertEquals(300L, fromJson.runtimeMemoryMaxBytes)
+        assertEquals(200L, fromJson.runtimeMemoryMeanBytes)
+        assertEquals(3, fromJson.artMemoryCount)
+        assertEquals(100L, fromJson.artMemoryMinBytes)
+        assertEquals(300L, fromJson.artMemoryMaxBytes)
+        assertEquals(200L, fromJson.artMemoryMeanBytes)
+    }
+
+    @Test
+    fun testCustomSessionNameFormat() {
+        val config = AppSessionConfig(autoStartSession = false)
+        val controller = AppSessionSpanController(context, spanFactory, sessionConfig = config)
+
+        ForegroundState.isInForeground = true
+        controller.startAppSessionSpan("user checkout-flow")
+        controller.endAppSessionSpan()
+
+        val spans = spanProcessor.toList()
+        assertEquals(1, spans.size)
+        assertEquals("[AppSession/user checkout-flow]", spans[0].name)
+        assertEquals("user checkout-flow", spans[0].attributes["bugsnag.app_session.name"])
+    }
+
+    @Test
+    fun testAppSessionCallbacksObserveLifecycleTransitions() {
+        val callback = RecordingSessionCallback()
+        ForegroundState.isInForeground = true
+        val config = AppSessionConfig(autoStartSession = true, sessionCallbacks = listOf(callback))
+
+        val controller = AppSessionSpanController(context, spanFactory, sessionConfig = config)
+
+        ForegroundState.isInForeground = false
+        ForegroundState.isInForeground = true
+        controller.endAppSessionSpan()
+
+        val eventTypes = callback.events.map { it.type }
+        assertEquals(listOf("started", "backgrounded", "foregrounded", "ended"), eventTypes)
+
+        val sessionIds = callback.events.map { it.session.sessionId }.distinct()
+        assertEquals(1, sessionIds.size)
+        assertEquals(true, callback.events[0].session.isInForeground)
+        assertEquals(false, callback.events[1].session.isInForeground)
+        assertEquals(true, callback.events[2].session.isInForeground)
+        assertEquals(true, callback.events[3].session.isInForeground)
+        assertEquals(CloseReason.CLIENT_END, callback.events[3].session.closeReason)
+    }
+
+    @Test
+    fun testEndingAStartedSessionResetsIdentityForTheNextSession() {
+        val callback = RecordingSessionCallback()
+        val config = AppSessionConfig(autoStartSession = false, sessionCallbacks = listOf(callback))
+        val controller = AppSessionSpanController(context, spanFactory, sessionConfig = config)
+
+        ForegroundState.isInForeground = true
+        controller.startAppSessionSpan()
+        controller.endAppSessionSpan()
+
+        val firstSessionId = callback.events.first().session.sessionId
+
+        controller.startAppSessionSpan()
+        controller.endAppSessionSpan()
+
+        val secondSessionId = callback.events.last().session.sessionId
+
+        assertTrue(firstSessionId != secondSessionId)
+    }
+}

@@ -124,12 +124,14 @@ enum class ActivityLifecycleStep {
         activity: Activity,
         payload: Any? = null
     ) {
+        val methods = javaClass.methods + javaClass.declaredMethods
         val method =
-            javaClass.methods.firstOrNull { method ->
-                method.name == methodName && method.parameterTypes.size == if (payload == null) 1 else 2
+            methods.firstOrNull { method ->
+                method.name == methodName && (method.parameterTypes.size == 1 || method.parameterTypes.size == 2)
             } ?: return
 
-        if (payload == null) {
+        method.isAccessible = true
+        if (method.parameterTypes.size == 1) {
             method.invoke(this, activity)
         } else {
             method.invoke(this, activity, payload)
