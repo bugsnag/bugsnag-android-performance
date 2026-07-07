@@ -1,3 +1,12 @@
+## 2.4.0 (2026-07-07)
+
+### Changes
+
+* Introduced App Sessions to track long-running app experiences and resource usage.
+  * Added `BugsnagPerformance.startAppSessionSpan` and `BugsnagPerformance.endAppSessionSpan` for manual session control.
+  * Added `AppSessionConfig` to `PerformanceConfiguration` for automatic session management and background timeout configuration.
+  * App Sessions automatically capture CPU and memory metrics during the session.
+
 ## 2.3.0 (2026-02-16)
 
 ### Changes
