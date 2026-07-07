@@ -337,14 +337,14 @@ class MainActivity : AppCompatActivity() {
 
     private fun readCommand(commandUrl: String): String {
         val urlConnection = (URL(commandUrl).openConnection() as HttpURLConnection).apply {
-            connectTimeout = 5_000
-            readTimeout = 5_000
+            connectTimeout = DEFAULT_HTTP_TIMEOUT
+            readTimeout = DEFAULT_HTTP_TIMEOUT
             useCaches = false
             requestMethod = "GET"
         }
         try {
             val responseBody =
-                if (urlConnection.responseCode in 200..299) {
+                if (urlConnection.responseCode in HTTP_SUCCESS_START..HTTP_SUCCESS_END) {
                     urlConnection.inputStream.bufferedReader().use { it.readText() }
                 } else {
                     urlConnection.errorStream?.bufferedReader()?.use { it.readText() }.orEmpty()
@@ -471,5 +471,9 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         const val REQUEST_CODE_FINISH_ON_RETURN = 9090
+
+        private const val DEFAULT_HTTP_TIMEOUT = 5_000
+        private const val HTTP_SUCCESS_START = 200
+        private const val HTTP_SUCCESS_END = 299
     }
 }
