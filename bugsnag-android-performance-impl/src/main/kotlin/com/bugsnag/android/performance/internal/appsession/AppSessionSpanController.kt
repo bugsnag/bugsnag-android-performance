@@ -344,7 +344,6 @@ internal class AppSessionSpanController
             activeSegmentStartMs = 0L
             activeSegmentStartUnixNano = 0L
 
-
             val endMs = System.currentTimeMillis()
             val endUnixNano = BugsnagClock.currentUnixNanoTime()
 

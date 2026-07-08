@@ -214,36 +214,7 @@ class AppSessionSpanControllerTest {
     @Test
     fun testAppSessionMetricsUseCanonicalSystemKeys() {
         val span = spanFactory.createAppSessionSpan("App Session")
-        val metrics =
-            AppSessionMetrics(
-                cpuCount = 2,
-                cpuMin = 10.0,
-                cpuMax = 20.0,
-                cpuMean = 15.0,
-                cpuSamples = doubleArrayOf(10.0, 20.0),
-                cpuMainThreadSamples = doubleArrayOf(3.0, 4.0),
-                cpuOverheadSamples = doubleArrayOf(1.0, 2.0),
-                cpuMainThreadMin = 3.0,
-                cpuMainThreadMax = 4.0,
-                cpuMainThreadMean = 3.5,
-                cpuOverheadMin = 1.0,
-                cpuOverheadMax = 2.0,
-                cpuOverheadMean = 1.5,
-                cpuTimestamps = longArrayOf(1L, 2L),
-                runtimeMemoryCount = 2,
-                runtimeMemoryMinBytes = 100L,
-                runtimeMemoryMaxBytes = 200L,
-                runtimeMemoryMeanBytes = 150L,
-                runtimeMemorySamplesBytes = longArrayOf(100L, 200L),
-                runtimeMemoryTimestamps = longArrayOf(1L, 2L),
-                deviceMemoryCount = 2,
-                deviceMemoryMinBytes = 300L,
-                deviceMemoryMaxBytes = 400L,
-                deviceMemoryMeanBytes = 350L,
-                deviceMemorySamplesBytes = longArrayOf(300L, 400L),
-                deviceMemoryTimestamps = longArrayOf(1L, 2L),
-                deviceMemorySizeBytes = 4096L,
-            )
+        val metrics = createCanonicalSystemMetrics()
 
         span.attachAppSessionCpuMetrics(metrics)
         span.attachAppSessionMemoryMetrics(metrics)
@@ -251,9 +222,21 @@ class AppSessionSpanControllerTest {
         assertEquals(15.0, span.attributes["bugsnag.system.cpu_mean_total"] as Double, 0.0)
         assertEquals(10.0, span.attributes["bugsnag.system.cpu_min_total"] as Double, 0.0)
         assertEquals(20.0, span.attributes["bugsnag.system.cpu_max_total"] as Double, 0.0)
-        assertArrayEquals(doubleArrayOf(10.0, 20.0), span.attributes["bugsnag.system.cpu_measures_total"] as DoubleArray, 0.0)
-        assertArrayEquals(doubleArrayOf(3.0, 4.0), span.attributes["bugsnag.system.cpu_measures_main_thread"] as DoubleArray, 0.0)
-        assertArrayEquals(doubleArrayOf(1.0, 2.0), span.attributes["bugsnag.system.cpu_measures_overhead"] as DoubleArray, 0.0)
+        assertArrayEquals(
+            doubleArrayOf(10.0, 20.0),
+            span.attributes["bugsnag.system.cpu_measures_total"] as DoubleArray,
+            0.0,
+        )
+        assertArrayEquals(
+            doubleArrayOf(3.0, 4.0),
+            span.attributes["bugsnag.system.cpu_measures_main_thread"] as DoubleArray,
+            0.0,
+        )
+        assertArrayEquals(
+            doubleArrayOf(1.0, 2.0),
+            span.attributes["bugsnag.system.cpu_measures_overhead"] as DoubleArray,
+            0.0,
+        )
         assertArrayEquals(longArrayOf(1L, 2L), span.attributes["bugsnag.system.cpu_measures_timestamps"] as LongArray)
 
         assertEquals(4096L, span.attributes["bugsnag.device.physical_device_memory"] as Long)
@@ -264,13 +247,50 @@ class AppSessionSpanControllerTest {
         assertEquals(100L, span.attributes["bugsnag.system.memory.spaces.art.min"] as Long)
         assertEquals(200L, span.attributes["bugsnag.system.memory.spaces.art.max"] as Long)
         assertEquals(150L, span.attributes["bugsnag.system.memory.spaces.art.mean"] as Long)
-        assertArrayEquals(longArrayOf(100L, 200L), span.attributes["bugsnag.system.memory.spaces.art.used"] as LongArray)
-        assertArrayEquals(longArrayOf(300L, 400L), span.attributes["bugsnag.system.memory.spaces.device.used"] as LongArray)
+        assertArrayEquals(
+            longArrayOf(100L, 200L),
+            span.attributes["bugsnag.system.memory.spaces.art.used"] as LongArray,
+        )
+        assertArrayEquals(
+            longArrayOf(300L, 400L),
+            span.attributes["bugsnag.system.memory.spaces.device.used"] as LongArray,
+        )
         assertArrayEquals(longArrayOf(1L, 2L), span.attributes["bugsnag.system.memory.timestamps"] as LongArray)
 
         assertNull(span.attributes["bugsnag.session.memory.runtime.min"])
         assertNull(span.attributes["bugsnag.session.memory.device.min"])
     }
+
+    private fun createCanonicalSystemMetrics() =
+        AppSessionMetrics(
+            cpuCount = 2,
+            cpuMin = 10.0,
+            cpuMax = 20.0,
+            cpuMean = 15.0,
+            cpuSamples = doubleArrayOf(10.0, 20.0),
+            cpuMainThreadSamples = doubleArrayOf(3.0, 4.0),
+            cpuOverheadSamples = doubleArrayOf(1.0, 2.0),
+            cpuMainThreadMin = 3.0,
+            cpuMainThreadMax = 4.0,
+            cpuMainThreadMean = 3.5,
+            cpuOverheadMin = 1.0,
+            cpuOverheadMax = 2.0,
+            cpuOverheadMean = 1.5,
+            cpuTimestamps = longArrayOf(1L, 2L),
+            runtimeMemoryCount = 2,
+            runtimeMemoryMinBytes = 100L,
+            runtimeMemoryMaxBytes = 200L,
+            runtimeMemoryMeanBytes = 150L,
+            runtimeMemorySamplesBytes = longArrayOf(100L, 200L),
+            runtimeMemoryTimestamps = longArrayOf(1L, 2L),
+            deviceMemoryCount = 2,
+            deviceMemoryMinBytes = 300L,
+            deviceMemoryMaxBytes = 400L,
+            deviceMemoryMeanBytes = 350L,
+            deviceMemorySamplesBytes = longArrayOf(300L, 400L),
+            deviceMemoryTimestamps = longArrayOf(1L, 2L),
+            deviceMemorySizeBytes = 4096L,
+        )
 
     @Test
     fun testCustomSessionNameFormat() {
