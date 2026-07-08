@@ -1,5 +1,6 @@
 package com.bugsnag.mazeracer.scenarios
 
+import com.bugsnag.android.performance.AppSessionConfig
 import com.bugsnag.android.performance.AutoInstrument
 import com.bugsnag.android.performance.BugsnagPerformance
 import com.bugsnag.android.performance.PerformanceConfiguration
@@ -12,6 +13,7 @@ class AnnotatedActivityScenario(
 ) : Scenario(config, scenarioMetadata) {
     init {
         config.autoInstrumentActivities = AutoInstrument.FULL
+        config.appSessionConfig = AppSessionConfig(autoStartSession = false)
     }
 
     override fun startScenario() {

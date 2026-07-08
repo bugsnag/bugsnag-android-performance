@@ -56,7 +56,7 @@ public class SpanFactory internal constructor(
 
     init {
         if (SpanContext.defaultStorage == null) {
-            SpanContext.Storage.defaultStorage = ThreadLocalSpanContextStorage()
+            SpanContext.defaultStorage = ThreadLocalSpanContextStorage()
         }
     }
 
@@ -79,6 +79,29 @@ public class SpanFactory internal constructor(
         this.spanStartCallbacks.addAll(spanStartCallbacks)
 
         metricsContainer.configure(enabledMetrics)
+    }
+
+    @JvmOverloads
+    public fun createAppSessionSpan(
+        name: String,
+        options: SpanOptions = SpanOptions.DEFAULTS,
+        spanProcessor: SpanProcessor = this.spanProcessor,
+    ): SpanImpl {
+        return createSpan(
+            name,
+            SpanKind.INTERNAL,
+            SpanCategory.APP_SESSION,
+            options.startTime,
+            options.parentContext,
+            options.isFirstClass != false,
+            options.makeContext,
+            options.spanMetrics ?: SpanMetrics(
+                rendering = true,
+                cpu = true,
+                memory = true,
+            ),
+            spanProcessor,
+        )
     }
 
     @JvmOverloads
@@ -296,7 +319,8 @@ public class SpanFactory internal constructor(
     ): SpanImpl {
         val parent = parentContext?.takeIf { it.traceId.isValidTraceId() }
 
-        val metrics = metricsContainer.createSpanMetricsSnapshot(isFirstClass == true, spanMetrics)
+        // Default to attaching metrics for all spans (unless explicitly disabled) so they appear in dashboards
+        val metrics = metricsContainer.createSpanMetricsSnapshot(isFirstClass != false, spanMetrics)
         val span =
             SpanImpl(
                 name = name,
