@@ -1,7 +1,7 @@
 package com.bugsnag.android.performance
 
 /**
- * Sets which metrics (if any) are gathered and reported
+ * Sets which metrics (if any) are gathered and reported.
  */
 public class EnabledMetrics(
     /**

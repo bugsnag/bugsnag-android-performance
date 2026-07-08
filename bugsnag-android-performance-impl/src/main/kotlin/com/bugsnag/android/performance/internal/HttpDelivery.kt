@@ -71,9 +71,9 @@ public open class HttpDelivery(
             newP?.let { newProbabilityCallback?.onNewProbability(it) }
 
             result
-        } catch (e: IOException) {
+        } catch (_: IOException) {
             DeliveryResult.Failed(tracePayload, true)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             DeliveryResult.Failed(tracePayload, false)
         } finally {
             TrafficStats.clearThreadStatsTag()

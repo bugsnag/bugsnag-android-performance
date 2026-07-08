@@ -19,6 +19,7 @@ Monitor the start-up, screen loading and network requests of your app and see th
 - Reporting of app startup time
 - Automatic measurement of `Activity` loading times
 - Report OkHttp request times
+- Track long-running App Sessions with CPU and memory metrics
 
 ## Getting started
 

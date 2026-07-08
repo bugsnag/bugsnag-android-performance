@@ -39,10 +39,8 @@ android {
         }
     }
 
-    if (System.getenv("RELEASING") == null) {
-        testFixtures {
-            enable = true
-        }
+    testFixtures {
+        enable = true
     }
 
     compileOptions {
@@ -70,7 +68,12 @@ dependencies {
     implementation(libs.androidx.annotation)
 
     testImplementation(libs.bundles.test.jvm)
+    testImplementation(testFixtures(project(":bugsnag-android-performance-impl")))
     testImplementation(libs.kotlin.reflect)
+    testImplementation(libs.bugsnag.android)
+
+    testFixturesApi(libs.kotlin.stdlib)
+    testFixturesApi(project(":bugsnag-android-performance-api"))
     testFixturesImplementation(libs.androidx.annotation)
 }
 
