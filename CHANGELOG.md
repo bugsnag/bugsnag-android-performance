@@ -1,11 +1,11 @@
-## 2.4.0 (2026-07-07)
+## 3.0.0 (2026-07-08)
 
 ### Changes
 
 * Introduced App Sessions to track long-running app experiences and resource usage.
   * Added `BugsnagPerformance.startAppSessionSpan` and `BugsnagPerformance.endAppSessionSpan` for manual session control.
   * Added `AppSessionConfig` to `PerformanceConfiguration` for automatic session management and background timeout configuration.
-  * App Sessions automatically capture CPU and memory metrics during the session.
+  * App Sessions automatically capture CPU and memory metrics during the session.[#531](https://github.com/bugsnag/bugsnag-android-performance/pull/531)
 
 ## 2.3.0 (2026-02-16)
 
