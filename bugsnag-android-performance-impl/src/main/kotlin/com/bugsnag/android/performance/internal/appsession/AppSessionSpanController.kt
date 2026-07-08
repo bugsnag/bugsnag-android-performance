@@ -24,34 +24,8 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 
 /**
- * ## Per-app-session immediate delivery
- *
- * Each time an app-session span is closed the controller:
- *   1. Calls `span.end()` so the span enters the Tracer's batch queue.
- *   2. Immediately calls [onAppSessionReady] (wired to `tracer.forceCurrentBatch()`) so the
- *      Worker wakes and sends **that app-session batch right away** — no waiting for the normal
- *      batch timer or size threshold.
- *   3. Stores a typed [AppSessionData] copy in [buffer] (heap memory).
- *      The buffer is periodically persisted to disk by its own scheduler so data survives
- *      process death before delivery.
- *
- * ## Custom app-session names
- *
- * Callers may supply an optional `appSessionName` on `startForegroundAppSessionSpan` /
- * `startBackgroundAppSessionSpan`, or configure a default name via
- * [AppSessionConfig.manualSessionDefaultName]. The resolved value is recorded in
- * `AppSessionData` for local diagnostics and recovery, and is also used in the delivered
- * app-session span name as `[AppSession/<name>]`.
- *
- * ## Automatic timeout behaviour
- *
- * | Scenario                                         | Outcome                                                      |
- * |--------------------------------------------------|--------------------------------------------------------------|
- * | Background span open, user never returns         | Auto-closed after [AppSessionConfig.backgroundTimeoutMs]     |
- * |                                                  | with `close_reason = background_timeout`                     |
- * | User returns before timeout fires                | Timeout cancelled; foreground span opens immediately         |
- * | [AppSessionConfig.maxSessionDurationMs] > 0      | Entire session capped; current segment closed with           |
- * |                                                  | `close_reason = session_max_duration`                        |
+ * Manages app-session foreground/background segments, immediate delivery, and timeout-based
+ * session lifecycle handling.
  */
 @Suppress("TooManyFunctions")
 internal class AppSessionSpanController
@@ -78,6 +52,14 @@ internal class AppSessionSpanController
         private var sessionId: String = UUID.randomUUID().toString()
         private val segmentIndex = AtomicInteger(0)
         private var currentSessionState: SessionState? = null
+
+        private val foregroundChangedCallback: (Boolean) -> Unit = { inForeground ->
+            if (inForeground) {
+                startForegroundAppSessionSpan()
+            } else {
+                startBackgroundAppSessionSpan()
+            }
+        }
 
         // ── Active segment state ─────────────────────────────────────────────────
         @Volatile
@@ -106,13 +88,7 @@ internal class AppSessionSpanController
 
         init {
             if (sessionConfig.autoStartSession) {
-                ForegroundState.addForegroundChangedCallback { inForeground ->
-                    if (inForeground) {
-                        startForegroundAppSessionSpan()
-                    } else {
-                        startBackgroundAppSessionSpan()
-                    }
-                }
+                ForegroundState.addForegroundChangedCallback(foregroundChangedCallback)
                 // Start the initial segment based on current state
                 val initialInForeground =
                     isInForeground(appContext.applicationContext as? Application)
@@ -231,6 +207,7 @@ internal class AppSessionSpanController
             cancelBackgroundTimeout()
             cancelMaxSessionTimeout()
             closeCurrentSegmentSpan(closeReason = "sdk_stopped")
+            ForegroundState.removeForegroundChangedCallback(foregroundChangedCallback)
             scheduler.shutdownNow()
             buffer?.stop()
         }

@@ -6,6 +6,7 @@ import com.bugsnag.android.performance.internal.connectivity.ConnectivityStatus
 import com.bugsnag.android.performance.internal.connectivity.NetworkType
 import com.bugsnag.android.performance.test.CollectingSpanProcessor
 import com.bugsnag.android.performance.test.TestSpanFactory
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
@@ -22,6 +23,7 @@ import org.mockito.kotlin.verify
 import org.robolectric.RobolectricTestRunner
 import java.io.ByteArrayOutputStream
 import java.net.HttpURLConnection
+import java.nio.file.Files
 import java.util.Date
 
 @RunWith(RobolectricTestRunner::class)
@@ -111,6 +113,56 @@ class HttpDeliveryTest {
             eq("User-Agent"),
             eq("bugsnag-android-performance/${BugsnagPerformanceImpl.VERSION}"),
         )
+    }
+
+    @Test
+    fun deliverDoesNotDumpPayloadToTempFile() {
+        val previousTmpDir = System.getProperty("java.io.tmpdir")
+        val tempDir = Files.createTempDirectory("http-delivery-tmp").toFile()
+
+        try {
+            System.setProperty("java.io.tmpdir", tempDir.absolutePath)
+
+            val connectivity =
+                mock<Connectivity> {
+                    on { connectivityStatus } doReturn
+                        ConnectivityStatus(
+                            true,
+                            ConnectionMetering.POTENTIALLY_METERED,
+                            NetworkType.CELL,
+                            null,
+                        )
+                }
+
+            val connection =
+                mock<HttpURLConnection> {
+                    on { responseCode } doReturn 200
+                    on { outputStream } doReturn ByteArrayOutputStream()
+                }
+
+            val delivery =
+                object : HttpDelivery(
+                    "http://localhost",
+                    "0123456789abcdef0123456789abcdef",
+                    connectivity,
+                    false,
+                    null,
+                ) {
+                    override fun openConnection(): HttpURLConnection = connection
+                }
+
+            val result = delivery.deliver(spanFactory.newSpans(1, spanProcessor), Attributes())
+
+            assertTrue(result is DeliveryResult.Success)
+            assertFalse(java.io.File(tempDir, "http_delivery_payload.json").exists())
+        } finally {
+            if (previousTmpDir == null) {
+                System.clearProperty("java.io.tmpdir")
+            } else {
+                System.setProperty("java.io.tmpdir", previousTmpDir)
+            }
+            tempDir.deleteRecursively()
+        }
     }
 
     @Test

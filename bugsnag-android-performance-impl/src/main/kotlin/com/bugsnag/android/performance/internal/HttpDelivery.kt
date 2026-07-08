@@ -52,8 +52,6 @@ public open class HttpDelivery(
             return DeliveryResult.Failed(tracePayload, true)
         }
 
-        dumpPayload(tracePayload)
-
         TrafficStats.setThreadStatsTag(1)
         return try {
             val connection = openConnection()
@@ -73,42 +71,12 @@ public open class HttpDelivery(
             newP?.let { newProbabilityCallback?.onNewProbability(it) }
 
             result
-        } catch (e: IOException) {
+        } catch (_: IOException) {
             DeliveryResult.Failed(tracePayload, true)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             DeliveryResult.Failed(tracePayload, false)
         } finally {
             TrafficStats.clearThreadStatsTag()
-        }
-    }
-
-    private fun dumpPayload(tracePayload: TracePayload) {
-        // Dump payload to temp file for debugging dashboards (only when running tests locally)
-        try {
-            val tmp = java.io.File(System.getProperty("java.io.tmpdir"), "http_delivery_payload.json")
-            tmp.printWriter().use { pw ->
-                pw.println("--- headers ---")
-                tracePayload.headers.forEach { (k, v) -> pw.println("$k: $v") }
-                pw.println("--- body (utf-8) ---")
-                pw.println(getResponseBody(tracePayload))
-            }
-        } catch (_: Exception) {
-            // ignore write failures
-        }
-    }
-
-    private fun getResponseBody(tracePayload: TracePayload): String {
-        // payload may be gzipped; attempt to decode if Content-Encoding is gzip
-        return try {
-            if (tracePayload.headers["Content-Encoding"] == "gzip") {
-                java.util.zip.GZIPInputStream(java.io.ByteArrayInputStream(tracePayload.body))
-                    .bufferedReader()
-                    .use { it.readText() }
-            } else {
-                String(tracePayload.body)
-            }
-        } catch (e: Exception) {
-            String(tracePayload.body)
         }
     }
 

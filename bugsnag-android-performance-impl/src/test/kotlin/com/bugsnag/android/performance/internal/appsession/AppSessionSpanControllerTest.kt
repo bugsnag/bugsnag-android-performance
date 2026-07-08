@@ -267,4 +267,18 @@ class AppSessionSpanControllerTest {
 
         assertTrue(firstSessionId != secondSessionId)
     }
+
+    @Test
+    fun testStopRemovesForegroundCallback() {
+        ForegroundState.isInForeground = true
+        val config = AppSessionConfig(autoStartSession = true)
+        val controller = AppSessionSpanController(context, spanFactory, sessionConfig = config)
+
+        controller.stop()
+
+        ForegroundState.isInForeground = false
+        ForegroundState.isInForeground = true
+
+        assertEquals(1, spanProcessor.toList().size)
+    }
 }

@@ -100,9 +100,9 @@ class PayloadDumpTest {
 
         val spans =
             listOfNotNull(
-                custom as com.bugsnag.android.performance.internal.SpanImpl,
-                network as? com.bugsnag.android.performance.internal.SpanImpl,
-                view as com.bugsnag.android.performance.internal.SpanImpl,
+                custom,
+                network,
+                view,
                 appStart,
             )
 
