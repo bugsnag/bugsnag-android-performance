@@ -344,8 +344,6 @@ internal class AppSessionSpanController
             activeSegmentStartMs = 0L
             activeSegmentStartUnixNano = 0L
 
-            val metrics = collector.stop()
-            attachMetrics(span, metrics)
 
             val endMs = System.currentTimeMillis()
             val endUnixNano = BugsnagClock.currentUnixNanoTime()
@@ -359,6 +357,11 @@ internal class AppSessionSpanController
             } catch (_: Exception) {
                 // ignore attribute errors to ensure span.end() is called
             }
+
+            // Collect metrics before sealing the span; SpanImpl.end() makes the attribute map read-only.
+            val metrics = collector.stop()
+            attachMetrics(span, metrics)
+
             span.end()
 
             // ── 1. Immediate delivery: wake the Worker to send this segment NOW ──
@@ -538,73 +541,11 @@ internal class AppSessionSpanController
             m: AppSessionMetrics,
         ) {
             if (enabledMetrics.cpu) {
-                attachCpuMetrics(span, m)
+                span.attachAppSessionCpuMetrics(m)
             }
             if (enabledMetrics.memory) {
-                attachMemoryMetrics(span, m)
+                span.attachAppSessionMemoryMetrics(m)
             }
-        }
-
-        private fun attachCpuMetrics(
-            span: Span,
-            m: AppSessionMetrics,
-        ) {
-            val cpuMean = m.cpuMean.coerceIn(m.cpuMin, m.cpuMax)
-            val cpuMin = minOf(m.cpuMin, cpuMean)
-            val cpuMax = maxOf(m.cpuMax, cpuMean)
-
-            span.setAttribute("bugsnag.session.cpu.min", cpuMin)
-            span.setAttribute("bugsnag.session.cpu.max", cpuMax)
-            span.setAttribute("bugsnag.session.cpu.mean", cpuMean)
-
-            span.setAttribute("bugsnag.system.cpu.measures", m.cpuSamples)
-            if (m.cpuMainThreadSamples.isNotEmpty()) {
-                val mainThreadMean = m.cpuMainThreadMean.coerceIn(m.cpuMainThreadMin, m.cpuMainThreadMax)
-                val mainThreadMin = minOf(m.cpuMainThreadMin, mainThreadMean)
-                val mainThreadMax = maxOf(m.cpuMainThreadMax, mainThreadMean)
-
-                span.setAttribute("bugsnag.system.cpu.main_thread.measures", m.cpuMainThreadSamples)
-                span.setAttribute("bugsnag.system.cpu_min_main_thread", mainThreadMin)
-                span.setAttribute("bugsnag.system.cpu_max_main_thread", mainThreadMax)
-                span.setAttribute("bugsnag.system.cpu_mean_main_thread", mainThreadMean)
-            }
-            if (m.cpuOverheadSamples.isNotEmpty()) {
-                val overheadMean = m.cpuOverheadMean.coerceIn(m.cpuOverheadMin, m.cpuOverheadMax)
-                val overheadMin = minOf(m.cpuOverheadMin, overheadMean)
-                val overheadMax = maxOf(m.cpuOverheadMax, overheadMean)
-
-                span.setAttribute("bugsnag.system.cpu.overhead.measures", m.cpuOverheadSamples)
-                span.setAttribute("bugsnag.system.cpu_min_overhead", overheadMin)
-                span.setAttribute("bugsnag.system.cpu_max_overhead", overheadMax)
-                span.setAttribute("bugsnag.system.cpu_mean_overhead", overheadMean)
-            }
-            if (m.cpuTimestamps.isNotEmpty()) {
-                span.setAttribute("bugsnag.system.cpu.timestamps", m.cpuTimestamps)
-            }
-            span.setAttribute("bugsnag.system.cpu_min_total", cpuMin)
-            span.setAttribute("bugsnag.system.cpu_max_total", cpuMax)
-            span.setAttribute("bugsnag.system.cpu_mean_total", cpuMean)
-        }
-
-        private fun attachMemoryMetrics(
-            span: Span,
-            m: AppSessionMetrics,
-        ) {
-            // ── bugsnag.session.* namespace — app-session-only, no conflict ──
-            // ── bugsnag.session.* namespace — app-session only, no conflict ──
-            span.setAttribute("bugsnag.session.memory.runtime.min", m.runtimeMemoryMinBytes)
-            span.setAttribute("bugsnag.session.memory.runtime.max", m.runtimeMemoryMaxBytes)
-            span.setAttribute("bugsnag.session.memory.runtime.mean", m.runtimeMemoryMeanBytes)
-            span.setAttribute("bugsnag.session.memory.device.min", m.deviceMemoryMinBytes)
-            span.setAttribute("bugsnag.session.memory.device.max", m.deviceMemoryMaxBytes)
-            span.setAttribute("bugsnag.session.memory.device.mean", m.deviceMemoryMeanBytes)
-            // Physical device memory (safe — same value from both writers)
-            if (m.deviceMemorySizeBytes > 0) {
-                span.setAttribute("bugsnag.device.physical_device_memory", m.deviceMemorySizeBytes)
-            }
-            // All bugsnag.system.memory.spaces.* keys are owned by MemoryMetricsSource.
-            // It runs on span.end() and writes min, max, mean, used, size, timestamps
-            // from its own consistent sample window.
         }
 
         companion object {
@@ -616,3 +557,84 @@ internal class AppSessionSpanController
             internal const val CLOSE_REASON_MAX_DURATION = "session_max_duration"
         }
     }
+
+internal fun Span.attachAppSessionCpuMetrics(m: AppSessionMetrics) {
+    val cpuMean = m.cpuMean.coerceIn(m.cpuMin, m.cpuMax)
+    val cpuMin = minOf(m.cpuMin, cpuMean)
+    val cpuMax = maxOf(m.cpuMax, cpuMean)
+
+    setAttribute("bugsnag.system.cpu_min_total", cpuMin)
+    setAttribute("bugsnag.system.cpu_max_total", cpuMax)
+    setAttribute("bugsnag.system.cpu_mean_total", cpuMean)
+
+    if (m.cpuSamples.isNotEmpty()) {
+        setAttribute("bugsnag.system.cpu_measures_total", m.cpuSamples)
+    }
+
+    if (m.cpuMainThreadSamples.isNotEmpty()) {
+        val mainThreadMean = m.cpuMainThreadMean.coerceIn(m.cpuMainThreadMin, m.cpuMainThreadMax)
+        val mainThreadMin = minOf(m.cpuMainThreadMin, mainThreadMean)
+        val mainThreadMax = maxOf(m.cpuMainThreadMax, mainThreadMean)
+
+        setAttribute("bugsnag.system.cpu_measures_main_thread", m.cpuMainThreadSamples)
+        setAttribute("bugsnag.system.cpu_min_main_thread", mainThreadMin)
+        setAttribute("bugsnag.system.cpu_max_main_thread", mainThreadMax)
+        setAttribute("bugsnag.system.cpu_mean_main_thread", mainThreadMean)
+    }
+
+    if (m.cpuOverheadSamples.isNotEmpty()) {
+        val overheadMean = m.cpuOverheadMean.coerceIn(m.cpuOverheadMin, m.cpuOverheadMax)
+        val overheadMin = minOf(m.cpuOverheadMin, overheadMean)
+        val overheadMax = maxOf(m.cpuOverheadMax, overheadMean)
+
+        setAttribute("bugsnag.system.cpu_measures_overhead", m.cpuOverheadSamples)
+        setAttribute("bugsnag.system.cpu_min_overhead", overheadMin)
+        setAttribute("bugsnag.system.cpu_max_overhead", overheadMax)
+        setAttribute("bugsnag.system.cpu_mean_overhead", overheadMean)
+    }
+
+    if (m.cpuTimestamps.isNotEmpty()) {
+        setAttribute("bugsnag.system.cpu_measures_timestamps", m.cpuTimestamps)
+    }
+}
+
+internal fun Span.attachAppSessionMemoryMetrics(m: AppSessionMetrics) {
+    if (m.deviceMemorySizeBytes > 0) {
+        setAttribute("bugsnag.device.physical_device_memory", m.deviceMemorySizeBytes)
+        setAttribute("bugsnag.system.memory.spaces.device.size", m.deviceMemorySizeBytes)
+    }
+
+    if (m.deviceMemorySamplesBytes.isNotEmpty()) {
+        setAttribute("bugsnag.system.memory.spaces.device.used", m.deviceMemorySamplesBytes)
+    }
+
+    if (m.deviceMemoryCount > 0) {
+        val deviceMean = m.deviceMemoryMeanBytes.coerceIn(m.deviceMemoryMinBytes, m.deviceMemoryMaxBytes)
+        val deviceMin = minOf(m.deviceMemoryMinBytes, deviceMean)
+        val deviceMax = maxOf(m.deviceMemoryMaxBytes, deviceMean)
+
+        setAttribute("bugsnag.system.memory.spaces.device.min", deviceMin)
+        setAttribute("bugsnag.system.memory.spaces.device.max", deviceMax)
+        setAttribute("bugsnag.system.memory.spaces.device.mean", deviceMean)
+    }
+
+    if (m.runtimeMemorySamplesBytes.isNotEmpty()) {
+        setAttribute("bugsnag.system.memory.spaces.art.used", m.runtimeMemorySamplesBytes)
+    }
+
+    if (m.runtimeMemoryCount > 0) {
+        val runtimeMean = m.runtimeMemoryMeanBytes.coerceIn(m.runtimeMemoryMinBytes, m.runtimeMemoryMaxBytes)
+        val runtimeMin = minOf(m.runtimeMemoryMinBytes, runtimeMean)
+        val runtimeMax = maxOf(m.runtimeMemoryMaxBytes, runtimeMean)
+
+        setAttribute("bugsnag.system.memory.spaces.art.min", runtimeMin)
+        setAttribute("bugsnag.system.memory.spaces.art.max", runtimeMax)
+        setAttribute("bugsnag.system.memory.spaces.art.mean", runtimeMean)
+    }
+
+    if (m.runtimeMemoryTimestamps.isNotEmpty()) {
+        setAttribute("bugsnag.system.memory.timestamps", m.runtimeMemoryTimestamps)
+    } else if (m.deviceMemoryTimestamps.isNotEmpty()) {
+        setAttribute("bugsnag.system.memory.timestamps", m.deviceMemoryTimestamps)
+    }
+}

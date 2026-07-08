@@ -11,8 +11,10 @@ import com.bugsnag.android.performance.internal.SpanImpl
 import com.bugsnag.android.performance.internal.SpanProcessor
 import com.bugsnag.android.performance.internal.instrumentation.ForegroundState
 import com.bugsnag.android.performance.internal.isInForeground
+import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -207,6 +209,67 @@ class AppSessionSpanControllerTest {
         assertEquals(100L, fromJson.artMemoryMinBytes)
         assertEquals(300L, fromJson.artMemoryMaxBytes)
         assertEquals(200L, fromJson.artMemoryMeanBytes)
+    }
+
+    @Test
+    fun testAppSessionMetricsUseCanonicalSystemKeys() {
+        val span = spanFactory.createAppSessionSpan("App Session")
+        val metrics =
+            AppSessionMetrics(
+                cpuCount = 2,
+                cpuMin = 10.0,
+                cpuMax = 20.0,
+                cpuMean = 15.0,
+                cpuSamples = doubleArrayOf(10.0, 20.0),
+                cpuMainThreadSamples = doubleArrayOf(3.0, 4.0),
+                cpuOverheadSamples = doubleArrayOf(1.0, 2.0),
+                cpuMainThreadMin = 3.0,
+                cpuMainThreadMax = 4.0,
+                cpuMainThreadMean = 3.5,
+                cpuOverheadMin = 1.0,
+                cpuOverheadMax = 2.0,
+                cpuOverheadMean = 1.5,
+                cpuTimestamps = longArrayOf(1L, 2L),
+                runtimeMemoryCount = 2,
+                runtimeMemoryMinBytes = 100L,
+                runtimeMemoryMaxBytes = 200L,
+                runtimeMemoryMeanBytes = 150L,
+                runtimeMemorySamplesBytes = longArrayOf(100L, 200L),
+                runtimeMemoryTimestamps = longArrayOf(1L, 2L),
+                deviceMemoryCount = 2,
+                deviceMemoryMinBytes = 300L,
+                deviceMemoryMaxBytes = 400L,
+                deviceMemoryMeanBytes = 350L,
+                deviceMemorySamplesBytes = longArrayOf(300L, 400L),
+                deviceMemoryTimestamps = longArrayOf(1L, 2L),
+                deviceMemorySizeBytes = 4096L,
+            )
+
+        span.attachAppSessionCpuMetrics(metrics)
+        span.attachAppSessionMemoryMetrics(metrics)
+
+        assertEquals(15.0, span.attributes["bugsnag.system.cpu_mean_total"] as Double, 0.0)
+        assertEquals(10.0, span.attributes["bugsnag.system.cpu_min_total"] as Double, 0.0)
+        assertEquals(20.0, span.attributes["bugsnag.system.cpu_max_total"] as Double, 0.0)
+        assertArrayEquals(doubleArrayOf(10.0, 20.0), span.attributes["bugsnag.system.cpu_measures_total"] as DoubleArray, 0.0)
+        assertArrayEquals(doubleArrayOf(3.0, 4.0), span.attributes["bugsnag.system.cpu_measures_main_thread"] as DoubleArray, 0.0)
+        assertArrayEquals(doubleArrayOf(1.0, 2.0), span.attributes["bugsnag.system.cpu_measures_overhead"] as DoubleArray, 0.0)
+        assertArrayEquals(longArrayOf(1L, 2L), span.attributes["bugsnag.system.cpu_measures_timestamps"] as LongArray)
+
+        assertEquals(4096L, span.attributes["bugsnag.device.physical_device_memory"] as Long)
+        assertEquals(4096L, span.attributes["bugsnag.system.memory.spaces.device.size"] as Long)
+        assertEquals(300L, span.attributes["bugsnag.system.memory.spaces.device.min"] as Long)
+        assertEquals(400L, span.attributes["bugsnag.system.memory.spaces.device.max"] as Long)
+        assertEquals(350L, span.attributes["bugsnag.system.memory.spaces.device.mean"] as Long)
+        assertEquals(100L, span.attributes["bugsnag.system.memory.spaces.art.min"] as Long)
+        assertEquals(200L, span.attributes["bugsnag.system.memory.spaces.art.max"] as Long)
+        assertEquals(150L, span.attributes["bugsnag.system.memory.spaces.art.mean"] as Long)
+        assertArrayEquals(longArrayOf(100L, 200L), span.attributes["bugsnag.system.memory.spaces.art.used"] as LongArray)
+        assertArrayEquals(longArrayOf(300L, 400L), span.attributes["bugsnag.system.memory.spaces.device.used"] as LongArray)
+        assertArrayEquals(longArrayOf(1L, 2L), span.attributes["bugsnag.system.memory.timestamps"] as LongArray)
+
+        assertNull(span.attributes["bugsnag.session.memory.runtime.min"])
+        assertNull(span.attributes["bugsnag.session.memory.device.min"])
     }
 
     @Test
