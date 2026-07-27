@@ -3,6 +3,7 @@ package com.bugsnag.android.performance.internal
 import android.os.SystemClock
 import androidx.annotation.FloatRange
 import com.bugsnag.android.performance.HasAttributes
+import com.bugsnag.android.performance.Logger
 import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.SpanContext
 import com.bugsnag.android.performance.SpanKind
@@ -113,6 +114,9 @@ public class SpanImpl(
 
         attributes["bugsnag.span.category"] = category.category
         samplingValue = samplingValueFor(traceId)
+
+        // Log when span is started
+        logSpanStarted()
 
         // Starting a Span should cause it to become the current context
         if (makeContext) SpanContext.defaultStorage?.attach(this)
@@ -375,6 +379,20 @@ public class SpanImpl(
         result = 31 * result + spanId.hashCode()
         result = 31 * result + parentSpanId.hashCode()
         return result
+    }
+
+    private fun logSpanStarted() {
+        Logger.d("=== Span Started ===")
+        Logger.d("Name: $name")
+        Logger.d("Kind: $kind")
+        Logger.d("SpanId: ${spanId.toHexString()}")
+        Logger.d("TraceId: ${traceId.toHexString()}")
+        Logger.d("Category: ${category.category}")
+        if (parentSpanId != 0L) {
+            Logger.d("ParentSpanId: ${parentSpanId.toHexString()}")
+        }
+        Logger.d("StartTime: $startTime")
+        Logger.d("=== End Span Start ===")
     }
 
     public companion object {

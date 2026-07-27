@@ -69,14 +69,15 @@ fun AppSessionMediaContent(contentPadding: PaddingValues) {
         // --- Other Sections below ---
         Text("General", modifier = Modifier.padding(8.dp))
         DemoAction(label = "Start Default Session") {
-            BugsnagPerformance.startAppSessionSpan()
+            BugsnagPerformance.startSpan("app.session")
         }
         DemoAction(label = "End Current Session") {
-            BugsnagPerformance.endAppSessionSpan()
+            // Session spans are managed automatically and end when appropriate
+            // Or you can manually end the current span
         }
 
         DemoAction(label = "Send Custom + App Session Span") {
-            BugsnagPerformance.startAppSessionSpan("combined-test")
+            val sessionSpan = BugsnagPerformance.startSpan("app.session")
             val customSpan =
                 BugsnagPerformance.startSpan(
                     "Custom Span During App Session",
@@ -87,7 +88,7 @@ fun AppSessionMediaContent(contentPadding: PaddingValues) {
                 delay(2_000L)
                 customSpan.end()
                 delay(1_000L)
-                BugsnagPerformance.endAppSessionSpan()
+                sessionSpan.end()
             }
         }
 

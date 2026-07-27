@@ -7,9 +7,12 @@ import com.bugsnag.android.performance.Logger
 import com.bugsnag.android.performance.internal.connectivity.Connectivity
 import com.bugsnag.android.performance.internal.connectivity.shouldAttemptDelivery
 import com.bugsnag.android.performance.internal.processing.AttributeLimits
+import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
+import java.util.zip.GZIPInputStream
+import org.json.JSONObject
 
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP_PREFIX)
 public open class HttpDelivery(
@@ -51,6 +54,9 @@ public open class HttpDelivery(
             // We can't deliver now but can retry later.
             return DeliveryResult.Failed(tracePayload, true)
         }
+
+        // Log the span JSON data being sent to the server
+        logSpanPayload(tracePayload)
 
         TrafficStats.setThreadStatsTag(1)
         return try {
@@ -103,6 +109,69 @@ public open class HttpDelivery(
     }
 
     override fun toString(): String = "HttpDelivery(\"$endpoint\")"
+
+    private fun logSpanPayload(tracePayload: TracePayload) {
+        try {
+            val jsonString = decodePayloadForLogging(tracePayload)
+            val prettyJson = prettyPrintJson(jsonString)
+
+            Logger.d("=== Final Span JSON Data Being Sent to Server (includes Disk I/O metrics) ===")
+            prettyJson.lineSequence().forEach { line ->
+                logInChunks(line)
+            }
+            Logger.d("=== HTTP Headers ===")
+            tracePayload.headers.forEach { (name, value) ->
+                Logger.d("$name: $value")
+            }
+            Logger.d("=== End Final Span Data ===")
+        } catch (e: Exception) {
+            Logger.w("Failed to log span payload: ${e.message}", e)
+        }
+    }
+
+    private fun decodePayloadForLogging(tracePayload: TracePayload): String {
+        val contentEncoding = tracePayload.headers["Content-Encoding"]
+        val isGzipped = contentEncoding.equals("gzip", ignoreCase = true)
+
+        return if (isGzipped) {
+            // Decompress payload for readable JSON logs.
+            ByteArrayInputStream(tracePayload.body).use { bais ->
+                GZIPInputStream(bais).bufferedReader(Charsets.UTF_8).use { reader ->
+                    reader.readText()
+                }
+            }
+        } else {
+            tracePayload.body.toString(Charsets.UTF_8)
+        }
+    }
+
+    private fun prettyPrintJson(json: String): String {
+        return runCatching {
+            JSONObject(json).toString(2)
+        }.getOrElse {
+            // Fallback to raw string if parsing fails.
+            json
+        }
+    }
+
+    private fun logInChunks(message: String) {
+        val chunkSize = 1000
+        if (message.length <= chunkSize) {
+            Logger.d(message)
+            return
+        }
+
+        val totalChunks = (message.length + chunkSize - 1) / chunkSize
+        var start = 0
+        var chunkIndex = 1
+
+        while (start < message.length) {
+            val end = minOf(start + chunkSize, message.length)
+            Logger.d("[chunk $chunkIndex/$totalChunks] ${message.substring(start, end)}")
+            start = end
+            chunkIndex++
+        }
+    }
 
     private fun HttpURLConnection.setHeaders(tracePayload: TracePayload) {
         tracePayload.headers.forEach { (name, value) ->
