@@ -56,7 +56,7 @@ public class SpanFactory internal constructor(
 
     init {
         if (SpanContext.defaultStorage == null) {
-            SpanContext.Storage.defaultStorage = ThreadLocalSpanContextStorage()
+            SpanContext.defaultStorage = ThreadLocalSpanContextStorage()
         }
     }
 
@@ -115,6 +115,36 @@ public class SpanFactory internal constructor(
                     "[HTTP/$verbUpper]",
                     SpanKind.CLIENT,
                     SpanCategory.NETWORK,
+                    options.startTime,
+                    options.parentContext,
+                    options.isFirstClass,
+                    options.makeContext,
+                    options.spanMetrics,
+                    spanProcessor,
+                )
+            span.attributes["http.url"] = resultUrl
+            span.attributes["http.method"] = verbUpper
+            return span
+        }
+        return null
+    }
+
+    public fun createGraphQlSpan(
+        url: String,
+        verb: String,
+        spanName: String,
+        options: SpanOptions = SpanOptions.DEFAULTS,
+        spanProcessor: SpanProcessor = this.spanProcessor,
+    ): SpanImpl? {
+        val reqInfo = NetworkRequestInfo(url)
+        networkRequestCallback?.onNetworkRequest(reqInfo)
+        reqInfo.url?.let { resultUrl ->
+            val verbUpper = verb.uppercase()
+            val span =
+                createSpan(
+                    spanName,
+                    SpanKind.CLIENT,
+                    SpanCategory.GRAPHQL,
                     options.startTime,
                     options.parentContext,
                     options.isFirstClass,

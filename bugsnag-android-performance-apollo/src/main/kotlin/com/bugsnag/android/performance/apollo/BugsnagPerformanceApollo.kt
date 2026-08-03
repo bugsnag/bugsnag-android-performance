@@ -6,7 +6,6 @@ import com.apollographql.apollo3.api.Mutation
 import com.apollographql.apollo3.api.Operation
 import com.apollographql.apollo3.api.Query
 import com.apollographql.apollo3.api.Subscription
-import com.apollographql.apollo3.api.http.HttpHeader
 import com.apollographql.apollo3.api.http.HttpBody
 import com.apollographql.apollo3.api.http.HttpRequest
 import com.apollographql.apollo3.api.http.HttpResponse
@@ -21,6 +20,8 @@ import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.SpanContext
 import com.bugsnag.android.performance.SpanOptions
 import com.bugsnag.android.performance.encodeAsTraceParent
+import com.bugsnag.android.performance.internal.graphql.GraphQlRequest
+import com.bugsnag.android.performance.internal.graphql.GraphQlRequestClassifier
 import java.net.MalformedURLException
 import java.net.URL
 import kotlinx.coroutines.flow.Flow
@@ -80,17 +81,48 @@ public class BugsnagPerformanceApollo : HttpInterceptor {
             return null
         }
 
-        val span = BugsnagPerformance.startNetworkRequestSpan(url, request.method.toString(), networkSpanOptions)
-        request.body
-            ?.contentLength
-            ?.takeIf { it >= 0L }
-            ?.let { contentLength ->
-                span?.let { NetworkRequestAttributes.setRequestContentLength(it, contentLength) }
-            }
+        val body = request.body?.toUtf8String()
 
-        extractGraphQlOperation(request)?.let { operation ->
-            span?.setAttribute("graphql.operation.type", operation.type)
-            operation.name?.let { span?.setAttribute("graphql.operation.name", it) }
+        // Fast path: Apollo operation interceptor already extracted metadata via internal headers.
+        val internalName = request.headers.firstOrNull { it.name == INTERNAL_OPERATION_NAME_HEADER }?.value
+        val internalType = request.headers.firstOrNull { it.name == INTERNAL_OPERATION_TYPE_HEADER }?.value
+
+        val operationType: String
+        val operationName: String
+
+        if (!internalName.isNullOrBlank() && !internalType.isNullOrBlank()) {
+            operationType = internalType
+            operationName = internalName
+        } else {
+            // Fallback: use the shared 3-method classifier (content-type, URL, body).
+            val contentType = request.headers.firstOrNull {
+                it.name.equals("content-type", ignoreCase = true)
+            }?.value
+            val gqlRequest = GraphQlRequest(request.url, contentType, body)
+            val operation = GraphQlRequestClassifier.parseOperation(gqlRequest)
+
+            if (operation != null) {
+                operationType = operation.type
+                operationName = operation.name
+            } else {
+                // Not a GraphQL request — create a standard HTTP network span.
+                val span = BugsnagPerformance.startNetworkRequestSpan(url, request.method.toString(), networkSpanOptions)
+                request.body?.contentLength?.takeIf { it >= 0L }?.let { contentLength ->
+                    span?.let { NetworkRequestAttributes.setRequestContentLength(it, contentLength) }
+                }
+                return span
+            }
+        }
+
+        val spanName = GraphQlRequestClassifier.buildSpanName(operationType, operationName)
+        val span = BugsnagPerformance.startGraphQlRequestSpan(url, request.method.toString(), spanName, networkSpanOptions)
+
+        request.body?.contentLength?.takeIf { it >= 0L }?.let { contentLength ->
+            span?.let { NetworkRequestAttributes.setRequestContentLength(it, contentLength) }
+        }
+        span?.setAttribute("graphql.operation.type", operationType)
+        if (operationName.isNotEmpty()) {
+            span?.setAttribute("graphql.operation.name", operationName)
         }
 
         return span
@@ -108,44 +140,6 @@ public class BugsnagPerformanceApollo : HttpInterceptor {
         return request.newBuilder()
             .addHeader("traceparent", spanContext.encodeAsTraceParent())
             .build()
-    }
-
-    private data class GraphQlOperation(
-        val type: String,
-        val name: String?,
-    )
-
-    private fun extractGraphQlOperation(request: HttpRequest): GraphQlOperation? {
-        val operationName = request.headers.firstOrNull { it.name == INTERNAL_OPERATION_NAME_HEADER }?.value
-        val operationType = request.headers.firstOrNull { it.name == INTERNAL_OPERATION_TYPE_HEADER }?.value
-        if (!operationName.isNullOrBlank() && !operationType.isNullOrBlank()) {
-            return GraphQlOperation(operationType, operationName)
-        }
-
-        return extractGraphQlOperation(request.body?.toUtf8String())
-    }
-
-    private fun extractGraphQlOperation(body: String?): GraphQlOperation? {
-        if (body.isNullOrBlank()) {
-            return null
-        }
-
-        val operationName = OPERATION_NAME_REGEX.find(body)?.groupValues?.getOrNull(1)
-        val query = QUERY_REGEX.find(body)?.groupValues?.getOrNull(1)?.let(::decodeJsonString)
-        val queryMatch = query?.let { OPERATION_TYPE_REGEX.find(it) }
-        val operationType = queryMatch?.groupValues?.getOrNull(1)?.lowercase() ?: return null
-        val operation = queryMatch.groupValues.getOrNull(2)?.takeIf { it.isNotBlank() }
-
-        return GraphQlOperation(operationType, operationName ?: operation)
-    }
-
-    private fun decodeJsonString(value: String): String {
-        return value
-            .replace("\\\"", "\"")
-            .replace("\\n", "\n")
-            .replace("\\r", "\r")
-            .replace("\\t", "\t")
-            .replace("\\\\", "\\")
     }
 
     private fun HttpBody.toUtf8String(): String? {
@@ -170,13 +164,6 @@ public class BugsnagPerformanceApollo : HttpInterceptor {
             .headers(filteredHeaders)
             .build()
     }
-
-    private companion object {
-        val OPERATION_NAME_REGEX = "\"operationName\"\\s*:\\s*\"([^\"]+)\"".toRegex()
-        val QUERY_REGEX = "\"query\"\\s*:\\s*\"((?:[^\"\\\\]|\\\\.)*)\"".toRegex()
-        val OPERATION_TYPE_REGEX =
-            "\\b(query|mutation|subscription)\\b(?:\\s+([_A-Za-z][_0-9A-Za-z]*))?".toRegex()
-    }
 }
 
 public fun ApolloClient.Builder.withBugsnagPerformance(): ApolloClient.Builder {
@@ -195,4 +182,3 @@ private fun Operation<*>.operationTypeName(): String {
 
 private const val INTERNAL_OPERATION_NAME_HEADER = "x-bsg-operation-name"
 private const val INTERNAL_OPERATION_TYPE_HEADER = "x-bsg-operation-type"
-

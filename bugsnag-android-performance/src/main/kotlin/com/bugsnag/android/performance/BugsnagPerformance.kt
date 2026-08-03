@@ -114,6 +114,23 @@ public object BugsnagPerformance {
     ): Span? = spanFactory.createNetworkSpan(uri.toString(), verb, options)
 
     /**
+     * Open a GraphQL network span with a given [spanName], [url], and HTTP [verb].
+     *
+     * @param url the URL the returned span is measuring
+     * @param verb the HTTP verb / method (typically POST for GraphQL)
+     * @param spanName the GraphQL operation span name (for example: GraphQL query:GetCharacters)
+     * @param options the optional configuration for the span
+     */
+    @JvmStatic
+    @JvmOverloads
+    public fun startGraphQlRequestSpan(
+        url: URL,
+        verb: String,
+        spanName: String,
+        options: SpanOptions = SpanOptions.DEFAULTS,
+    ): Span? = spanFactory.createGraphQlSpan(url.toString(), verb, spanName, options)
+
+    /**
      * Open a ViewLoad span to measure the time taken to load and render a UI element (typically a screen).
      * These spans are created and measured [automatically for
      * activities](PerformanceConfiguration.autoInstrumentActivities). This function can be used

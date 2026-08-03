@@ -1,13 +1,14 @@
 package com.bugsnag.android.performance.okhttp
 
 import com.bugsnag.android.performance.BugsnagPerformance
-import com.bugsnag.android.performance.Logger
 import com.bugsnag.android.performance.NetworkRequestAttributes
 import com.bugsnag.android.performance.SpanContext
 import com.bugsnag.android.performance.SpanOptions
 import com.bugsnag.android.performance.encodeAsTraceParent
 import com.bugsnag.android.performance.internal.SpanImpl
 import com.bugsnag.android.performance.internal.SpanTracker
+import com.bugsnag.android.performance.internal.graphql.GraphQlRequest
+import com.bugsnag.android.performance.internal.graphql.GraphQlRequestClassifier
 import com.bugsnag.android.performance.okhttp.OkhttpModule.Companion.tracePropagationUrls
 import com.bugsnag.android.performance.okhttp.util.DelegateEventListener
 import okhttp3.Call
@@ -25,9 +26,6 @@ public class BugsnagPerformanceOkhttp(
     public constructor() : this(null)
 
     public companion object EventListenerFactory : Factory {
-        private val OPERATION_NAME_REGEX = "\"operationName\"\\s*:\\s*\"([^\"]+)\"".toRegex()
-        private val OPERATION_TYPE_REGEX = "\\b(query|mutation|subscription)\\b".toRegex()
-
         override fun create(call: Call): EventListener {
             return BugsnagPerformanceOkhttp()
         }
@@ -39,43 +37,44 @@ public class BugsnagPerformanceOkhttp(
 
     override fun callStart(call: Call) {
         super.callStart(call)
-        val url = call.request().url.toUrl()
-        val span =
-            BugsnagPerformance.startNetworkRequestSpan(
-                url,
-                call.request().method,
-                networkSpanOptions,
-            )
+        val request = call.request()
+        val url = request.url.toUrl()
+        val method = request.method
 
-        if (span != null) {
-            logGraphQlPayload(call)
-            val contentLength = call.request().body?.contentLength()
-            if (contentLength != null) {
-                NetworkRequestAttributes.setRequestContentLength(span, contentLength)
-            }
-            spans.associate(call, span = span as SpanImpl)
-        }
-    }
-
-    private fun logGraphQlPayload(call: Call) {
-        val bodyText = call.request().body?.let { requestBody ->
+        val bodyText = request.body?.let { requestBody ->
             try {
                 Buffer().apply { requestBody.writeTo(this) }.readUtf8()
             } catch (ignored: Exception) {
                 null
             }
-        } ?: return
-
-        if (!bodyText.contains("\"query\"")) {
-            return
         }
 
-        val operationName = OPERATION_NAME_REGEX.find(bodyText)?.groupValues?.getOrNull(1)
-        val operationType = OPERATION_TYPE_REGEX.find(bodyText)?.groupValues?.getOrNull(1)
-        Logger.d(
-            "Intercepted GraphQL payload: opType=${operationType ?: "unknown"}, " +
-                "opName=${operationName ?: "unnamed"}, body=$bodyText",
-        )
+        val contentType = request.body?.contentType()?.toString()
+            ?: request.header("Content-Type")
+
+        val gqlRequest = GraphQlRequest(url.toString(), contentType, bodyText)
+        val operation = GraphQlRequestClassifier.parseOperation(gqlRequest)
+
+        val span = if (operation != null) {
+            val spanName = GraphQlRequestClassifier.buildSpanName(operation.type, operation.name)
+            BugsnagPerformance.startGraphQlRequestSpan(url, method, spanName, networkSpanOptions)
+        } else {
+            BugsnagPerformance.startNetworkRequestSpan(url, method, networkSpanOptions)
+        }
+
+        if (span != null) {
+            if (operation != null) {
+                span.setAttribute("graphql.operation.type", operation.type)
+                if (operation.name.isNotEmpty()) {
+                    span.setAttribute("graphql.operation.name", operation.name)
+                }
+            }
+            val contentLength = request.body?.contentLength()
+            if (contentLength != null && contentLength >= 0L) {
+                NetworkRequestAttributes.setRequestContentLength(span, contentLength)
+            }
+            spans.associate(call, span = span as SpanImpl)
+        }
     }
 
     override fun responseHeadersEnd(
