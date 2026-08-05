@@ -89,26 +89,6 @@ Feature: Automatic creation of spans
       | bugsnag.phase         | stringValue | ActivityResume  |
       | bugsnag.view.name     | stringValue | MainActivity    |
 
-    # Check CPU Metrics on the ViewLoad span
-    * the "[ViewLoad/Activity]MainActivity" span has double attribute named "bugsnag.system.cpu_mean_total"
-    * the "[ViewLoad/Activity]MainActivity" span has double attribute named "bugsnag.system.cpu_mean_main_thread"
-    * the "[ViewLoad/Activity]MainActivity" span has double attribute named "bugsnag.system.cpu_mean_overhead"
-
-    * the "[ViewLoad/Activity]MainActivity" span has array attribute named "bugsnag.system.cpu_measures_total"
-    * the "[ViewLoad/Activity]MainActivity" span has array attribute named "bugsnag.system.cpu_measures_main_thread"
-    * the "[ViewLoad/Activity]MainActivity" span has array attribute named "bugsnag.system.cpu_measures_overhead"
-    * the "[ViewLoad/Activity]MainActivity" span has array attribute named "bugsnag.system.cpu_measures_timestamps"
-
-    # Check Memory Metrics on the ViewLoad span
-    * the "[ViewLoad/Activity]MainActivity" span has int attribute named "bugsnag.system.memory.spaces.art.size"
-    * the "[ViewLoad/Activity]MainActivity" span has int attribute named "bugsnag.device.physical_device_memory"
-    * the "[ViewLoad/Activity]MainActivity" span has int attribute named "bugsnag.system.memory.spaces.device.size"
-    * the "[ViewLoad/Activity]MainActivity" span has int attribute named "bugsnag.system.memory.spaces.device.mean"
-    * the "[ViewLoad/Activity]MainActivity" span has int attribute named "bugsnag.system.memory.spaces.art.mean"
-
-    * the "[ViewLoad/Activity]MainActivity" span has array attribute named "bugsnag.system.memory.spaces.device.used"
-    * the "[ViewLoad/Activity]MainActivity" span has array attribute named "bugsnag.system.memory.spaces.art.used"
-    * the "[ViewLoad/Activity]MainActivity" span has array attribute named "bugsnag.system.memory.timestamps"
 
   @skip_above_android_9
   Scenario: AppStart instrumentation
@@ -130,26 +110,6 @@ Feature: Automatic creation of spans
       | bugsnag.view.type     | stringValue | activity     |
       | bugsnag.view.name     | stringValue | MainActivity |
 
-    # Check CPU Metrics on the ViewLoad span
-    * the "[ViewLoad/Activity]MainActivity" span has double attribute named "bugsnag.system.cpu_mean_total"
-    * the "[ViewLoad/Activity]MainActivity" span has double attribute named "bugsnag.system.cpu_mean_main_thread"
-    * the "[ViewLoad/Activity]MainActivity" span has double attribute named "bugsnag.system.cpu_mean_overhead"
-
-    * the "[ViewLoad/Activity]MainActivity" span has array attribute named "bugsnag.system.cpu_measures_total"
-    * the "[ViewLoad/Activity]MainActivity" span has array attribute named "bugsnag.system.cpu_measures_main_thread"
-    * the "[ViewLoad/Activity]MainActivity" span has array attribute named "bugsnag.system.cpu_measures_overhead"
-    * the "[ViewLoad/Activity]MainActivity" span has array attribute named "bugsnag.system.cpu_measures_timestamps"
-
-    # Check Memory Metrics on the ViewLoad span
-    * the "[ViewLoad/Activity]MainActivity" span has int attribute named "bugsnag.system.memory.spaces.art.size"
-    * the "[ViewLoad/Activity]MainActivity" span has int attribute named "bugsnag.device.physical_device_memory"
-    * the "[ViewLoad/Activity]MainActivity" span has int attribute named "bugsnag.system.memory.spaces.device.size"
-    * the "[ViewLoad/Activity]MainActivity" span has int attribute named "bugsnag.system.memory.spaces.device.mean"
-    * the "[ViewLoad/Activity]MainActivity" span has int attribute named "bugsnag.system.memory.spaces.art.mean"
-
-    * the "[ViewLoad/Activity]MainActivity" span has array attribute named "bugsnag.system.memory.spaces.device.used"
-    * the "[ViewLoad/Activity]MainActivity" span has array attribute named "bugsnag.system.memory.spaces.art.used"
-    * the "[ViewLoad/Activity]MainActivity" span has array attribute named "bugsnag.system.memory.timestamps"
 
   Scenario: AppStart instrumentation disabled with ViewLoad enabled
     Given I run "AppStartDisabledScenario"

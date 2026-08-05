@@ -141,5 +141,9 @@ fun AllButtons(network: ExampleNetworkCalls, contentPadding: PaddingValues) {
         DemoAction(label = "Open Secondary Activity") {
             context.startActivity(Intent(context, LoadingActivity::class.java))
         }
+
+        DemoAction(label = "App Session Testing") {
+            context.startActivity(Intent(context, AppSessionActivity::class.java))
+        }
     }
 }

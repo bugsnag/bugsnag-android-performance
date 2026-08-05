@@ -82,6 +82,29 @@ public class SpanFactory internal constructor(
     }
 
     @JvmOverloads
+    public fun createAppSessionSpan(
+        name: String,
+        options: SpanOptions = SpanOptions.DEFAULTS,
+        spanProcessor: SpanProcessor = this.spanProcessor,
+    ): SpanImpl {
+        return createSpan(
+            name,
+            SpanKind.INTERNAL,
+            SpanCategory.APP_SESSION,
+            options.startTime,
+            options.parentContext,
+            options.isFirstClass != false,
+            options.makeContext,
+            options.spanMetrics ?: SpanMetrics(
+                rendering = true,
+                cpu = true,
+                memory = true,
+            ),
+            spanProcessor,
+        )
+    }
+
+    @JvmOverloads
     public fun createCustomSpan(
         name: String,
         options: SpanOptions = SpanOptions.DEFAULTS,
@@ -175,6 +198,8 @@ public class SpanFactory internal constructor(
         spanProcessor: SpanProcessor = this.spanProcessor,
     ): SpanImpl {
         val isFirstClass = options.isFirstClass ?: defaultIsFirstClassViewLoad()
+        val spanMetrics =
+            options.spanMetrics ?: takeDefaultViewLoadMetrics(isFirstClass)
 
         val span =
             createSpan(
@@ -185,7 +210,7 @@ public class SpanFactory internal constructor(
                 options.parentContext,
                 isFirstClass,
                 options.makeContext,
-                options.spanMetrics,
+                spanMetrics,
                 spanProcessor,
             )
 
@@ -213,6 +238,10 @@ public class SpanFactory internal constructor(
             ?.filterIsInstance<SpanImpl>()
             ?.filter { it.category == SpanCategory.VIEW_LOAD }
             ?.none() == true
+    }
+
+    private fun takeDefaultViewLoadMetrics(isFirstClass: Boolean): SpanMetrics? {
+        return if (isFirstClass) DEFAULT_VIEW_LOAD_METRICS else null
     }
 
     public fun createViewLoadPhaseSpan(
@@ -320,7 +349,8 @@ public class SpanFactory internal constructor(
     ): SpanImpl {
         val parent = parentContext?.takeIf { it.traceId.isValidTraceId() }
 
-        val metrics = metricsContainer.createSpanMetricsSnapshot(isFirstClass == true, spanMetrics)
+        // Default to attaching metrics for all spans (unless explicitly disabled) so they appear in dashboards
+        val metrics = metricsContainer.createSpanMetricsSnapshot(isFirstClass != false, spanMetrics)
         val span =
             SpanImpl(
                 name = name,
@@ -363,4 +393,13 @@ public class SpanFactory internal constructor(
     }
 
     private fun UUID.isValidTraceId() = mostSignificantBits != 0L || leastSignificantBits != 0L
+
+    private companion object {
+        val DEFAULT_VIEW_LOAD_METRICS =
+            SpanMetrics(
+                rendering = true,
+                cpu = false,
+                memory = false,
+            )
+    }
 }

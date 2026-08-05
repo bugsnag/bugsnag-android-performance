@@ -113,7 +113,7 @@ class MainActivity : AppCompatActivity() {
                 val fixtureConfig = runCatching { JSONObject(fileContents) }.getOrNull()
                 val address = getStringSafely(fixtureConfig, "maze_address")
                 if (!address.isNullOrBlank()) {
-                    log("Setting Maze Runner address from config file: $mazeAddress")
+                    log("Setting Maze Runner address from config file: $address")
                     return address
                 }
             } else {
@@ -170,8 +170,10 @@ class MainActivity : AppCompatActivity() {
     private fun getStringSafely(
         jsonObject: JSONObject?,
         key: String,
-    ): String {
-        return jsonObject?.optString(key) ?: ""
+    ): String? {
+        return jsonObject
+            ?.optString(key)
+            ?.takeIf { it.isNotBlank() && it != "null" }
     }
 
     private fun startBugsnag() {
@@ -280,9 +282,32 @@ class MainActivity : AppCompatActivity() {
                     scenario = loadScenario(scenarioName, scenarioMetadata, endpointUrl)
                 }
 
+                "configure_bugsnag" -> {
+                    scenario!!::class.java.getMethod("configureBugsnag", String::class.java, String::class.java)
+                        .invoke(scenario, scenarioName, scenarioMetadata)
+                }
+
+                "configure_scenario" -> {
+                    scenario!!::class.java.getMethod("configureScenario", String::class.java, String::class.java)
+                        .invoke(scenario, scenarioName, scenarioMetadata)
+                }
+
+                "start_bugsnag" -> {
+                    scenario!!::class.java.getMethod("startBugsnag").invoke(scenario)
+                }
+
+                "run_loaded_scenario" -> {
+                    scenario!!.startScenario()
+                }
+
                 "invoke" -> {
                     log("invoke: $scenarioName")
-                    scenario!!::class.java.getMethod(scenarioName).invoke(scenario)
+                    val method = scenario!!::class.java.methods.find { it.name == scenarioName }
+                    if (method?.parameterTypes?.size == 1 && method.parameterTypes[0] == String::class.java) {
+                        method.invoke(scenario, scenarioMetadata)
+                    } else {
+                        method?.invoke(scenario)
+                    }
                 }
 
                 else -> throw IllegalArgumentException("Unknown action: $action")
@@ -311,25 +336,45 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun readCommand(commandUrl: String): String {
-        val urlConnection = URL(commandUrl).openConnection() as HttpURLConnection
+        val urlConnection =
+            (URL(commandUrl).openConnection() as HttpURLConnection)
+                .apply {
+                    connectTimeout = DEFAULT_HTTP_TIMEOUT
+                    readTimeout = DEFAULT_HTTP_TIMEOUT
+                    useCaches = false
+                    requestMethod = "GET"
+                }
         try {
-            return urlConnection.inputStream.use { it.reader().readText() }
+            val responseBody =
+                if (urlConnection.responseCode in HTTP_SUCCESS_START..HTTP_SUCCESS_END) {
+                    urlConnection.inputStream.bufferedReader().use { it.readText() }
+                } else {
+                    urlConnection.errorStream?.bufferedReader()?.use { it.readText() }.orEmpty()
+                }
+
+            return responseBody.takeIf { it.isNotBlank() } ?: "null"
         } catch (ioe: IOException) {
             try {
-                val errorMessage = urlConnection.errorStream.use { it.reader().readText() }
-                log(
-                    """
-                    Failed to GET $commandUrl (HTTP ${urlConnection.responseCode} ${urlConnection.responseMessage}):
-                    ${"-".repeat(errorMessage.width)}
-                    $errorMessage
-                    ${"-".repeat(errorMessage.width)}
-                    """.trimIndent(),
-                )
+                val errorMessage = urlConnection.errorStream?.bufferedReader()?.use { it.readText() }.orEmpty()
+                if (errorMessage.isNotBlank()) {
+                    log(
+                        """
+                        Failed to GET $commandUrl (HTTP ${urlConnection.responseCode} ${urlConnection.responseMessage}):
+                        ${"-".repeat(errorMessage.width)}
+                        $errorMessage
+                        ${"-".repeat(errorMessage.width)}
+                        """.trimIndent(),
+                    )
+                } else {
+                    log("Failed to GET $commandUrl; treating empty/invalid response as no command", ioe)
+                }
             } catch (e: Exception) {
                 log("Failed to retrieve error message from connection", e)
             }
 
-            throw ioe
+            return "null"
+        } finally {
+            urlConnection.disconnect()
         }
     }
 
@@ -339,6 +384,7 @@ class MainActivity : AppCompatActivity() {
     ): PerformanceConfiguration {
         return PerformanceConfiguration.load(applicationContext, apiKey).also { config ->
             config.endpoint = endpoint
+            config.appSessionConfig.autoStartSession = false
             config.autoInstrumentAppStarts = false
             config.autoInstrumentActivities = AutoInstrument.OFF
             config.logger = DebugLogger
@@ -351,6 +397,7 @@ class MainActivity : AppCompatActivity() {
         endpoint: String,
     ): Scenario {
         log("loadScenario($scenarioName, $scenarioMetadata, $endpoint)")
+        PerformanceTestUtils.clearBugsnagPerformanceState()
         val apiKeyField = findViewById<EditText>(R.id.manualApiKey)
 
         val manualMode = apiKeyField.text.isNotEmpty()
@@ -426,5 +473,9 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         const val REQUEST_CODE_FINISH_ON_RETURN = 9090
+
+        private const val DEFAULT_HTTP_TIMEOUT = 5_000
+        private const val HTTP_SUCCESS_START = 200
+        private const val HTTP_SUCCESS_END = 299
     }
 }

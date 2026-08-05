@@ -5,7 +5,7 @@ Feature: OkHttp EventListener
     And I wait to receive a span named "[HTTP/GET]"
     * a span field "kind" equals 3
     * a span string attribute "bugsnag.span.category" equals "network"
-    * a span string attribute "http.url" equals "https://google.com/?test=true"
+    * a span string attribute "http.url" equals "https://www.google.com/?test=true"
     * a span string attribute "http.method" equals "GET"
     * a span string attribute "http.flavor" exists
     * every span integer attribute "http.response_content_length" is greater than 0

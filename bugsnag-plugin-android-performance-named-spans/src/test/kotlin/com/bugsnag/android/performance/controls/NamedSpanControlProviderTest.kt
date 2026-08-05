@@ -38,7 +38,7 @@ class NamedSpanControlProviderTest {
                 null,
                 0L,
                 0L,
-                SpanCategory.CATEGORY_CUSTOM,
+                SpanCategory.CUSTOM,
                 NoopSpanProcessor.INSTANCE,
             )
 
@@ -51,7 +51,7 @@ class NamedSpanControlProviderTest {
                 null,
                 0L,
                 0L,
-                SpanCategory.CATEGORY_CUSTOM,
+                SpanCategory.CUSTOM,
                 NoopSpanProcessor.INSTANCE,
             )
 

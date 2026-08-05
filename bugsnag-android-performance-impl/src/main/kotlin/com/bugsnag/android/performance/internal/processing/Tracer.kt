@@ -44,6 +44,7 @@ public class Tracer(
     }
 
     public fun forceCurrentBatch() {
+        if (currentBatchSize == 0) return
         val localWorker = worker ?: return
         // simply age the "last" batch to ensure that `collectNextBatch` will return whatever is
         // in the current batch, regardless of actual age or size

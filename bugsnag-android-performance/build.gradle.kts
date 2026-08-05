@@ -68,13 +68,11 @@ dependencies {
     implementation(libs.androidx.annotation)
 
     testImplementation(libs.bundles.test.jvm)
+    testImplementation(testFixtures(project(":bugsnag-android-performance-impl")))
 
     testImplementation(libs.kotlin.reflect)
     testImplementation(libs.jsonSchemaFriend)
     testImplementation(libs.bugsnag.android)
-    if (System.getenv("RELEASING") == null) {
-        testImplementation(testFixtures(project(":bugsnag-android-performance-impl")))
-    }
 }
 
 license {
