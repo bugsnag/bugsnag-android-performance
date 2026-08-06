@@ -161,8 +161,8 @@ class GraphQlRequestClassifierTest {
 
     @Test
     fun buildSpanNameUsesAnonymousFormatWhenOperationNameMissing() {
-        assertEquals("[GraphQL] query", GraphQlRequestClassifier.buildSpanName("query", ""))
-        assertEquals("[GraphQL] mutation:CreatePost", GraphQlRequestClassifier.buildSpanName("mutation", "CreatePost"))
+        assertEquals("query", GraphQlRequestClassifier.buildSpanName("query", ""))
+        assertEquals("mutation:CreatePost", GraphQlRequestClassifier.buildSpanName("mutation", "CreatePost"))
     }
 }
 

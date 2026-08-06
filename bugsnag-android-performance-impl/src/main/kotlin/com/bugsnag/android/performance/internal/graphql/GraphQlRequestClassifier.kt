@@ -125,18 +125,18 @@ public object GraphQlRequestClassifier {
     }
 
     /**
-     * Builds a human-readable span name for a GraphQL operation.
-     * Format: `[GraphQL] <type>` or `[GraphQL] <type>:<name>`
-     * Example: `[GraphQL] query:GetUser`
+     * Builds the GraphQL operation suffix used in span names.
+     * Format: `<type>` or `<type>:<name>`
+     * Example: `query:GetUser`
      */
     public fun buildSpanName(operationType: String, operationName: String): String {
         val normalizedType = operationType.ifBlank { "query" }.lowercase(Locale.US)
         val normalizedName = operationName.trim()
 
         return if (normalizedName.isEmpty()) {
-            "[GraphQL] $normalizedType"
+            normalizedType
         } else {
-            "[GraphQL] $normalizedType:$normalizedName"
+            "$normalizedType:$normalizedName"
         }
     }
 

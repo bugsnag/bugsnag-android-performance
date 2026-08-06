@@ -21,6 +21,7 @@ import com.bugsnag.android.performance.internal.processing.AttributeLimits
 import com.bugsnag.android.performance.internal.processing.SpanTaskWorker
 import com.bugsnag.android.performance.internal.util.Prioritized
 import com.bugsnag.android.performance.internal.util.PrioritizedSet
+import java.net.URI
 import java.util.UUID
 
 internal typealias AttributeSource = (target: SpanImpl) -> Unit
@@ -165,7 +166,7 @@ public class SpanFactory internal constructor(
             val verbUpper = verb.uppercase()
             val span =
                 createSpan(
-                    spanName,
+                    buildGraphQlSpanName(resultUrl, spanName),
                     SpanKind.CLIENT,
                     SpanCategory.GRAPHQL,
                     options.startTime,
@@ -393,6 +394,52 @@ public class SpanFactory internal constructor(
     }
 
     private fun UUID.isValidTraceId() = mostSignificantBits != 0L || leastSignificantBits != 0L
+
+    private fun buildGraphQlSpanName(
+        url: String,
+        spanName: String,
+    ): String {
+        val endpoint = extractHostAndPath(url)
+        val normalizedSpanName = normalizeGraphQlSpanName(spanName)
+
+        return if (normalizedSpanName.isBlank()) {
+            "[GraphQL] [$endpoint]"
+        } else {
+            "[GraphQL] [$endpoint] $normalizedSpanName"
+        }
+    }
+
+    private fun normalizeGraphQlSpanName(spanName: String): String {
+        var normalized = spanName.trim()
+        if (normalized.startsWith("[GraphQL]")) {
+            normalized = normalized.removePrefix("[GraphQL]").trimStart()
+        }
+
+        if (normalized.startsWith("[")) {
+            val endIndex = normalized.indexOf(']')
+            if (endIndex >= 0) {
+                normalized = normalized.substring(endIndex + 1).trimStart()
+            }
+        }
+
+        return normalized
+    }
+
+    private fun extractHostAndPath(url: String): String {
+        val parsed = runCatching { URI(url) }.getOrNull()
+        val authority = parsed?.rawAuthority?.substringAfterLast('@')
+        val path = parsed?.rawPath?.takeIf { it.isNotEmpty() } ?: "/"
+
+        if (!authority.isNullOrBlank()) {
+            return authority + path
+        }
+
+        val withoutFragment = url.substringBefore('#')
+        val withoutQuery = withoutFragment.substringBefore('?')
+        val withoutScheme = withoutQuery.substringAfter("://", withoutQuery)
+        val withoutUserInfo = withoutScheme.substringAfter('@', withoutScheme)
+        return if ('/' in withoutUserInfo) withoutUserInfo else "$withoutUserInfo/"
+    }
 
     private companion object {
         val DEFAULT_VIEW_LOAD_METRICS =

@@ -156,7 +156,8 @@ public object BugsnagPerformance {
      *
      * @param url the URL the returned span is measuring
      * @param verb the HTTP verb / method (typically POST for GraphQL)
-     * @param spanName the GraphQL operation span name (for example: GraphQL query:GetCharacters)
+     * @param spanName the GraphQL operation suffix (for example: `query:GetCharacters`),
+     * which is reported as a span name in the format `[GraphQL] [host/path] <spanName>`
      * @param options the optional configuration for the span
      */
     @JvmStatic

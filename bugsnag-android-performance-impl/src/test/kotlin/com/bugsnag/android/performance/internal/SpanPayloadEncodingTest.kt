@@ -146,7 +146,7 @@ class SpanPayloadEncodingTest {
     fun testGraphQlSpanPayloadIncludesExpectedGraphQlAndHttpAttributes() {
         val span =
             SpanImpl(
-                "[GraphQL] query:GetUserProfile",
+                "[GraphQL] [api.example.com/graphql] query:GetUserProfile",
                 SpanCategory.GRAPHQL,
                 SpanKind.CLIENT,
                 100L,
@@ -157,7 +157,7 @@ class SpanPayloadEncodingTest {
                 null,
                 null,
                 TestTimeoutExecutor(),
-                NoopSpanProcessor,
+                NoopSpanProcessor.INSTANCE,
             )
         span.setAttribute("http.url", "https://api.example.com/graphql")
         span.setAttribute("http.method", "POST")
@@ -182,7 +182,7 @@ class SpanPayloadEncodingTest {
         val spanObject = firstSpan(JSONObject(content.toString(Charsets.UTF_8)))
         val attributes = attributesByKey(spanObject)
 
-        assertEquals("[GraphQL] query:GetUserProfile", spanObject.getString("name"))
+        assertEquals("[GraphQL] [api.example.com/graphql] query:GetUserProfile", spanObject.getString("name"))
         assertEquals("graphql", attributes["bugsnag.span.category"]?.getJSONObject("value")?.getString("stringValue"))
         assertEquals("https://api.example.com/graphql", attributes["http.url"]?.getJSONObject("value")?.getString("stringValue"))
         assertEquals("POST", attributes["http.method"]?.getJSONObject("value")?.getString("stringValue"))
@@ -195,7 +195,7 @@ class SpanPayloadEncodingTest {
     fun testGraphQlSpanPayloadMatchesGoldenSnapshot() {
         val span =
             SpanImpl(
-                "[GraphQL] query:GetUserProfile",
+                "[GraphQL] [api.example.com/graphql] query:GetUserProfile",
                 SpanCategory.GRAPHQL,
                 SpanKind.CLIENT,
                 300L,
@@ -206,7 +206,7 @@ class SpanPayloadEncodingTest {
                 null,
                 null,
                 TestTimeoutExecutor(),
-                NoopSpanProcessor,
+                NoopSpanProcessor.INSTANCE,
             )
         span.setAttribute("http.url", "https://api.example.com/graphql")
         span.setAttribute("http.method", "POST")
@@ -258,7 +258,7 @@ class SpanPayloadEncodingTest {
                     {
                       "spans": [
                         {
-                          "name": "[GraphQL] query:GetUserProfile",
+                          "name": "[GraphQL] [api.example.com/graphql] query:GetUserProfile",
                           "kind": 3,
                           "spanId": "0000000011112222",
                           "traceId": "4ee2666146504c7fa35f00f007cd24e7",
@@ -321,7 +321,7 @@ class SpanPayloadEncodingTest {
                 null,
                 null,
                 TestTimeoutExecutor(),
-                NoopSpanProcessor,
+                NoopSpanProcessor.INSTANCE,
             )
         span.setAttribute("http.url", "https://api.example.com/rest/users")
         span.setAttribute("http.method", "POST")
@@ -369,7 +369,7 @@ class SpanPayloadEncodingTest {
                 null,
                 null,
                 TestTimeoutExecutor(),
-                NoopSpanProcessor,
+                NoopSpanProcessor.INSTANCE,
             )
         span.setAttribute("http.url", "https://api.example.com/rest/users")
         span.setAttribute("http.method", "POST")

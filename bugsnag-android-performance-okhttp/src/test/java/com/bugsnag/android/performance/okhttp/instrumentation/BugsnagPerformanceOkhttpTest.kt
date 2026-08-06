@@ -20,6 +20,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import java.net.URL
 import java.util.concurrent.ConcurrentLinkedQueue
 
 @RunWith(RobolectricTestRunner::class)
@@ -104,8 +105,9 @@ class BugsnagPerformanceOkhttpTest {
         )
 
         val span = spanProcessor.singleSpan()
+        val requestUrl = URL(span.attributes["http.url"] as String)
 
-        assertEquals("[GraphQL] query:GetUser", span.name)
+        assertEquals("[GraphQL] [${requestUrl.authority}${requestUrl.path}] query:GetUser", span.name)
         assertEquals("graphql", span.attributes["bugsnag.span.category"])
         assertEquals(graphqlBody.toByteArray().size.toLong(), span.attributes["http.request_content_length"])
         assertEquals(responseBody.toByteArray().size.toLong(), span.attributes["http.response_content_length"])
