@@ -28,24 +28,27 @@ public data class GraphQlOperation(
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 public object GraphQlRequestClassifier {
     // Regex patterns to extract GraphQL fields and document structure
-    private val operationNameFieldRegex = "\"operationName\"\\s*:\\s*\"([^\"]*)\"".toRegex()
+    private val operationNameFieldRegex =
+        "\"operationName\"\\s*:\\s*\"([^\"]*)\"".toRegex()
     private val queryFieldRegex = "\"query\"\\s*:\\s*\"((?:[^\"\\\\]|\\\\.)*)\"".toRegex()
     private val mutationFieldRegex = "\"mutation\"\\s*:\\s*\"((?:[^\"\\\\]|\\\\.)*)\"".toRegex()
     private val subscriptionFieldRegex = "\"subscription\"\\s*:\\s*\"((?:[^\"\\\\]|\\\\.)*)\"".toRegex()
-    
+
     // Detects the presence of GraphQL keys in JSON body
-    private val graphQlJsonKeyRegex = "\"(query|mutation|subscription|operationName)\"\\s*:".toRegex(RegexOption.IGNORE_CASE)
-    
+    private val graphQlJsonKeyRegex =
+        "\"(query|mutation|subscription|operationName)\"\\s*:".toRegex(RegexOption.IGNORE_CASE)
+
     // Detects operation type at the start of a GraphQL document
-    private val operationTypeRegex = "^\\s*(query|mutation|subscription)\\b".toRegex(RegexOption.IGNORE_CASE)
-    
+    private val operationTypeRegex =
+        "^\\s*(query|mutation|subscription)\\b".toRegex(RegexOption.IGNORE_CASE)
+
     // Extracts the operation name (e.g., "GetUser" from "query GetUser { ... }")
     private val operationNameRegex =
         "^\\s*(?:query|mutation|subscription)\\s+([_A-Za-z][_0-9A-Za-z]*)\\b".toRegex(RegexOption.IGNORE_CASE)
-    
+
     // Matches "/graphql" in URL paths
     private val graphQlPathRegex = "(^|/)graphql/?($|[?#])".toRegex(RegexOption.IGNORE_CASE)
-    
+
     // Removes GraphQL comments from documents
     private val commentRegex = "(?m)^\\s*#.*$".toRegex()
 
@@ -142,7 +145,12 @@ public object GraphQlRequestClassifier {
 
     // Detection Strategy 1: Check Content-Type header
     private fun isGraphQlContentType(contentType: String?): Boolean {
-        val normalized = contentType?.substringBefore(';')?.trim()?.lowercase(Locale.US) ?: return false
+        val normalized =
+            contentType
+                ?.substringBefore(';')
+                ?.trim()
+                ?.lowercase(Locale.US)
+                ?: return false
         // Only "application/graphql" is a definitive GraphQL content-type signal.
         // "application/json" is too broad — all REST JSON POSTs use it.
         return normalized == "application/graphql"
@@ -234,4 +242,3 @@ public object GraphQlRequestClassifier {
             .replace("\\\\", "\\")
     }
 }
-

@@ -65,9 +65,12 @@ dependencies {
     implementation 'com.bugsnag:bugsnag-android-performance:9.9.9'
     implementation 'com.bugsnag:bugsnag-android-performance-impl:9.9.9'
     implementation 'com.bugsnag:bugsnag-android-performance-okhttp:9.9.9'
+    implementation 'com.bugsnag:bugsnag-android-performance-apollo:9.9.9'
     implementation 'com.bugsnag:bugsnag-android-performance-compose:9.9.9'
     implementation 'com.bugsnag:bugsnag-android-performance-appcompat:9.9.9'
     implementation 'com.bugsnag:bugsnag-android-performance-coroutines:9.9.9'
+    
+    implementation 'com.apollographql.apollo3:apollo-runtime:3.8.2'
 
     //compose
     def composeBom = platform('androidx.compose:compose-bom:2024.09.03')

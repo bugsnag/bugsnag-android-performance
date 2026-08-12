@@ -22,8 +22,9 @@ import java.io.IOException
 
 public class BugsnagPerformanceOkhttp(
     delegateEventListener: EventListener? = null,
+    private val networkSpanOptions: SpanOptions = SpanOptions.makeCurrentContext(false),
 ) : DelegateEventListener(delegateEventListener), Interceptor {
-    public constructor() : this(null)
+    public constructor() : this(null, SpanOptions.makeCurrentContext(false))
 
     public companion object EventListenerFactory : Factory {
         override fun create(call: Call): EventListener {
@@ -31,7 +32,6 @@ public class BugsnagPerformanceOkhttp(
         }
     }
 
-    private val networkSpanOptions = SpanOptions.makeCurrentContext(false)
 
     private val spans = SpanTracker()
 
@@ -63,12 +63,6 @@ public class BugsnagPerformanceOkhttp(
         }
 
         if (span != null) {
-            if (operation != null) {
-                span.setAttribute("graphql.operation.type", operation.type)
-                if (operation.name.isNotEmpty()) {
-                    span.setAttribute("graphql.operation.name", operation.name)
-                }
-            }
             val contentLength = request.body?.contentLength()
             if (contentLength != null && contentLength >= 0L) {
                 NetworkRequestAttributes.setRequestContentLength(span, contentLength)

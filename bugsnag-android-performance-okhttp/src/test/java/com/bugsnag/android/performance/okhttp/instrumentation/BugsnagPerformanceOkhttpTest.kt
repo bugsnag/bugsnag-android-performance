@@ -115,6 +115,33 @@ class BugsnagPerformanceOkhttpTest {
     }
 
     @Test
+    fun testApplicationGraphQlContentTypeCreatesGraphQlSpanOnNonGraphQlPath() {
+        val graphqlBody = "query GetUserProfile { user { id name } }"
+        val responseBody = """{"data":{"user":{"id":"123","name":"Ada"}}}"""
+
+        executeRequest(
+            Request.Builder()
+                .post(graphqlBody.toRequestBody("application/graphql".toMediaType())),
+            MockResponse().setBody(responseBody),
+            "/data",
+        )
+
+        val span = spanProcessor.singleSpan()
+        val requestUrl = URL(span.attributes["http.url"] as String)
+
+        assertEquals(
+            "[GraphQL] [${requestUrl.authority}${requestUrl.path}] query:GetUserProfile",
+            span.name,
+        )
+        assertEquals("graphql", span.attributes["bugsnag.span.category"])
+        assertEquals("POST", span.attributes["http.method"])
+        assertEquals("query", span.attributes["graphql.operation.type"])
+        assertEquals("GetUserProfile", span.attributes["graphql.operation.name"])
+        assertEquals(graphqlBody.toByteArray().size.toLong(), span.attributes["http.request_content_length"])
+        assertEquals(responseBody.toByteArray().size.toLong(), span.attributes["http.response_content_length"])
+    }
+
+    @Test
     fun testPlainTextPostRequestRecordsResponseContentLengthFromResponseBody() {
         val requestBody = "hello from test"
         val responseBody = "created"

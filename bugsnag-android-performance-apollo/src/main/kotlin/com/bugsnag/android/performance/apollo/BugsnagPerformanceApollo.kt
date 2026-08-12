@@ -120,10 +120,6 @@ public class BugsnagPerformanceApollo : HttpInterceptor {
         request.body?.contentLength?.takeIf { it >= 0L }?.let { contentLength ->
             span?.let { NetworkRequestAttributes.setRequestContentLength(it, contentLength) }
         }
-        span?.setAttribute("graphql.operation.type", operationType)
-        if (operationName.isNotEmpty()) {
-            span?.setAttribute("graphql.operation.name", operationName)
-        }
 
         return span
     }
