@@ -29,7 +29,13 @@ When('I run {string}') do |scenario_name|
 end
 
 When('I run {string} configured as {string}') do |scenario_name, scenario_metadata|
-  execute_command 'run_scenario', scenario_name, scenario_metadata
+  address = if Maze.config.farm == :bb
+               Maze.config.aws_public_ip ? Maze.public_address : 'local:9339'
+             else
+               'bs-local.com:9339'
+             end
+  resolved_metadata = scenario_metadata.gsub('{MAZE_ADDRESS}', address)
+  execute_command 'run_scenario', scenario_name, resolved_metadata
 end
 
 When('I configure bugsnag {string} to {string}') do |key, value|
@@ -58,6 +64,10 @@ end
 
 When('I invoke {string} for {string}') do |function, metadata|
   execute_command 'invoke', function, metadata
+end
+
+When(/^I set the HTTP response body for the next request to "(.*)"$/) do |body|
+  Maze::Server.set_response_body_for_next_request(body)
 end
 
 Then('I received no span named {string}') do |span_name|
@@ -356,6 +366,21 @@ Then('every span integer attribute {string} matches the regex {string}') do |att
     Maze.check.match(regex, value)
   end
 end
+
+Then('a span string attribute {string} matches the regex {string}') do |attribute, pattern|
+  regex = Regexp.new(pattern)
+  spans = spans_from_request_list(Maze::Server.list_for('traces'))
+  found = spans.any? do |span|
+    attr_obj = span['attributes'].find { |a| a['key'] == attribute }
+    next false if attr_obj.nil?
+    value = attr_obj.dig('value', 'stringValue').to_s
+    regex.match?(value)
+  end
+  raise Test::Unit::AssertionFailedError.new(
+    "No span found with attribute '#{attribute}' matching /#{pattern}/"
+  ) unless found
+end
+
 
 Then('a span field {string} is empty') do |field|
   spans = spans_from_request_list(Maze::Server.list_for('traces'))

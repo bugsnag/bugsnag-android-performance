@@ -30,6 +30,12 @@ public class BugsnagPerformanceOkhttp(
         override fun create(call: Call): EventListener {
             return BugsnagPerformanceOkhttp()
         }
+
+        /**
+         * The maximum number of bytes from a request body we will read to
+         * classify it as GraphQL.
+         */
+        private const val MAX_BODY_PEEK_SIZE = 1024 * 1024L // 1MB
     }
 
 
@@ -42,6 +48,11 @@ public class BugsnagPerformanceOkhttp(
         val method = request.method
 
         val bodyText = request.body?.let { requestBody ->
+            val contentLength = requestBody.contentLength()
+            if (requestBody.isOneShot() || contentLength < 0 || contentLength > MAX_BODY_PEEK_SIZE) {
+                return@let null
+            }
+
             try {
                 Buffer().apply { requestBody.writeTo(this) }.readUtf8()
             } catch (ignored: Exception) {

@@ -403,9 +403,9 @@ public class SpanFactory internal constructor(
         val normalizedSpanName = normalizeGraphQlSpanName(spanName)
 
         return if (normalizedSpanName.isBlank()) {
-            "[GraphQL] [$endpoint]"
+            "GraphQL $endpoint"
         } else {
-            "[GraphQL] [$endpoint] $normalizedSpanName"
+            "GraphQL $endpoint - $normalizedSpanName"
         }
     }
 
@@ -415,11 +415,19 @@ public class SpanFactory internal constructor(
             normalized = normalized.removePrefix("[GraphQL]").trimStart()
         }
 
+        if (normalized.startsWith("GraphQL")) {
+            normalized = normalized.removePrefix("GraphQL").trimStart()
+        }
+
         if (normalized.startsWith("[")) {
             val endIndex = normalized.indexOf(']')
             if (endIndex >= 0) {
                 normalized = normalized.substring(endIndex + 1).trimStart()
             }
+        }
+
+        if (normalized.startsWith("-")) {
+            normalized = normalized.removePrefix("-").trimStart()
         }
 
         return normalized
