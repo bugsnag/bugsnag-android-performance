@@ -66,10 +66,6 @@ When('I invoke {string} for {string}') do |function, metadata|
   execute_command 'invoke', function, metadata
 end
 
-When(/^I set the HTTP response body for the next request to "(.*)"$/) do |body|
-  Maze::Server.set_response_body_for_next_request(body)
-end
-
 Then('I received no span named {string}') do |span_name|
   spans = spans_from_request_list(Maze::Server.list_for('traces'))
   named_spans = spans.select { |s| s['name'].eql?(span_name) }
@@ -365,6 +361,21 @@ Then('every span integer attribute {string} matches the regex {string}') do |att
     value = attr_obj['value']['intValue']
     Maze.check.match(regex, value)
   end
+end
+
+Then('a span integer attribute {string} equals {int}') do |attribute, expected|
+  spans = spans_from_request_list(Maze::Server.list_for('traces'))
+  found = spans.any? do |span|
+    attr_obj = span['attributes'].find { |a| a['key'] == attribute }
+    next false if attr_obj.nil?
+
+    value = attr_obj.dig('value', 'intValue')
+    !value.nil? && value.to_i == expected
+  end
+
+  raise Test::Unit::AssertionFailedError.new(
+    "No span found with integer attribute '#{attribute}' equal to #{expected}"
+  ) unless found
 end
 
 Then('a span string attribute {string} matches the regex {string}') do |attribute, pattern|

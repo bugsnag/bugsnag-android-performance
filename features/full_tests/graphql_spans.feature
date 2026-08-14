@@ -122,9 +122,7 @@ Feature: GraphQL Spans
 
   # Scenario 16
   Scenario Outline: GraphQL response with <error_type> sets span status to <expected_status>
-    Given I set the HTTP status code for the next request to <http_status>
-    And I set the HTTP response body for the next request to "<body_content>"
-    And I run "GraphQlContentTypeScenario" configured as "http://{MAZE_ADDRESS}/graphql|||application/json|||{\"query\": \"query GetUser { user { id } }\", \"operationName\": \"GetUser\"}"
+    Given I run "GraphQlContentTypeScenario" configured as "http://{MAZE_ADDRESS}/graphql|||application/json|||{\"query\": \"query GetUser { user { id } }\", \"operationName\": \"GetUser\"}|||<http_status>|||<body_content>"
     And I wait to receive at least 1 span
     * a span field "name" matches the regex "^GraphQL .*/graphql - query:GetUser$"
     * a span string attribute "bugsnag.span.category" equals "graphql"
