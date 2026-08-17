@@ -1,6 +1,7 @@
 package com.bugsnag.mazeracer.scenarios
 
 import android.util.Log
+import androidx.compose.ui.semantics.getOrNull
 import com.bugsnag.android.performance.BugsnagPerformance
 import com.bugsnag.android.performance.PerformanceConfiguration
 import com.bugsnag.android.performance.SpanOptions
@@ -31,7 +32,8 @@ class GraphQlContentTypeScenario(
                 if (firstClass == null) {
                     clientBuilder.eventListenerFactory(BugsnagPerformanceOkhttp.EventListenerFactory)
                 } else {
-                    val spanOptions = SpanOptions.makeCurrentContext(false).setFirstClass(firstClass)
+                    val spanOptions =
+                        SpanOptions.makeCurrentContext(false).setFirstClass(firstClass)
                     clientBuilder.eventListener(BugsnagPerformanceOkhttp(networkSpanOptions = spanOptions))
                 }
                 val client = clientBuilder.build()
@@ -72,7 +74,7 @@ class GraphQlContentTypeScenario(
                             "Read $size bytes from ${request.url} with status=${response.code}",
                         )
                     }
-                } catch (exception: Exception) {
+                } catch (exception: java.io.IOException) {
                     Log.e("GraphQlContentTypeScenario", "Request failed", exception)
                 } finally {
                     mockServer?.close()
@@ -87,11 +89,13 @@ class GraphQlContentTypeScenario(
         }
 
         val parts = scenarioMetadata.split(METADATA_DELIMITER, limit = 5)
-        require(parts.size in 3..5) {
-            "Expected scenarioMetadata format <url>$METADATA_DELIMITER<contentType>$METADATA_DELIMITER<body>[$METADATA_DELIMITER<firstClass>|$METADATA_DELIMITER<httpStatus>$METADATA_DELIMITER<responseBody>]"
+        require(parts.size in MIN_METADATA_PARTS..MAX_METADATA_PARTS) {
+            "Expected scenarioMetadata format <url>$METADATA_DELIMITER<contentType>" +
+                    "$METADATA_DELIMITER<body>[$METADATA_DELIMITER<firstClass>|" +
+                    "$METADATA_DELIMITER<httpStatus>$METADATA_DELIMITER<responseBody>]"
         }
 
-        val fourth = parts.getOrNull(3)?.trim()
+        val fourth = parts.getOrNull(FOURTH_PART_INDEX)?.trim()
         val firstClass = fourth?.toBooleanStrictOrNull()
         val mockResponseStatus =
             if (firstClass == null && fourth != null) {
@@ -99,7 +103,7 @@ class GraphQlContentTypeScenario(
             } else {
                 null
             }
-        val mockResponseBody = parts.getOrNull(4)
+        val mockResponseBody = parts.getOrNull(RESPONSE_BODY_INDEX)
 
         return RequestSpec(
             url = parts[0].trim(),
@@ -143,7 +147,8 @@ class GraphQlContentTypeScenario(
                         readUntilHeadersEnd(input)
 
                         val output = client.getOutputStream()
-                        output.write("HTTP/1.1 $statusCode ${reasonPhrase(statusCode)}\r\n".toByteArray(Charsets.US_ASCII))
+                        val statusLine = "HTTP/1.1 $statusCode ${reasonPhrase(statusCode)}\r\n"
+                        output.write(statusLine.toByteArray(Charsets.US_ASCII))
                         output.write("Content-Type: application/json\r\n".toByteArray(Charsets.US_ASCII))
                         output.write("Content-Length: ${bodyBytes.size}\r\n".toByteArray(Charsets.US_ASCII))
                         output.write("Connection: close\r\n\r\n".toByteArray(Charsets.US_ASCII))
@@ -155,13 +160,13 @@ class GraphQlContentTypeScenario(
 
         return OneShotHttpServer(serverSocket.localPort) {
             runCatching { serverSocket.close() }
-            runCatching { serverThread.join(500) }
+            runCatching { serverThread.join(SERVER_JOIN_TIMEOUT_MS) }
         }
     }
 
     private fun readUntilHeadersEnd(input: BufferedInputStream) {
         var state = 0
-        while (state < 4) {
+        while (state < HEADERS_END_STATE) {
             val byte = input.read()
             if (byte == -1) {
                 return
@@ -170,8 +175,8 @@ class GraphQlContentTypeScenario(
                 when {
                     state == 0 && byte == '\r'.code -> 1
                     state == 1 && byte == '\n'.code -> 2
-                    state == 2 && byte == '\r'.code -> 3
-                    state == 3 && byte == '\n'.code -> 4
+                    state == 2 && byte == '\r'.code -> HEADERS_PRE_END_STATE
+                    state == HEADERS_PRE_END_STATE && byte == '\n'.code -> HEADERS_END_STATE
                     else -> 0
                 }
         }
@@ -179,15 +184,31 @@ class GraphQlContentTypeScenario(
 
     private fun reasonPhrase(statusCode: Int): String {
         return when (statusCode) {
-            200 -> "OK"
-            401 -> "Unauthorized"
-            500 -> "Internal Server Error"
+            HTTP_OK -> "OK"
+            HTTP_UNAUTHORIZED -> "Unauthorized"
+            HTTP_INTERNAL_SERVER_ERROR -> "Internal Server Error"
             else -> "Status"
         }
     }
 
     private companion object {
         private const val METADATA_DELIMITER = "|||"
+
+        private const val RESPONSE_BODY_INDEX = 4
+
+        // Fix MagicNumber lint errors by defining constants
+        private const val HTTP_OK = 200
+        private const val HTTP_UNAUTHORIZED = 401
+        private const val HTTP_INTERNAL_SERVER_ERROR = 500
+
+        private const val FOURTH_PART_INDEX = 3
+        private const val HEADERS_PRE_END_STATE = 3
+        private const val HEADERS_END_STATE = 4
+
+        private const val MIN_METADATA_PARTS = 3
+        private const val MAX_METADATA_PARTS = 5
+
+        private const val SERVER_JOIN_TIMEOUT_MS = 500L
 
         private val DEFAULT_REQUEST_SPEC =
             RequestSpec(

@@ -27,7 +27,7 @@ class IdenticalGraphQlScenario(
                 val jsonMediaType = "application/json".toMediaType()
                 val body = "{\"query\": \"query GetUser { user { id } }\", \"operationName\": \"GetUser\"}"
 
-                repeat(3) {
+                repeat(ITERATION_COUNT) {
                     val request = Request.Builder()
                         .url("$baseUrl/graphql")
                         .post(body.toRequestBody(jsonMediaType))
@@ -36,5 +36,9 @@ class IdenticalGraphQlScenario(
                 }
             }
         }
+    }
+
+    private companion object {
+        private const val ITERATION_COUNT = 3
     }
 }

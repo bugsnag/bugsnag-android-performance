@@ -17,4 +17,3 @@ internal class ApolloModule : Module {
         var tracePropagationUrls: Collection<Pattern> = emptyList()
     }
 }
-

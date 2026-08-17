@@ -2,18 +2,26 @@ Feature: GraphQL Spans
 
   # Scenario 1
   Scenario Outline: GraphQL detected via <detection_method> produces correct span with full attributes
-    Given I run "GraphQlContentTypeScenario" configured as "http://{MAZE_ADDRESS}/traces|||<content_type>|||<body>"
+    Given I run "GraphQlContentTypeScenario" configured as "http://{MAZE_ADDRESS}/<url_path>|||<content_type>|||<body>|||<http_status>"
     And I wait to receive at least 1 span
     * a span field "kind" equals 3
-    * a span field "name" matches the regex "^GraphQL .*/traces - query:<expected_name>$"
+    * a span field "name" matches the regex "^GraphQL .*/<url_path> - <expected_name>$"
     * a span string attribute "bugsnag.span.category" equals "graphql"
-    * a span string attribute "http.url" matches the regex "^http://.*/traces$"
+    * a span string attribute "http.url" matches the regex "^http://.*/<url_path>$"
     * a span string attribute "http.method" equals "POST"
-    * a span integer attribute "http.status_code" is greater than 0
+    * a span integer attribute "http.status_code" equals <http_status>
 
     Examples:
-      | detection_method                 | content_type        | body                                            | expected_name |
-      | Content-Type application/graphql | application/graphql | query GetCountries { countries { code name } } | GetCountries  |
+      | detection_method                    | url_path         | content_type          | body                                                                                                                                       | expected_name             | http_status |
+      | Content-Type application/graphql    | traces           | application/graphql   | query GetCountries { countries { code name } }                                                                                             | query:GetCountries        | 200 |
+      | URL /graphql + JSON body            | graphql          | application/json      | {\"query\": \"query FetchItems { items { id } }\", \"operationName\": \"FetchItems\"}                                                      | query:FetchItems          | 200 |
+      | URL /api/graphql                    | api/graphql      | application/json      | {\"query\": \"mutation CreatePost($input: CreatePostInput!) { createPost(input: $input) { id } }\", \"operationName\": \"CreatePost\"}     | mutation:CreatePost       | 200 |
+      | URL /api/v1/graphql                 | api/v1/graphql   | application/json      | {\"query\": \"subscription OnMessage { message { id text } }\", \"operationName\": \"OnMessage\"}                                          | subscription:OnMessage    | 200 |
+      | URL /graphql/ trailing slash        | graphql          | application/json      | {\"query\": \"query GetProfile { profile { name } }\", \"operationName\": \"GetProfile\"}                                                  | query:GetProfile          | 200 |
+      | Body inspection (non-graphql URL)   | custom-endpoint  | application/json      | {\"query\": \"mutation UpdateUser($id: ID!) { updateUser(id: $id) { id } }\", \"operationName\": \"UpdateUser\"}                           | mutation:UpdateUser       | 200 |
+      | HTTP 400 error response             | graphql          | application/json      | {\"query\": \"query BadQuery { invalid }\", \"operationName\": \"BadQuery\"}                                                               | query:BadQuery            | 400 |
+      | HTTP 401 unauthorized               | graphql          | application/json      | {\"query\": \"query GetSecret { secret { value } }\", \"operationName\": \"GetSecret\"}                                                    | query:GetSecret           | 401 |
+      | HTTP 500 server error               | graphql          | application/json      | {\"query\": \"mutation FailOp { fail { msg } }\", \"operationName\": \"FailOp\"}                                                              | mutation:FailOp           | 500 |
 
   # Scenario 2
   Scenario Outline: Operation type "<op_type>" correctly extracted with name priority "<priority>"

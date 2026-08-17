@@ -33,23 +33,49 @@ class ApolloScenario(
                     override fun name(): String = "TestQuery"
 
                     // Required for Apollo 3 compatibility
-                    override fun serializeVariables(writer: JsonWriter, customScalarAdapters: CustomScalarAdapters) {}
+                    override fun serializeVariables(
+                        writer: JsonWriter,
+                        customScalarAdapters: CustomScalarAdapters,
+                    ) {
+                        // No variables to serialize for this mock operation
+                    }
 
                     override fun adapter(): Adapter<Query.Data> = object : Adapter<Query.Data> {
-                        override fun fromJson(reader: JsonReader, customScalarAdapters: CustomScalarAdapters): Query.Data = object : Query.Data {}
-                        override fun toJson(writer: JsonWriter, customScalarAdapters: CustomScalarAdapters, value: Query.Data) {}
+                        override fun fromJson(
+                            reader: JsonReader,
+                            customScalarAdapters: CustomScalarAdapters,
+                        ): Query.Data = object : Query.Data {
+                            // No serialization needed for this mock test query
+                        }
+
+                        override fun toJson(
+                            writer: JsonWriter,
+                            customScalarAdapters: CustomScalarAdapters,
+                            value: Query.Data,
+                        ) {
+                            // No serialization needed for this mock test query
+                        }
                     }
 
                     override fun rootField(): com.apollographql.apollo3.api.CompiledField =
-                        com.apollographql.apollo3.api.CompiledField.Builder("data", com.apollographql.apollo3.api.ObjectType.Builder("Data").build()).build()
+                        com.apollographql.apollo3.api.CompiledField.Builder(
+                            "data",
+                            com.apollographql.apollo3.api.ObjectType.Builder("Data").build(),
+                        ).build()
                 }
 
                 try {
                     runBlocking {
                         client.query(operation).execute()
                     }
-                } catch (e: Exception) {
+                } catch (e: java.io.IOException) {
                     // Ignore network failures in the fixture
+                    Log.w(
+                        "ApolloScenario",
+                        "Network request failed as expected or due to environment",
+                        e,
+                    )
+
                 }
             }
         }

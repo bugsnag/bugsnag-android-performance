@@ -26,24 +26,26 @@ class MultipleGraphQlScenario(
 
                 val jsonMediaType = "application/json".toMediaType()
 
+                val queryBody =
+                    "{\"query\": \"query GetUser { user { id } }\", \"operationName\": \"GetUser\"}"
                 // 1. query GetUser
                 val req1 = Request.Builder()
                     .url("$baseUrl/graphql")
-                    .post("{\"query\": \"query GetUser { user { id } }\", \"operationName\": \"GetUser\"}".toRequestBody(jsonMediaType))
+                    .post(queryBody.toRequestBody(jsonMediaType))
                     .build()
                 client.newCall(req1).execute().use { it.body?.string() }
 
                 // 2. query GetUser
                 val req2 = Request.Builder()
                     .url("$baseUrl/graphql")
-                    .post("{\"query\": \"query GetUser { user { id } }\", \"operationName\": \"GetUser\"}".toRequestBody(jsonMediaType))
+                    .post(queryBody.toRequestBody(jsonMediaType))
                     .build()
                 client.newCall(req2).execute().use { it.body?.string() }
 
                 // 3. mutation CreatePost
                 val req3 = Request.Builder()
                     .url("$baseUrl/graphql")
-                    .post("{\"query\": \"mutation CreatePost { user { id } }\", \"operationName\": \"CreatePost\"}".toRequestBody(jsonMediaType))
+                    .post(queryBody.toRequestBody(jsonMediaType))
                     .build()
                 client.newCall(req3).execute().use { it.body?.string() }
 
