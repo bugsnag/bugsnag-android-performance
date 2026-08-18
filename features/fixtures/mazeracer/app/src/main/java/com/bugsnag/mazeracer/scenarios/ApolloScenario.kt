@@ -1,5 +1,6 @@
 package com.bugsnag.mazeracer.scenarios
 
+import android.util.Log
 import com.apollographql.apollo3.ApolloClient
 import com.apollographql.apollo3.api.Adapter
 import com.apollographql.apollo3.api.CustomScalarAdapters
