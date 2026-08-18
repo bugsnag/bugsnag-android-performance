@@ -20,7 +20,8 @@ class IdenticalGraphQlScenario(
         thread {
             runAndFlush {
                 val baseUrl = scenarioMetadata.removeSuffix("/")
-                val client = OkHttpClient.Builder()
+                val client =
+                    OkHttpClient.Builder()
                     .eventListenerFactory(BugsnagPerformanceOkhttp.EventListenerFactory)
                     .build()
 
@@ -28,7 +29,8 @@ class IdenticalGraphQlScenario(
                 val body = "{\"query\": \"query GetUser { user { id } }\", \"operationName\": \"GetUser\"}"
 
                 repeat(ITERATION_COUNT) {
-                    val request = Request.Builder()
+                    val request =
+                        Request.Builder()
                         .url("$baseUrl/graphql")
                         .post(body.toRequestBody(jsonMediaType))
                         .build()

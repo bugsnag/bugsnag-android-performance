@@ -22,47 +22,52 @@ class ApolloScenario(
 
         thread {
             runAndFlush {
-                val client = ApolloClient.Builder()
-                    .serverUrl(scenarioMetadata)
-                    .withBugsnagPerformance()
-                    .build()
+                val client =
+                    ApolloClient.Builder()
+                        .serverUrl(scenarioMetadata)
+                        .withBugsnagPerformance()
+                        .build()
 
-                val operation = object : Query<Query.Data> {
-                    override fun id(): String = "test-id"
-                    override fun document(): String = "query TestQuery { test }"
-                    override fun name(): String = "TestQuery"
+                val operation =
+                    object : Query<Query.Data> {
+                        override fun id(): String = "test-id"
 
-                    // Required for Apollo 3 compatibility
-                    override fun serializeVariables(
-                        writer: JsonWriter,
-                        customScalarAdapters: CustomScalarAdapters,
-                    ) {
-                        // No variables to serialize for this mock operation
-                    }
+                        override fun document(): String = "query TestQuery { test }"
 
-                    override fun adapter(): Adapter<Query.Data> = object : Adapter<Query.Data> {
-                        override fun fromJson(
-                            reader: JsonReader,
-                            customScalarAdapters: CustomScalarAdapters,
-                        ): Query.Data = object : Query.Data {
-                            // No serialization needed for this mock test query
-                        }
+                        override fun name(): String = "TestQuery"
 
-                        override fun toJson(
+                        // Required for Apollo 3 compatibility
+                        override fun serializeVariables(
                             writer: JsonWriter,
                             customScalarAdapters: CustomScalarAdapters,
-                            value: Query.Data,
                         ) {
-                            // No serialization needed for this mock test query
+                            // No variables to serialize for this mock operation
                         }
-                    }
 
-                    override fun rootField(): com.apollographql.apollo3.api.CompiledField =
-                        com.apollographql.apollo3.api.CompiledField.Builder(
-                            "data",
-                            com.apollographql.apollo3.api.ObjectType.Builder("Data").build(),
-                        ).build()
-                }
+                        override fun adapter(): Adapter<Query.Data> =
+                            object : Adapter<Query.Data> {
+                                override fun fromJson(
+                                    reader: JsonReader,
+                                    customScalarAdapters: CustomScalarAdapters,
+                                ): Query.Data = object : Query.Data {
+                                    // No serialization needed for this mock test query
+                                }
+
+                                override fun toJson(
+                                    writer: JsonWriter,
+                                    customScalarAdapters: CustomScalarAdapters,
+                                    value: Query.Data,
+                                ) {
+                                    // No serialization needed for this mock test query
+                                }
+                            }
+
+                        override fun rootField(): com.apollographql.apollo3.api.CompiledField =
+                            com.apollographql.apollo3.api.CompiledField.Builder(
+                                "data",
+                                com.apollographql.apollo3.api.ObjectType.Builder("Data").build(),
+                            ).build()
+                    }
 
                 try {
                     runBlocking {
@@ -75,7 +80,6 @@ class ApolloScenario(
                         "Network request failed as expected or due to environment",
                         e,
                     )
-
                 }
             }
         }

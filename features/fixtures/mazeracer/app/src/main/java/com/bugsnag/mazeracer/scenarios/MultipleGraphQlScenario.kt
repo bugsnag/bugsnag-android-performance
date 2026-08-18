@@ -20,7 +20,8 @@ class MultipleGraphQlScenario(
         thread {
             runAndFlush {
                 val baseUrl = scenarioMetadata.removeSuffix("/")
-                val client = OkHttpClient.Builder()
+                val client =
+                    OkHttpClient.Builder()
                     .eventListenerFactory(BugsnagPerformanceOkhttp.EventListenerFactory)
                     .build()
 
@@ -29,28 +30,32 @@ class MultipleGraphQlScenario(
                 val queryBody =
                     "{\"query\": \"query GetUser { user { id } }\", \"operationName\": \"GetUser\"}"
                 // 1. query GetUser
-                val req1 = Request.Builder()
+                val req1 =
+                    Request.Builder()
                     .url("$baseUrl/graphql")
                     .post(queryBody.toRequestBody(jsonMediaType))
                     .build()
                 client.newCall(req1).execute().use { it.body?.string() }
 
                 // 2. query GetUser
-                val req2 = Request.Builder()
+                val req2 =
+                    Request.Builder()
                     .url("$baseUrl/graphql")
                     .post(queryBody.toRequestBody(jsonMediaType))
                     .build()
                 client.newCall(req2).execute().use { it.body?.string() }
 
                 // 3. mutation CreatePost
-                val req3 = Request.Builder()
+                val req3 =
+                    Request.Builder()
                     .url("$baseUrl/graphql")
                     .post(queryBody.toRequestBody(jsonMediaType))
                     .build()
                 client.newCall(req3).execute().use { it.body?.string() }
 
                 // 4. GET rest call
-                val req4 = Request.Builder()
+                val req4 =
+                    Request.Builder()
                     .url("$baseUrl/rest/users/123")
                     .get()
                     .build()
