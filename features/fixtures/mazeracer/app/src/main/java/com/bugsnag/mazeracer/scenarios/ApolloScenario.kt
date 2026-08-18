@@ -49,9 +49,10 @@ class ApolloScenario(
                                 override fun fromJson(
                                     reader: JsonReader,
                                     customScalarAdapters: CustomScalarAdapters,
-                                ): Query.Data = object : Query.Data {
-                                    // No serialization needed for this mock test query
-                                }
+                                ): Query.Data =
+                                    object : Query.Data {
+                                        // No serialization needed for this mock test query
+                                    }
 
                                 override fun toJson(
                                     writer: JsonWriter,

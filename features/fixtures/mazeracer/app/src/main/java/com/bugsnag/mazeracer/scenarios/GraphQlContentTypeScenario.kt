@@ -20,7 +20,6 @@ class GraphQlContentTypeScenario(
     config: PerformanceConfiguration,
     scenarioMetadata: String,
 ) : Scenario(config, scenarioMetadata) {
-
     override fun startScenario() {
         BugsnagPerformance.start(config)
 
@@ -53,14 +52,21 @@ class GraphQlContentTypeScenario(
         return builder.build()
     }
 
-    private fun buildRequest(spec: RequestSpec, server: OneShotHttpServer?): Request {
+    private fun buildRequest(
+        spec: RequestSpec,
+        server: OneShotHttpServer?,
+    ): Request {
         val resolvedUrl = Parser.resolveUrl(spec.url, server)
         return Request.Builder()
             .url(resolvedUrl)
             .post(spec.body.toRequestBody(spec.contentType.toMediaType()))
             .build()
     }
-    private fun execute(client: OkHttpClient, request: Request) {
+
+    private fun execute(
+        client: OkHttpClient,
+        request: Request,
+    ) {
         client.newCall(request).execute().use { response ->
             val size = response.body.byteString().size.toString()
             Log.i(LOG_TAG, "Read $size bytes from ${request.url} with status=${response.code}")
@@ -92,8 +98,8 @@ class GraphQlContentTypeScenario(
             val parts = scenarioMetadata.split(METADATA_DELIMITER, limit = MAX_METADATA_PARTS)
             require(parts.size in MIN_METADATA_PARTS..MAX_METADATA_PARTS) {
                 "Expected scenarioMetadata format <url>$METADATA_DELIMITER<contentType>" +
-                        "$METADATA_DELIMITER<body>[$METADATA_DELIMITER<firstClass>|" +
-                        "$METADATA_DELIMITER<httpStatus>$METADATA_DELIMITER<responseBody>]"
+                    "$METADATA_DELIMITER<body>[$METADATA_DELIMITER<firstClass>|" +
+                    "$METADATA_DELIMITER<httpStatus>$METADATA_DELIMITER<responseBody>]"
             }
 
             val fourth = parts.getOrNull(FOURTH_PART_INDEX)?.trim()
@@ -125,7 +131,10 @@ class GraphQlContentTypeScenario(
             )
         }
 
-        fun resolveUrl(originalUrl: String, server: OneShotHttpServer?): String {
+        fun resolveUrl(
+            originalUrl: String,
+            server: OneShotHttpServer?,
+        ): String {
             if (server == null) {
                 return originalUrl
             }
@@ -160,7 +169,11 @@ class GraphQlContentTypeScenario(
                             val statusLine = "HTTP/1.1 $statusCode ${reasonPhrase(statusCode)}\r\n"
                             output.write(statusLine.toByteArray(Charsets.US_ASCII))
                             output.write("Content-Type: application/json\r\n".toByteArray(Charsets.US_ASCII))
-                            output.write("Content-Length: ${bodyBytes.size}\r\n".toByteArray(Charsets.US_ASCII))
+                            output.write(
+                                "Content-Length: ${bodyBytes.size}\r\n".toByteArray(
+                                    Charsets.US_ASCII,
+                                ),
+                            )
                             output.write("Connection: close\r\n\r\n".toByteArray(Charsets.US_ASCII))
                             output.write(bodyBytes)
                             output.flush()
