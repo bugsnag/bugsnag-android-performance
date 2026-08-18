@@ -28,7 +28,7 @@ class GraphQlSpanNamingTest {
 
         assertNotNull(span)
         assertEquals(
-            "[GraphQL] [api.example.com/graphql] query:GetUserProfile",
+            "GraphQL api.example.com/graphql - query:GetUserProfile",
             span?.name,
         )
     }
@@ -50,7 +50,7 @@ class GraphQlSpanNamingTest {
 
         assertNotNull(span)
         assertEquals(
-            "[GraphQL] [sanitized.example.com/private/graphql] query:GetUserProfile",
+            "GraphQL sanitized.example.com/private/graphql - query:GetUserProfile",
             span?.name,
         )
         assertEquals(
@@ -65,13 +65,13 @@ class GraphQlSpanNamingTest {
             spanFactory.createGraphQlSpan(
                 "https://api.example.com/graphql",
                 "POST",
-                "[GraphQL] query:GetUserProfile",
+                "GraphQL - query:GetUserProfile",
                 baseOptions,
             )
 
         assertNotNull(span)
         assertEquals(
-            "[GraphQL] [api.example.com/graphql] query:GetUserProfile",
+            "GraphQL api.example.com/graphql - query:GetUserProfile",
             span?.name,
         )
     }
