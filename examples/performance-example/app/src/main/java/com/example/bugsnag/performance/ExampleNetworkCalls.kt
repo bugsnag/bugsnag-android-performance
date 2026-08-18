@@ -21,7 +21,7 @@ import javax.net.ssl.SSLHandshakeException
 class ExampleNetworkCalls(private val context: Context) {
     private companion object {
         const val TAG = "ExampleNetworkCalls"
-        const val NETWORK_ENDPOINT = "https://postman-echo.com/get?source=performance-example"
+        const val NETWORK_ENDPOINT = "https://jsonplaceholder.typicode.com/posts/1"
         const val GRAPHQL_ENDPOINT = "https://rickandmortyapi.com/graphql"
         const val PLAIN_ENDPOINT = "https://jsonplaceholder.typicode.com/posts"
         const val GRAPHQL_OPERATION_NAME = "GetCharacters"
