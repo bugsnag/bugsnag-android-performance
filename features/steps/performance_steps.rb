@@ -402,13 +402,6 @@ Then('a span field {string} is empty') do |field|
   raise Test::Unit::AssertionFailedError.new "No span found where #{field} is empty" if found.nil?
 end
 
-Then('a span field {string} matches the regex {string}') do |field, pattern|
-  spans = spans_from_request_list(Maze::Server.list_for('traces'))
-  regex = Regexp.new(pattern)
-  match = spans.any? { |span| regex.match?(Maze::Helper.read_key_path(span, field)) }
-  Maze.check.true(match, "No span field '#{field}' matched the regex /#{pattern}/")
-end
-
 
 Then('every app_session span string attribute {string} equals {string}') do |attribute, expected|
   spans = spans_from_request_list(Maze::Server.list_for('traces'))

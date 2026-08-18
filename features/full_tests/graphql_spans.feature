@@ -5,7 +5,7 @@ Feature: GraphQL Spans
     Given I run "GraphQlContentTypeScenario" configured as "http://{MAZE_ADDRESS}/<url_path>|||<content_type>|||<body>"
     And I wait to receive at least 1 span
     * a span field "kind" equals 3
-    * a span field "name" matches the regex "^GraphQL .*/<url_path> - <expected_name>$"
+    * a span field "name" matches the regex "GraphQL .* - <expected_name>$"
     * a span string attribute "bugsnag.span.category" equals "graphql"
     * a span string attribute "http.url" matches the regex "^http://.*/<url_path>$"
     * a span string attribute "http.method" equals "POST"
@@ -109,6 +109,20 @@ Feature: GraphQL Spans
     * a span field "kind" equals 3
     * a span string attribute "bugsnag.span.category" equals "graphql"
     * a span bool attribute "bugsnag.span.first_class" is false
+
+    # Scenario 12
+    Scenario Outline: GraphQL span is created even when request <failure_type>
+      Given I run "GraphQlContentTypeScenario" configured as "http://{MAZE_ADDRESS}/graphql|||application/graphql|||query GetUser { user { id } }|||true|||<failure_condition>"
+      And I wait to receive at least 1 span
+      Then the span field "name" matches the regex "^GraphQL .*/graphql - query(:GetUser)?$"
+      And a span string attribute "bugsnag.span.category" equals "graphql"
+      And a span field "status.code" equals <expected_status>
+
+      Examples:
+        | failure_type       | failure_condition             | expected_status |
+        | times out          | times out after 30 seconds    | 2               |
+        | connection refused | fails with connection refused | 2               |
+        | returns empty body | completes with status 204     | 1               |
 
   # Scenario 13
   Scenario: Android SDK produces GraphQL span via supported GraphQL client library
