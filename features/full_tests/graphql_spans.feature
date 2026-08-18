@@ -29,9 +29,9 @@ Feature: GraphQL Spans
     * a span field "name" matches the regex "^GraphQL .*/graphql - <op_type>:<expected_name>$"
 
     Examples:
-      | op_type     | priority                 | body                                                                                   | expected_name         |
-      | query       | operationName field (P1) | {"query": "query GetUser { user { id } }", "operationName": "GetUser"}                 | GetUser         |
-      | mutation    | operationName field (P1) | {"query": "mutation CreatePost { createPost { id } }", "operationName": "CreatePost"}  | CreatePost   |
+      | op_type     | priority                 | body                                                                                           | expected_name         |
+      | query       | operationName field (P1) | {\"query\": \"query GetUser { user { id } }\", \"operationName\": \"GetUser\"}                 | GetUser               |
+      | mutation    | operationName field (P1) | {\"query\": \"mutation CreatePost { createPost { id } }\", \"operationName\": \"CreatePost\"}  | CreatePost            |
 
   # Scenario 4
   Scenario Outline: Non-GraphQL request "<case>" retains network category
