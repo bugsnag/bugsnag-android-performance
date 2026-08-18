@@ -165,5 +165,3 @@ class GraphQlRequestClassifierTest {
         assertEquals("mutation:CreatePost", GraphQlRequestClassifier.buildSpanName("mutation", "CreatePost"))
     }
 }
-
-

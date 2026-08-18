@@ -75,17 +75,20 @@ public class BugsnagPerformanceApollo : HttpInterceptor {
     override fun dispose(): Unit = Unit
 
     private fun createNetworkSpan(request: HttpRequest): Span? {
-        val url = try {
-            URL(request.url)
-        } catch (ex: MalformedURLException) {
-            return null
-        }
+        val url =
+            try {
+                URL(request.url)
+            } catch (ex: MalformedURLException) {
+                return null
+            }
 
         val body = request.body?.toUtf8String()
 
         // Fast path: Apollo operation interceptor already extracted metadata via internal headers.
-        val internalName = request.headers.firstOrNull { it.name == INTERNAL_OPERATION_NAME_HEADER }?.value
-        val internalType = request.headers.firstOrNull { it.name == INTERNAL_OPERATION_TYPE_HEADER }?.value
+        val internalName =
+            request.headers.firstOrNull { it.name == INTERNAL_OPERATION_NAME_HEADER }?.value
+        val internalType =
+            request.headers.firstOrNull { it.name == INTERNAL_OPERATION_TYPE_HEADER }?.value
 
         val operationType: String
         val operationName: String
@@ -95,9 +98,10 @@ public class BugsnagPerformanceApollo : HttpInterceptor {
             operationName = internalName
         } else {
             // Fallback: use the shared 3-method classifier (content-type, URL, body).
-            val contentType = request.headers.firstOrNull {
-                it.name.equals("content-type", ignoreCase = true)
-            }?.value
+            val contentType =
+                request.headers.firstOrNull {
+                    it.name.equals("content-type", ignoreCase = true)
+                }?.value
             val gqlRequest = GraphQlRequest(request.url, contentType, body)
             val operation = GraphQlRequestClassifier.parseOperation(gqlRequest)
 
@@ -106,16 +110,30 @@ public class BugsnagPerformanceApollo : HttpInterceptor {
                 operationName = operation.name
             } else {
                 // Not a GraphQL request — create a standard HTTP network span.
-                val span = BugsnagPerformance.startNetworkRequestSpan(url, request.method.toString(), networkSpanOptions)
+                val span = BugsnagPerformance.startNetworkRequestSpan(
+                    url,
+                    request.method.toString(),
+                    networkSpanOptions,
+                )
                 request.body?.contentLength?.takeIf { it >= 0L }?.let { contentLength ->
-                    span?.let { NetworkRequestAttributes.setRequestContentLength(it, contentLength) }
+                    span?.let {
+                        NetworkRequestAttributes.setRequestContentLength(
+                            it,
+                            contentLength,
+                        )
+                    }
                 }
                 return span
             }
         }
 
         val spanName = GraphQlRequestClassifier.buildSpanName(operationType, operationName)
-        val span = BugsnagPerformance.startGraphQlRequestSpan(url, request.method.toString(), spanName, networkSpanOptions)
+        val span = BugsnagPerformance.startGraphQlRequestSpan(
+            url,
+            request.method.toString(),
+            spanName,
+            networkSpanOptions,
+        )
 
         request.body?.contentLength?.takeIf { it >= 0L }?.let { contentLength ->
             span?.let { NetworkRequestAttributes.setRequestContentLength(it, contentLength) }
@@ -128,8 +146,11 @@ public class BugsnagPerformanceApollo : HttpInterceptor {
         request: HttpRequest,
         span: Span?,
     ): HttpRequest {
-        val spanContext: SpanContext? = span ?: SpanContext.current.takeUnless { it == SpanContext.invalid }
-        if (spanContext == null || !ApolloModule.tracePropagationUrls.any { it.matcher(request.url).matches() }) {
+        val spanContext: SpanContext? =
+            span ?: SpanContext.current.takeUnless { it == SpanContext.invalid }
+        if (spanContext == null || !ApolloModule.tracePropagationUrls.any {
+                it.matcher(request.url).matches()
+            }) {
             return request
         }
 

@@ -109,8 +109,14 @@ class BugsnagPerformanceOkhttpTest {
 
         assertEquals("GraphQL ${requestUrl.authority}${requestUrl.path} - query:GetUser", span.name)
         assertEquals("graphql", span.attributes["bugsnag.span.category"])
-        assertEquals(graphqlBody.toByteArray().size.toLong(), span.attributes["http.request_content_length"])
-        assertEquals(responseBody.toByteArray().size.toLong(), span.attributes["http.response_content_length"])
+        assertEquals(
+            graphqlBody.toByteArray().size.toLong(),
+            span.attributes["http.request_content_length"],
+        )
+        assertEquals(
+            responseBody.toByteArray().size.toLong(),
+            span.attributes["http.response_content_length"],
+        )
         assertTrue(span.attributes["http.request_content_length"] != span.attributes["http.response_content_length"])
     }
 
@@ -135,8 +141,14 @@ class BugsnagPerformanceOkhttpTest {
         )
         assertEquals("graphql", span.attributes["bugsnag.span.category"])
         assertEquals("POST", span.attributes["http.method"])
-        assertEquals(graphqlBody.toByteArray().size.toLong(), span.attributes["http.request_content_length"])
-        assertEquals(responseBody.toByteArray().size.toLong(), span.attributes["http.response_content_length"])
+        assertEquals(
+            graphqlBody.toByteArray().size.toLong(),
+            span.attributes["http.request_content_length"],
+        )
+        assertEquals(
+            responseBody.toByteArray().size.toLong(),
+            span.attributes["http.response_content_length"],
+        )
     }
 
     @Test
@@ -153,8 +165,14 @@ class BugsnagPerformanceOkhttpTest {
 
         assertEquals("[HTTP/POST]", span.name)
         assertEquals("network", span.attributes["bugsnag.span.category"])
-        assertEquals(requestBody.toByteArray().size.toLong(), span.attributes["http.request_content_length"])
-        assertEquals(responseBody.toByteArray().size.toLong(), span.attributes["http.response_content_length"])
+        assertEquals(
+            requestBody.toByteArray().size.toLong(),
+            span.attributes["http.request_content_length"],
+        )
+        assertEquals(
+            responseBody.toByteArray().size.toLong(),
+            span.attributes["http.response_content_length"],
+        )
     }
 
     private fun executeRequest(
@@ -162,10 +180,11 @@ class BugsnagPerformanceOkhttpTest {
         response: MockResponse,
         path: String = "/test",
     ) {
-        val server = MockWebServer().apply {
-            enqueue(response)
-            start()
-        }
+        val server =
+            MockWebServer().apply {
+                enqueue(response)
+                start()
+            }
 
         try {
             val client = OkHttpClient.Builder().withBugsnagPerformance().build()

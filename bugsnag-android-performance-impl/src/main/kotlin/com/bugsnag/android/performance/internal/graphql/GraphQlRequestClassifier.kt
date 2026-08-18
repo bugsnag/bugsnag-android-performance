@@ -32,7 +32,8 @@ public object GraphQlRequestClassifier {
         "\"operationName\"\\s*:\\s*\"([^\"]*)\"".toRegex()
     private val queryFieldRegex = "\"query\"\\s*:\\s*\"((?:[^\"\\\\]|\\\\.)*)\"".toRegex()
     private val mutationFieldRegex = "\"mutation\"\\s*:\\s*\"((?:[^\"\\\\]|\\\\.)*)\"".toRegex()
-    private val subscriptionFieldRegex = "\"subscription\"\\s*:\\s*\"((?:[^\"\\\\]|\\\\.)*)\"".toRegex()
+    private val subscriptionFieldRegex =
+        "\"subscription\"\\s*:\\s*\"((?:[^\"\\\\]|\\\\.)*)\"".toRegex()
 
     // Detects the presence of GraphQL keys in JSON body
     private val graphQlJsonKeyRegex =
@@ -132,7 +133,10 @@ public object GraphQlRequestClassifier {
      * Format: `<type>` or `<type>:<name>`
      * Example: `query:GetUser`
      */
-    public fun buildSpanName(operationType: String, operationName: String): String {
+    public fun buildSpanName(
+        operationType: String,
+        operationName: String,
+    ): String {
         val normalizedType = operationType.ifBlank { "query" }.lowercase(Locale.US)
         val normalizedName = operationName.trim()
 

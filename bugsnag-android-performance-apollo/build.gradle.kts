@@ -84,5 +84,3 @@ detekt {
     source.from(files("src/main/kotlin"))
     baseline = file("detekt-baseline.xml")
 }
-
-

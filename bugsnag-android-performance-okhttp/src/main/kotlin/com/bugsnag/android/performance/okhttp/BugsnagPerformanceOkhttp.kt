@@ -38,7 +38,6 @@ public class BugsnagPerformanceOkhttp(
         private const val MAX_BODY_PEEK_SIZE = 1024 * 1024L // 1MB
     }
 
-
     private val spans = SpanTracker()
 
     override fun callStart(call: Call) {
@@ -47,31 +46,40 @@ public class BugsnagPerformanceOkhttp(
         val url = request.url.toUrl()
         val method = request.method
 
-        val bodyText = request.body?.let { requestBody ->
-            val contentLength = requestBody.contentLength()
-            if (requestBody.isOneShot() || contentLength < 0 || contentLength > MAX_BODY_PEEK_SIZE) {
-                return@let null
+        val bodyText =
+            request.body?.let { requestBody ->
+                val contentLength = requestBody.contentLength()
+                if (requestBody.isOneShot() || contentLength < 0 || contentLength > MAX_BODY_PEEK_SIZE) {
+                    return@let null
+                }
+
+                try {
+                    Buffer().apply { requestBody.writeTo(this) }.readUtf8()
+                } catch (ignored: Exception) {
+                    null
+                }
             }
 
-            try {
-                Buffer().apply { requestBody.writeTo(this) }.readUtf8()
-            } catch (ignored: Exception) {
-                null
-            }
-        }
-
-        val contentType = request.body?.contentType()?.toString()
-            ?: request.header("Content-Type")
+        val contentType =
+            request.body?.contentType()?.toString()
+                ?: request.header("Content-Type")
 
         val gqlRequest = GraphQlRequest(url.toString(), contentType, bodyText)
         val operation = GraphQlRequestClassifier.parseOperation(gqlRequest)
 
-        val span = if (operation != null) {
-            val spanName = GraphQlRequestClassifier.buildSpanName(operation.type, operation.name)
-            BugsnagPerformance.startGraphQlRequestSpan(url, method, spanName, networkSpanOptions)
-        } else {
-            BugsnagPerformance.startNetworkRequestSpan(url, method, networkSpanOptions)
-        }
+        val span =
+            if (operation != null) {
+                val spanName =
+                    GraphQlRequestClassifier.buildSpanName(operation.type, operation.name)
+                BugsnagPerformance.startGraphQlRequestSpan(
+                    url,
+                    method,
+                    spanName,
+                    networkSpanOptions,
+                )
+            } else {
+                BugsnagPerformance.startNetworkRequestSpan(url, method, networkSpanOptions)
+            }
 
         if (span != null) {
             val contentLength = request.body?.contentLength()
@@ -154,7 +162,6 @@ public class BugsnagPerformanceOkhttp(
                 .build(),
         )
     }
-
 }
 
 public fun OkHttpClient.Builder.withBugsnagPerformance(): OkHttpClient.Builder {
