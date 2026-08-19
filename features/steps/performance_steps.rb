@@ -29,7 +29,13 @@ When('I run {string}') do |scenario_name|
 end
 
 When('I run {string} configured as {string}') do |scenario_name, scenario_metadata|
-  execute_command 'run_scenario', scenario_name, scenario_metadata
+  address = if Maze.config.farm == :bb
+               Maze.config.aws_public_ip ? Maze.public_address : 'local:9339'
+             else
+               'bs-local.com:9339'
+             end
+  resolved_metadata = scenario_metadata.gsub('{MAZE_ADDRESS}', address)
+  execute_command 'run_scenario', scenario_name, resolved_metadata
 end
 
 When('I configure bugsnag {string} to {string}') do |key, value|
@@ -357,6 +363,36 @@ Then('every span integer attribute {string} matches the regex {string}') do |att
   end
 end
 
+Then('a span integer attribute {string} equals {int}') do |attribute, expected|
+  spans = spans_from_request_list(Maze::Server.list_for('traces'))
+  found = spans.any? do |span|
+    attr_obj = span['attributes'].find { |a| a['key'] == attribute }
+    next false if attr_obj.nil?
+
+    value = attr_obj.dig('value', 'intValue')
+    !value.nil? && value.to_i == expected
+  end
+
+  raise Test::Unit::AssertionFailedError.new(
+    "No span found with integer attribute '#{attribute}' equal to #{expected}"
+  ) unless found
+end
+
+Then('a span string attribute {string} matches the regex {string}') do |attribute, pattern|
+  regex = Regexp.new(pattern)
+  spans = spans_from_request_list(Maze::Server.list_for('traces'))
+  found = spans.any? do |span|
+    attr_obj = span['attributes'].find { |a| a['key'] == attribute }
+    next false if attr_obj.nil?
+    value = attr_obj.dig('value', 'stringValue').to_s
+    regex.match?(value)
+  end
+  raise Test::Unit::AssertionFailedError.new(
+    "No span found with attribute '#{attribute}' matching /#{pattern}/"
+  ) unless found
+end
+
+
 Then('a span field {string} is empty') do |field|
   spans = spans_from_request_list(Maze::Server.list_for('traces'))
   found = spans.find { |s|
@@ -569,4 +605,25 @@ Then(/a span (integer|float|boolean|bool|string|double) array attribute "([^"]+)
   end
 
   raise Test::Unit::AssertionFailedError.new "No span found where #{type} array attribute #{attribute} equals #{expected_values}" if found.nil?
+end
+
+Then('I print all received span names') do
+  spans = spans_from_request_list(Maze::Server.list_for('traces'))
+  spans.each_with_index do |span, i|
+    puts "Span #{i}: #{span['name']}"
+  end
+end
+
+Then('at least one span field {string} matches the regex {string}') do |field, regex|
+  spans = Maze::Server.list_for('traces').datas.flat_map { |d| d[:body]['resourceSpans'] }
+  # Extract all span objects
+  all_spans = []
+  spans.each do |rs|
+    rs['scopeSpans'].each do |ss|
+      ss['spans'].each { |s| all_spans << s }
+    end
+  end
+
+  match = all_spans.any? { |span| span[field]&.match?(Regexp.new(regex)) }
+  assert_true(match, "No span found where field #{field} matches regex #{regex}")
 end

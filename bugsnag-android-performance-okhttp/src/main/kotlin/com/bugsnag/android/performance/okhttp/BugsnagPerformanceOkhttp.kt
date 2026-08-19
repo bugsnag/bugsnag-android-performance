@@ -7,6 +7,8 @@ import com.bugsnag.android.performance.SpanOptions
 import com.bugsnag.android.performance.encodeAsTraceParent
 import com.bugsnag.android.performance.internal.SpanImpl
 import com.bugsnag.android.performance.internal.SpanTracker
+import com.bugsnag.android.performance.internal.graphql.GraphQlRequest
+import com.bugsnag.android.performance.internal.graphql.GraphQlRequestClassifier
 import com.bugsnag.android.performance.okhttp.OkhttpModule.Companion.tracePropagationUrls
 import com.bugsnag.android.performance.okhttp.util.DelegateEventListener
 import okhttp3.Call
@@ -15,36 +17,73 @@ import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.Protocol
 import okhttp3.Response
+import okio.Buffer
 import java.io.IOException
 
 public class BugsnagPerformanceOkhttp(
     delegateEventListener: EventListener? = null,
+    private val networkSpanOptions: SpanOptions = SpanOptions.makeCurrentContext(false),
 ) : DelegateEventListener(delegateEventListener), Interceptor {
-    public constructor() : this(null)
+    public constructor() : this(null, SpanOptions.makeCurrentContext(false))
 
     public companion object EventListenerFactory : Factory {
         override fun create(call: Call): EventListener {
             return BugsnagPerformanceOkhttp()
         }
-    }
 
-    private val networkSpanOptions = SpanOptions.makeCurrentContext(false)
+        /**
+         * The maximum number of bytes from a request body we will read to
+         * classify it as GraphQL.
+         */
+        private const val MAX_BODY_PEEK_SIZE = 1024 * 1024L // 1MB
+    }
 
     private val spans = SpanTracker()
 
     override fun callStart(call: Call) {
         super.callStart(call)
-        val url = call.request().url.toUrl()
+        val request = call.request()
+        val url = request.url.toUrl()
+        val method = request.method
+
+        val bodyText =
+            request.body?.let { requestBody ->
+                val contentLength = requestBody.contentLength()
+                if (requestBody.isOneShot() || contentLength < 0 || contentLength > MAX_BODY_PEEK_SIZE) {
+                    return@let null
+                }
+
+                try {
+                    Buffer().apply { requestBody.writeTo(this) }.readUtf8()
+                } catch (ignored: Exception) {
+                    null
+                }
+            }
+
+        val contentType =
+            request.body?.contentType()?.toString()
+                ?: request.header("Content-Type")
+
+        val gqlRequest = GraphQlRequest(url.toString(), contentType, bodyText)
+        val operation = GraphQlRequestClassifier.parseOperation(gqlRequest)
+
         val span =
-            BugsnagPerformance.startNetworkRequestSpan(
-                url,
-                call.request().method,
-                networkSpanOptions,
-            )
+            if (operation != null) {
+                val spanName =
+                    GraphQlRequestClassifier.buildSpanName(operation.type, operation.name)
+                BugsnagPerformance.startGraphQlRequestSpan(
+                    url,
+                    method,
+                    spanName,
+                    networkSpanOptions,
+                )
+            } else {
+                BugsnagPerformance.startNetworkRequestSpan(url, method, networkSpanOptions)
+            }
 
         if (span != null) {
-            val contentLength = call.request().body?.contentLength()
-            if (contentLength != null) {
+            val contentLength = request.body?.contentLength()
+            if (contentLength != null && contentLength >= 0L) {
                 NetworkRequestAttributes.setRequestContentLength(span, contentLength)
             }
             spans.associate(call, span = span as SpanImpl)

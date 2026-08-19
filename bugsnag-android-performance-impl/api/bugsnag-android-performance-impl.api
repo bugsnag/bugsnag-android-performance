@@ -321,6 +321,7 @@ public final class com/bugsnag/android/performance/internal/SpanCategory {
 	public static final field CATEGORY_APP_START Ljava/lang/String;
 	public static final field CATEGORY_APP_START_PHASE Ljava/lang/String;
 	public static final field CATEGORY_CUSTOM Ljava/lang/String;
+	public static final field CATEGORY_GRAPHQL Ljava/lang/String;
 	public static final field CATEGORY_NETWORK Ljava/lang/String;
 	public static final field CATEGORY_VIEW_LOAD Ljava/lang/String;
 	public static final field CATEGORY_VIEW_LOAD_PHASE Ljava/lang/String;
@@ -342,6 +343,7 @@ public final class com/bugsnag/android/performance/internal/SpanCategory$Compani
 	public final fun getAPP_START-haBhItc ()Ljava/lang/String;
 	public final fun getAPP_START_PHASE-haBhItc ()Ljava/lang/String;
 	public final fun getCUSTOM-haBhItc ()Ljava/lang/String;
+	public final fun getGRAPHQL-haBhItc ()Ljava/lang/String;
 	public final fun getNETWORK-haBhItc ()Ljava/lang/String;
 	public final fun getVIEW_LOAD-haBhItc ()Ljava/lang/String;
 	public final fun getVIEW_LOAD_PHASE-haBhItc ()Ljava/lang/String;
@@ -384,6 +386,8 @@ public final class com/bugsnag/android/performance/internal/SpanFactory {
 	public final fun createCustomSpan (Ljava/lang/String;Lcom/bugsnag/android/performance/SpanOptions;)Lcom/bugsnag/android/performance/internal/SpanImpl;
 	public final fun createCustomSpan (Ljava/lang/String;Lcom/bugsnag/android/performance/SpanOptions;Lcom/bugsnag/android/performance/internal/SpanProcessor;)Lcom/bugsnag/android/performance/internal/SpanImpl;
 	public static synthetic fun createCustomSpan$default (Lcom/bugsnag/android/performance/internal/SpanFactory;Ljava/lang/String;Lcom/bugsnag/android/performance/SpanOptions;Lcom/bugsnag/android/performance/internal/SpanProcessor;ILjava/lang/Object;)Lcom/bugsnag/android/performance/internal/SpanImpl;
+	public final fun createGraphQlSpan (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lcom/bugsnag/android/performance/SpanOptions;Lcom/bugsnag/android/performance/internal/SpanProcessor;)Lcom/bugsnag/android/performance/internal/SpanImpl;
+	public static synthetic fun createGraphQlSpan$default (Lcom/bugsnag/android/performance/internal/SpanFactory;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lcom/bugsnag/android/performance/SpanOptions;Lcom/bugsnag/android/performance/internal/SpanProcessor;ILjava/lang/Object;)Lcom/bugsnag/android/performance/internal/SpanImpl;
 	public final fun createNetworkSpan (Ljava/lang/String;Ljava/lang/String;Lcom/bugsnag/android/performance/SpanOptions;Lcom/bugsnag/android/performance/internal/SpanProcessor;)Lcom/bugsnag/android/performance/internal/SpanImpl;
 	public static synthetic fun createNetworkSpan$default (Lcom/bugsnag/android/performance/internal/SpanFactory;Ljava/lang/String;Ljava/lang/String;Lcom/bugsnag/android/performance/SpanOptions;Lcom/bugsnag/android/performance/internal/SpanProcessor;ILjava/lang/Object;)Lcom/bugsnag/android/performance/internal/SpanImpl;
 	public final fun createViewLoadPhaseSpan (Landroid/app/Activity;Lcom/bugsnag/android/performance/internal/ViewLoadPhase;Lcom/bugsnag/android/performance/SpanOptions;Lcom/bugsnag/android/performance/internal/SpanProcessor;)Lcom/bugsnag/android/performance/internal/SpanImpl;
@@ -649,6 +653,44 @@ public final class com/bugsnag/android/performance/internal/framerate/TimestampP
 	public final fun getNext ()Lcom/bugsnag/android/performance/internal/framerate/TimestampPairBuffer;
 	public final fun getTimestamps ()[J
 	public final fun setNext (Lcom/bugsnag/android/performance/internal/framerate/TimestampPairBuffer;)V
+}
+
+public final class com/bugsnag/android/performance/internal/graphql/GraphQlOperation {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;)Lcom/bugsnag/android/performance/internal/graphql/GraphQlOperation;
+	public static synthetic fun copy$default (Lcom/bugsnag/android/performance/internal/graphql/GraphQlOperation;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lcom/bugsnag/android/performance/internal/graphql/GraphQlOperation;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getName ()Ljava/lang/String;
+	public final fun getType ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/bugsnag/android/performance/internal/graphql/GraphQlRequest {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lcom/bugsnag/android/performance/internal/graphql/GraphQlRequest;
+	public static synthetic fun copy$default (Lcom/bugsnag/android/performance/internal/graphql/GraphQlRequest;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lcom/bugsnag/android/performance/internal/graphql/GraphQlRequest;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getBody ()Ljava/lang/String;
+	public final fun getContentType ()Ljava/lang/String;
+	public final fun getUrl ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/bugsnag/android/performance/internal/graphql/GraphQlRequestClassifier {
+	public static final field INSTANCE Lcom/bugsnag/android/performance/internal/graphql/GraphQlRequestClassifier;
+	public final fun buildSpanName (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+	public final fun extractOperationName (Ljava/lang/String;)Ljava/lang/String;
+	public final fun extractOperationName (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+	public final fun extractOperationType (Ljava/lang/String;)Ljava/lang/String;
+	public final fun isLikelyGraphQl (Lcom/bugsnag/android/performance/internal/graphql/GraphQlRequest;)Z
+	public final fun parseOperation (Lcom/bugsnag/android/performance/internal/graphql/GraphQlRequest;)Lcom/bugsnag/android/performance/internal/graphql/GraphQlOperation;
 }
 
 public final class com/bugsnag/android/performance/internal/integration/NotifierIntegration {
