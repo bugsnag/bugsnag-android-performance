@@ -33,6 +33,21 @@ Feature: GraphQL Spans
       | query       | operationName field (P1) | {\"query\": \"query GetUser { user { id } }\", \"operationName\": \"GetUser\"}                 | GetUser               |
       | mutation    | operationName field (P1) | {\"query\": \"mutation CreatePost { createPost { id } }\", \"operationName\": \"CreatePost\"}  | CreatePost            |
 
+  # Scenario 3
+  Scenario Outline: Display name follows format "GraphQL <url_path> - <op_type>:<op_name>" for <case>
+    Given I run "GraphQlContentTypeScenario" configured as "http://{MAZE_ADDRESS}<url_path>|||application/json|||<body>"
+    And I wait to receive at least 1 span
+    Then a span field "name" matches the regex "^GraphQL .*<url_path> - (<op_type>)?(:)?(<op_name>)?$"
+
+    Examples:
+      | case                        | url_path      | body                                                                                      | op_type       | op_name    |
+      | Normal query with name      | /graphql      | {\"query\": \"query GetUser { user { id } }\", \"operationName\": \"GetUser\"}            | query         | GetUser    |
+      | Mutation with name          | /graphql      | {\"query\": \"mutation UpdateCart { cart { id } }\", \"operationName\": \"UpdateCart\"}   | mutation      | UpdateCart |
+      | Subscription with name      | /graphql      | {\"query\": \"subscription OnNotify { notify { id } }\", \"operationName\": \"OnNotify\"} | subscription  | OnNotify   |
+      | Anonymous (no name)         | /graphql      | {\"query\": \"query { user { id } }\"}                                                    | query         |            |
+      | Unknown type + known name   | /graphql      | {\"query\": \"{ user { id } }\", \"operationName\": \"GetUser\"}                          | query         | GetUser    |
+      | Custom endpoint path        | /api/graphql  | {\"query\": \"query GetUser { user { id } }\", \"operationName\": \"GetUser\"}            | query         | GetUser    |
+
   # Scenario 4
   Scenario Outline: Non-GraphQL request "<case>" retains network category
     Given I run "GraphQlContentTypeScenario" configured as "http://{MAZE_ADDRESS}/rest/users|||<content_type>|||<body>"
@@ -78,15 +93,19 @@ Feature: GraphQL Spans
     * a span string attribute "http.method" equals "GET"
     * a span field "name" matches the regex "^GraphQL .*/graphql - query$"
 
-  # Scenario 9
+  # Scenario9
   Scenario: Multiple GraphQL operations create distinct span names and coexist with network spans
-    Given I run "MultipleGraphQlScenario" configured as "http://{MAZE_ADDRESS}"
-    And I wait to receive 4 spans
-    Then a span field "name" matches the regex "^GraphQL .*/graphql - query:GetUser$"
-    And a span field "name" matches the regex "^GraphQL .*/graphql - mutation:CreatePost$"
-    And a span field "name" matches the regex "^\[HTTP/GET\]$"
-    And a span string attribute "bugsnag.span.category" equals "graphql"
-    And a span string attribute "bugsnag.span.category" equals "network"
+      Given I run "MultipleGraphQlScenario" configured as "http://{MAZE_ADDRESS}"
+      And I wait to receive 4 spans
+
+      # Use "each" or specific existence checks to reset the search context
+      Then 1 span field "name" matches the regex "GraphQL.*query:GetUser"
+      And 1 span field "name" matches the regex "GraphQL.*mutation:CreatePost"
+      And 1 span field "name" matches the regex "\[HTTP/GET\]"
+
+      # For attributes, verify the counts in the total collection
+      And 2 spans have a span string attribute "bugsnag.span.category" equal to "graphql"
+      And 2 spans have a span string attribute "bugsnag.span.category" equal to "network"
 
   # Scenario 10
   Scenario: GraphQL span payload contains only HTTP attributes and category - no GraphQL-specific metadata

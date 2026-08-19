@@ -402,7 +402,6 @@ Then('a span field {string} is empty') do |field|
   raise Test::Unit::AssertionFailedError.new "No span found where #{field} is empty" if found.nil?
 end
 
-
 Then('every app_session span string attribute {string} equals {string}') do |attribute, expected|
   spans = spans_from_request_list(Maze::Server.list_for('traces'))
   spans.each do |span|
@@ -606,4 +605,25 @@ Then(/a span (integer|float|boolean|bool|string|double) array attribute "([^"]+)
   end
 
   raise Test::Unit::AssertionFailedError.new "No span found where #{type} array attribute #{attribute} equals #{expected_values}" if found.nil?
+end
+
+Then('I print all received span names') do
+  spans = spans_from_request_list(Maze::Server.list_for('traces'))
+  spans.each_with_index do |span, i|
+    puts "Span #{i}: #{span['name']}"
+  end
+end
+
+Then('at least one span field {string} matches the regex {string}') do |field, regex|
+  spans = Maze::Server.list_for('traces').datas.flat_map { |d| d[:body]['resourceSpans'] }
+  # Extract all span objects
+  all_spans = []
+  spans.each do |rs|
+    rs['scopeSpans'].each do |ss|
+      ss['spans'].each { |s| all_spans << s }
+    end
+  end
+
+  match = all_spans.any? { |span| span[field]&.match?(Regexp.new(regex)) }
+  assert_true(match, "No span found where field #{field} matches regex #{regex}")
 end
