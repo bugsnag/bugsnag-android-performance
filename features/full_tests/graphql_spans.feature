@@ -84,6 +84,15 @@ Feature: GraphQL Spans
       | Underscore and version suffix | {\"query\": \"query Get_User_Profile_V2 { user { id } }\", \"operationName\": \"Get_User_Profile_V2\"}                                                                                                                  | Get_User_Profile_V2                                                                           |
       | Numeric suffix                | {\"query\": \"query GetUser123 { user { id } }\", \"operationName\": \"GetUser123\"}                                                                                                                                    | GetUser123                                                                                    |
 
+  # Scenario 7
+  Scenario: Batched GraphQL request with multiple operations does not crash the SDK
+    Given I run "GraphQlContentTypeScenario" configured as "http://{MAZE_ADDRESS}/graphql|||application/json|||[{\"query\": \"query GetUser { user { id } }\", \"operationName\": \"GetUser\"}, {\"query\": \"query GetPosts { posts { id } }\", \"operationName\": \"GetPosts\"}]"
+    And I wait to receive at least 1 span
+    # The SDK successfully identifies this as GraphQL even in a batched array format
+    Then a span string attribute "bugsnag.span.category" equals "graphql"
+    # When multiple operations are present, the SDK typically picks the first one for the span name
+    And a span field "name" matches the regex "^GraphQL .*/graphql - query:GetUser$"
+
   # Scenario 8
   Scenario: GET request to /graphql with query params does not crash
     Given I run "OkhttpSpanScenario" configured as "http://{MAZE_ADDRESS}/graphql?query={user{id}}&operationName=GetUser"
@@ -129,8 +138,8 @@ Feature: GraphQL Spans
     * a span string attribute "bugsnag.span.category" equals "graphql"
     * a span bool attribute "bugsnag.span.first_class" is false
 
-    # Scenario 12
-    Scenario Outline: GraphQL span is created even when request <failure_type>
+  # Scenario 12
+  Scenario Outline: GraphQL span is created even when request <failure_type>
       Given I run "GraphQlContentTypeScenario" configured as "http://{MAZE_ADDRESS}/graphql|||application/graphql|||query GetUser { user { id } }|||true|||<failure_condition>"
       And I wait to receive at least 1 span
       Then the span field "name" matches the regex "^GraphQL .*/graphql - query(:GetUser)?$"
