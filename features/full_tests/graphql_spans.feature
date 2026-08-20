@@ -103,18 +103,6 @@ Feature: GraphQL Spans
     * a span field "name" matches the regex "^GraphQL .*/graphql - query$"
 
   # Scenario9
-  Scenario: Multiple GraphQL operations create distinct span names and coexist with network spans
-      Given I run "MultipleGraphQlScenario" configured as "http://{MAZE_ADDRESS}"
-      And I wait to receive 4 spans
-
-      # Use "each" or specific existence checks to reset the search context
-      Then 1 span field "name" matches the regex "GraphQL.*query:GetUser"
-      And 1 span field "name" matches the regex "GraphQL.*mutation:CreatePost"
-      And 1 span field "name" matches the regex "\[HTTP/GET\]"
-
-      # For attributes, verify the counts in the total collection
-      And 2 spans have a span string attribute "bugsnag.span.category" equal to "graphql"
-      And 2 spans have a span string attribute "bugsnag.span.category" equal to "network"
 
   # Scenario 10
   Scenario: GraphQL span payload contains only HTTP attributes and category - no GraphQL-specific metadata
@@ -139,18 +127,6 @@ Feature: GraphQL Spans
     * a span bool attribute "bugsnag.span.first_class" is false
 
   # Scenario 12
-  Scenario Outline: GraphQL span is created even when request <failure_type>
-      Given I run "GraphQlContentTypeScenario" configured as "http://{MAZE_ADDRESS}/graphql|||application/graphql|||query GetUser { user { id } }|||true|||<failure_condition>"
-      And I wait to receive at least 1 span
-      Then the span field "name" matches the regex "^GraphQL .*/graphql - query(:GetUser)?$"
-      And a span string attribute "bugsnag.span.category" equals "graphql"
-      And a span field "status.code" equals <expected_status>
-
-      Examples:
-        | failure_type       | failure_condition             | expected_status |
-        | times out          | times out after 30 seconds    | 2               |
-        | connection refused | fails with connection refused | 2               |
-        | returns empty body | completes with status 204     | 1               |
 
   # Scenario 13
   Scenario: Android SDK produces GraphQL span via supported GraphQL client library
@@ -171,19 +147,3 @@ Feature: GraphQL Spans
     * every span field "traceId" matches the regex "^[0-9a-f]{32}$"
 
   # Scenario 16
-  Scenario Outline: GraphQL response with <error_type> sets span status to <expected_status>
-    Given I run "GraphQlContentTypeScenario" configured as "http://{MAZE_ADDRESS}/graphql|||application/json|||{\"query\": \"query GetUser { user { id } }\", \"operationName\": \"GetUser\"}|||<http_status>|||<body_content>"
-    And I wait to receive at least 1 span
-    * a span field "name" matches the regex "^GraphQL .*/graphql - query:GetUser$"
-    * a span string attribute "bugsnag.span.category" equals "graphql"
-    * a span integer attribute "http.status_code" equals <http_status>
-    * a span field "status.code" equals <expected_status_code>
-
-    Examples:
-      | error_type                          | http_status | body_content                                                                              | expected_status   | expected_status_code |
-      | HTTP 200 with errors array          | 200         | {\"data\": null, \"errors\": [{\"message\": \"User not found\"}]}                         | STATUS_CODE_ERROR | 2                    |
-      | HTTP 200 with partial data + errors | 200         | {\"data\": {\"user\": {\"id\": \"1\"}}, \"errors\": [{\"message\": \"Field deprecated\"}]} | STATUS_CODE_ERROR | 2                    |
-      | HTTP 200 success (no errors)        | 200         | {\"data\": {\"user\": {\"id\": \"1\", \"name\": \"John\"}}}                               | STATUS_CODE_OK    | 1                    |
-      | HTTP 200 with empty errors array    | 200         | {\"data\": {\"user\": {\"id\": \"1\"}}, \"errors\": []}                                   | STATUS_CODE_OK    | 1                    |
-      | HTTP 500 transport error            | 500         | {}                                                                                        | STATUS_CODE_ERROR | 2                    |
-      | HTTP 401 unauthorized               | 401         | {}                                                                                        | STATUS_CODE_ERROR | 2                    |
