@@ -2,51 +2,80 @@ Feature: GraphQL Spans
 
   # Scenario 1
   Scenario Outline: GraphQL detected via <detection_method> produces correct span with full attributes
-    Given I run "GraphQlContentTypeScenario" configured as "http://{MAZE_ADDRESS}/<url_path>|||<content_type>|||<body>"
+    Given I run "GraphQlContentTypeScenario" configured as "<url>|||<content_type>|||<body>|||<status>|||{}"
     And I wait to receive at least 1 span
-    * a span field "kind" equals 3
-    * a span field "name" matches the regex "GraphQL .* - <expected_name>$"
+    * a span field "name" matches the regex "<name_regex>"
     * a span string attribute "bugsnag.span.category" equals "graphql"
-    * a span string attribute "http.url" matches the regex "^http://.*/<url_path>$"
+    * a span bool attribute "bugsnag.span.first_class" is true
     * a span string attribute "http.method" equals "POST"
+    * a span integer attribute "http.status_code" equals "<status>"
+    * every span attribute "graphql.document" does not exist
+    * every span attribute "graphql.variables" does not exist
+    * every span attribute "graphql.operation.type" does not exist
+    * every span attribute "graphql.operation.name" does not exist
 
     Examples:
-      | detection_method                    | url_path         | content_type          | body                                                                                                                                       | expected_name             |
-      | Content-Type application/graphql    | traces           | application/graphql   | query GetCountries { countries { code name } }                                                                                             | query:GetCountries        |
-      | URL /graphql + JSON body            | graphql          | application/json      | {\"query\": \"query FetchItems { items { id } }\", \"operationName\": \"FetchItems\"}                                                      | query:FetchItems          |
-      | URL /api/graphql                    | api/graphql      | application/json      | {\"query\": \"mutation CreatePost($input: CreatePostInput!) { createPost(input: $input) { id } }\", \"operationName\": \"CreatePost\"}     | mutation:CreatePost       |
-      | URL /api/v1/graphql                 | api/v1/graphql   | application/json      | {\"query\": \"subscription OnMessage { message { id text } }\", \"operationName\": \"OnMessage\"}                                          | subscription:OnMessage    |
-      | URL /graphql/ trailing slash        | graphql          | application/json      | {\"query\": \"query GetProfile { profile { name } }\", \"operationName\": \"GetProfile\"}                                                  | query:GetProfile          |
-      | Body inspection (non-graphql URL)   | custom-endpoint  | application/json      | {\"query\": \"mutation UpdateUser($id: ID!) { updateUser(id: $id) { id } }\", \"operationName\": \"UpdateUser\"}                           | mutation:UpdateUser       |
-      | HTTP 400 error response             | graphql          | application/json      | {\"query\": \"query BadQuery { invalid }\", \"operationName\": \"BadQuery\"}                                                               | query:BadQuery            |
-      | HTTP 401 unauthorized               | graphql          | application/json      | {\"query\": \"query GetSecret { secret { value } }\", \"operationName\": \"GetSecret\"}                                                    | query:GetSecret           |
-      | HTTP 500 server error               | graphql          | application/json      | {\"query\": \"mutation FailOp { fail { msg } }\", \"operationName\": \"FailOp\"}                                                           | mutation:FailOp           |
+      | status | detection_method                  | name_regex                                                      | url                                            | content_type        | body                                                                                                                                   |
+      | 200    | Content-Type application/graphql  | ^GraphQL .+/data - query:GetUserProfile$                        | https://api.example.com/data                   | application/graphql | query GetUserProfile { user { id name } }                                                                                              |
+      | 200    | URL /graphql + JSON body          | ^GraphQL .+/graphql - query:FetchItems$                         | https://api.example.com/graphql                | application/json    | {\"query\": \"query FetchItems { items { id } }\", \"operationName\": \"FetchItems\"}                                                  |
+      | 200    | URL /api/graphql                  | ^GraphQL .+/api/graphql - mutation:CreatePost$                  | https://api.example.com/api/graphql            | application/json    | {\"query\": \"mutation CreatePost($input: CreatePostInput!) { createPost(input: $input) { id } }\", \"operationName\": \"CreatePost\"} |
+      | 200    | URL /api/v1/graphql               | ^GraphQL .+/api/v1/graphql - subscription:OnMessage$            | https://api.example.com/api/v1/graphql         | application/json    | {\"query\": \"subscription OnMessage { message { id text } }\", \"operationName\": \"OnMessage\"}                                      |
+      | 200    | URL /graphql/ trailing slash      | ^GraphQL .+/graphql/ - query:GetProfile$                        | https://api.example.com/graphql/               | application/json    | {\"query\": \"query GetProfile { profile { name } }\", \"operationName\": \"GetProfile\"}                                              |
+      | 200    | Body inspection (non-graphql URL) | ^GraphQL .+/custom-endpoint - mutation:UpdateUser$              | https://api.example.com/custom-endpoint        | application/json    | {\"query\": \"mutation UpdateUser($id: ID!) { updateUser(id: $id) { id } }\", \"operationName\": \"UpdateUser\"}                       |
+      | 400    | HTTP 400 error response           | ^GraphQL .+/graphql - query:BadQuery$                           | https://api.example.com/graphql                | application/json    | {\"query\": \"query BadQuery { invalid }\", \"operationName\": \"BadQuery\"}                                                           |
+      | 401    | HTTP 401 unauthorized             | ^GraphQL .+/graphql - query:GetSecret$                          | https://api.example.com/graphql                | application/json    | {\"query\": \"query GetSecret { secret { value } }\", \"operationName\": \"GetSecret\"}                                                |
+      | 500    | HTTP 500 server error             | ^GraphQL .+/graphql - mutation:FailOp$                          | https://api.example.com/graphql                | application/json    | {\"query\": \"mutation FailOp { fail { msg } }\", \"operationName\": \"FailOp\"}                                                       |
+
 
   # Scenario 2
   Scenario Outline: Operation type "<op_type>" correctly extracted with name priority "<priority>"
-    Given I run "GraphQlContentTypeScenario" configured as "http://{MAZE_ADDRESS}/graphql|||application/json|||<body>"
+    Given I run "GraphQlContentTypeScenario" configured as "https://api.example.com/graphql|||application/json|||<body>|||200|||{}"
     And I wait to receive at least 1 span
-    * a span field "name" matches the regex "^GraphQL .*/graphql - <op_type>:<expected_name>$"
+    * a span field "name" matches the regex "<name_regex>"
+    * a span string attribute "bugsnag.span.category" equals "graphql"
+    * a span bool attribute "bugsnag.span.first_class" is true
+    * a span string attribute "http.method" equals "POST"
+    * a span integer attribute "http.status_code" equals "200"
+    * every span attribute "graphql.document" does not exist
+    * every span attribute "graphql.variables" does not exist
+    * every span attribute "graphql.operation.type" does not exist
+    * every span attribute "graphql.operation.name" does not exist
 
     Examples:
-      | op_type     | priority                 | body                                                                                           | expected_name         |
-      | query       | operationName field (P1) | {\"query\": \"query GetUser { user { id } }\", \"operationName\": \"GetUser\"}                 | GetUser               |
-      | mutation    | operationName field (P1) | {\"query\": \"mutation CreatePost { createPost { id } }\", \"operationName\": \"CreatePost\"}  | CreatePost            |
+      | priority                              | op_type     | name_regex                                              | body                                                                                                      |
+      | operationName field (P1)              | query       | ^GraphQL .+/graphql - query:GetUser$                    | {\"query\": \"query GetUser { user { id } }\", \"operationName\": \"GetUser\"}                            |
+      | operationName field (P1)              | mutation    | ^GraphQL .+/graphql - mutation:CreatePost$              | {\"query\": \"mutation CreatePost { createPost { id } }\", \"operationName\": \"CreatePost\"}             |
+      | operationName field (P1)              | subscription| ^GraphQL .+/graphql - subscription:OnMsg$               | {\"query\": \"subscription OnMsg { message { id } }\", \"operationName\": \"OnMsg\"}                      |
+      | document parsing (P2, no field)       | query       | ^GraphQL .+/graphql - query:FetchOrders$                | {\"query\": \"query FetchOrders { orders { id total } }\"}                                                |
+      | document parsing (P2, no field)       | mutation    | ^GraphQL .+/graphql - mutation:DeleteItem$              | {\"query\": \"mutation DeleteItem { deleteItem { success } }\"}                                           |
+      | anonymous (P3, both type & name null) | (anonymous) | ^GraphQL .+/graphql - query$                            | {\"query\": \"{ user { id name } }\"}                                                                     |
+      | operationName overrides document name | query       | ^GraphQL .+/graphql - query:FieldName$                  | {\"query\": \"query DocumentName { user { id } }\", \"operationName\": \"FieldName\"}                     |
+      | type present, name anonymous          | query       | ^GraphQL .+/graphql - query$                            | {\"query\": \"query { user { id } }\"}                                                                    |
 
-  # Scenario 3
-  Scenario Outline: Display name follows format "GraphQL <url_path> - <op_type>:<op_name>" for <case>
-    Given I run "GraphQlContentTypeScenario" configured as "http://{MAZE_ADDRESS}<url_path>|||application/json|||<body>"
+
+# Scenario 3
+  Scenario Outline: Span name follows correct format for <description>
+    Given I run "GraphQlContentTypeScenario" configured as "<url>|||application/json|||<body>|||200|||{}"
     And I wait to receive at least 1 span
-    Then a span field "name" matches the regex "^GraphQL .*<url_path> - (<op_type>)?(:)?(<op_name>)?$"
+    * a span field "name" matches the regex "<name_regex>"
+    * a span string attribute "bugsnag.span.category" equals "graphql"
+    * a span bool attribute "bugsnag.span.first_class" is true
+    * a span string attribute "http.method" equals "POST"
+    * a span integer attribute "http.status_code" equals "200"
+    * every span attribute "graphql.document" does not exist
+    * every span attribute "graphql.variables" does not exist
+    * every span attribute "graphql.operation.type" does not exist
+    * every span attribute "graphql.operation.name" does not exist
 
     Examples:
-      | case                        | url_path      | body                                                                                      | op_type       | op_name    |
-      | Normal query with name      | /graphql      | {\"query\": \"query GetUser { user { id } }\", \"operationName\": \"GetUser\"}            | query         | GetUser    |
-      | Mutation with name          | /graphql      | {\"query\": \"mutation UpdateCart { cart { id } }\", \"operationName\": \"UpdateCart\"}   | mutation      | UpdateCart |
-      | Subscription with name      | /graphql      | {\"query\": \"subscription OnNotify { notify { id } }\", \"operationName\": \"OnNotify\"} | subscription  | OnNotify   |
-      | Anonymous (no name)         | /graphql      | {\"query\": \"query { user { id } }\"}                                                    | query         |            |
-      | Unknown type + known name   | /graphql      | {\"query\": \"{ user { id } }\", \"operationName\": \"GetUser\"}                          | query         | GetUser    |
-      | Custom endpoint path        | /api/graphql  | {\"query\": \"query GetUser { user { id } }\", \"operationName\": \"GetUser\"}            | query         | GetUser    |
+      | description                       | url                                      | name_regex                                              | body                                                                                                      |
+      | query with name                   | https://api.example.com/graphql          | ^GraphQL .+/graphql - query:GetUser$                    | {\"query\": \"query GetUser { user { id } }\", \"operationName\": \"GetUser\"}                            |
+      | mutation with name                | https://api.example.com/graphql          | ^GraphQL .+/graphql - mutation:UpdateCart$              | {\"query\": \"mutation UpdateCart { cart { id } }\", \"operationName\": \"UpdateCart\"}                   |
+      | subscription with name            | https://api.example.com/graphql          | ^GraphQL .+/graphql - subscription:OnNotify$            | {\"query\": \"subscription OnNotify { notify { id } }\", \"operationName\": \"OnNotify\"}               |
+      | anonymous query (no name)         | https://api.example.com/graphql          | ^GraphQL .+/graphql - query$                            | {\"query\": \"query { user { id } }\"}                                                                    |
+      | unknown type with operationName   | https://api.example.com/graphql          | ^GraphQL .+/graphql - query:GetUser$                    | {\"query\": \"{ user { id } }\", \"operationName\": \"GetUser\"}                                          |
+      | custom endpoint path              | https://api.example.com/api/graphql      | ^GraphQL .+/api/graphql - query:GetUser$                | {\"query\": \"query GetUser { user { id } }\", \"operationName\": \"GetUser\"}                            |
+
 
   # Scenario 4
   Scenario Outline: Non-GraphQL request "<case>" retains network category
