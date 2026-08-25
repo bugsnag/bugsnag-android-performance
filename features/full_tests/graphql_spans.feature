@@ -79,21 +79,32 @@ Feature: GraphQL Spans
 
   # Scenario 4
   Scenario Outline: Non-GraphQL request "<case>" retains network category
-    Given I run "GraphQlContentTypeScenario" configured as "http://{MAZE_ADDRESS}/rest/users|||<content_type>|||<body>"
+    Given I run "GraphQlContentTypeScenario" configured as "<url>|||<content_type>|||<body>|||200|||{}|||<method>"
     And I wait to receive at least 1 span
     * a span string attribute "bugsnag.span.category" equals "network"
-    * a span field "name" matches the regex "^\[HTTP/POST\]$"
+    * a span field "name" matches the regex "^\[HTTP/<method>\]$"
+    * a span string attribute "http.method" equals "<method>"
 
     Examples:
-      | case               | content_type     | body                                   |
-      | Standard REST POST | application/json | {\"userId\": \"123\", \"action\": \"get\"} |
+      | case                                  | method | url                                      | content_type     | body                                                      |
+      | Standard REST POST                    | POST   | https://api.example.com/rest/users       | application/json | {\"userId\": \"123\", \"action\": \"get\"}                |
+      | JSON with query key (not GraphQL)     | POST   | https://api.example.com/api/search       | application/json | {\"query\": \"shoes\", \"page\": 1}                       |
+      | Natural language query (ambiguous)    | POST   | https://api.example.com/api/search       | application/json | {\"query\": \"find all users named John\", \"limit\": 10} |
+      | GET to REST endpoint                  | GET    | https://api.example.com/api/users/123    | application/json |                                                           |
+      | XML content type                      | POST   | https://api.example.com/api/data         | application/xml  | <request><query>GetUser</query></request>                 |
+      | text/html content type                | POST   | https://api.example.com/submit           | text/html        | <html><body>test</body></html>                            |
 
-  # Scenario 5
+# Scenario 5
   Scenario Outline: POST with <body_type> body does not crash and falls back to network
-    Given I run "GraphQlContentTypeScenario" configured as "http://{MAZE_ADDRESS}/api/data|||application/json|||<body>"
+    Given I run "GraphQlContentTypeScenario" configured as "https://api.example.com/api/data|||application/json|||<body>|||200|||{}|||POST"
     And I wait to receive at least 1 span
     * a span string attribute "bugsnag.span.category" equals "network"
     * a span field "name" matches the regex "^\[HTTP/POST\]$"
+    * a span string attribute "http.method" equals "POST"
+    * every span attribute "graphql.document" does not exist
+    * every span attribute "graphql.variables" does not exist
+    * every span attribute "graphql.operation.type" does not exist
+    * every span attribute "graphql.operation.name" does not exist
 
     Examples:
       | body_type         | body                    |
@@ -103,9 +114,17 @@ Feature: GraphQL Spans
 
   # Scenario 6
   Scenario Outline: Operation name "<name_type>" is handled without crash or data loss
-    Given I run "GraphQlContentTypeScenario" configured as "http://{MAZE_ADDRESS}/graphql|||application/json|||<body>"
+    Given I run "GraphQlContentTypeScenario" configured as "https://api.example.com/graphql|||application/json|||<body>|||200|||{}|||POST"
     And I wait to receive at least 1 span
-    * a span field "name" matches the regex "^GraphQL .*/graphql - query:<expected_name>$"
+    * a span field "name" matches the regex "^GraphQL .+/graphql - query:<expected_name>$"
+    * a span string attribute "bugsnag.span.category" equals "graphql"
+    * a span bool attribute "bugsnag.span.first_class" is true
+    * a span string attribute "http.method" equals "POST"
+    * a span integer attribute "http.status_code" equals "200"
+    * every span attribute "graphql.document" does not exist
+    * every span attribute "graphql.variables" does not exist
+    * every span attribute "graphql.operation.type" does not exist
+    * every span attribute "graphql.operation.name" does not exist
 
     Examples:
       | name_type                     | body                                                                                                                                                                                                          | expected_name                                                                                 |
@@ -115,27 +134,48 @@ Feature: GraphQL Spans
 
   # Scenario 7
   Scenario: Batched GraphQL request with multiple operations does not crash the SDK
-    Given I run "GraphQlContentTypeScenario" configured as "http://{MAZE_ADDRESS}/graphql|||application/json|||[{\"query\": \"query GetUser { user { id } }\", \"operationName\": \"GetUser\"}, {\"query\": \"query GetPosts { posts { id } }\", \"operationName\": \"GetPosts\"}]"
+    Given I run "GraphQlContentTypeScenario" configured as "https://api.example.com/graphql|||application/json|||[{\"query\": \"query GetUser { user { id } }\", \"operationName\": \"GetUser\"}, {\"query\": \"query GetPosts { posts { id } }\", \"operationName\": \"GetPosts\"}]|||200|||{}|||POST"
     And I wait to receive at least 1 span
     # The SDK successfully identifies this as GraphQL even in a batched array format
     Then a span string attribute "bugsnag.span.category" equals "graphql"
+    * a span bool attribute "bugsnag.span.first_class" is true
+    * a span string attribute "http.method" equals "POST"
+    * a span integer attribute "http.status_code" equals "200"
+    * every span attribute "graphql.document" does not exist
+    * every span attribute "graphql.variables" does not exist
+    * every span attribute "graphql.operation.type" does not exist
+    * every span attribute "graphql.operation.name" does not exist
     # When multiple operations are present, the SDK typically picks the first one for the span name
-    And a span field "name" matches the regex "^GraphQL .*/graphql - query:GetUser$"
+    And a span field "name" matches the regex "^GraphQL .+/graphql - query:GetUser$"
 
   # Scenario 8
   Scenario: GET request to /graphql with query params does not crash
-    Given I run "OkhttpSpanScenario" configured as "http://{MAZE_ADDRESS}/graphql?query={user{id}}&operationName=GetUser"
+    Given I run "GraphQlContentTypeScenario" configured as "https://api.example.com/graphql?query=%7Buser%7Bid%7D%7D&operationName=GetUser|||application/json||||||200|||{}|||GET"
     And I wait to receive at least 1 span
     * a span field "kind" equals 3
     * a span string attribute "bugsnag.span.category" equals "graphql"
+    * a span bool attribute "bugsnag.span.first_class" is true
     * a span string attribute "http.method" equals "GET"
-    * a span field "name" matches the regex "^GraphQL .*/graphql - query$"
+    * a span integer attribute "http.status_code" equals "200"
+    * a span field "name" matches the regex "^GraphQL .+/graphql - query:GetUser$"
 
-  # Scenario9
+  # Scenario 9
+  Scenario: Multiple GraphQL operations create distinct span names and coexist with network spans
+    Given I run "MultipleGraphQlScenario"
+    And I wait to receive 4 spans
+    * 2 spans have field "name" matching the regex "^GraphQL .+/graphql - query:GetUser$"
+    * 1 spans have field "name" matching the regex "^GraphQL .+/graphql - mutation:CreatePost$"
+    * 3 spans have string attribute "bugsnag.span.category" equals "graphql"
+    * 1 spans have string attribute "bugsnag.span.category" equals "network"
+    * a span field "name" matches the regex "^\[HTTP/GET\]$"
+    * every span attribute "graphql.document" does not exist
+    * every span attribute "graphql.variables" does not exist
+    * every span attribute "graphql.operation.type" does not exist
+    * every span attribute "graphql.operation.name" does not exist
 
   # Scenario 10
   Scenario: GraphQL span payload contains only HTTP attributes and category - no GraphQL-specific metadata
-    Given I run "GraphQlContentTypeScenario" configured as "http://{MAZE_ADDRESS}/graphql|||application/graphql|||query { user { id secret } }|||true"
+    Given I run "GraphQlContentTypeScenario" configured as "http://api.example.com/graphql|||application/graphql|||query { user { id secret } }|||true"
     And I wait to receive at least 1 span
     * a span string attribute "bugsnag.span.category" equals "graphql"
     * a span bool attribute "bugsnag.span.first_class" is true

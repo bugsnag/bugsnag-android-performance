@@ -7,7 +7,7 @@ import com.bugsnag.android.performance.SpanOptions
 import com.bugsnag.android.performance.okhttp.BugsnagPerformanceOkhttp
 import com.bugsnag.mazeracer.Scenario
 import okhttp3.Interceptor
-import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Protocol
 import okhttp3.Request
@@ -68,10 +68,15 @@ class GraphQlContentTypeScenario(
     }
 
     private fun buildRequest(spec: RequestSpec): Request {
-        return Request.Builder()
-            .url(spec.url)
-            .post(spec.body.toRequestBody(spec.contentType.toMediaType()))
-            .build()
+        val builder = Request.Builder().url(spec.url)
+        val method = spec.method.uppercase()
+        return when (method) {
+            "GET" -> builder.get().build()
+            else -> {
+                val mediaType = spec.contentType.takeIf { it.isNotBlank() }?.toMediaTypeOrNull()
+                builder.method(method, spec.body.toRequestBody(mediaType)).build()
+            }
+        }
     }
 
     private fun execute(
@@ -89,7 +94,7 @@ class GraphQlContentTypeScenario(
         statusCode: Int,
         body: String,
     ): Response {
-        val mediaType = "application/json".toMediaType()
+        val mediaType = "application/json".toMediaTypeOrNull()
         val responseBody = body.toResponseBody(mediaType)
         return Response.Builder()
             .request(request)
@@ -119,6 +124,7 @@ class GraphQlContentTypeScenario(
         val firstClass: Boolean? = null,
         val mockResponseStatus: Int? = null,
         val mockResponseBody: String? = null,
+        val method: String = "POST",
     )
 
     private object Parser {
@@ -131,7 +137,8 @@ class GraphQlContentTypeScenario(
             require(parts.size in MIN_METADATA_PARTS..MAX_METADATA_PARTS) {
                 "Expected scenarioMetadata format <url>$METADATA_DELIMITER<contentType>" +
                         "$METADATA_DELIMITER<body>[$METADATA_DELIMITER<firstClass>|" +
-                        "$METADATA_DELIMITER<httpStatus>$METADATA_DELIMITER<responseBody>]"
+                        "$METADATA_DELIMITER<httpStatus>$METADATA_DELIMITER<responseBody>" +
+                        "[$METADATA_DELIMITER<method>]]"
             }
 
             val fourth = parts.getOrNull(FOURTH_PART_INDEX)?.trim()
@@ -144,6 +151,8 @@ class GraphQlContentTypeScenario(
                 }
 
             val mockResponseBody = parts.getOrNull(RESPONSE_BODY_INDEX)
+            val method =
+                parts.getOrNull(METHOD_PART_INDEX)?.trim()?.takeIf { it.isNotEmpty() } ?: "POST"
 
             return RequestSpec(
                 url = parts[0].trim(),
@@ -152,6 +161,7 @@ class GraphQlContentTypeScenario(
                 firstClass = firstClass,
                 mockResponseStatus = mockResponseStatus,
                 mockResponseBody = mockResponseBody,
+                method = method,
             )
         }
     }
@@ -162,9 +172,10 @@ class GraphQlContentTypeScenario(
         private const val METADATA_DELIMITER = "|||"
         private const val RESPONSE_BODY_INDEX = 4
         private const val FOURTH_PART_INDEX = 3
+        private const val METHOD_PART_INDEX = 5
 
         private const val MIN_METADATA_PARTS = 3
-        private const val MAX_METADATA_PARTS = 5
+        private const val MAX_METADATA_PARTS = 6
 
         private const val HTTP_OK = 200
         private const val HTTP_BAD_REQUEST = 400
