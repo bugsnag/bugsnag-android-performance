@@ -6,14 +6,14 @@ import com.bugsnag.android.performance.PerformanceConfiguration
 import com.bugsnag.android.performance.SpanOptions
 import com.bugsnag.android.performance.okhttp.BugsnagPerformanceOkhttp
 import com.bugsnag.mazeracer.Scenario
-import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
-import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.Interceptor
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
+import okhttp3.Protocol
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
-import java.io.BufferedInputStream
-import java.net.InetAddress
-import java.net.ServerSocket
+import okhttp3.Response
+import okhttp3.ResponseBody.Companion.toResponseBody
 import kotlin.concurrent.thread
 
 class GraphQlContentTypeScenario(
@@ -26,41 +26,57 @@ class GraphQlContentTypeScenario(
         thread {
             runAndFlush {
                 val spec = Parser.parseRequestSpec(scenarioMetadata)
-                val client = buildClient(spec.firstClass)
-                val server = Parser.startMockServerIfNeeded(spec)
-                val request = buildRequest(spec, server)
+                val client = buildClient(spec)
+                val request = buildRequest(spec)
 
                 try {
                     execute(client, request)
                 } catch (exception: java.io.IOException) {
                     Log.e(LOG_TAG, "Request failed", exception)
-                } finally {
-                    server?.close()
                 }
             }
         }
     }
 
-    private fun buildClient(firstClass: Boolean?): OkHttpClient {
-        val builder = OkHttpClient.Builder()
-        if (firstClass == null) {
-            builder.eventListenerFactory(BugsnagPerformanceOkhttp.EventListenerFactory)
-        } else {
-            val spanOptions = SpanOptions.makeCurrentContext(false).setFirstClass(firstClass)
-            builder.eventListener(BugsnagPerformanceOkhttp(networkSpanOptions = spanOptions))
+    private fun buildClient(spec: RequestSpec): OkHttpClient {
+        // Default first_class=true so GraphQL spans match iOS/QA assertions.
+        val spanOptions =
+            SpanOptions.makeCurrentContext(false).setFirstClass(spec.firstClass ?: true)
+        val bugsnag = BugsnagPerformanceOkhttp(networkSpanOptions = spanOptions)
+        val builder =
+            OkHttpClient.Builder()
+                .eventListener(bugsnag)
+
+        // BitBar's SecureTunnel intercepts localhost/LAN sockets and returns HTTP 500 (or
+        // fails the call, discarding the span). Short-circuit in-process so status codes are
+        // deterministic and no real network hop is required.
+        val mockStatus = spec.mockResponseStatus
+        if (mockStatus != null) {
+            val mockBody = spec.mockResponseBody ?: "{}"
+            builder.addInterceptor(
+                Interceptor { chain ->
+                    val response = mockResponse(chain.request(), mockStatus, mockBody)
+                    // EventListener.responseHeadersEnd is skipped for short-circuit interceptors;
+                    // invoke it so http.status_code / length / flavor are still recorded.
+                    bugsnag.responseHeadersEnd(chain.call(), response)
+                    response
+                },
+            )
         }
+
         return builder.build()
     }
 
-    private fun buildRequest(
-        spec: RequestSpec,
-        server: OneShotHttpServer?,
-    ): Request {
-        val resolvedUrl = Parser.resolveUrl(spec.url, server)
-        return Request.Builder()
-            .url(resolvedUrl)
-            .post(spec.body.toRequestBody(spec.contentType.toMediaType()))
-            .build()
+    private fun buildRequest(spec: RequestSpec): Request {
+        val builder = Request.Builder().url(spec.url)
+        val method = spec.method.uppercase()
+        return when (method) {
+            "GET" -> builder.get().build()
+            else -> {
+                val mediaType = spec.contentType.takeIf { it.isNotBlank() }?.toMediaTypeOrNull()
+                builder.method(method, spec.body.toRequestBody(mediaType)).build()
+            }
+        }
     }
 
     private fun execute(
@@ -73,6 +89,34 @@ class GraphQlContentTypeScenario(
         }
     }
 
+    private fun mockResponse(
+        request: Request,
+        statusCode: Int,
+        body: String,
+    ): Response {
+        val mediaType = "application/json".toMediaTypeOrNull()
+        val responseBody = body.toResponseBody(mediaType)
+        return Response.Builder()
+            .request(request)
+            .protocol(Protocol.HTTP_1_1)
+            .code(statusCode)
+            .message(reasonPhrase(statusCode))
+            .header("Content-Type", "application/json")
+            .header("Content-Length", responseBody.contentLength().toString())
+            .body(responseBody)
+            .build()
+    }
+
+    private fun reasonPhrase(statusCode: Int): String {
+        return when (statusCode) {
+            HTTP_OK -> "OK"
+            HTTP_BAD_REQUEST -> "Bad Request"
+            HTTP_UNAUTHORIZED -> "Unauthorized"
+            HTTP_INTERNAL_SERVER_ERROR -> "Internal Server Error"
+            else -> "Status"
+        }
+    }
+
     private data class RequestSpec(
         val url: String,
         val contentType: String,
@@ -80,14 +124,8 @@ class GraphQlContentTypeScenario(
         val firstClass: Boolean? = null,
         val mockResponseStatus: Int? = null,
         val mockResponseBody: String? = null,
+        val method: String = "POST",
     )
-
-    private data class OneShotHttpServer(
-        val port: Int,
-        private val shutdown: () -> Unit,
-    ) {
-        fun close() = shutdown()
-    }
 
     private object Parser {
         fun parseRequestSpec(scenarioMetadata: String): RequestSpec {
@@ -98,8 +136,9 @@ class GraphQlContentTypeScenario(
             val parts = scenarioMetadata.split(METADATA_DELIMITER, limit = MAX_METADATA_PARTS)
             require(parts.size in MIN_METADATA_PARTS..MAX_METADATA_PARTS) {
                 "Expected scenarioMetadata format <url>$METADATA_DELIMITER<contentType>" +
-                    "$METADATA_DELIMITER<body>[$METADATA_DELIMITER<firstClass>|" +
-                    "$METADATA_DELIMITER<httpStatus>$METADATA_DELIMITER<responseBody>]"
+                        "$METADATA_DELIMITER<body>[$METADATA_DELIMITER<firstClass>|" +
+                        "$METADATA_DELIMITER<httpStatus>$METADATA_DELIMITER<responseBody>" +
+                        "[$METADATA_DELIMITER<method>]]"
             }
 
             val fourth = parts.getOrNull(FOURTH_PART_INDEX)?.trim()
@@ -112,6 +151,8 @@ class GraphQlContentTypeScenario(
                 }
 
             val mockResponseBody = parts.getOrNull(RESPONSE_BODY_INDEX)
+            val method =
+                parts.getOrNull(METHOD_PART_INDEX)?.trim()?.takeIf { it.isNotEmpty() } ?: "POST"
 
             return RequestSpec(
                 url = parts[0].trim(),
@@ -120,98 +161,8 @@ class GraphQlContentTypeScenario(
                 firstClass = firstClass,
                 mockResponseStatus = mockResponseStatus,
                 mockResponseBody = mockResponseBody,
+                method = method,
             )
-        }
-
-        fun startMockServerIfNeeded(spec: RequestSpec): OneShotHttpServer? {
-            val status = spec.mockResponseStatus ?: return null
-            return startOneShotHttpServer(
-                statusCode = status,
-                responseBody = spec.mockResponseBody ?: "{}",
-            )
-        }
-
-        fun resolveUrl(
-            originalUrl: String,
-            server: OneShotHttpServer?,
-        ): String {
-            if (server == null) {
-                return originalUrl
-            }
-
-            val parsed = originalUrl.toHttpUrlOrNull()
-            return if (parsed != null) {
-                parsed.newBuilder()
-                    .host("localhost")
-                    .port(server.port)
-                    .scheme("http")
-                    .build()
-                    .toString()
-            } else {
-                "http://localhost:${server.port}/graphql"
-            }
-        }
-
-        private fun startOneShotHttpServer(
-            statusCode: Int,
-            responseBody: String,
-        ): OneShotHttpServer {
-            val serverSocket = ServerSocket(0, 1, InetAddress.getLoopbackAddress())
-            val bodyBytes = responseBody.toByteArray(Charsets.UTF_8)
-            val serverThread =
-                thread(start = true, name = "graphql-mock-server") {
-                    serverSocket.use { socket ->
-                        socket.accept().use { client ->
-                            val input = BufferedInputStream(client.getInputStream())
-                            readUntilHeadersEnd(input)
-
-                            val output = client.getOutputStream()
-                            val statusLine = "HTTP/1.1 $statusCode ${reasonPhrase(statusCode)}\r\n"
-                            output.write(statusLine.toByteArray(Charsets.US_ASCII))
-                            output.write("Content-Type: application/json\r\n".toByteArray(Charsets.US_ASCII))
-                            output.write(
-                                "Content-Length: ${bodyBytes.size}\r\n".toByteArray(
-                                    Charsets.US_ASCII,
-                                ),
-                            )
-                            output.write("Connection: close\r\n\r\n".toByteArray(Charsets.US_ASCII))
-                            output.write(bodyBytes)
-                            output.flush()
-                        }
-                    }
-                }
-
-            return OneShotHttpServer(serverSocket.localPort) {
-                runCatching { serverSocket.close() }
-                runCatching { serverThread.join(SERVER_JOIN_TIMEOUT_MS) }
-            }
-        }
-
-        private fun readUntilHeadersEnd(input: BufferedInputStream) {
-            var state = 0
-            while (state < HEADERS_END_STATE) {
-                val byte = input.read()
-                if (byte == -1) {
-                    return
-                }
-                state =
-                    when {
-                        state == 0 && byte == '\r'.code -> 1
-                        state == 1 && byte == '\n'.code -> 2
-                        state == 2 && byte == '\r'.code -> HEADERS_PRE_END_STATE
-                        state == HEADERS_PRE_END_STATE && byte == '\n'.code -> HEADERS_END_STATE
-                        else -> 0
-                    }
-            }
-        }
-
-        private fun reasonPhrase(statusCode: Int): String {
-            return when (statusCode) {
-                HTTP_OK -> "OK"
-                HTTP_UNAUTHORIZED -> "Unauthorized"
-                HTTP_INTERNAL_SERVER_ERROR -> "Internal Server Error"
-                else -> "Status"
-            }
         }
     }
 
@@ -221,15 +172,13 @@ class GraphQlContentTypeScenario(
         private const val METADATA_DELIMITER = "|||"
         private const val RESPONSE_BODY_INDEX = 4
         private const val FOURTH_PART_INDEX = 3
+        private const val METHOD_PART_INDEX = 5
 
         private const val MIN_METADATA_PARTS = 3
-        private const val MAX_METADATA_PARTS = 5
-
-        private const val HEADERS_PRE_END_STATE = 3
-        private const val HEADERS_END_STATE = 4
-        private const val SERVER_JOIN_TIMEOUT_MS = 500L
+        private const val MAX_METADATA_PARTS = 6
 
         private const val HTTP_OK = 200
+        private const val HTTP_BAD_REQUEST = 400
         private const val HTTP_UNAUTHORIZED = 401
         private const val HTTP_INTERNAL_SERVER_ERROR = 500
 

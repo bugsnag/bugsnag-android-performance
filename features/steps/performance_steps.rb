@@ -627,3 +627,27 @@ Then('at least one span field {string} matches the regex {string}') do |field, r
   match = all_spans.any? { |span| span[field]&.match?(Regexp.new(regex)) }
   assert_true(match, "No span found where field #{field} matches regex #{regex}")
 end
+
+Then('{int} span(s) have field {string} matching the regex {string}') do |expected_count, field, regex|
+  spans = spans_from_request_list(Maze::Server.list_for('traces'))
+  pattern = Regexp.new(regex)
+  matching = spans.select { |span| span[field]&.match?(pattern) }
+  Maze.check.equal(
+    expected_count,
+    matching.size,
+    "Expected #{expected_count} spans with #{field} matching #{regex}, found #{matching.size}"
+  )
+end
+
+Then('{int} span(s) have string attribute {string} equals {string}') do |expected_count, attribute, expected|
+  spans = spans_from_request_list(Maze::Server.list_for('traces'))
+  matching = spans.select do |span|
+    attr = span['attributes']&.find { |a| a['key'] == attribute }
+    attr && attr['value']['stringValue'] == expected
+  end
+  Maze.check.equal(
+    expected_count,
+    matching.size,
+    "Expected #{expected_count} spans with #{attribute}=#{expected}, found #{matching.size}"
+  )
+end

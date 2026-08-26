@@ -35,10 +35,6 @@ public object GraphQlRequestClassifier {
     private val subscriptionFieldRegex =
         "\"subscription\"\\s*:\\s*\"((?:[^\"\\\\]|\\\\.)*)\"".toRegex()
 
-    // Detects the presence of GraphQL keys in JSON body
-    private val graphQlJsonKeyRegex =
-        "\"(query|mutation|subscription|operationName)\"\\s*:".toRegex(RegexOption.IGNORE_CASE)
-
     // Detects operation type at the start of a GraphQL document
     private val operationTypeRegex =
         "^\\s*(query|mutation|subscription)\\b".toRegex(RegexOption.IGNORE_CASE)
@@ -46,6 +42,10 @@ public object GraphQlRequestClassifier {
     // Extracts the operation name (e.g., "GetUser" from "query GetUser { ... }")
     private val operationNameRegex =
         "^\\s*(?:query|mutation|subscription)\\s+([_A-Za-z][_0-9A-Za-z]*)\\b".toRegex(RegexOption.IGNORE_CASE)
+
+    // Anonymous GraphQL selection set ("{ user { id } }"), not JSON ("{ \"key\": ... }")
+    private val anonymousSelectionSetRegex =
+        "^\\s*\\{\\s*[_A-Za-z]".toRegex()
 
     // Matches "/graphql" in URL paths
     private val graphQlPathRegex = "(^|/)graphql/?($|[?#])".toRegex(RegexOption.IGNORE_CASE)
@@ -61,8 +61,9 @@ public object GraphQlRequestClassifier {
      */
     public fun isLikelyGraphQl(request: GraphQlRequest): Boolean {
         return isGraphQlContentType(request.contentType) ||
-            isGraphQlUrl(request.url) ||
-            hasGraphQlBody(request.body)
+                isGraphQlUrl(request.url) ||
+                hasGraphQlUrlQuery(request.url) ||
+                hasGraphQlBody(request.body)
     }
 
     /**
@@ -111,6 +112,33 @@ public object GraphQlRequestClassifier {
         return extractOperationName(operationNameField, graphqlDocument)
     }
 
+    private data class UrlGraphQlParams(
+        val operationName: String?,
+        val query: String?,
+    )
+
+    private fun extractGraphQlParamsFromUrl(url: String): UrlGraphQlParams? {
+        val uri = runCatching { URI(url) }.getOrNull() ?: return null
+        val rawQuery = uri.rawQuery ?: return null
+
+        val params = rawQuery
+            .split('&')
+            .mapNotNull { part ->
+                if (part.isBlank()) return@mapNotNull null
+                val idx = part.indexOf('=')
+                val key = if (idx >= 0) part.take(idx) else part
+                val value = if (idx >= 0) part.substring(idx + 1) else ""
+                decodeUrlComponent(key) to decodeUrlComponent(value)
+            }
+            .groupBy({ it.first }, { it.second })
+
+        val opName = params["operationName"]?.firstOrNull()?.trim()?.takeIf { it.isNotEmpty() }
+        val query = params["query"]?.firstOrNull()?.trim()?.takeIf { it.isNotEmpty() }
+
+        if (opName == null && query == null) return null
+        return UrlGraphQlParams(operationName = opName, query = query)
+    }
+
     /**
      * Parses a request and returns a [GraphQlOperation] if it's GraphQL, or null otherwise.
      * Combines detection with extraction of operation type and name.
@@ -120,8 +148,13 @@ public object GraphQlRequestClassifier {
             return null
         }
 
-        val operationNameField = extractOperationNameField(request.body)
-        val graphqlDocument = extractGraphQlDocument(request.body)
+        val bodyOperationNameField = extractOperationNameField(request.body)
+        val bodyGraphqlDocument = extractGraphQlDocument(request.body)
+
+        val urlParams = extractGraphQlParamsFromUrl(request.url)
+        val operationNameField = bodyOperationNameField ?: urlParams?.operationName
+        val graphqlDocument = bodyGraphqlDocument ?: urlParams?.query
+
         val operationType = extractOperationType(graphqlDocument)
         val operationName = extractOperationName(operationNameField, graphqlDocument)
 
@@ -176,14 +209,74 @@ public object GraphQlRequestClassifier {
         }
 
         val trimmedBody = body.trim()
-        // Check for JSON keys like "query", "mutation", "subscription", or "operationName"
-        if (graphQlJsonKeyRegex.containsMatchIn(trimmedBody)) {
+        val operationName = extractOperationNameField(trimmedBody)
+        val document = extractGraphQlDocument(trimmedBody)
+
+        // Classic GraphQL JSON: operationName + a document field (query/mutation/subscription).
+        if (!operationName.isNullOrBlank() && document != null) {
             return true
         }
 
-        // Check for raw GraphQL document syntax
-        val normalizedDocument = normalizeDocument(trimmedBody)
-        return normalizedDocument != null && operationTypeRegex.containsMatchIn(normalizedDocument)
+        // A "query"/"mutation"/"subscription" JSON field alone is not enough — search APIs often
+        // use {"query":"shoes"}. Require the field value to look like a GraphQL document.
+        if (document != null && looksLikeGraphQlDocument(document)) {
+            return true
+        }
+
+        // Raw GraphQL document as the entire body (e.g. Content-Type: application/graphql)
+        return looksLikeGraphQlDocument(trimmedBody)
+    }
+
+    private fun looksLikeGraphQlDocument(document: String): Boolean {
+        val normalizedDocument = normalizeDocument(document) ?: return false
+        if (operationTypeRegex.containsMatchIn(normalizedDocument)) {
+            return true
+        }
+        // Anonymous GraphQL selection set: "{ user { id } }" — not JSON and not truncated junk
+        // like "{invalid json content" (must include a closing brace).
+        return anonymousSelectionSetRegex.containsMatchIn(normalizedDocument) &&
+                normalizedDocument.contains('}')
+    }
+
+    // Detection Strategy 4: Check URL query parameters for GraphQL-over-GET
+    private fun hasGraphQlUrlQuery(url: String): Boolean {
+        val uri = runCatching { URI(url) }.getOrNull() ?: return false
+        val rawQuery = uri.rawQuery ?: return false
+
+        // Parse query params safely (supports repeated keys)
+        val params = rawQuery
+            .split('&')
+            .mapNotNull { part ->
+                if (part.isBlank()) return@mapNotNull null
+                val idx = part.indexOf('=')
+                val key = if (idx >= 0) part.take(idx) else part
+                val value = if (idx >= 0) part.substring(idx + 1) else ""
+                decodeUrlComponent(key) to decodeUrlComponent(value)
+            }
+            .groupBy({ it.first }, { it.second })
+
+        val queryValue = params["query"]?.firstOrNull()?.trim().orEmpty()
+        val opNameValue = params["operationName"]?.firstOrNull()?.trim().orEmpty()
+
+        // Strong signal: explicit operationName with a query document
+        if (queryValue.isNotEmpty() && opNameValue.isNotEmpty()) {
+            return true
+        }
+
+        // Accept raw GraphQL operation text in `query`
+        val normalizedQuery = normalizeDocument(queryValue)
+        if (normalizedQuery != null && operationTypeRegex.containsMatchIn(normalizedQuery)) {
+            return true
+        }
+
+        // Fallback: has known GraphQL GET keys + non-empty query
+        return queryValue.isNotEmpty() &&
+                (params.containsKey("variables") || params.containsKey("extensions"))
+    }
+
+    private fun decodeUrlComponent(value: String): String {
+        return runCatching { java.net.URLDecoder.decode(value, Charsets.UTF_8.name()) }
+            .getOrDefault(value)
     }
 
     // Extract the "operationName" field from JSON body

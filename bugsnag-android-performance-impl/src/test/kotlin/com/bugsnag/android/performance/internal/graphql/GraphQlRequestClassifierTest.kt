@@ -48,6 +48,57 @@ class GraphQlRequestClassifierTest {
     }
 
     @Test
+    fun isLikelyGraphQlReturnsFalseForSearchApiQueryKey() {
+        // A JSON "query" field alone (e.g. search APIs) must not be treated as GraphQL.
+        val shoes =
+            GraphQlRequest(
+                url = "https://api.example.com/api/search",
+                contentType = "application/json",
+                body = "{\"query\":\"shoes\",\"page\":1}",
+            )
+        val naturalLanguage =
+            GraphQlRequest(
+                url = "https://api.example.com/api/search",
+                contentType = "application/json",
+                body = "{\"query\":\"find all users named John\",\"limit\":10}",
+            )
+
+        assertFalse(GraphQlRequestClassifier.isLikelyGraphQl(shoes))
+        assertNull(GraphQlRequestClassifier.parseOperation(shoes))
+        assertFalse(GraphQlRequestClassifier.isLikelyGraphQl(naturalLanguage))
+        assertNull(GraphQlRequestClassifier.parseOperation(naturalLanguage))
+    }
+
+    @Test
+    fun isLikelyGraphQlReturnsFalseForMalformedOrEmptyBodies() {
+        val empty =
+            GraphQlRequest(
+                url = "https://api.example.com/api/data",
+                contentType = "application/json",
+                body = "",
+            )
+        val malformed =
+            GraphQlRequest(
+                url = "https://api.example.com/api/data",
+                contentType = "application/json",
+                body = "{invalid json content",
+            )
+        val emptyObject =
+            GraphQlRequest(
+                url = "https://api.example.com/api/data",
+                contentType = "application/json",
+                body = "{}",
+            )
+
+        assertFalse(GraphQlRequestClassifier.isLikelyGraphQl(empty))
+        assertFalse(GraphQlRequestClassifier.isLikelyGraphQl(malformed))
+        assertFalse(GraphQlRequestClassifier.isLikelyGraphQl(emptyObject))
+        assertNull(GraphQlRequestClassifier.parseOperation(empty))
+        assertNull(GraphQlRequestClassifier.parseOperation(malformed))
+        assertNull(GraphQlRequestClassifier.parseOperation(emptyObject))
+    }
+
+    @Test
     fun isLikelyGraphQlReturnsFalseForPlainJsonPostToNonGraphQlEndpoint() {
         // application/json alone is not a sufficient GraphQL signal — every REST JSON POST
         // uses this content type. The URL and body must provide additional GraphQL signals.
