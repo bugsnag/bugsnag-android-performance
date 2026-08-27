@@ -12,7 +12,7 @@ import com.bugsnag.android.performance.internal.processing.SamplerExecutor
 
 /**
  * Encapsulates the various metrics that can be associated with spans, measuring various resource
- * use (cpu, memory, rendering times) for a span.
+ * use (cpu, memory, rendering times, disk I/O) for a span.
  */
 internal open class MetricsContainer(
     private val samplerExecutor: SamplerExecutor,
@@ -67,6 +67,10 @@ internal open class MetricsContainer(
             }
 
             renderingMetricsSource = null
+        }
+
+        if (!enabledMetrics.disk) {
+            diskIoMetricSource = null
         }
     }
 

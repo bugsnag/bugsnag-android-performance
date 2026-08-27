@@ -17,24 +17,31 @@ public class EnabledMetrics(
      * Determines whether memory consumption is gathered and reported.
      */
     public var memory: Boolean = false,
+    /**
+     * Determines whether disk I/O metrics is gathered and reported. When enabled. read/write
+     * syscall rates (IOPS) are captured for spans that requests disk metrics
+     */
+    public val disk: Boolean = false,
 ) {
-    public constructor(enable: Boolean) : this(enable, enable, enable)
+    public constructor(enable: Boolean) : this(enable, enable, enable, enable)
 
     override fun equals(other: Any?): Boolean {
         return other is EnabledMetrics &&
-            rendering == other.rendering &&
-            cpu == other.cpu &&
-            memory == other.memory
+                rendering == other.rendering &&
+                cpu == other.cpu &&
+                memory == other.memory &&
+                disk == other.disk
     }
 
     override fun hashCode(): Int {
         var result = rendering.hashCode()
         result = 31 * result + cpu.hashCode()
         result = 31 * result + memory.hashCode()
+        result = 31 * result + disk.hashCode()
         return result
     }
 
     override fun toString(): String {
-        return "EnabledMetrics(rendering=$rendering, cpu=$cpu, memory=$memory)"
+        return "EnabledMetrics(rendering=$rendering, cpu=$cpu, memory=$memory, disk=$disk)"
     }
 }

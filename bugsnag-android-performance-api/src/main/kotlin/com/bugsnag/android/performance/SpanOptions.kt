@@ -140,7 +140,7 @@ public class SpanOptions private constructor(
     @JvmOverloads
     public fun withMetrics(
         spanMetrics: SpanMetrics? =
-            SpanMetrics(rendering = true, cpu = true, memory = true),
+            SpanMetrics(rendering = true, cpu = true, memory = true, disk = true),
     ): SpanOptions {
         return SpanOptions(
             optionsSet or OPT_METRICS,
@@ -290,7 +290,7 @@ public class SpanOptions private constructor(
         @JvmName("createWithMetrics")
         @JvmOverloads
         @JvmStatic
-        public fun withMetrics(metrics: SpanMetrics? = SpanMetrics(true, true, true)): SpanOptions {
+        public fun withMetrics(metrics: SpanMetrics? = SpanMetrics(true, true, true, true)): SpanOptions {
             return DEFAULTS.withMetrics(metrics)
         }
     }
