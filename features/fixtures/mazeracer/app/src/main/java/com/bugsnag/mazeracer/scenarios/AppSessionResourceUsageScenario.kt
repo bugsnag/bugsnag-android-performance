@@ -25,6 +25,7 @@ class AppSessionResourceUsageScenario(
         when (key) {
             "cpuMetrics" -> config.enabledMetrics.cpu = value.toBoolean()
             "memoryMetrics" -> config.enabledMetrics.memory = value.toBoolean()
+            "diskMetrics" -> config.enabledMetrics.disk = value.toBoolean()
         }
     }
 
