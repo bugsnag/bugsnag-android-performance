@@ -115,9 +115,6 @@ public class SpanImpl(
         attributes["bugsnag.span.category"] = category.category
         samplingValue = samplingValueFor(traceId)
 
-        // Log when span is started
-        logSpanStarted()
-
         // Starting a Span should cause it to become the current context
         if (makeContext) SpanContext.defaultStorage?.attach(this)
     }
