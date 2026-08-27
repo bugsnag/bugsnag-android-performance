@@ -55,9 +55,6 @@ public open class HttpDelivery(
             return DeliveryResult.Failed(tracePayload, true)
         }
 
-        // Log the span JSON data being sent to the server
-        logSpanPayload(tracePayload)
-
         TrafficStats.setThreadStatsTag(1)
         return try {
             val connection = openConnection()
@@ -109,25 +106,6 @@ public open class HttpDelivery(
     }
 
     override fun toString(): String = "HttpDelivery(\"$endpoint\")"
-
-    private fun logSpanPayload(tracePayload: TracePayload) {
-        try {
-            val jsonString = decodePayloadForLogging(tracePayload)
-            val prettyJson = prettyPrintJson(jsonString)
-
-            Logger.d("=== Final Span JSON Data Being Sent to Server (includes Disk I/O metrics) ===")
-            prettyJson.lineSequence().forEach { line ->
-                logInChunks(line)
-            }
-            Logger.d("=== HTTP Headers ===")
-            tracePayload.headers.forEach { (name, value) ->
-                Logger.d("$name: $value")
-            }
-            Logger.d("=== End Final Span Data ===")
-        } catch (e: Exception) {
-            Logger.w("Failed to log span payload: ${e.message}", e)
-        }
-    }
 
     private fun decodePayloadForLogging(tracePayload: TracePayload): String {
         val contentEncoding = tracePayload.headers["Content-Encoding"]
