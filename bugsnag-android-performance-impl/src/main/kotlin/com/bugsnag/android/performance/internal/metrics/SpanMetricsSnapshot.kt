@@ -1,12 +1,11 @@
 package com.bugsnag.android.performance.internal.metrics
 
 import androidx.annotation.RestrictTo
-import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.internal.SpanImpl
 import com.bugsnag.android.performance.internal.framerate.FramerateMetricsSnapshot
 
 /**
- * Container for all of the possible metrics types that can attached to a [Span].
+ * Container for all of the possible metrics types that can attached to a Span.
  */
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP_PREFIX)
 public class SpanMetricsSnapshot(
