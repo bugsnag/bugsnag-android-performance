@@ -48,9 +48,14 @@ internal class ProcIoReader(
     }
 
     private fun readIoFile() {
-        buffer.rewind()
+        buffer.clear()
         FileInputStream(path).channel.use { channel ->
-            channel.read(buffer)
+            val byteRead = channel.read(buffer)
+            if (byteRead <= 0) {
+                buffer.limit(0)
+            } else {
+                buffer.flip() // limit = byteRead, position = 0
+            }
         }
         buffer.rewind()
     }
@@ -71,10 +76,12 @@ internal class ProcIoReader(
                     target.readSyscalls = parseLong()
                     fieldsFound++
                 }
+
                 matchesPrefix(SYSCW_PREFIX) -> {
                     target.writeSyscalls = parseLong()
                     fieldsFound++
                 }
+
                 else -> skipLine()
             }
         }
@@ -170,4 +177,3 @@ internal class ProcIoReader(
             get() = readSyscalls + writeSyscalls
     }
 }
-
