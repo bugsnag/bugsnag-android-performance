@@ -4,6 +4,7 @@ import android.app.Application
 import com.bugsnag.android.performance.internal.SpanFactory
 import com.bugsnag.android.performance.internal.framerate.FramerateMetricsSnapshot
 import com.bugsnag.android.performance.internal.metrics.CpuMetricsSnapshot
+import com.bugsnag.android.performance.internal.metrics.DiskIoSnapshot
 import com.bugsnag.android.performance.internal.metrics.MemoryMetricsSnapshot
 import com.bugsnag.android.performance.internal.metrics.MetricSource
 import com.bugsnag.android.performance.internal.metrics.MetricsContainer
@@ -16,6 +17,7 @@ internal class TestMetricsContainer(
     private val cpu: SampledMetricSource<CpuMetricsSnapshot>? = null,
     private val memory: SampledMetricSource<MemoryMetricsSnapshot>? = null,
     private val frames: MetricSource<FramerateMetricsSnapshot>? = null,
+    private val disk: MetricSource<DiskIoSnapshot>? = null
 ) : MetricsContainer(
         TestSamplerExecutor(),
         SpanFactory(com.bugsnag.android.performance.test.NoopSpanProcessor.INSTANCE, {}),
@@ -30,5 +32,9 @@ internal class TestMetricsContainer(
 
     override fun createFrameMetricSource(application: Application): MetricSource<FramerateMetricsSnapshot>? {
         return frames
+    }
+
+    override fun createDiskIoMetricSource(): MetricSource<DiskIoSnapshot>? {
+        return disk
     }
 }
