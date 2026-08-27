@@ -15,10 +15,6 @@ internal class DiskIoMetricsSource(
     override fun createStartMetrics(): DiskIoSnapshot {
         val success = reader.parse(counters)
         return if (success) {
-            Logger.d("=== Disk I/O Metrics - Span Started ===")
-            Logger.d("Read Syscalls: ${counters.readSyscalls}")
-            Logger.d("Write Syscalls: ${counters.writeSyscalls}")
-            Logger.d("Timestamp: ${SystemClock.elapsedRealtimeNanos()}")
             DiskIoSnapshot(
                 readSyscalls = counters.readSyscalls,
                 writeSyscalls = counters.writeSyscalls,
