@@ -27,6 +27,8 @@ import com.bugsnag.android.performance.compose.MeasuredComposable
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+private const val APP_SESSION_SPAN = "app.session"
+
 class AppSessionActivity : AppCompatActivity() {
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -58,18 +60,18 @@ class AppSessionActivity : AppCompatActivity() {
 fun AppSessionMediaContent(contentPadding: PaddingValues) {
     val coroutineScope = rememberCoroutineScope()
     val scrollStateVertical = rememberScrollState()
-    
+
     Column(
         modifier = Modifier
             .padding(contentPadding)
             .verticalScroll(scrollStateVertical),
     ) {
         Spacer(modifier = Modifier.height(24.dp))
-        
+
         // --- Other Sections below ---
         Text("General", modifier = Modifier.padding(8.dp))
         DemoAction(label = "Start Default Session") {
-            BugsnagPerformance.startSpan("app.session")
+            BugsnagPerformance.startSpan(APP_SESSION_SPAN)
         }
         DemoAction(label = "End Current Session") {
             // Session spans are managed automatically and end when appropriate
@@ -77,7 +79,7 @@ fun AppSessionMediaContent(contentPadding: PaddingValues) {
         }
 
         DemoAction(label = "Send Custom + App Session Span") {
-            val sessionSpan = BugsnagPerformance.startSpan("app.session")
+            val sessionSpan = BugsnagPerformance.startSpan(APP_SESSION_SPAN)
             val customSpan =
                 BugsnagPerformance.startSpan(
                     "Custom Span During App Session",
