@@ -47,7 +47,7 @@ internal class BugsnagPerformanceApolloOperationInterceptor : ApolloInterceptor 
 }
 
 public class BugsnagPerformanceApollo : HttpInterceptor {
-    private val networkSpanOptions = SpanOptions.makeCurrentContext(false)
+    private val networkSpanOptions = SpanOptions.makeCurrentContext(false).setFirstClass(true)
 
     override suspend fun intercept(
         request: HttpRequest,

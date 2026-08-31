@@ -84,6 +84,7 @@ Feature: GraphQL Spans
     * a span string attribute "bugsnag.span.category" equals "network"
     * a span field "name" matches the regex "^\[HTTP/<method>\]$"
     * a span string attribute "http.method" equals "<method>"
+    * every span field "name" does not match the regex "GraphQL"
 
     Examples:
       | case                                  | method | url                                      | content_type     | body                                                      |
@@ -100,6 +101,7 @@ Feature: GraphQL Spans
     And I wait to receive at least 1 span
     * a span string attribute "bugsnag.span.category" equals "network"
     * a span field "name" matches the regex "^\[HTTP/POST\]$"
+    * every span field "name" does not match the regex "GraphQL"
     * a span string attribute "http.method" equals "POST"
     * every span attribute "graphql.document" does not exist
     * every span attribute "graphql.variables" does not exist
@@ -121,6 +123,7 @@ Feature: GraphQL Spans
     * a span bool attribute "bugsnag.span.first_class" is true
     * a span string attribute "http.method" equals "POST"
     * a span integer attribute "http.status_code" equals "200"
+    * every span field "name" matches the regex "GraphQL"
     * every span attribute "graphql.document" does not exist
     * every span attribute "graphql.variables" does not exist
     * every span attribute "graphql.operation.type" does not exist
@@ -175,17 +178,19 @@ Feature: GraphQL Spans
 
   # Scenario 10
   Scenario: GraphQL span payload contains only HTTP attributes and category - no GraphQL-specific metadata
-    Given I run "GraphQlContentTypeScenario" configured as "http://api.example.com/graphql|||application/graphql|||query { user { id secret } }|||true"
+    Given I run "GraphQlContentTypeScenario" configured as "https://api.example.com/graphql|||application/json|||{\"query\": \"query GetUser { user { id secret } }\", \"operationName\": \"GetUser\", \"variables\": {\"sensitiveData\": \"should-not-leak\"}}|||200|||{\"data\": {\"user\": {\"id\": \"1\", \"secret\": \"user_secret_123\"}}}|||POST"
     And I wait to receive at least 1 span
     * a span string attribute "bugsnag.span.category" equals "graphql"
     * a span bool attribute "bugsnag.span.first_class" is true
     * a span string attribute "http.method" equals "POST"
-    * a span string attribute "http.url" matches the regex "^http://.*/graphql$"
-    * a span integer attribute "http.status_code" is greater than 0
+    * a span string attribute "http.url" equals "https://api.example.com/graphql"
+    * a span integer attribute "http.status_code" equals "200"
     * every span attribute "graphql.operation.name" does not exist
     * every span attribute "graphql.operation.type" does not exist
     * every span attribute "graphql.document" does not exist
     * every span attribute "graphql.variables" does not exist
+    * the span payload does not contain "user_secret_123"
+    * the span payload does not contain "sensitiveData"
 
   # Scenario 11
   Scenario: GraphQL span with explicit first_class=false is not aggregated into span groups
@@ -199,20 +204,30 @@ Feature: GraphQL Spans
 
   # Scenario 13
   Scenario: Android SDK produces GraphQL span via supported GraphQL client library
-    Given I run "ApolloScenario" configured as "http://{MAZE_ADDRESS}/graphql"
+    Given I run "ApolloScenario" configured as "https://api.example.com/graphql"
     And I wait to receive at least 1 span
     * a span field "kind" equals 3
     * a span string attribute "bugsnag.span.category" equals "graphql"
-    * a span field "name" matches the regex "^GraphQL .*/graphql - query:TestQuery$"
+    * a span bool attribute "bugsnag.span.first_class" is true
+    * a span string attribute "http.method" equals "POST"
+    * a span string attribute "http.url" equals "https://api.example.com/graphql"
+    * a span integer attribute "http.status_code" equals "200"
+    * a span field "name" matches the regex "^GraphQL .+/graphql - query:TestQuery$"
+    * every span field "name" matches the regex "GraphQL"
     * every span attribute "graphql.document" does not exist
+    * every span attribute "graphql.variables" does not exist
+    * every span attribute "graphql.operation.name" does not exist
+    * every span attribute "graphql.operation.type" does not exist
 
   # Scenario 15
   Scenario: Multiple identical GraphQL operations produce spans with consistent name for pipeline grouping
-    Given I run "IdenticalGraphQlScenario" configured as "http://{MAZE_ADDRESS}"
+    Given I run "IdenticalGraphQlScenario" configured as "https://api.example.com/graphql"
     And I wait to receive 3 spans
-    * every span field "name" matches the regex "^GraphQL .*/graphql - query:GetUser$"
+    * every span field "name" matches the regex "^GraphQL .+/graphql - query:GetUser$"
     * every span string attribute "bugsnag.span.category" equals "graphql"
+    * every span bool attribute "bugsnag.span.first_class" is true
     * every span field "spanId" matches the regex "^[0-9a-f]{16}$"
+    * every span field "spanId" value is distinct
     * every span field "traceId" matches the regex "^[0-9a-f]{32}$"
 
   # Scenario 16
