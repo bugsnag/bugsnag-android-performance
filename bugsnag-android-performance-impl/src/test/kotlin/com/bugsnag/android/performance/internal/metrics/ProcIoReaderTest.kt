@@ -104,6 +104,14 @@ internal class ProcIoReaderFailureTest {
     }
 
     @Test
+    fun parseNonNumericSyscrReturnsFalse() {
+        copyResourceToFile("io_non_numeric")
+        val parser = ProcIoReader(file.absolutePath)
+        val output = ProcIoReader.IoCounters()
+        assertFalse(parser.parse(output))
+    }
+
+    @Test
     fun ioCountersDefaultConstructorIsZeroed() {
         val counters = ProcIoReader.IoCounters()
         assertEquals(0L, counters.readSyscalls)

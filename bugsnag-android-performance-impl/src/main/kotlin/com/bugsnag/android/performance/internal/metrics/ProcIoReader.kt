@@ -50,14 +50,13 @@ internal class ProcIoReader(
     private fun readIoFile() {
         buffer.clear()
         FileInputStream(path).channel.use { channel ->
-            val byteRead = channel.read(buffer)
-            if (byteRead <= 0) {
+            val bytesRead = channel.read(buffer)
+            if (bytesRead <= 0) {
                 buffer.limit(0)
             } else {
-                buffer.flip() // limit = byteRead, position = 0
+                buffer.flip()
             }
         }
-        buffer.rewind()
     }
 
     @Suppress("ReturnCount")
@@ -73,12 +72,12 @@ internal class ProcIoReader(
         while (buffer.hasRemaining() && fieldsFound < 2) {
             when {
                 matchesPrefix(SYSCR_PREFIX) -> {
-                    target.readSyscalls = parseLong()
+                    target.readSyscalls = parseLong() ?: return false
                     fieldsFound++
                 }
 
                 matchesPrefix(SYSCW_PREFIX) -> {
-                    target.writeSyscalls = parseLong()
+                    target.writeSyscalls = parseLong() ?: return false
                     fieldsFound++
                 }
 
@@ -107,8 +106,13 @@ internal class ProcIoReader(
         return true
     }
 
-    private fun parseLong(): Long {
+    /**
+     * Parses an unsigned decimal integer. Returns null if the value is missing or contains
+     * non-numeric characters (treated as an unreadable counter source per ED §3.1.4).
+     */
+    private fun parseLong(): Long? {
         var result = 0L
+        var seenDigit = false
 
         // skip any whitespace or ':' after the prefix key
         while (buffer.hasRemaining()) {
@@ -124,11 +128,14 @@ internal class ProcIoReader(
             val b = buffer.nextByte()
             if (b == '\n'.code || b == ' '.code) break
             if (b in ZERO_CODE..NINE_CODE) {
+                seenDigit = true
                 result = result * 10L + (b - ZERO_CODE).toLong()
+            } else {
+                return null
             }
         }
 
-        return result
+        return if (seenDigit) result else null
     }
 
     /** Skips bytes until end-of-line (inclusive). */
