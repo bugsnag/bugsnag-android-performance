@@ -43,11 +43,22 @@ class ImmutableConfigTest {
         assertFalse(enabledMetrics.rendering)
         assertFalse(enabledMetrics.cpu)
         assertFalse(enabledMetrics.memory)
+        assertFalse(enabledMetrics.disk)
 
         val perfConfig = PerformanceConfiguration(mockedContext(), TEST_API_KEY)
         assertFalse(perfConfig.enabledMetrics.rendering)
         assertFalse(perfConfig.enabledMetrics.cpu)
         assertFalse(perfConfig.enabledMetrics.memory)
+        assertFalse(perfConfig.enabledMetrics.disk)
+    }
+
+    @Test
+    fun enableMatricsAllTrueEnablesDisk(){
+        val enabledMetrics = EnabledMetrics(true)
+        assertTrue(enabledMetrics.rendering)
+        assertTrue(enabledMetrics.cpu)
+        assertTrue(enabledMetrics.memory)
+        assertTrue(enabledMetrics.disk)
     }
 
     @Test

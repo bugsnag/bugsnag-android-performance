@@ -5,13 +5,14 @@ import com.bugsnag.android.performance.internal.SpanImpl
 import com.bugsnag.android.performance.internal.framerate.FramerateMetricsSnapshot
 
 /**
- * Container for all of the possible metrics types that can attached to a [Span].
+ * Container for all of the possible metrics types that can attached to a Span.
  */
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP_PREFIX)
 public class SpanMetricsSnapshot(
     private val renderingMetricsSource: MetricSource<FramerateMetricsSnapshot>?,
     private val cpuMetricsSource: MetricSource<CpuMetricsSnapshot>?,
     private val memoryMetricsSource: MetricSource<MemoryMetricsSnapshot>?,
+    private val diskIoMetricsSource: MetricSource<DiskIoSnapshot>?,
 ) {
     private val renderingMetricsSnapshot: FramerateMetricsSnapshot? =
         renderingMetricsSource?.createStartMetrics()
@@ -22,10 +23,14 @@ public class SpanMetricsSnapshot(
     private val memoryMetricsMemoryMetricsSnapshot: MemoryMetricsSnapshot? =
         memoryMetricsSource?.createStartMetrics()
 
+    private val diskIoDiskIoSnapshot: DiskIoSnapshot? =
+        diskIoMetricsSource?.createStartMetrics()
+
     public fun finish(spanImpl: SpanImpl) {
         renderingMetricsSnapshot?.let { renderingMetricsSource?.endMetrics(it, spanImpl) }
         cpuMetricsCpuMetricsSnapshot?.let { cpuMetricsSource?.endMetrics(it, spanImpl) }
         memoryMetricsMemoryMetricsSnapshot?.let { memoryMetricsSource?.endMetrics(it, spanImpl) }
+        diskIoDiskIoSnapshot?.let { diskIoMetricsSource?.endMetrics(it, spanImpl) }
     }
 
     internal companion object {
@@ -38,10 +43,12 @@ public class SpanMetricsSnapshot(
             renderingMetricsSource: MetricSource<FramerateMetricsSnapshot>?,
             cpuMetricsSource: MetricSource<CpuMetricsSnapshot>?,
             memoryMetricsSource: MetricSource<MemoryMetricsSnapshot>?,
+            diskIoMetricsSource: MetricSource<DiskIoSnapshot>?,
         ): SpanMetricsSnapshot? {
             if (renderingMetricsSource == null &&
                 cpuMetricsSource == null &&
-                memoryMetricsSource == null
+                memoryMetricsSource == null &&
+                diskIoMetricsSource == null
             ) {
                 return null
             }
@@ -50,6 +57,7 @@ public class SpanMetricsSnapshot(
                 renderingMetricsSource,
                 cpuMetricsSource,
                 memoryMetricsSource,
+                diskIoMetricsSource,
             )
         }
     }

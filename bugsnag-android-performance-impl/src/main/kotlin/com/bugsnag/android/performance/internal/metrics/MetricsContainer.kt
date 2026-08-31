@@ -12,7 +12,7 @@ import com.bugsnag.android.performance.internal.processing.SamplerExecutor
 
 /**
  * Encapsulates the various metrics that can be associated with spans, measuring various resource
- * use (cpu, memory, rendering times) for a span.
+ * use (cpu, memory, rendering times, disk I/O) for a span.
  */
 internal open class MetricsContainer(
     private val samplerExecutor: SamplerExecutor,
@@ -29,6 +29,9 @@ internal open class MetricsContainer(
     var cpuMetricSource: SampledMetricSource<CpuMetricsSnapshot>? = null
         private set
 
+    var diskIoMetricSource: MetricSource<DiskIoSnapshot>? = null
+        private set
+
     /**
      * Called before we are fully configured, typically from `InstrumentedAppState.attach`. This
      * installs all of the metrics instrumentation - which can then be uninstalled when
@@ -40,6 +43,7 @@ internal open class MetricsContainer(
         memoryMetricSource = startSampling(createMemoryMetricSource(application))
         cpuMetricSource = startSampling(createCpuMetricSource(application))
         renderingMetricsSource = createFrameMetricSource(application)
+        diskIoMetricSource = createDiskIoMetricSource()
     }
 
     /**
@@ -64,10 +68,14 @@ internal open class MetricsContainer(
 
             renderingMetricsSource = null
         }
+
+        if (!enabledMetrics.disk) {
+            diskIoMetricSource = null
+        }
     }
 
     private fun isEnabled(): Boolean {
-        return memoryMetricSource != null || renderingMetricsSource != null || cpuMetricSource != null
+        return memoryMetricSource != null || renderingMetricsSource != null || cpuMetricSource != null || diskIoMetricSource != null
     }
 
     fun createSpanMetricsSnapshot(
@@ -82,6 +90,7 @@ internal open class MetricsContainer(
             renderingMetricsSource?.takeIf { spanMetrics?.rendering ?: defaultEnabled },
             cpuMetricSource?.takeIf { spanMetrics?.cpu ?: defaultEnabled },
             memoryMetricSource?.takeIf { spanMetrics?.memory ?: defaultEnabled },
+            diskIoMetricSource?.takeIf { spanMetrics?.disk ?: defaultEnabled },
         )
     }
 
@@ -100,6 +109,10 @@ internal open class MetricsContainer(
         }
 
         return null
+    }
+
+    protected open fun createDiskIoMetricSource(): MetricSource<DiskIoSnapshot>? {
+        return DiskIoMetricsSource()
     }
 
     private fun <T : Runnable?> startSampling(sampler: T): T {

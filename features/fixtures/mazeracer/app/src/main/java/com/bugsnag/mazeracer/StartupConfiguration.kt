@@ -21,6 +21,7 @@ suspend fun Context.saveStartupConfig(config: PerformanceConfiguration) =
             .putBoolean("cpuMetrics", config.enabledMetrics.cpu)
             .putBoolean("memoryMetrics", config.enabledMetrics.memory)
             .putBoolean("renderingMetrics", config.enabledMetrics.rendering)
+            .putBoolean("diskMetrics", config.enabledMetrics.disk)
             .commit()
     }
 
@@ -48,6 +49,7 @@ fun Context.readStartupConfig(): PerformanceConfiguration? {
                     enabledMetrics.cpu = prefs.getBoolean("cpuMetrics", false)
                     enabledMetrics.memory = prefs.getBoolean("memoryMetrics", false)
                     enabledMetrics.rendering = prefs.getBoolean("renderingMetrics", false)
+                    enabledMetrics.disk = prefs.getBoolean("diskMetrics", false)
                 }
 
         log("got some config Dave: $config")
@@ -65,6 +67,7 @@ fun Context.readStartupConfig(): PerformanceConfiguration? {
             .remove("cpuMetrics")
             .remove("memoryMetrics")
             .remove("renderingMetrics")
+            .remove("diskMetrics")
             .apply()
     }
 }

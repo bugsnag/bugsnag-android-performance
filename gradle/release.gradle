@@ -55,6 +55,7 @@ project.afterEvaluate {
     }
 
     signing {
+        required { !project.hasProperty("skipSigning") && !gradle.startParameter.taskNames.any { it.contains("MavenLocal") } }
         sign publishing.publications
     }
 }

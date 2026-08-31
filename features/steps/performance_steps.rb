@@ -230,6 +230,30 @@ Then('the {string} span has {word} attribute named {string}') do |span_name, att
   Maze.check.not_nil value
 end
 
+Then('the {string} span double attribute {string} equals the sum of {string} and {string}') do |span_name, total_attr, read_attr, write_attr|
+  spans = spans_from_request_list(Maze::Server.list_for('traces'))
+  found_spans = spans.find_all { |span| span['name'].eql?(span_name) }
+  raise Test::Unit::AssertionFailedError.new "No spans were found with the name #{span_name}" if found_spans.empty?
+  raise Test::Unit::AssertionFailedError.new "found #{found_spans.size} spans named #{span_name}, expected exactly one" unless found_spans.size == 1
+
+  attributes = found_spans.first['attributes']
+  total_obj = attributes.find { |a| a['key'] == total_attr }
+  read_obj = attributes.find { |a| a['key'] == read_attr }
+  write_obj = attributes.find { |a| a['key'] == write_attr }
+
+  raise Test::Unit::AssertionFailedError.new "No attribute named #{total_attr} was found in span #{span_name}" if total_obj.nil?
+  raise Test::Unit::AssertionFailedError.new "No attribute named #{read_attr} was found in span #{span_name}" if read_obj.nil?
+  raise Test::Unit::AssertionFailedError.new "No attribute named #{write_attr} was found in span #{span_name}" if write_obj.nil?
+
+  total = get_span_attribute_value(total_obj, 'double').to_f
+  read = get_span_attribute_value(read_obj, 'double').to_f
+  write = get_span_attribute_value(write_obj, 'double').to_f
+  expected = read + write
+
+  Maze.check.operator (total - expected).abs, :<=, 0.0001,
+                      "The span '#{span_name}' attribute '#{total_attr}' (#{total}) is not equal to #{read_attr}+#{write_attr} (#{expected})"
+end
+
 Then('the {string} span string attribute {string} equals {string}') do |span_name, attribute, expected|
   spans = spans_from_request_list(Maze::Server.list_for('traces'))
   found_spans = spans.find_all { |span| span['name'].eql?(span_name) }
