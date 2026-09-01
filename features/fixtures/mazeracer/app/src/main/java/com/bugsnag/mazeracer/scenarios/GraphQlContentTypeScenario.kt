@@ -136,9 +136,9 @@ class GraphQlContentTypeScenario(
             val parts = scenarioMetadata.split(METADATA_DELIMITER, limit = MAX_METADATA_PARTS)
             require(parts.size in MIN_METADATA_PARTS..MAX_METADATA_PARTS) {
                 "Expected scenarioMetadata format <url>$METADATA_DELIMITER<contentType>" +
-                        "$METADATA_DELIMITER<body>[$METADATA_DELIMITER<firstClass>|" +
-                        "$METADATA_DELIMITER<httpStatus>$METADATA_DELIMITER<responseBody>" +
-                        "[$METADATA_DELIMITER<method>]]"
+                    "$METADATA_DELIMITER<body>[$METADATA_DELIMITER<firstClass>|" +
+                    "$METADATA_DELIMITER<httpStatus>$METADATA_DELIMITER<responseBody>" +
+                    "[$METADATA_DELIMITER<method>]]"
             }
 
             val fourth = parts.getOrNull(FOURTH_PART_INDEX)?.trim()

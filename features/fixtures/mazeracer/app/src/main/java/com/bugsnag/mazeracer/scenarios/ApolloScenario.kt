@@ -62,8 +62,7 @@ class ApolloScenario(
                                 override fun fromJson(
                                     reader: JsonReader,
                                     customScalarAdapters: CustomScalarAdapters,
-                                ): Query.Data =
-                                    object : Query.Data {}
+                                ): Query.Data = object : Query.Data {}
 
                                 override fun toJson(
                                     writer: JsonWriter,
@@ -85,7 +84,7 @@ class ApolloScenario(
                     runBlocking {
                         client.query(operation).execute()
                     }
-                } catch (e: Exception) {
+                } catch (e: com.apollographql.apollo3.exception.ApolloException) {
                     Log.w(LOG_TAG, "Apollo request failed: ${e.message}", e)
                 }
             }
