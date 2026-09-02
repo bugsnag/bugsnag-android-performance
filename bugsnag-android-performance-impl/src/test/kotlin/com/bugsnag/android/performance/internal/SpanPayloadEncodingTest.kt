@@ -5,6 +5,10 @@ import com.bugsnag.android.performance.test.NoopSpanProcessor
 import com.bugsnag.android.performance.test.OtelValidator.assertTraceDataValid
 import com.bugsnag.android.performance.test.TestTimeoutExecutor
 import com.bugsnag.android.performance.test.assertJsonEquals
+import org.json.JSONObject
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -136,5 +140,245 @@ class SpanPayloadEncodingTest {
             """.trimIndent(),
             content.toString(Charsets.UTF_8),
         )
+    }
+
+    @Test
+    fun testGraphQlSpanPayloadIncludesExpectedGraphQlAndHttpAttributes() {
+        val span = createGraphQlSpan(startTime = 100L, spanId = 0xaaaabbbb, endTime = 101L)
+        val content = encodeSingleSpanPayload(span)
+
+        assertTraceDataValid(content)
+        val spanObject = firstSpan(JSONObject(content.toString(Charsets.UTF_8)))
+        assertGraphQlSpanAttributes(spanObject)
+    }
+
+    @Test
+    fun testGraphQlSpanPayloadMatchesGoldenSnapshot() {
+        val span = createGoldenSnapshotGraphQlSpan()
+        val content = encodeSingleSpanPayload(span)
+
+        assertTraceDataValid(content)
+        assertJsonEquals(expectedGraphQlSpanGoldenSnapshot(span), content.toString(Charsets.UTF_8))
+    }
+
+    @Test
+    fun testNetworkSpanPayloadRemainsHttpAndOmitsGraphQlAttributes() {
+        val span =
+            SpanImpl(
+                "[HTTP/POST]",
+                SpanCategory.NETWORK,
+                SpanKind.CLIENT,
+                200L,
+                UUID.fromString("4ee26661-4650-4c7f-a35f-00f007cd24e7"),
+                0xccccdddd,
+                0L,
+                false,
+                null,
+                null,
+                TestTimeoutExecutor(),
+                NoopSpanProcessor.INSTANCE,
+            )
+        span.setAttribute("http.url", "https://api.example.com/rest/users")
+        span.setAttribute("http.method", "POST")
+        span.setAttribute("http.status_code", 201)
+        span.end(201L)
+
+        val content =
+            TracePayload.encodeSpanPayload(
+                listOf(span),
+                Attributes().also { attrs ->
+                    attrs["service.name"] = "Test app"
+                    attrs["telemetry.sdk.name"] = "bugsnag.performance.android"
+                    attrs["telemetry.sdk.version"] = "0.0.0"
+                },
+                null,
+            )
+
+        assertTraceDataValid(content)
+
+        val spanObject = firstSpan(JSONObject(content.toString(Charsets.UTF_8)))
+        val attributes = attributesByKey(spanObject)
+
+        assertEquals("[HTTP/POST]", spanObject.getString("name"))
+        assertEquals(
+            "network",
+            attributes["bugsnag.span.category"]?.getJSONObject("value")?.getString("stringValue"),
+        )
+        assertEquals(
+            "https://api.example.com/rest/users",
+            attributes["http.url"]?.getJSONObject("value")?.getString("stringValue"),
+        )
+        assertEquals(
+            "POST",
+            attributes["http.method"]?.getJSONObject("value")?.getString("stringValue"),
+        )
+        assertEquals(
+            "201",
+            attributes["http.status_code"]?.getJSONObject("value")?.getString("intValue"),
+        )
+
+        assertFalse(attributes.containsKey("graphql.operation.type"))
+        assertFalse(attributes.containsKey("graphql.operation.name"))
+    }
+
+    @Test
+    fun testNetworkSpanPayloadMatchesGoldenSnapshot() {
+        val span = createGoldenSnapshotNetworkSpan()
+        val content = encodeSingleSpanPayload(span)
+
+        assertTraceDataValid(content)
+        assertJsonEquals(expectedNetworkSpanGoldenSnapshot(span), content.toString(Charsets.UTF_8))
+    }
+
+    private fun createGoldenSnapshotNetworkSpan(): SpanImpl {
+        val span =
+            SpanImpl(
+                "[HTTP/POST]",
+                SpanCategory.NETWORK,
+                SpanKind.CLIENT,
+                400L,
+                UUID.fromString("4ee26661-4650-4c7f-a35f-00f007cd24e7"),
+                0x33334444,
+                0L,
+                false,
+                null,
+                null,
+                TestTimeoutExecutor(),
+                NoopSpanProcessor.INSTANCE,
+            )
+        span.setAttribute("http.url", "https://api.example.com/rest/users")
+        span.setAttribute("http.method", "POST")
+        span.setAttribute("http.status_code", 201)
+        span.setAttribute("http.request_content_length", 64)
+        span.setAttribute("http.response_content_length", 512)
+        span.end(401L)
+        return span
+    }
+
+    private fun createGoldenSnapshotGraphQlSpan(): SpanImpl {
+        return createGraphQlSpan(startTime = 300L, spanId = 0x11112222, endTime = 301L)
+    }
+
+    private fun createGraphQlSpan(
+        startTime: Long,
+        spanId: Long,
+        endTime: Long,
+    ): SpanImpl {
+        val span =
+            SpanImpl(
+                "[GraphQL] [api.example.com/graphql] query:GetUserProfile",
+                SpanCategory.GRAPHQL,
+                SpanKind.CLIENT,
+                startTime,
+                UUID.fromString("4ee26661-4650-4c7f-a35f-00f007cd24e7"),
+                spanId,
+                0L,
+                false,
+                null,
+                null,
+                TestTimeoutExecutor(),
+                NoopSpanProcessor.INSTANCE,
+            )
+        span.setAttribute("http.url", "https://api.example.com/graphql")
+        span.setAttribute("http.method", "POST")
+        span.setAttribute("http.status_code", 200)
+        span.setAttribute("graphql.operation.type", "query")
+        span.setAttribute("graphql.operation.name", "GetUserProfile")
+        span.end(endTime)
+        return span
+    }
+
+    private fun encodeSingleSpanPayload(span: SpanImpl): ByteArray {
+        return TracePayload.encodeSpanPayload(
+            listOf(span),
+            Attributes().also { attrs ->
+                attrs["service.name"] = "Test app"
+                attrs["telemetry.sdk.name"] = "bugsnag.performance.android"
+                attrs["telemetry.sdk.version"] = "0.0.0"
+            },
+            null,
+        )
+    }
+
+    private fun expectedNetworkSpanGoldenSnapshot(span: SpanImpl): String {
+        return renderGoldenSnapshot(loadGoldenSnapshot("golden/network_span_payload.json"), span)
+    }
+
+    private fun expectedGraphQlSpanGoldenSnapshot(span: SpanImpl): String {
+        return renderGoldenSnapshot(loadGoldenSnapshot("golden/graphql_span_payload.json"), span)
+    }
+
+    private fun assertGraphQlSpanAttributes(spanObject: JSONObject) {
+        val attributes = attributesByKey(spanObject)
+
+        assertEquals(
+            "[GraphQL] [api.example.com/graphql] query:GetUserProfile",
+            spanObject.getString("name"),
+        )
+        assertEquals(
+            "graphql",
+            attributes["bugsnag.span.category"]?.getJSONObject("value")?.getString("stringValue"),
+        )
+        assertEquals(
+            "https://api.example.com/graphql",
+            attributes["http.url"]?.getJSONObject("value")?.getString("stringValue"),
+        )
+        assertEquals(
+            "POST",
+            attributes["http.method"]?.getJSONObject("value")?.getString("stringValue"),
+        )
+        assertEquals(
+            "200",
+            attributes["http.status_code"]?.getJSONObject("value")?.getString("intValue"),
+        )
+        assertEquals(
+            "query",
+            attributes["graphql.operation.type"]?.getJSONObject("value")?.getString("stringValue"),
+        )
+        assertEquals(
+            "GetUserProfile",
+            attributes["graphql.operation.name"]?.getJSONObject("value")?.getString("stringValue"),
+        )
+    }
+
+    private fun renderGoldenSnapshot(
+        template: String,
+        span: SpanImpl,
+    ): String {
+        return template
+            .replace("{START_TIME}", BugsnagClock.elapsedNanosToUnixTime(span.startTime).toString())
+            .replace("{END_TIME}", BugsnagClock.elapsedNanosToUnixTime(span.endTime).toString())
+    }
+
+    private fun loadGoldenSnapshot(path: String): String {
+        return checkNotNull(javaClass.classLoader?.getResource(path)) {
+            "Missing golden snapshot resource: $path"
+        }.readText().trim()
+    }
+
+    private fun firstSpan(root: JSONObject): JSONObject {
+        val resourceSpans = root.getJSONArray("resourceSpans")
+        assertFalse(resourceSpans.length() == 0)
+        val firstResourceSpan = resourceSpans.getJSONObject(0)
+        val scopeSpans = firstResourceSpan.getJSONArray("scopeSpans")
+        assertFalse(scopeSpans.length() == 0)
+        val firstScopeSpan = scopeSpans.getJSONObject(0)
+        val spans = firstScopeSpan.getJSONArray("spans")
+        assertFalse(spans.length() == 0)
+        return spans.getJSONObject(0)
+    }
+
+    private fun attributesByKey(spanObject: JSONObject): Map<String, JSONObject> {
+        val attributesArray = spanObject.getJSONArray("attributes")
+        val attributesByKey = linkedMapOf<String, JSONObject>()
+
+        for (index in 0 until attributesArray.length()) {
+            val attribute = attributesArray.getJSONObject(index)
+            val key = attribute.getString("key")
+            attributesByKey[key] = attribute
+        }
+
+        assertNotNull(attributesByKey["bugsnag.sampling.p"])
+        return attributesByKey
     }
 }
