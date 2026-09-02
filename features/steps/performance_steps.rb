@@ -639,6 +639,31 @@ Then('{int} span(s) have field {string} matching the regex {string}') do |expect
   )
 end
 
+Then('every span field {string} does not match the regex {string}') do |field, regex|
+  spans = spans_from_request_list(Maze::Server.list_for('traces'))
+  raise Test::Unit::AssertionFailedError, 'no spans received' if spans.empty?
+
+  pattern = Regexp.new(regex)
+  matching = spans.select { |span| span[field]&.match?(pattern) }
+  Maze.check.equal(
+    0,
+    matching.size,
+    "Expected no spans with #{field} matching #{regex}, found #{matching.size}: #{matching.map { |s| s[field] }.inspect}"
+  )
+end
+
+Then('every span field {string} value is distinct') do |field|
+  spans = spans_from_request_list(Maze::Server.list_for('traces'))
+  raise Test::Unit::AssertionFailedError, 'no spans received' if spans.empty?
+
+  values = spans.map { |span| span[field] }
+  Maze.check.equal(
+    values.size,
+    values.uniq.size,
+    "Expected distinct #{field} values, found #{values.inspect}"
+  )
+end
+
 Then('{int} span(s) have string attribute {string} equals {string}') do |expected_count, attribute, expected|
   spans = spans_from_request_list(Maze::Server.list_for('traces'))
   matching = spans.select do |span|
@@ -650,4 +675,18 @@ Then('{int} span(s) have string attribute {string} equals {string}') do |expecte
     matching.size,
     "Expected #{expected_count} spans with #{attribute}=#{expected}, found #{matching.size}"
   )
+end
+
+Then('the span payload does not contain {string}') do |forbidden|
+  spans = spans_from_request_list(Maze::Server.list_for('traces'))
+  raise Test::Unit::AssertionFailedError, 'no spans received' if spans.empty?
+
+  spans.each_with_index do |span, index|
+    payload = span.to_json
+    Maze.check.equal(
+      false,
+      payload.include?(forbidden),
+      "Expected span #{index} payload not to contain #{forbidden.inspect}, but it was found"
+    )
+  end
 end

@@ -29,77 +29,77 @@ Feature: GraphQL Spans
 
   # Scenario 2
   Scenario Outline: Operation type "<op_type>" correctly extracted with name priority "<priority>"
-    Given I run "GraphQlContentTypeScenario" configured as "https://api.example.com/graphql|||application/json|||<body>|||200|||{}"
+    Given I run "GraphQlContentTypeScenario" configured as "https://api.example.com/graphql|||application/json|||<body>|||<status>|||{}"
     And I wait to receive at least 1 span
     * a span field "name" matches the regex "<name_regex>"
     * a span string attribute "bugsnag.span.category" equals "graphql"
     * a span bool attribute "bugsnag.span.first_class" is true
     * a span string attribute "http.method" equals "POST"
-    * a span integer attribute "http.status_code" equals "200"
+    * a span integer attribute "http.status_code" equals "<status>"
     * every span attribute "graphql.document" does not exist
     * every span attribute "graphql.variables" does not exist
     * every span attribute "graphql.operation.type" does not exist
     * every span attribute "graphql.operation.name" does not exist
 
-    Examples:
-      | priority                              | op_type     | name_regex                                              | body                                                                                                      |
-      | operationName field (P1)              | query       | ^GraphQL .+/graphql - query:GetUser$                    | {\"query\": \"query GetUser { user { id } }\", \"operationName\": \"GetUser\"}                            |
-      | operationName field (P1)              | mutation    | ^GraphQL .+/graphql - mutation:CreatePost$              | {\"query\": \"mutation CreatePost { createPost { id } }\", \"operationName\": \"CreatePost\"}             |
-      | operationName field (P1)              | subscription| ^GraphQL .+/graphql - subscription:OnMsg$               | {\"query\": \"subscription OnMsg { message { id } }\", \"operationName\": \"OnMsg\"}                      |
-      | document parsing (P2, no field)       | query       | ^GraphQL .+/graphql - query:FetchOrders$                | {\"query\": \"query FetchOrders { orders { id total } }\"}                                                |
-      | document parsing (P2, no field)       | mutation    | ^GraphQL .+/graphql - mutation:DeleteItem$              | {\"query\": \"mutation DeleteItem { deleteItem { success } }\"}                                           |
-      | anonymous (P3, both type & name null) | (anonymous) | ^GraphQL .+/graphql - query$                            | {\"query\": \"{ user { id name } }\"}                                                                     |
-      | operationName overrides document name | query       | ^GraphQL .+/graphql - query:FieldName$                  | {\"query\": \"query DocumentName { user { id } }\", \"operationName\": \"FieldName\"}                     |
-      | type present, name anonymous          | query       | ^GraphQL .+/graphql - query$                            | {\"query\": \"query { user { id } }\"}                                                                    |
+  Examples:
+    | priority                              | op_type      | status | name_regex                                       | body                                                                                           |
+    | operationName field (P1)              | query        | 200    | ^GraphQL .+/graphql - query:GetUser$             | {\"query\": \"query GetUser { user { id } }\", \"operationName\": \"GetUser\"}                |
+    | operationName field (P1)              | mutation     | 200    | ^GraphQL .+/graphql - mutation:CreatePost$       | {\"query\": \"mutation CreatePost { createPost { id } }\", \"operationName\": \"CreatePost\"} |
+    | operationName field (P1)              | subscription | 200    | ^GraphQL .+/graphql - subscription:OnMsg$        | {\"query\": \"subscription OnMsg { message { id } }\", \"operationName\": \"OnMsg\"}          |
+    | document parsing (P2, no field)       | query        | 200    | ^GraphQL .+/graphql - query:FetchOrders$         | {\"query\": \"query FetchOrders { orders { id total } }\"}                                     |
+    | document parsing (P2, no field)       | mutation     | 200    | ^GraphQL .+/graphql - mutation:DeleteItem$       | {\"query\": \"mutation DeleteItem { deleteItem { success } }\"}                                |
+    | anonymous (P3, both type & name null) | (anonymous)  | 200    | ^GraphQL .+/graphql - query$                     | {\"query\": \"{ user { id name } }\"}                                                          |
+    | operationName overrides document name | query        | 200    | ^GraphQL .+/graphql - query:FieldName$           | {\"query\": \"query DocumentName { user { id } }\", \"operationName\": \"FieldName\"}         |
+    | type present, name anonymous          | query        | 200    | ^GraphQL .+/graphql - query$                     | {\"query\": \"query { user { id } }\"}                                                         |
 
-
-# Scenario 3
+  # Scenario 3
   Scenario Outline: Span name follows correct format for <description>
-    Given I run "GraphQlContentTypeScenario" configured as "<url>|||application/json|||<body>|||200|||{}"
+    Given I run "GraphQlContentTypeScenario" configured as "<url>|||application/json|||<body>|||<status>|||{}"
     And I wait to receive at least 1 span
     * a span field "name" matches the regex "<name_regex>"
     * a span string attribute "bugsnag.span.category" equals "graphql"
     * a span bool attribute "bugsnag.span.first_class" is true
     * a span string attribute "http.method" equals "POST"
-    * a span integer attribute "http.status_code" equals "200"
+    * a span integer attribute "http.status_code" equals "<status>"
     * every span attribute "graphql.document" does not exist
     * every span attribute "graphql.variables" does not exist
     * every span attribute "graphql.operation.type" does not exist
     * every span attribute "graphql.operation.name" does not exist
 
     Examples:
-      | description                       | url                                      | name_regex                                              | body                                                                                                      |
-      | query with name                   | https://api.example.com/graphql          | ^GraphQL .+/graphql - query:GetUser$                    | {\"query\": \"query GetUser { user { id } }\", \"operationName\": \"GetUser\"}                            |
-      | mutation with name                | https://api.example.com/graphql          | ^GraphQL .+/graphql - mutation:UpdateCart$              | {\"query\": \"mutation UpdateCart { cart { id } }\", \"operationName\": \"UpdateCart\"}                   |
-      | subscription with name            | https://api.example.com/graphql          | ^GraphQL .+/graphql - subscription:OnNotify$            | {\"query\": \"subscription OnNotify { notify { id } }\", \"operationName\": \"OnNotify\"}               |
-      | anonymous query (no name)         | https://api.example.com/graphql          | ^GraphQL .+/graphql - query$                            | {\"query\": \"query { user { id } }\"}                                                                    |
-      | unknown type with operationName   | https://api.example.com/graphql          | ^GraphQL .+/graphql - query:GetUser$                    | {\"query\": \"{ user { id } }\", \"operationName\": \"GetUser\"}                                          |
-      | custom endpoint path              | https://api.example.com/api/graphql      | ^GraphQL .+/api/graphql - query:GetUser$                | {\"query\": \"query GetUser { user { id } }\", \"operationName\": \"GetUser\"}                            |
-
+      | description                       | status | url                                      | name_regex                                              | body                                                                                                      |
+      | query with name                   | 200    | https://api.example.com/graphql          | ^GraphQL .+/graphql - query:GetUser$                    | {\"query\": \"query GetUser { user { id } }\", \"operationName\": \"GetUser\"}                            |
+      | mutation with name                | 200    | https://api.example.com/graphql          | ^GraphQL .+/graphql - mutation:UpdateCart$              | {\"query\": \"mutation UpdateCart { cart { id } }\", \"operationName\": \"UpdateCart\"}                   |
+      | subscription with name            | 200    | https://api.example.com/graphql          | ^GraphQL .+/graphql - subscription:OnNotify$            | {\"query\": \"subscription OnNotify { notify { id } }\", \"operationName\": \"OnNotify\"}                 |
+      | anonymous query (no name)         | 200    | https://api.example.com/graphql          | ^GraphQL .+/graphql - query$                            | {\"query\": \"query { user { id } }\"}                                                                    |
+      | unknown type with operationName   | 200    | https://api.example.com/graphql          | ^GraphQL .+/graphql - query:GetUser$                    | {\"query\": \"{ user { id } }\", \"operationName\": \"GetUser\"}                                          |
+      | custom endpoint path              | 200    | https://api.example.com/api/graphql      | ^GraphQL .+/api/graphql - query:GetUser$                | {\"query\": \"query GetUser { user { id } }\", \"operationName\": \"GetUser\"}                            |
 
   # Scenario 4
   Scenario Outline: Non-GraphQL request "<case>" retains network category
-    Given I run "GraphQlContentTypeScenario" configured as "<url>|||<content_type>|||<body>|||200|||{}|||<method>"
+    Given I run "GraphQlContentTypeScenario" configured as "<url>|||<content_type>|||<body>|||<status>|||{}|||<method>"
     And I wait to receive at least 1 span
     * a span string attribute "bugsnag.span.category" equals "network"
     * a span field "name" matches the regex "^\[HTTP/<method>\]$"
     * a span string attribute "http.method" equals "<method>"
+    * every span field "name" does not match the regex "GraphQL"
 
     Examples:
-      | case                                  | method | url                                      | content_type     | body                                                      |
-      | Standard REST POST                    | POST   | https://api.example.com/rest/users       | application/json | {\"userId\": \"123\", \"action\": \"get\"}                |
-      | JSON with query key (not GraphQL)     | POST   | https://api.example.com/api/search       | application/json | {\"query\": \"shoes\", \"page\": 1}                       |
-      | Natural language query (ambiguous)    | POST   | https://api.example.com/api/search       | application/json | {\"query\": \"find all users named John\", \"limit\": 10} |
-      | GET to REST endpoint                  | GET    | https://api.example.com/api/users/123    | application/json |                                                           |
-      | XML content type                      | POST   | https://api.example.com/api/data         | application/xml  | <request><query>GetUser</query></request>                 |
-      | text/html content type                | POST   | https://api.example.com/submit           | text/html        | <html><body>test</body></html>                            |
+      | case                                  | method | status | url                                      | content_type     | body                                                      |
+      | Standard REST POST                    | POST   | 200    | https://api.example.com/rest/users       | application/json | {\"userId\": \"123\", \"action\": \"get\"}                |
+      | JSON with query key (not GraphQL)     | POST   | 200    | https://api.example.com/api/search       | application/json | {\"query\": \"shoes\", \"page\": 1}                       |
+      | Natural language query (ambiguous)    | POST   | 200    | https://api.example.com/api/search       | application/json | {\"query\": \"find all users named John\", \"limit\": 10} |
+      | GET to REST endpoint                  | GET    | 200    | https://api.example.com/api/users/123    | application/json |                                                           |
+      | XML content type                      | POST   | 200    | https://api.example.com/api/data         | application/xml  | <request><query>GetUser</query></request>                 |
+      | text/html content type                | POST   | 200    | https://api.example.com/submit           | text/html        | <html><body>test</body></html>                            |
 
-# Scenario 5
+  # Scenario 5
   Scenario Outline: POST with <body_type> body does not crash and falls back to network
     Given I run "GraphQlContentTypeScenario" configured as "https://api.example.com/api/data|||application/json|||<body>|||200|||{}|||POST"
     And I wait to receive at least 1 span
     * a span string attribute "bugsnag.span.category" equals "network"
     * a span field "name" matches the regex "^\[HTTP/POST\]$"
+    * every span field "name" does not match the regex "GraphQL"
     * a span string attribute "http.method" equals "POST"
     * every span attribute "graphql.document" does not exist
     * every span attribute "graphql.variables" does not exist
@@ -114,23 +114,24 @@ Feature: GraphQL Spans
 
   # Scenario 6
   Scenario Outline: Operation name "<name_type>" is handled without crash or data loss
-    Given I run "GraphQlContentTypeScenario" configured as "https://api.example.com/graphql|||application/json|||<body>|||200|||{}|||POST"
+    Given I run "GraphQlContentTypeScenario" configured as "https://api.example.com/graphql|||application/json|||<body>|||<status>|||{}|||POST"
     And I wait to receive at least 1 span
     * a span field "name" matches the regex "^GraphQL .+/graphql - query:<expected_name>$"
     * a span string attribute "bugsnag.span.category" equals "graphql"
     * a span bool attribute "bugsnag.span.first_class" is true
     * a span string attribute "http.method" equals "POST"
-    * a span integer attribute "http.status_code" equals "200"
+    * a span integer attribute "http.status_code" equals "<status>"
+    * every span field "name" matches the regex "GraphQL"
     * every span attribute "graphql.document" does not exist
     * every span attribute "graphql.variables" does not exist
     * every span attribute "graphql.operation.type" does not exist
     * every span attribute "graphql.operation.name" does not exist
 
     Examples:
-      | name_type                     | body                                                                                                                                                                                                          | expected_name                                                                                 |
-      | Very long name (128+ chars)   | {\"query\": \"query AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA { user { id } }\", \"operationName\": \"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\"} | AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA |
-      | Underscore and version suffix | {\"query\": \"query Get_User_Profile_V2 { user { id } }\", \"operationName\": \"Get_User_Profile_V2\"}                                                                                                                  | Get_User_Profile_V2                                                                           |
-      | Numeric suffix                | {\"query\": \"query GetUser123 { user { id } }\", \"operationName\": \"GetUser123\"}                                                                                                                                    | GetUser123                                                                                    |
+      | name_type                     | status | body                                                                                                                                                                                                          | expected_name                                                                                 |
+      | Very long name (128+ chars)   | 200    | {\"query\": \"query AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA { user { id } }\", \"operationName\": \"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\"} | AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA |
+      | Underscore and version suffix | 200    | {\"query\": \"query Get_User_Profile_V2 { user { id } }\", \"operationName\": \"Get_User_Profile_V2\"}                                                                                                                  | Get_User_Profile_V2                                                                           |
+      | Numeric suffix                | 200    | {\"query\": \"query GetUser123 { user { id } }\", \"operationName\": \"GetUser123\"}                                                                                                                                    | GetUser123                                                                                    |
 
   # Scenario 7
   Scenario: Batched GraphQL request with multiple operations does not crash the SDK
@@ -175,17 +176,19 @@ Feature: GraphQL Spans
 
   # Scenario 10
   Scenario: GraphQL span payload contains only HTTP attributes and category - no GraphQL-specific metadata
-    Given I run "GraphQlContentTypeScenario" configured as "http://api.example.com/graphql|||application/graphql|||query { user { id secret } }|||true"
+    Given I run "GraphQlContentTypeScenario" configured as "https://api.example.com/graphql|||application/json|||{\"query\": \"query GetUser { user { id secret } }\", \"operationName\": \"GetUser\", \"variables\": {\"sensitiveData\": \"should-not-leak\"}}|||200|||{\"data\": {\"user\": {\"id\": \"1\", \"secret\": \"user_secret_123\"}}}|||POST"
     And I wait to receive at least 1 span
     * a span string attribute "bugsnag.span.category" equals "graphql"
     * a span bool attribute "bugsnag.span.first_class" is true
     * a span string attribute "http.method" equals "POST"
-    * a span string attribute "http.url" matches the regex "^http://.*/graphql$"
-    * a span integer attribute "http.status_code" is greater than 0
+    * a span string attribute "http.url" equals "https://api.example.com/graphql"
+    * a span integer attribute "http.status_code" equals "200"
     * every span attribute "graphql.operation.name" does not exist
     * every span attribute "graphql.operation.type" does not exist
     * every span attribute "graphql.document" does not exist
     * every span attribute "graphql.variables" does not exist
+    * the span payload does not contain "user_secret_123"
+    * the span payload does not contain "sensitiveData"
 
   # Scenario 11
   Scenario: GraphQL span with explicit first_class=false is not aggregated into span groups
@@ -199,20 +202,30 @@ Feature: GraphQL Spans
 
   # Scenario 13
   Scenario: Android SDK produces GraphQL span via supported GraphQL client library
-    Given I run "ApolloScenario" configured as "http://{MAZE_ADDRESS}/graphql"
+    Given I run "ApolloScenario" configured as "https://api.example.com/graphql"
     And I wait to receive at least 1 span
     * a span field "kind" equals 3
     * a span string attribute "bugsnag.span.category" equals "graphql"
-    * a span field "name" matches the regex "^GraphQL .*/graphql - query:TestQuery$"
+    * a span bool attribute "bugsnag.span.first_class" is true
+    * a span string attribute "http.method" equals "POST"
+    * a span string attribute "http.url" equals "https://api.example.com/graphql"
+    * a span integer attribute "http.status_code" equals "200"
+    * a span field "name" matches the regex "^GraphQL .+/graphql - query:TestQuery$"
+    * every span field "name" matches the regex "GraphQL"
     * every span attribute "graphql.document" does not exist
+    * every span attribute "graphql.variables" does not exist
+    * every span attribute "graphql.operation.name" does not exist
+    * every span attribute "graphql.operation.type" does not exist
 
   # Scenario 15
   Scenario: Multiple identical GraphQL operations produce spans with consistent name for pipeline grouping
-    Given I run "IdenticalGraphQlScenario" configured as "http://{MAZE_ADDRESS}"
+    Given I run "IdenticalGraphQlScenario" configured as "https://api.example.com/graphql"
     And I wait to receive 3 spans
-    * every span field "name" matches the regex "^GraphQL .*/graphql - query:GetUser$"
+    * every span field "name" matches the regex "^GraphQL .+/graphql - query:GetUser$"
     * every span string attribute "bugsnag.span.category" equals "graphql"
+    * every span bool attribute "bugsnag.span.first_class" is true
     * every span field "spanId" matches the regex "^[0-9a-f]{16}$"
+    * every span field "spanId" value is distinct
     * every span field "traceId" matches the regex "^[0-9a-f]{32}$"
 
   # Scenario 16
