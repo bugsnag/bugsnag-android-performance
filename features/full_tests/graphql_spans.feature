@@ -41,19 +41,18 @@ Feature: GraphQL Spans
     * every span attribute "graphql.operation.type" does not exist
     * every span attribute "graphql.operation.name" does not exist
 
-    Examples:
-      | priority                              | op_type     | name_regex                                              | body                                                                                                      |
-      | operationName field (P1)              | query       | ^GraphQL .+/graphql - query:GetUser$                    | {\"query\": \"query GetUser { user { id } }\", \"operationName\": \"GetUser\"}                            |
-      | operationName field (P1)              | mutation    | ^GraphQL .+/graphql - mutation:CreatePost$              | {\"query\": \"mutation CreatePost { createPost { id } }\", \"operationName\": \"CreatePost\"}             |
-      | operationName field (P1)              | subscription| ^GraphQL .+/graphql - subscription:OnMsg$               | {\"query\": \"subscription OnMsg { message { id } }\", \"operationName\": \"OnMsg\"}                      |
-      | document parsing (P2, no field)       | query       | ^GraphQL .+/graphql - query:FetchOrders$                | {\"query\": \"query FetchOrders { orders { id total } }\"}                                                |
-      | document parsing (P2, no field)       | mutation    | ^GraphQL .+/graphql - mutation:DeleteItem$              | {\"query\": \"mutation DeleteItem { deleteItem { success } }\"}                                           |
-      | anonymous (P3, both type & name null) | (anonymous) | ^GraphQL .+/graphql - query$                            | {\"query\": \"{ user { id name } }\"}                                                                     |
-      | operationName overrides document name | query       | ^GraphQL .+/graphql - query:FieldName$                  | {\"query\": \"query DocumentName { user { id } }\", \"operationName\": \"FieldName\"}                     |
-      | type present, name anonymous          | query       | ^GraphQL .+/graphql - query$                            | {\"query\": \"query { user { id } }\"}                                                                    |
+  Examples:
+    | priority                              | op_type      | status | name_regex                                       | body                                                                                           |
+    | operationName field (P1)              | query        | 200    | ^GraphQL .+/graphql - query:GetUser$             | {\"query\": \"query GetUser { user { id } }\", \"operationName\": \"GetUser\"}                |
+    | operationName field (P1)              | mutation     | 200    | ^GraphQL .+/graphql - mutation:CreatePost$       | {\"query\": \"mutation CreatePost { createPost { id } }\", \"operationName\": \"CreatePost\"} |
+    | operationName field (P1)              | subscription | 200    | ^GraphQL .+/graphql - subscription:OnMsg$        | {\"query\": \"subscription OnMsg { message { id } }\", \"operationName\": \"OnMsg\"}          |
+    | document parsing (P2, no field)       | query        | 200    | ^GraphQL .+/graphql - query:FetchOrders$         | {\"query\": \"query FetchOrders { orders { id total } }\"}                                     |
+    | document parsing (P2, no field)       | mutation     | 200    | ^GraphQL .+/graphql - mutation:DeleteItem$       | {\"query\": \"mutation DeleteItem { deleteItem { success } }\"}                                |
+    | anonymous (P3, both type & name null) | (anonymous)  | 200    | ^GraphQL .+/graphql - query$                     | {\"query\": \"{ user { id name } }\"}                                                          |
+    | operationName overrides document name | query        | 200    | ^GraphQL .+/graphql - query:FieldName$           | {\"query\": \"query DocumentName { user { id } }\", \"operationName\": \"FieldName\"}         |
+    | type present, name anonymous          | query        | 200    | ^GraphQL .+/graphql - query$                     | {\"query\": \"query { user { id } }\"}                                                         |
 
-
-# Scenario 3
+  # Scenario 3
   Scenario Outline: Span name follows correct format for <description>
     Given I run "GraphQlContentTypeScenario" configured as "<url>|||application/json|||<body>|||<status>|||{}"
     And I wait to receive at least 1 span
@@ -68,13 +67,13 @@ Feature: GraphQL Spans
     * every span attribute "graphql.operation.name" does not exist
 
     Examples:
-      | description                       | url                                      | name_regex                                              | body                                                                                                      |
-      | query with name                   | https://api.example.com/graphql          | ^GraphQL .+/graphql - query:GetUser$                    | {\"query\": \"query GetUser { user { id } }\", \"operationName\": \"GetUser\"}                            |
-      | mutation with name                | https://api.example.com/graphql          | ^GraphQL .+/graphql - mutation:UpdateCart$              | {\"query\": \"mutation UpdateCart { cart { id } }\", \"operationName\": \"UpdateCart\"}                   |
-      | subscription with name            | https://api.example.com/graphql          | ^GraphQL .+/graphql - subscription:OnNotify$            | {\"query\": \"subscription OnNotify { notify { id } }\", \"operationName\": \"OnNotify\"}               |
-      | anonymous query (no name)         | https://api.example.com/graphql          | ^GraphQL .+/graphql - query$                            | {\"query\": \"query { user { id } }\"}                                                                    |
-      | unknown type with operationName   | https://api.example.com/graphql          | ^GraphQL .+/graphql - query:GetUser$                    | {\"query\": \"{ user { id } }\", \"operationName\": \"GetUser\"}                                          |
-      | custom endpoint path              | https://api.example.com/api/graphql      | ^GraphQL .+/api/graphql - query:GetUser$                | {\"query\": \"query GetUser { user { id } }\", \"operationName\": \"GetUser\"}                            |
+      | description                       | status | url                                      | name_regex                                              | body                                                                                                      |
+      | query with name                   | 200    | https://api.example.com/graphql          | ^GraphQL .+/graphql - query:GetUser$                    | {\"query\": \"query GetUser { user { id } }\", \"operationName\": \"GetUser\"}                            |
+      | mutation with name                | 200    | https://api.example.com/graphql          | ^GraphQL .+/graphql - mutation:UpdateCart$              | {\"query\": \"mutation UpdateCart { cart { id } }\", \"operationName\": \"UpdateCart\"}                   |
+      | subscription with name            | 200    | https://api.example.com/graphql          | ^GraphQL .+/graphql - subscription:OnNotify$            | {\"query\": \"subscription OnNotify { notify { id } }\", \"operationName\": \"OnNotify\"}                 |
+      | anonymous query (no name)         | 200    | https://api.example.com/graphql          | ^GraphQL .+/graphql - query$                            | {\"query\": \"query { user { id } }\"}                                                                    |
+      | unknown type with operationName   | 200    | https://api.example.com/graphql          | ^GraphQL .+/graphql - query:GetUser$                    | {\"query\": \"{ user { id } }\", \"operationName\": \"GetUser\"}                                          |
+      | custom endpoint path              | 200    | https://api.example.com/api/graphql      | ^GraphQL .+/api/graphql - query:GetUser$                | {\"query\": \"query GetUser { user { id } }\", \"operationName\": \"GetUser\"}                            |
 
 
   # Scenario 4
