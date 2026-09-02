@@ -50,9 +50,9 @@ public object GraphQlRequestClassifier {
      */
     public fun isLikelyGraphQl(request: GraphQlRequest): Boolean {
         return isGraphQlContentType(request.contentType) ||
-                isGraphQlUrl(request.url) ||
-                GraphQlUrlParser.hasGraphQlGetQuery(request.url, operationTypeRegex) ||
-                hasGraphQlBody(request.body)
+            isGraphQlUrl(request.url) ||
+            GraphQlUrlParser.hasGraphQlGetQuery(request.url, operationTypeRegex) ||
+            hasGraphQlBody(request.body)
     }
 
     /**
@@ -192,10 +192,10 @@ public object GraphQlRequestClassifier {
 
                 // Raw GraphQL document as the entire body (e.g. Content-Type: application/graphql).
                 hasOperationNameAndDocument ||
-                        hasDocumentThatLooksGraphQl ||
-                        looksLikeGraphQlDocument(
-                            trimmedBody,
-                        )
+                    hasDocumentThatLooksGraphQl ||
+                    looksLikeGraphQlDocument(
+                        trimmedBody,
+                    )
             }
         return isLikelyGraphQlBody
     }
@@ -209,13 +209,14 @@ public object GraphQlRequestClassifier {
                 // Anonymous GraphQL selection set: "{ user { id } }" — not JSON and not truncated junk
                 // like "{invalid json content" (must include a closing brace).
                 operationTypeRegex.containsMatchIn(normalizedDocument) ||
-                        (anonymousSelectionSetRegex.containsMatchIn(
+                    (
+                        anonymousSelectionSetRegex.containsMatchIn(
                             normalizedDocument,
                         ) &&
-                                normalizedDocument.contains(
-                                    '}',
-                                )
-                                )
+                            normalizedDocument.contains(
+                                '}',
+                            )
+                    )
             }
         return looksLikeGraphQl
     }

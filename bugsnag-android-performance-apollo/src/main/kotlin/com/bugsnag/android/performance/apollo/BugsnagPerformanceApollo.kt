@@ -22,10 +22,10 @@ import com.bugsnag.android.performance.SpanOptions
 import com.bugsnag.android.performance.encodeAsTraceParent
 import com.bugsnag.android.performance.internal.graphql.GraphQlRequest
 import com.bugsnag.android.performance.internal.graphql.GraphQlRequestClassifier
-import java.net.MalformedURLException
-import java.net.URL
 import kotlinx.coroutines.flow.Flow
 import okio.Buffer
+import java.net.MalformedURLException
+import java.net.URL
 
 internal class BugsnagPerformanceApolloOperationInterceptor : ApolloInterceptor {
     override fun <D : Operation.Data> intercept(
@@ -148,7 +148,8 @@ public class BugsnagPerformanceApollo : HttpInterceptor {
     ): HttpRequest {
         val spanContext: SpanContext? =
             span ?: SpanContext.current.takeUnless { it == SpanContext.invalid }
-        if (spanContext == null || !ApolloModule.tracePropagationUrls.any {
+        if (spanContext == null ||
+            !ApolloModule.tracePropagationUrls.any {
                 it.matcher(request.url).matches()
             }
         ) {
@@ -175,7 +176,7 @@ public class BugsnagPerformanceApollo : HttpInterceptor {
         val filteredHeaders =
             request.headers.filter {
                 it.name != INTERNAL_OPERATION_NAME_HEADER &&
-                        it.name != INTERNAL_OPERATION_TYPE_HEADER
+                    it.name != INTERNAL_OPERATION_TYPE_HEADER
             }
 
         return request.newBuilder()

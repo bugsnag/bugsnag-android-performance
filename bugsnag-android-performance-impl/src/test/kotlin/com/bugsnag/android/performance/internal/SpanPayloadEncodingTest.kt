@@ -301,11 +301,11 @@ class SpanPayloadEncodingTest {
     }
 
     private fun expectedNetworkSpanGoldenSnapshot(span: SpanImpl): String {
-        return renderGoldenSnapshot(networkSpanGoldenSnapshotTemplate, span)
+        return renderGoldenSnapshot(loadGoldenSnapshot("golden/network_span_payload.json"), span)
     }
 
     private fun expectedGraphQlSpanGoldenSnapshot(span: SpanImpl): String {
-        return renderGoldenSnapshot(graphQlSpanGoldenSnapshotTemplate, span)
+        return renderGoldenSnapshot(loadGoldenSnapshot("golden/graphql_span_payload.json"), span)
     }
 
     private fun assertGraphQlSpanAttributes(spanObject: JSONObject) {
@@ -350,157 +350,11 @@ class SpanPayloadEncodingTest {
             .replace("{END_TIME}", BugsnagClock.elapsedNanosToUnixTime(span.endTime).toString())
     }
 
-    private val networkSpanGoldenSnapshotTemplate =
-        """
-            {
-              "resourceSpans": [
-                {
-                  "resource": {
-                    "attributes": [
-                      {
-                        "key": "service.name",
-                        "value": {
-                          "stringValue": "Test app"
-                        }
-                      },
-                      {
-                        "key": "telemetry.sdk.name",
-                        "value": {
-                          "stringValue": "bugsnag.performance.android"
-                        }
-                      },
-                      {
-                        "key": "telemetry.sdk.version",
-                        "value": {
-                          "stringValue": "0.0.0"
-                        }
-                      }
-                    ]
-                  },
-                  "scopeSpans": [
-                    {
-                      "spans": [
-                        {
-                          "name": "[HTTP/POST]",
-                          "kind": 3,
-                          "spanId": "0000000033334444",
-                          "traceId": "4ee2666146504c7fa35f00f007cd24e7",
-                          "startTimeUnixNano": "{START_TIME}",
-                          "endTimeUnixNano": "{END_TIME}",
-                          "attributes": [
-                            {
-                              "key": "bugsnag.sampling.p",
-                              "value": { "doubleValue": 1.0 }
-                            },
-                            {
-                              "key": "bugsnag.span.category",
-                              "value": { "stringValue": "network" }
-                            },
-                            {
-                              "key": "http.url",
-                              "value": { "stringValue": "https://api.example.com/rest/users" }
-                            },
-                            {
-                              "key": "http.method",
-                              "value": { "stringValue": "POST" }
-                            },
-                            {
-                              "key": "http.status_code",
-                              "value": { "intValue": "201" }
-                            },
-                            {
-                              "key": "http.request_content_length",
-                              "value": { "intValue": "64" }
-                            },
-                            {
-                              "key": "http.response_content_length",
-                              "value": { "intValue": "512" }
-                            }
-                          ]
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            }
-        """.trimIndent()
-
-    private val graphQlSpanGoldenSnapshotTemplate =
-        """
-            {
-              "resourceSpans": [
-                {
-                  "resource": {
-                    "attributes": [
-                      {
-                        "key": "service.name",
-                        "value": {
-                          "stringValue": "Test app"
-                        }
-                      },
-                      {
-                        "key": "telemetry.sdk.name",
-                        "value": {
-                          "stringValue": "bugsnag.performance.android"
-                        }
-                      },
-                      {
-                        "key": "telemetry.sdk.version",
-                        "value": {
-                          "stringValue": "0.0.0"
-                        }
-                      }
-                    ]
-                  },
-                  "scopeSpans": [
-                    {
-                      "spans": [
-                        {
-                          "name": "[GraphQL] [api.example.com/graphql] query:GetUserProfile",
-                          "kind": 3,
-                          "spanId": "0000000011112222",
-                          "traceId": "4ee2666146504c7fa35f00f007cd24e7",
-                          "startTimeUnixNano": "{START_TIME}",
-                          "endTimeUnixNano": "{END_TIME}",
-                          "attributes": [
-                            {
-                              "key": "bugsnag.sampling.p",
-                              "value": { "doubleValue": 1.0 }
-                            },
-                            {
-                              "key": "bugsnag.span.category",
-                              "value": { "stringValue": "graphql" }
-                            },
-                            {
-                              "key": "http.url",
-                              "value": { "stringValue": "https://api.example.com/graphql" }
-                            },
-                            {
-                              "key": "http.method",
-                              "value": { "stringValue": "POST" }
-                            },
-                            {
-                              "key": "http.status_code",
-                              "value": { "intValue": "200" }
-                            },
-                            {
-                              "key": "graphql.operation.type",
-                              "value": { "stringValue": "query" }
-                            },
-                            {
-                              "key": "graphql.operation.name",
-                              "value": { "stringValue": "GetUserProfile" }
-                            }
-                          ]
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            }
-        """.trimIndent()
+    private fun loadGoldenSnapshot(path: String): String {
+        return checkNotNull(javaClass.classLoader?.getResource(path)) {
+            "Missing golden snapshot resource: $path"
+        }.readText().trim()
+    }
 
     private fun firstSpan(root: JSONObject): JSONObject {
         val resourceSpans = root.getJSONArray("resourceSpans")
