@@ -75,7 +75,6 @@ Feature: GraphQL Spans
       | unknown type with operationName   | 200    | https://api.example.com/graphql          | ^GraphQL .+/graphql - query:GetUser$                    | {\"query\": \"{ user { id } }\", \"operationName\": \"GetUser\"}                                          |
       | custom endpoint path              | 200    | https://api.example.com/api/graphql      | ^GraphQL .+/api/graphql - query:GetUser$                | {\"query\": \"query GetUser { user { id } }\", \"operationName\": \"GetUser\"}                            |
 
-
   # Scenario 4
   Scenario Outline: Non-GraphQL request "<case>" retains network category
     Given I run "GraphQlContentTypeScenario" configured as "<url>|||<content_type>|||<body>|||<status>|||{}|||<method>"
@@ -86,13 +85,13 @@ Feature: GraphQL Spans
     * every span field "name" does not match the regex "GraphQL"
 
     Examples:
-      | case                                  | method | url                                      | content_type     | body                                                      |
-      | Standard REST POST                    | POST   | https://api.example.com/rest/users       | application/json | {\"userId\": \"123\", \"action\": \"get\"}                |
-      | JSON with query key (not GraphQL)     | POST   | https://api.example.com/api/search       | application/json | {\"query\": \"shoes\", \"page\": 1}                       |
-      | Natural language query (ambiguous)    | POST   | https://api.example.com/api/search       | application/json | {\"query\": \"find all users named John\", \"limit\": 10} |
-      | GET to REST endpoint                  | GET    | https://api.example.com/api/users/123    | application/json |                                                           |
-      | XML content type                      | POST   | https://api.example.com/api/data         | application/xml  | <request><query>GetUser</query></request>                 |
-      | text/html content type                | POST   | https://api.example.com/submit           | text/html        | <html><body>test</body></html>                            |
+      | case                                  | method | status | url                                      | content_type     | body                                                      |
+      | Standard REST POST                    | POST   | 200    | https://api.example.com/rest/users       | application/json | {\"userId\": \"123\", \"action\": \"get\"}                |
+      | JSON with query key (not GraphQL)     | POST   | 200    | https://api.example.com/api/search       | application/json | {\"query\": \"shoes\", \"page\": 1}                       |
+      | Natural language query (ambiguous)    | POST   | 200    | https://api.example.com/api/search       | application/json | {\"query\": \"find all users named John\", \"limit\": 10} |
+      | GET to REST endpoint                  | GET    | 200    | https://api.example.com/api/users/123    | application/json |                                                           |
+      | XML content type                      | POST   | 200    | https://api.example.com/api/data         | application/xml  | <request><query>GetUser</query></request>                 |
+      | text/html content type                | POST   | 200    | https://api.example.com/submit           | text/html        | <html><body>test</body></html>                            |
 
 # Scenario 5
   Scenario Outline: POST with <body_type> body does not crash and falls back to network
