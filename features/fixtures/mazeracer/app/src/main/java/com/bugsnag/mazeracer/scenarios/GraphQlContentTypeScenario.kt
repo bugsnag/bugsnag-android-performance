@@ -14,6 +14,9 @@ import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import okhttp3.ResponseBody.Companion.toResponseBody
+import java.net.ConnectException
+import java.net.SocketTimeoutException
+import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
 
 class GraphQlContentTypeScenario(
@@ -46,12 +49,32 @@ class GraphQlContentTypeScenario(
         val builder =
             OkHttpClient.Builder()
                 .eventListener(bugsnag)
+                .addInterceptor(bugsnag)
 
         // BitBar's SecureTunnel intercepts localhost/LAN sockets and returns HTTP 500 (or
         // fails the call, discarding the span). Short-circuit in-process so status codes are
         // deterministic and no real network hop is required.
         val mockStatus = spec.mockResponseStatus
-        if (mockStatus != null) {
+        if (spec.timeout) {
+            builder
+                .callTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
+                .addInterceptor(
+                    Interceptor {
+                        try {
+                            Thread.sleep(TimeUnit.SECONDS.toMillis(TIMEOUT_SECONDS + TIMEOUT_OVERSHOOT_SECONDS))
+                        } catch (_: InterruptedException) {
+                            // Call cancelled by OkHttp timeout.
+                        }
+                        throw SocketTimeoutException("GraphQL request timed out")
+                    },
+                )
+        } else if (spec.connectionRefused) {
+            builder.addInterceptor(
+                Interceptor {
+                    throw ConnectException("Connection refused")
+                },
+            )
+        } else if (mockStatus != null) {
             val mockBody = spec.mockResponseBody ?: "{}"
             builder.addInterceptor(
                 Interceptor { chain ->
@@ -110,6 +133,7 @@ class GraphQlContentTypeScenario(
     private fun reasonPhrase(statusCode: Int): String {
         return when (statusCode) {
             HTTP_OK -> "OK"
+            HTTP_NO_CONTENT -> "No Content"
             HTTP_BAD_REQUEST -> "Bad Request"
             HTTP_UNAUTHORIZED -> "Unauthorized"
             HTTP_INTERNAL_SERVER_ERROR -> "Internal Server Error"
@@ -125,6 +149,8 @@ class GraphQlContentTypeScenario(
         val mockResponseStatus: Int? = null,
         val mockResponseBody: String? = null,
         val method: String = "POST",
+        val timeout: Boolean = false,
+        val connectionRefused: Boolean = false,
     )
 
     private object Parser {
@@ -136,15 +162,24 @@ class GraphQlContentTypeScenario(
             val parts = scenarioMetadata.split(METADATA_DELIMITER, limit = MAX_METADATA_PARTS)
             require(parts.size in MIN_METADATA_PARTS..MAX_METADATA_PARTS) {
                 "Expected scenarioMetadata format <url>$METADATA_DELIMITER<contentType>" +
-                    "$METADATA_DELIMITER<body>[$METADATA_DELIMITER<firstClass>|" +
-                    "$METADATA_DELIMITER<httpStatus>$METADATA_DELIMITER<responseBody>" +
-                    "[$METADATA_DELIMITER<method>]]"
+                        "$METADATA_DELIMITER<body>[$METADATA_DELIMITER<firstClass>|" +
+                        "$METADATA_DELIMITER<timeout|refused>|" +
+                        "$METADATA_DELIMITER<httpStatus>$METADATA_DELIMITER<responseBody>" +
+                        "[$METADATA_DELIMITER<method>]]"
             }
 
             val fourth = parts.getOrNull(FOURTH_PART_INDEX)?.trim()
-            val firstClass = fourth?.toBooleanStrictOrNull()
+            val timeout = fourth.equals(TIMEOUT_TOKEN, ignoreCase = true)
+            val connectionRefused = fourth.equals(REFUSED_TOKEN, ignoreCase = true)
+            val simulatedFailure = timeout || connectionRefused
+            val firstClass =
+                if (simulatedFailure) {
+                    null
+                } else {
+                    fourth?.toBooleanStrictOrNull()
+                }
             val mockResponseStatus =
-                if (firstClass == null && fourth != null) {
+                if (!simulatedFailure && firstClass == null && fourth != null && fourth.isNotEmpty()) {
                     fourth.toIntOrNull() ?: error("Expected optional httpStatus to be an integer")
                 } else {
                     null
@@ -162,6 +197,8 @@ class GraphQlContentTypeScenario(
                 mockResponseStatus = mockResponseStatus,
                 mockResponseBody = mockResponseBody,
                 method = method,
+                timeout = timeout,
+                connectionRefused = connectionRefused,
             )
         }
     }
@@ -178,9 +215,14 @@ class GraphQlContentTypeScenario(
         private const val MAX_METADATA_PARTS = 6
 
         private const val HTTP_OK = 200
+        private const val HTTP_NO_CONTENT = 204
         private const val HTTP_BAD_REQUEST = 400
         private const val HTTP_UNAUTHORIZED = 401
         private const val HTTP_INTERNAL_SERVER_ERROR = 500
+        private const val TIMEOUT_SECONDS = 2L
+        private const val TIMEOUT_OVERSHOOT_SECONDS = 3L
+        private const val TIMEOUT_TOKEN = "timeout"
+        private const val REFUSED_TOKEN = "refused"
 
         private val DEFAULT_REQUEST_SPEC =
             RequestSpec(

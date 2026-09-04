@@ -142,7 +142,9 @@ public final class com/bugsnag/android/performance/internal/EncodingUtils {
 
 public final class com/bugsnag/android/performance/internal/EnumExtensionsKt {
 	public static final fun getOtelName (Lcom/bugsnag/android/performance/SpanKind;)Ljava/lang/String;
+	public static final fun getOtelName (Lcom/bugsnag/android/performance/SpanStatusCode;)Ljava/lang/String;
 	public static final fun getOtelOrdinal (Lcom/bugsnag/android/performance/SpanKind;)I
+	public static final fun getOtelOrdinal (Lcom/bugsnag/android/performance/SpanStatusCode;)I
 	public static final fun getSpanName (Lcom/bugsnag/android/performance/ViewType;)Ljava/lang/String;
 	public static final fun getTypeName (Lcom/bugsnag/android/performance/ViewType;)Ljava/lang/String;
 }
@@ -426,6 +428,7 @@ public final class com/bugsnag/android/performance/internal/SpanImpl : com/bugsn
 	public final fun getSamplingProbability ()D
 	public fun getSpanId ()J
 	public final fun getStartTime$internal ()J
+	public final fun getStatusCode$internal ()Lcom/bugsnag/android/performance/SpanStatusCode;
 	public fun getTraceId ()Ljava/util/UUID;
 	public fun hashCode ()I
 	public final fun isBlocked ()Z
@@ -443,6 +446,7 @@ public final class com/bugsnag/android/performance/internal/SpanImpl : com/bugsn
 	public fun setAttribute (Ljava/lang/String;[J)V
 	public fun setAttribute (Ljava/lang/String;[Ljava/lang/String;)V
 	public final fun setSamplingProbability (D)V
+	public final fun setStatus (Lcom/bugsnag/android/performance/SpanStatusCode;)V
 	public fun toString ()Ljava/lang/String;
 	public fun wrap (Ljava/lang/Runnable;)Ljava/lang/Runnable;
 	public fun wrap (Ljava/util/concurrent/Callable;)Ljava/util/concurrent/Callable;
@@ -689,8 +693,16 @@ public final class com/bugsnag/android/performance/internal/graphql/GraphQlReque
 	public final fun extractOperationName (Ljava/lang/String;)Ljava/lang/String;
 	public final fun extractOperationName (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
 	public final fun extractOperationType (Ljava/lang/String;)Ljava/lang/String;
+	public final fun hasNonEmptyErrorsArray (Ljava/lang/String;)Z
 	public final fun isLikelyGraphQl (Lcom/bugsnag/android/performance/internal/graphql/GraphQlRequest;)Z
 	public final fun parseOperation (Lcom/bugsnag/android/performance/internal/graphql/GraphQlRequest;)Lcom/bugsnag/android/performance/internal/graphql/GraphQlOperation;
+}
+
+public final class com/bugsnag/android/performance/internal/graphql/GraphQlSpanStatus {
+	public static final field INSTANCE Lcom/bugsnag/android/performance/internal/graphql/GraphQlSpanStatus;
+	public final fun applyFailure (Lcom/bugsnag/android/performance/internal/SpanImpl;)V
+	public final fun applyHttpStatus (Lcom/bugsnag/android/performance/internal/SpanImpl;I)V
+	public final fun applyResponseBody (Lcom/bugsnag/android/performance/internal/SpanImpl;Ljava/lang/String;)V
 }
 
 public final class com/bugsnag/android/performance/internal/integration/NotifierIntegration {

@@ -6,6 +6,7 @@ import com.bugsnag.android.performance.HasAttributes
 import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.SpanContext
 import com.bugsnag.android.performance.SpanKind
+import com.bugsnag.android.performance.SpanStatusCode
 import com.bugsnag.android.performance.internal.integration.NotifierIntegration
 import com.bugsnag.android.performance.internal.metrics.SpanMetricsSnapshot
 import com.bugsnag.android.performance.internal.processing.AttributeLimits
@@ -80,6 +81,14 @@ public class SpanImpl(
         private set
 
     /**
+     * OpenTelemetry status for this span. Defaults to [SpanStatusCode.UNSET].
+     * Status may only be upgraded (UNSET → OK → ERROR), never downgraded.
+     */
+    @get:JvmName("getStatusCode\$internal")
+    public var statusCode: SpanStatusCode = SpanStatusCode.UNSET
+        private set
+
+    /**
      * Internally SpanImpl objects can be chained together as a fast linked-list structure
      * (nicknamed [SpanChain]) allowing us a lock-free / allocation-free batching structure.
      *
@@ -94,7 +103,7 @@ public class SpanImpl(
     @get:FloatRange(from = 0.0, to = 1.0)
     public var samplingProbability: Double = 1.0
         set(
-        @FloatRange(from = 0.0, to = 1.0) value
+            @FloatRange(from = 0.0, to = 1.0) value
         ) {
             field = value.coerceIn(0.0, 1.0)
             attributes["bugsnag.sampling.p"] = field
@@ -194,7 +203,7 @@ public class SpanImpl(
 
     public fun isBlocked(): Boolean =
         state.isBlocked &&
-            (conditions == null || conditions?.isNotEmpty() == true)
+                (conditions == null || conditions?.isNotEmpty() == true)
 
     internal fun toJson(json: JsonTraceWriter) {
         json.writeSpan(this) {
@@ -218,6 +227,25 @@ public class SpanImpl(
             if (droppedAttributesCount > 0) {
                 name("droppedAttributesCount").value(droppedAttributesCount)
             }
+
+            if (statusCode != SpanStatusCode.UNSET) {
+                name("status").obj {
+                    name("code").value(statusCode.otelName)
+                }
+            }
+        }
+    }
+
+    /**
+     * Sets the OpenTelemetry status for this span. Status may only be upgraded
+     * (UNSET → OK → ERROR) so GraphQL application errors can override an HTTP 200 OK.
+     */
+    public fun setStatus(code: SpanStatusCode) {
+        if (isEnded() || code == SpanStatusCode.UNSET) {
+            return
+        }
+        if (code.otelOrdinal > statusCode.otelOrdinal) {
+            statusCode = code
         }
     }
 

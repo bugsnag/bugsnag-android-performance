@@ -5,10 +5,12 @@ import com.bugsnag.android.performance.NetworkRequestAttributes
 import com.bugsnag.android.performance.SpanContext
 import com.bugsnag.android.performance.SpanOptions
 import com.bugsnag.android.performance.encodeAsTraceParent
+import com.bugsnag.android.performance.internal.SpanCategory
 import com.bugsnag.android.performance.internal.SpanImpl
 import com.bugsnag.android.performance.internal.SpanTracker
 import com.bugsnag.android.performance.internal.graphql.GraphQlRequest
 import com.bugsnag.android.performance.internal.graphql.GraphQlRequestClassifier
+import com.bugsnag.android.performance.internal.graphql.GraphQlSpanStatus
 import com.bugsnag.android.performance.okhttp.OkhttpModule.Companion.tracePropagationUrls
 import com.bugsnag.android.performance.okhttp.util.DelegateEventListener
 import okhttp3.Call
@@ -16,6 +18,7 @@ import okhttp3.EventListener
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.Protocol
+import okhttp3.Request
 import okhttp3.Response
 import okio.Buffer
 import java.io.IOException
@@ -36,6 +39,11 @@ public class BugsnagPerformanceOkhttp(
          * classify it as GraphQL.
          */
         private const val MAX_BODY_PEEK_SIZE = 1024 * 1024L // 1MB
+
+        /**
+         * The maximum number of bytes from a GraphQL response body we inspect for an `errors` array.
+         */
+        private const val MAX_RESPONSE_BODY_INSPECTION_BYTES = 64 * 1024L
     }
 
     private val spans = SpanTracker()
@@ -111,6 +119,7 @@ public class BugsnagPerformanceOkhttp(
                 else -> "unknown"
             },
         )
+        applyGraphQlStatus(span, response)
     }
 
     override fun requestBodyEnd(
@@ -137,30 +146,77 @@ public class BugsnagPerformanceOkhttp(
         ioe: IOException,
     ) {
         super.callFailed(call, ioe)
-        // remove the span and discard
-        spans.discardAllSpans(call)
+        finishOrDiscardOnFailure(call)
     }
 
     override fun canceled(call: Call) {
         super.canceled(call)
-        // remove the span and discard
-        spans.discardAllSpans(call)
+        finishOrDiscardOnFailure(call)
+    }
+
+    /**
+     * Network spans are discarded when no response is received.
+     * GraphQL spans are ended with ERROR so failed operations remain visible.
+     */
+    private fun finishOrDiscardOnFailure(call: Call) {
+        val span = spans[call]
+        if (span != null && span.category == SpanCategory.GRAPHQL) {
+            GraphQlSpanStatus.applyFailure(span)
+            spans.endSpan(call)
+        } else {
+            spans.discardAllSpans(call)
+        }
     }
 
     override fun intercept(chain: Interceptor.Chain): Response {
-        val spanContext: SpanContext? =
-            spans[chain.call()]
-                ?: SpanContext.current.takeUnless { it == SpanContext.invalid }
-        val url = chain.request().url.toString()
-        if (spanContext == null || !tracePropagationUrls.any { it.matcher(url).matches() }) {
-            return chain.proceed(chain.request())
+        val call = chain.call()
+        val span = spans[call]
+        val request = maybeAddTraceParent(chain.request(), span)
+        return try {
+            val response = chain.proceed(request)
+            if (span != null) {
+                applyGraphQlStatus(span, response)
+            }
+            response
+        } catch (ioe: IOException) {
+            if (span != null) {
+                GraphQlSpanStatus.applyFailure(span)
+            }
+            throw ioe
         }
-        return chain.proceed(
-            chain.request()
-                .newBuilder()
-                .header("traceparent", spanContext.encodeAsTraceParent())
-                .build(),
-        )
+    }
+
+    private fun maybeAddTraceParent(
+        request: Request,
+        span: SpanImpl?,
+    ): Request {
+        val spanContext: SpanContext? =
+            span ?: SpanContext.current.takeUnless { it == SpanContext.invalid }
+        val url = request.url.toString()
+        if (spanContext == null || !tracePropagationUrls.any { it.matcher(url).matches() }) {
+            return request
+        }
+        return request
+            .newBuilder()
+            .header("traceparent", spanContext.encodeAsTraceParent())
+            .build()
+    }
+
+    private fun applyGraphQlStatus(
+        span: SpanImpl,
+        response: Response,
+    ) {
+        if (span.category != SpanCategory.GRAPHQL) {
+            return
+        }
+
+        GraphQlSpanStatus.applyHttpStatus(span, response.code)
+        try {
+            val bodyText = response.peekBody(MAX_RESPONSE_BODY_INSPECTION_BYTES).string()
+            GraphQlSpanStatus.applyResponseBody(span, bodyText)
+        } catch (_: Exception) {
+            // Ignore body peek failures; HTTP status already set the span status.
+        }
     }
 }
 

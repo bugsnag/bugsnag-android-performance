@@ -374,6 +374,14 @@ public final class com/bugsnag/android/performance/SpanOptions$Companion {
 	public final fun createWithin (Lcom/bugsnag/android/performance/SpanContext;)Lcom/bugsnag/android/performance/SpanOptions;
 }
 
+public final class com/bugsnag/android/performance/SpanStatusCode : java/lang/Enum {
+	public static final field ERROR Lcom/bugsnag/android/performance/SpanStatusCode;
+	public static final field OK Lcom/bugsnag/android/performance/SpanStatusCode;
+	public static final field UNSET Lcom/bugsnag/android/performance/SpanStatusCode;
+	public static fun valueOf (Ljava/lang/String;)Lcom/bugsnag/android/performance/SpanStatusCode;
+	public static fun values ()[Lcom/bugsnag/android/performance/SpanStatusCode;
+}
+
 public final class com/bugsnag/android/performance/ViewType : java/lang/Enum {
 	public static final field ACTIVITY Lcom/bugsnag/android/performance/ViewType;
 	public static final field COMPOSE Lcom/bugsnag/android/performance/ViewType;

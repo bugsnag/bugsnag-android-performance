@@ -20,8 +20,11 @@ import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.SpanContext
 import com.bugsnag.android.performance.SpanOptions
 import com.bugsnag.android.performance.encodeAsTraceParent
+import com.bugsnag.android.performance.internal.SpanImpl
+import com.bugsnag.android.performance.internal.graphql.GraphQlOperation
 import com.bugsnag.android.performance.internal.graphql.GraphQlRequest
 import com.bugsnag.android.performance.internal.graphql.GraphQlRequestClassifier
+import com.bugsnag.android.performance.internal.graphql.GraphQlSpanStatus
 import kotlinx.coroutines.flow.Flow
 import okio.Buffer
 import java.net.MalformedURLException
@@ -60,6 +63,7 @@ public class BugsnagPerformanceApollo : HttpInterceptor {
             val response = chain.proceed(requestWithTraceParent)
             if (span != null) {
                 NetworkRequestAttributes.setResponseCode(span, response.statusCode)
+                applyGraphQlStatus(span, response)
                 response.headers
                     .firstOrNull { it.name.equals("Content-Length", ignoreCase = true) }
                     ?.value
@@ -67,6 +71,9 @@ public class BugsnagPerformanceApollo : HttpInterceptor {
                     ?.let { NetworkRequestAttributes.setResponseContentLength(span, it) }
             }
             response
+        } catch (ignored: Exception) {
+            (span as? SpanImpl)?.let(GraphQlSpanStatus::applyFailure)
+            throw ignored
         } finally {
             span?.end()
         }
@@ -82,23 +89,20 @@ public class BugsnagPerformanceApollo : HttpInterceptor {
                 return null
             }
 
-        val method = request.method.toString()
         val operation = resolveGraphQlOperation(request)
         val span =
             if (operation != null) {
-                val spanName =
-                    GraphQlRequestClassifier.buildSpanName(operation.first, operation.second)
+                val spanName = GraphQlRequestClassifier.buildSpanName(operation.type, operation.name)
                 BugsnagPerformance.startGraphQlRequestSpan(
                     url,
-                    method,
+                    request.method.toString(),
                     spanName,
                     networkSpanOptions,
                 )
             } else {
-                // Not a GraphQL request — create a standard HTTP network span.
                 BugsnagPerformance.startNetworkRequestSpan(
                     url,
-                    method,
+                    request.method.toString(),
                     networkSpanOptions,
                 )
             }
@@ -107,38 +111,50 @@ public class BugsnagPerformanceApollo : HttpInterceptor {
         return span
     }
 
-    private fun resolveGraphQlOperation(request: HttpRequest): Pair<String, String>? {
-        // Fast path: Apollo operation interceptor already extracted metadata via internal headers.
+    private fun resolveGraphQlOperation(request: HttpRequest): GraphQlOperation? {
         val internalName =
             request.headers.firstOrNull { it.name == INTERNAL_OPERATION_NAME_HEADER }?.value
         val internalType =
             request.headers.firstOrNull { it.name == INTERNAL_OPERATION_TYPE_HEADER }?.value
+        if (!internalName.isNullOrBlank() && !internalType.isNullOrBlank()) {
+            return GraphQlOperation(internalType, internalName)
+        }
 
-        val operation: Pair<String, String>? =
-            if (!internalName.isNullOrBlank() && !internalType.isNullOrBlank()) {
-                internalType to internalName
-            } else {
-                // Fallback: use the shared 3-method classifier (content-type, URL, body).
-                val contentType =
-                    request.headers.firstOrNull {
-                        it.name.equals("content-type", ignoreCase = true)
-                    }?.value
-                val body = request.body?.toUtf8String()
-                val gqlRequest = GraphQlRequest(request.url, contentType, body)
-                GraphQlRequestClassifier.parseOperation(gqlRequest)?.let { parsed ->
-                    parsed.type to parsed.name
-                }
-            }
-
-        return operation
+        val contentType =
+            request.headers.firstOrNull {
+                it.name.equals("content-type", ignoreCase = true)
+            }?.value
+        val gqlRequest = GraphQlRequest(request.url, contentType, request.body?.toUtf8String())
+        return GraphQlRequestClassifier.parseOperation(gqlRequest)
     }
 
     private fun setRequestContentLength(
         span: Span?,
         request: HttpRequest,
     ) {
-        request.body?.contentLength?.takeIf { it >= 0L }?.let { contentLength ->
-            span?.let { NetworkRequestAttributes.setRequestContentLength(it, contentLength) }
+        val contentLength = request.body?.contentLength
+        if (span != null && contentLength != null && contentLength >= 0L) {
+            NetworkRequestAttributes.setRequestContentLength(span, contentLength)
+        }
+    }
+
+    private fun applyGraphQlStatus(
+        span: Span,
+        response: HttpResponse,
+    ) {
+        val spanImpl = span as? SpanImpl ?: return
+        GraphQlSpanStatus.applyHttpStatus(spanImpl, response.statusCode)
+        GraphQlSpanStatus.applyResponseBody(spanImpl, peekResponseBody(response))
+    }
+
+    private fun peekResponseBody(response: HttpResponse): String? {
+        val body = response.body ?: return null
+        return try {
+            val peekSource = body.peek()
+            peekSource.request(MAX_RESPONSE_BODY_INSPECTION_BYTES)
+            peekSource.readUtf8(minOf(peekSource.buffer.size, MAX_RESPONSE_BODY_INSPECTION_BYTES))
+        } catch (_: Exception) {
+            null
         }
     }
 
@@ -176,7 +192,7 @@ public class BugsnagPerformanceApollo : HttpInterceptor {
         val filteredHeaders =
             request.headers.filter {
                 it.name != INTERNAL_OPERATION_NAME_HEADER &&
-                    it.name != INTERNAL_OPERATION_TYPE_HEADER
+                        it.name != INTERNAL_OPERATION_TYPE_HEADER
             }
 
         return request.newBuilder()
@@ -201,3 +217,4 @@ private fun Operation<*>.operationTypeName(): String {
 
 private const val INTERNAL_OPERATION_NAME_HEADER = "x-bsg-operation-name"
 private const val INTERNAL_OPERATION_TYPE_HEADER = "x-bsg-operation-type"
+private const val MAX_RESPONSE_BODY_INSPECTION_BYTES = 64 * 1024L
