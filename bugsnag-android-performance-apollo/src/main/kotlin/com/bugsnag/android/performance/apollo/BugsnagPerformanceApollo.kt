@@ -20,6 +20,7 @@ import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.SpanContext
 import com.bugsnag.android.performance.SpanOptions
 import com.bugsnag.android.performance.encodeAsTraceParent
+import com.bugsnag.android.performance.internal.SpanCategory
 import com.bugsnag.android.performance.internal.SpanImpl
 import com.bugsnag.android.performance.internal.graphql.GraphQlOperation
 import com.bugsnag.android.performance.internal.graphql.GraphQlRequest
@@ -143,6 +144,10 @@ public class BugsnagPerformanceApollo : HttpInterceptor {
         response: HttpResponse,
     ) {
         val spanImpl = span as? SpanImpl ?: return
+        if (spanImpl.category != SpanCategory.GRAPHQL) {
+            return
+        }
+
         GraphQlSpanStatus.applyHttpStatus(spanImpl, response.statusCode)
         GraphQlSpanStatus.applyResponseBody(spanImpl, peekResponseBody(response))
     }

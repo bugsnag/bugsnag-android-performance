@@ -16,7 +16,6 @@ import okhttp3.Response
 import okhttp3.ResponseBody.Companion.toResponseBody
 import java.net.ConnectException
 import java.net.SocketTimeoutException
-import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
 
 class GraphQlContentTypeScenario(
@@ -56,18 +55,11 @@ class GraphQlContentTypeScenario(
         // deterministic and no real network hop is required.
         val mockStatus = spec.mockResponseStatus
         if (spec.timeout) {
-            builder
-                .callTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
-                .addInterceptor(
-                    Interceptor {
-                        try {
-                            Thread.sleep(TimeUnit.SECONDS.toMillis(TIMEOUT_SECONDS + TIMEOUT_OVERSHOOT_SECONDS))
-                        } catch (_: InterruptedException) {
-                            // Call cancelled by OkHttp timeout.
-                        }
-                        throw SocketTimeoutException("GraphQL request timed out")
-                    },
-                )
+            builder.addInterceptor(
+                Interceptor {
+                    throw SocketTimeoutException("GraphQL request timed out")
+                },
+            )
         } else if (spec.connectionRefused) {
             builder.addInterceptor(
                 Interceptor {
@@ -162,10 +154,10 @@ class GraphQlContentTypeScenario(
             val parts = scenarioMetadata.split(METADATA_DELIMITER, limit = MAX_METADATA_PARTS)
             require(parts.size in MIN_METADATA_PARTS..MAX_METADATA_PARTS) {
                 "Expected scenarioMetadata format <url>$METADATA_DELIMITER<contentType>" +
-                    "$METADATA_DELIMITER<body>[$METADATA_DELIMITER<firstClass>|" +
-                    "$METADATA_DELIMITER<timeout|refused>|" +
-                    "$METADATA_DELIMITER<httpStatus>$METADATA_DELIMITER<responseBody>" +
-                    "[$METADATA_DELIMITER<method>]]"
+                        "$METADATA_DELIMITER<body>[$METADATA_DELIMITER<firstClass>|" +
+                        "$METADATA_DELIMITER<timeout|refused>|" +
+                        "$METADATA_DELIMITER<httpStatus>$METADATA_DELIMITER<responseBody>" +
+                        "[$METADATA_DELIMITER<method>]]"
             }
 
             val fourth = parts.getOrNull(FOURTH_PART_INDEX)?.trim()
@@ -223,8 +215,6 @@ class GraphQlContentTypeScenario(
         private const val HTTP_BAD_REQUEST = 400
         private const val HTTP_UNAUTHORIZED = 401
         private const val HTTP_INTERNAL_SERVER_ERROR = 500
-        private const val TIMEOUT_SECONDS = 2L
-        private const val TIMEOUT_OVERSHOOT_SECONDS = 3L
         private const val TIMEOUT_TOKEN = "timeout"
         private const val REFUSED_TOKEN = "refused"
 

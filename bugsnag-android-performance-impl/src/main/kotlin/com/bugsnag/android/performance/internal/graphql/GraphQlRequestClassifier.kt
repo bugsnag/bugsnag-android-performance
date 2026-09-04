@@ -60,10 +60,11 @@ public object GraphQlRequestClassifier {
     private val commentRegex = "(?m)^\\s*#.*$".toRegex()
 
     /**
-     * Determines if a request is likely GraphQL using three strategies:
+     * Determines if a request is likely GraphQL using four strategies:
      * 1. Content-Type header is "application/graphql"
      * 2. URL path contains "/graphql"
-     * 3. Request body contains GraphQL operation fields or syntax
+     * 3. URL query parameters contain GraphQL-over-GET fields (`query`, `operationName`)
+     * 4. Request body contains GraphQL operation fields or syntax
      */
     public fun isLikelyGraphQl(request: GraphQlRequest): Boolean {
         return isGraphQlContentType(request.contentType) ||

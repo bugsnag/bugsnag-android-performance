@@ -119,7 +119,6 @@ public class BugsnagPerformanceOkhttp(
                 else -> "unknown"
             },
         )
-        applyGraphQlStatus(span, response)
     }
 
     override fun requestBodyEnd(
