@@ -198,7 +198,39 @@ Feature: GraphQL Spans
     * a span string attribute "bugsnag.span.category" equals "graphql"
     * a span bool attribute "bugsnag.span.first_class" is false
 
-  # Scenario 12
+  # Scenario 12: GraphQL span is still created when the request fails
+  Scenario Outline: GraphQL span is created even when request <failure_type>
+    Given I run "GraphQlContentTypeScenario" configured as "https://api.example.com/graphql|||application/json|||{\"query\": \"query GetUser { user { id } }\", \"operationName\": \"GetUser\"}|||<config>"
+    And I wait to receive at least 1 span
+    * a span field "name" matches the regex "^GraphQL .+/graphql - query:GetUser$"
+    * a span string attribute "bugsnag.span.category" equals "graphql"
+    * a span bool attribute "bugsnag.span.first_class" is true
+    * a span string attribute "http.method" equals "POST"
+    * a span field "startTimeUnixNano" is greater than 0
+    * a span field "endTimeUnixNano" is greater than 0
+    * every span attribute "bugsnag.graphql.document" does not exist
+    * every span attribute "bugsnag.graphql.variables" does not exist
+    * every span attribute "graphql.document" does not exist
+    * every span attribute "graphql.variables" does not exist
+
+    Examples:
+      | failure_type        | config  |
+      | times out           | timeout |
+      | connection refused  | refused |
+
+  Scenario: GraphQL span is created even when request returns empty body
+    Given I run "GraphQlContentTypeScenario" configured as "https://api.example.com/graphql|||application/json|||{\"query\": \"query GetUser { user { id } }\", \"operationName\": \"GetUser\"}|||204||||||POST"
+    And I wait to receive at least 1 span
+    * a span field "name" matches the regex "^GraphQL .+/graphql - query:GetUser$"
+    * a span string attribute "bugsnag.span.category" equals "graphql"
+    * a span bool attribute "bugsnag.span.first_class" is true
+    * a span string attribute "http.method" equals "POST"
+    * a span field "startTimeUnixNano" is greater than 0
+    * a span field "endTimeUnixNano" is greater than 0
+    * every span attribute "bugsnag.graphql.document" does not exist
+    * every span attribute "bugsnag.graphql.variables" does not exist
+    * every span attribute "graphql.document" does not exist
+    * every span attribute "graphql.variables" does not exist
 
   # Scenario 13
   Scenario: Android SDK produces GraphQL span via supported GraphQL client library
@@ -228,4 +260,37 @@ Feature: GraphQL Spans
     * every span field "spanId" value is distinct
     * every span field "traceId" matches the regex "^[0-9a-f]{32}$"
 
-  # Scenario 16
+  # Scenario 16: Response status — HTTP status plus GraphQL errors array
+  Scenario Outline: GraphQL response with <label> sets span status to <expected_status_code>
+    Given I run "GraphQlContentTypeScenario" configured as "https://api.example.com/graphql|||application/json|||{\"query\": \"query GetUser { user { id } }\", \"operationName\": \"GetUser\"}|||<http_status>|||<response_body>|||POST"
+    And I wait to receive at least 1 span
+    * a span field "name" matches the regex "^GraphQL .+/graphql - query:GetUser$"
+    * a span string attribute "bugsnag.span.category" equals "graphql"
+    * a span bool attribute "bugsnag.span.first_class" is true
+    * a span string attribute "http.method" equals "POST"
+    * a nested span field "status.code" equals "<expected_status_code>"
+    * every span attribute "bugsnag.graphql.document" does not exist
+    * every span attribute "bugsnag.graphql.variables" does not exist
+    * every span attribute "graphql.document" does not exist
+    * every span attribute "graphql.variables" does not exist
+
+    Examples:
+      | label                             | http_status | response_body                                                                               | expected_status_code |
+      | HTTP 200 success (no errors)      | 200         | {\"data\": {\"user\": {\"id\": \"1\", \"name\": \"John\"}}}                                | STATUS_CODE_OK       |
+      | HTTP 200 with empty errors []     | 200         | {\"data\": {\"user\": {\"id\": \"1\"}}, \"errors\": []}                                    | STATUS_CODE_OK       |
+      | HTTP 200 with errors array        | 200         | {\"data\": null, \"errors\": [{\"message\": \"User not found\", \"path\": [\"user\"]}]}    | STATUS_CODE_ERROR    |
+      | HTTP 200 with partial data+errors | 200         | {\"data\": {\"user\": {\"id\": \"1\"}}, \"errors\": [{\"message\": \"Field deprecated\"}]} | STATUS_CODE_ERROR    |
+      | HTTP 500 transport error          | 500         |                                                                                             | STATUS_CODE_ERROR    |
+      | HTTP 401 unauthorized             | 401         |                                                                                             | STATUS_CODE_ERROR    |
+
+  Scenario: GraphQL connection timeout sets span status to STATUS_CODE_ERROR
+    Given I run "GraphQlContentTypeScenario" configured as "https://api.example.com/graphql|||application/json|||{\"query\": \"query GetUser { user { id } }\", \"operationName\": \"GetUser\"}|||timeout"
+    And I wait to receive at least 1 span
+    * a span field "name" matches the regex "^GraphQL .+/graphql - query:GetUser$"
+    * a span string attribute "bugsnag.span.category" equals "graphql"
+    * a span bool attribute "bugsnag.span.first_class" is true
+    * a span string attribute "http.method" equals "POST"
+    * a nested span field "status.code" equals "STATUS_CODE_ERROR"
+    * every span attribute "bugsnag.graphql.document" does not exist
+    * every span attribute "bugsnag.graphql.variables" does not exist
+
