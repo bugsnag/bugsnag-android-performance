@@ -197,7 +197,7 @@ public class BugsnagPerformanceApollo : HttpInterceptor {
         val filteredHeaders =
             request.headers.filter {
                 it.name != INTERNAL_OPERATION_NAME_HEADER &&
-                        it.name != INTERNAL_OPERATION_TYPE_HEADER
+                    it.name != INTERNAL_OPERATION_TYPE_HEADER
             }
 
         return request.newBuilder()

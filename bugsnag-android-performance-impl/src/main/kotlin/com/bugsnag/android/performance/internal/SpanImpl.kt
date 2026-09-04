@@ -103,7 +103,7 @@ public class SpanImpl(
     @get:FloatRange(from = 0.0, to = 1.0)
     public var samplingProbability: Double = 1.0
         set(
-            @FloatRange(from = 0.0, to = 1.0) value
+        @FloatRange(from = 0.0, to = 1.0) value
         ) {
             field = value.coerceIn(0.0, 1.0)
             attributes["bugsnag.sampling.p"] = field
@@ -203,7 +203,7 @@ public class SpanImpl(
 
     public fun isBlocked(): Boolean =
         state.isBlocked &&
-                (conditions == null || conditions?.isNotEmpty() == true)
+            (conditions == null || conditions?.isNotEmpty() == true)
 
     internal fun toJson(json: JsonTraceWriter) {
         json.writeSpan(this) {
