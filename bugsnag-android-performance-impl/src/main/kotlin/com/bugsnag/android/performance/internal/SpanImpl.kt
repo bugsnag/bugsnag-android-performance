@@ -6,6 +6,7 @@ import com.bugsnag.android.performance.HasAttributes
 import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.SpanContext
 import com.bugsnag.android.performance.SpanKind
+import com.bugsnag.android.performance.SpanStatusCode
 import com.bugsnag.android.performance.internal.integration.NotifierIntegration
 import com.bugsnag.android.performance.internal.metrics.SpanMetricsSnapshot
 import com.bugsnag.android.performance.internal.processing.AttributeLimits
@@ -77,6 +78,14 @@ public class SpanImpl(
 
     @get:JvmName("getEndTime\$internal")
     internal var endTime: Long = 0L
+        private set
+
+    /**
+     * OpenTelemetry status for this span. Defaults to [SpanStatusCode.UNSET].
+     * Status may only be upgraded (UNSET → OK → ERROR), never downgraded.
+     */
+    @get:JvmName("getStatusCode\$internal")
+    public var statusCode: SpanStatusCode = SpanStatusCode.UNSET
         private set
 
     /**
@@ -218,6 +227,25 @@ public class SpanImpl(
             if (droppedAttributesCount > 0) {
                 name("droppedAttributesCount").value(droppedAttributesCount)
             }
+
+            if (statusCode != SpanStatusCode.UNSET) {
+                name("status").obj {
+                    name("code").value(statusCode.otelName)
+                }
+            }
+        }
+    }
+
+    /**
+     * Sets the OpenTelemetry status for this span. Status may only be upgraded
+     * (UNSET → OK → ERROR) so GraphQL application errors can override an HTTP 200 OK.
+     */
+    public fun setStatus(code: SpanStatusCode) {
+        if (isEnded() || code == SpanStatusCode.UNSET) {
+            return
+        }
+        if (code.otelOrdinal > statusCode.otelOrdinal) {
+            statusCode = code
         }
     }
 

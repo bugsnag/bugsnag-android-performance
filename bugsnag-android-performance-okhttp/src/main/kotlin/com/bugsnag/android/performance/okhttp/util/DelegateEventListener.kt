@@ -128,6 +128,13 @@ public open class DelegateEventListener(
         delegateEventListener?.requestBodyStart(call)
     }
 
+    override fun requestBodyEnd(
+        call: Call,
+        byteCount: Long,
+    ) {
+        delegateEventListener?.requestBodyEnd(call, byteCount)
+    }
+
     override fun requestFailed(
         call: Call,
         ioe: IOException,
@@ -148,6 +155,13 @@ public open class DelegateEventListener(
 
     override fun responseBodyStart(call: Call) {
         delegateEventListener?.responseBodyStart(call)
+    }
+
+    override fun responseBodyEnd(
+        call: Call,
+        byteCount: Long,
+    ) {
+        delegateEventListener?.responseBodyEnd(call, byteCount)
     }
 
     override fun responseFailed(
