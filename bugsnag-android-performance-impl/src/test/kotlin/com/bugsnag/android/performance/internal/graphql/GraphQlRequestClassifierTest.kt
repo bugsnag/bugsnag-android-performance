@@ -215,4 +215,30 @@ class GraphQlRequestClassifierTest {
         assertEquals("query", GraphQlRequestClassifier.buildSpanName("query", ""))
         assertEquals("mutation:CreatePost", GraphQlRequestClassifier.buildSpanName("mutation", "CreatePost"))
     }
+
+    @Test
+    fun hasNonEmptyErrorsArrayDetectsGraphQlApplicationErrors() {
+        assertFalse(GraphQlRequestClassifier.hasNonEmptyErrorsArray(null))
+        assertFalse(GraphQlRequestClassifier.hasNonEmptyErrorsArray(""))
+        assertFalse(
+            GraphQlRequestClassifier.hasNonEmptyErrorsArray(
+                """{"data":{"user":{"id":"1","name":"John"}}}""",
+            ),
+        )
+        assertFalse(
+            GraphQlRequestClassifier.hasNonEmptyErrorsArray(
+                """{"data":{"user":{"id":"1"}},"errors":[]}""",
+            ),
+        )
+        assertTrue(
+            GraphQlRequestClassifier.hasNonEmptyErrorsArray(
+                """{"data":null,"errors":[{"message":"User not found","path":["user"]}]}""",
+            ),
+        )
+        assertTrue(
+            GraphQlRequestClassifier.hasNonEmptyErrorsArray(
+                """{"data":{"user":{"id":"1"}},"errors":[{"message":"Field deprecated"}]}""",
+            ),
+        )
+    }
 }

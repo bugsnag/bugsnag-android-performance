@@ -1,6 +1,7 @@
 package com.bugsnag.android.performance.internal
 
 import com.bugsnag.android.performance.SpanKind
+import com.bugsnag.android.performance.SpanStatusCode
 import com.bugsnag.android.performance.test.NoopSpanProcessor
 import com.bugsnag.android.performance.test.OtelValidator.assertTraceDataValid
 import com.bugsnag.android.performance.test.TestTimeoutExecutor
@@ -219,6 +220,46 @@ class SpanPayloadEncodingTest {
 
         assertFalse(attributes.containsKey("graphql.operation.type"))
         assertFalse(attributes.containsKey("graphql.operation.name"))
+    }
+
+    @Test
+    fun testGraphQlSpanPayloadIncludesStatusCodeName() {
+        val span =
+            SpanImpl(
+                "GraphQL api.example.com/graphql - query:GetUser",
+                SpanCategory.GRAPHQL,
+                SpanKind.CLIENT,
+                100L,
+                UUID.fromString("4ee26661-4650-4c7f-a35f-00f007cd24e7"),
+                0xaaaabbbb,
+                0L,
+                false,
+                null,
+                null,
+                TestTimeoutExecutor(),
+                NoopSpanProcessor.INSTANCE,
+            )
+        span.setAttribute("http.status_code", 200)
+        span.setStatus(SpanStatusCode.ERROR)
+        span.end(101L)
+
+        val content =
+            TracePayload.encodeSpanPayload(
+                listOf(span),
+                Attributes().also { attrs ->
+                    attrs["service.name"] = "Test app"
+                    attrs["telemetry.sdk.name"] = "bugsnag.performance.android"
+                    attrs["telemetry.sdk.version"] = "0.0.0"
+                },
+                null,
+            )
+
+        assertTraceDataValid(content)
+
+        val spanObject = firstSpan(JSONObject(content.toString(Charsets.UTF_8)))
+        val status = spanObject.getJSONObject("status")
+        assertEquals("STATUS_CODE_ERROR", status.getString("code"))
+        assertFalse(attributesByKey(spanObject).containsKey("bugsnag.internal.graphql.response_has_errors"))
     }
 
     @Test

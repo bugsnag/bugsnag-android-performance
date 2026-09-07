@@ -690,3 +690,31 @@ Then('the span payload does not contain {string}') do |forbidden|
     )
   end
 end
+
+Then('a span field {string} is greater than {int}') do |field, expected|
+  spans = spans_from_request_list(Maze::Server.list_for('traces'))
+  raise Test::Unit::AssertionFailedError, 'no spans received' if spans.empty?
+
+  found = spans.find do |span|
+    Maze::Helper.read_key_path(span, field).to_i > expected
+  end
+
+  values = spans.map { |span| Maze::Helper.read_key_path(span, field) }
+  raise Test::Unit::AssertionFailedError.new(
+    "Expected a span with #{field} > #{expected}, found #{values.inspect}"
+  ) if found.nil?
+end
+
+Then('a nested span field {string} equals {string}') do |field, expected|
+  spans = spans_from_request_list(Maze::Server.list_for('traces'))
+  raise Test::Unit::AssertionFailedError, 'no spans received' if spans.empty?
+
+  found = spans.find do |span|
+    Maze::Helper.read_key_path(span, field).to_s == expected
+  end
+
+  codes = spans.map { |span| Maze::Helper.read_key_path(span, field) }
+  raise Test::Unit::AssertionFailedError.new(
+    "Expected a span with #{field}=#{expected.inspect}, found #{codes.inspect}"
+  ) if found.nil?
+end
