@@ -176,7 +176,7 @@ class GraphQlContentTypeScenario(
 
             val mockResponseStatus =
                 if (shouldParseHttpStatus) {
-                    fourth.toIntOrNull() ?: error("Expected optional httpStatus to be an integer")
+                    fourth?.toIntOrNull() ?: error("Expected optional httpStatus to be an integer")
                 } else {
                     null
                 }
