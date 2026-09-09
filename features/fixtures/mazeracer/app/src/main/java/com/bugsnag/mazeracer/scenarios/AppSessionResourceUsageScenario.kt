@@ -10,7 +10,6 @@ class AppSessionResourceUsageScenario(
     config: PerformanceConfiguration,
     scenarioMetadata: String,
 ) : Scenario(config, scenarioMetadata) {
-    private val scenarioConfig = mutableMapOf<String, String>()
 
     init {
         InternalDebug.spanBatchSizeSendTriggerPoint = 1
@@ -29,15 +28,9 @@ class AppSessionResourceUsageScenario(
         }
     }
 
-    fun configureScenario(
-        key: String,
-        value: String,
-    ) {
-        scenarioConfig[key] = value
-    }
-
     fun startBugsnag() {
         BugsnagPerformance.start(config)
+        forceConfigureMetrics(config.enabledMetrics)
     }
 
     override fun startScenario() {

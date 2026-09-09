@@ -76,14 +76,14 @@ internal class DiskIoMetricsConcurrentSpansTest {
             snapshotA!!.finish(spanA)
 
             // Span B: (T2 - T1) = 1s, delta read=20 write=10
-            assertEquals(20.0, spanB.attributes[DiskIoMetricsSource.ATTR_IOPS_READ])
-            assertEquals(10.0, spanB.attributes[DiskIoMetricsSource.ATTR_IOPS_WRITE])
-            assertEquals(30.0, spanB.attributes[DiskIoMetricsSource.ATTR_IOPS_TOTAL])
+            assertEquals(20L, spanB.attributes[DiskIoMetricsSource.ATTR_IOPS_READ])
+            assertEquals(10L, spanB.attributes[DiskIoMetricsSource.ATTR_IOPS_WRITE])
+            assertEquals(30L, spanB.attributes[DiskIoMetricsSource.ATTR_IOPS_TOTAL])
 
             // Span A: (T3 - T0) = 4s, delta read=120 write=60
-            assertEquals(30.0, spanA.attributes[DiskIoMetricsSource.ATTR_IOPS_READ])
-            assertEquals(15.0, spanA.attributes[DiskIoMetricsSource.ATTR_IOPS_WRITE])
-            assertEquals(45.0, spanA.attributes[DiskIoMetricsSource.ATTR_IOPS_TOTAL])
+            assertEquals(30L, spanA.attributes[DiskIoMetricsSource.ATTR_IOPS_READ])
+            assertEquals(15L, spanA.attributes[DiskIoMetricsSource.ATTR_IOPS_WRITE])
+            assertEquals(45L, spanA.attributes[DiskIoMetricsSource.ATTR_IOPS_TOTAL])
 
             assertNotEquals(
                 spanA.attributes[DiskIoMetricsSource.ATTR_IOPS_TOTAL],
@@ -133,9 +133,9 @@ internal class DiskIoMetricsConcurrentSpansTest {
             outerSnapshot!!.finish(outerSpan)
 
             // Inner span ended first; outer span still gets metrics over its full T0–T3 window.
-            assertEquals(20.0, outerSpan.attributes[DiskIoMetricsSource.ATTR_IOPS_READ])
-            assertEquals(10.0, outerSpan.attributes[DiskIoMetricsSource.ATTR_IOPS_WRITE])
-            assertEquals(30.0, outerSpan.attributes[DiskIoMetricsSource.ATTR_IOPS_TOTAL])
+            assertEquals(20L, outerSpan.attributes[DiskIoMetricsSource.ATTR_IOPS_READ])
+            assertEquals(10L, outerSpan.attributes[DiskIoMetricsSource.ATTR_IOPS_WRITE])
+            assertEquals(30L, outerSpan.attributes[DiskIoMetricsSource.ATTR_IOPS_TOTAL])
         }
     }
 

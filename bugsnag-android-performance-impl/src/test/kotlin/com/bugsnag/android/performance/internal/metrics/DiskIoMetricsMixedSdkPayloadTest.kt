@@ -14,6 +14,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import kotlin.math.roundToLong
 
 /**
  * ROAD 2233 – Scenario 14 (Android SDK scope):
@@ -97,9 +98,9 @@ internal class DiskIoMetricsMixedSdkPayloadTest {
     ): SpanImpl {
         val span = TestSpanFactory().newSpan(processor = NoopSpanProcessor.INSTANCE)
         span.setAttribute(ATTR_CPU_MEAN, EXPECTED_CPU_MEAN)
-        span.attributes[DiskIoMetricsSource.ATTR_IOPS_READ] = iopsTotal * 0.6
-        span.attributes[DiskIoMetricsSource.ATTR_IOPS_WRITE] = iopsTotal * 0.4
-        span.attributes[DiskIoMetricsSource.ATTR_IOPS_TOTAL] = iopsTotal
+        span.attributes[DiskIoMetricsSource.ATTR_IOPS_READ] = (iopsTotal * 0.6).roundToLong()
+        span.attributes[DiskIoMetricsSource.ATTR_IOPS_WRITE] = (iopsTotal * 0.4).roundToLong()
+        span.attributes[DiskIoMetricsSource.ATTR_IOPS_TOTAL] = iopsTotal.roundToLong()
         span.end(endTime)
         return span
     }

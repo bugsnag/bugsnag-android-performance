@@ -92,9 +92,10 @@ end
 def get_span_attribute_value(attribute_obj, type, index = nil)
   # OTLP uses 'intValue', 'boolValue', 'doubleValue', and arrayValue for arrays
   real_type = case type
-              when 'integer' then 'int'
-              when 'boolean' then 'bool'
-              when 'float' then 'double'
+              when 'integer', 'int' then 'int'
+              when 'boolean', 'bool' then 'bool'
+              when 'float', 'double' then 'double'
+              when 'string' then 'string'
               else type
               end
 
@@ -112,11 +113,12 @@ def get_span_attribute_value(attribute_obj, type, index = nil)
     if !index.nil?
       elem = values[index.to_i]
       return nil if elem.nil?
-      return elem['stringValue'] || elem['intValue'] || elem['doubleValue'] || elem['boolValue']
+      # Try the specific type first, then fallback
+      return elem["#{real_type}Value"] || elem['stringValue'] || elem['intValue'] || elem['doubleValue'] || elem['boolValue']
     end
 
     # No index: return an array of underlying primitive values
-    return values.map { |v| v['stringValue'] || v['intValue'] || v['doubleValue'] || v['boolValue'] }
+    return values.map { |v| v["#{real_type}Value"] || v['stringValue'] || v['intValue'] || v['doubleValue'] || v['boolValue'] }
   end
 
   # Fallback to primitive value fields (intValue, boolValue, doubleValue, stringValue)
@@ -223,14 +225,44 @@ Then('the {string} span has {word} attribute named {string}') do |span_name, att
 
   attributes = found_spans.first['attributes']
   attribute_obj = attributes.find { |a| a['key'] == attribute }
-  raise Test::Unit::AssertionFailedError.new "No attribute named #{attribute} was found in span #{span_name}" if attribute_obj.nil?
+  if attribute_obj.nil?
+    available_attrs = attributes.map { |a|
+      val = get_span_attribute_value(a, attribute_type) || "???"
+      "#{a['key']}=#{val}"
+    }.join(', ')
+    raise Test::Unit::AssertionFailedError.new "No attribute named '#{attribute}' was found in span '#{span_name}'. Available attributes: [#{available_attrs}]"
+  end
 
   value = get_span_attribute_value(attribute_obj, attribute_type)
 
   Maze.check.not_nil value
 end
 
-Then('the {string} span double attribute {string} equals the sum of {string} and {string}') do |span_name, total_attr, read_attr, write_attr|
+Then('the {string} span {word} attribute {string} equals {string}') do |span_name, type, attribute, expected|
+  spans = spans_from_request_list(Maze::Server.list_for('traces'))
+  found_spans = spans.find_all { |span| span['name'].eql?(span_name) }
+  raise Test::Unit::AssertionFailedError.new "No spans were found with the name #{span_name}" if found_spans.empty?
+
+  found_spans.each do |span|
+    attributes = span['attributes']
+    attribute_obj = attributes.find { |a| a['key'] == attribute }
+    raise Test::Unit::AssertionFailedError.new "No attribute named #{attribute} was found in span #{span_name}" if attribute_obj.nil?
+
+    value = get_span_attribute_value(attribute_obj, type)
+    raise Test::Unit::AssertionFailedError.new "Attribute #{attribute} in span #{span_name} is null or has no #{type} value" if value.nil?
+
+    if type == 'double' || type == 'float'
+      actual_f = value.to_f
+      expected_f = expected.to_f
+      Maze.check.operator (expected_f - actual_f).abs, :<=, 0.0001,
+                            "The span '#{span_name}' attribute '#{attribute}' (#{actual_f}) is not equal to '#{expected_f}'"
+    else
+      Maze.check.equal(expected, value.to_s)
+    end
+  end
+end
+
+Then('the {string} span {word} attribute {string} equals the sum of {string} and {string}') do |span_name, type, total_attr, read_attr, write_attr|
   spans = spans_from_request_list(Maze::Server.list_for('traces'))
   found_spans = spans.find_all { |span| span['name'].eql?(span_name) }
   raise Test::Unit::AssertionFailedError.new "No spans were found with the name #{span_name}" if found_spans.empty?
@@ -245,13 +277,18 @@ Then('the {string} span double attribute {string} equals the sum of {string} and
   raise Test::Unit::AssertionFailedError.new "No attribute named #{read_attr} was found in span #{span_name}" if read_obj.nil?
   raise Test::Unit::AssertionFailedError.new "No attribute named #{write_attr} was found in span #{span_name}" if write_obj.nil?
 
-  total = get_span_attribute_value(total_obj, 'double').to_f
-  read = get_span_attribute_value(read_obj, 'double').to_f
-  write = get_span_attribute_value(write_obj, 'double').to_f
+  total = get_span_attribute_value(total_obj, type).to_f
+  read = get_span_attribute_value(read_obj, type).to_f
+  write = get_span_attribute_value(write_obj, type).to_f
   expected = read + write
 
-  Maze.check.operator (total - expected).abs, :<=, 0.0001,
-                      "The span '#{span_name}' attribute '#{total_attr}' (#{total}) is not equal to #{read_attr}+#{write_attr} (#{expected})"
+  if type == 'double' || type == 'float'
+    Maze.check.operator (total - expected).abs, :<=, 0.0001,
+                        "The span '#{span_name}' attribute '#{total_attr}' (#{total}) is not equal to #{read_attr}+#{write_attr} (#{expected})"
+  else
+    Maze.check.equal(expected.to_i, total.to_i,
+                        "The span '#{span_name}' attribute '#{total_attr}' (#{total.to_i}) is not equal to #{read_attr}+#{write_attr} (#{expected.to_i})")
+  end
 end
 
 Then('the {string} span string attribute {string} equals {string}') do |span_name, attribute, expected|

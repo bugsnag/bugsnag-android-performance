@@ -25,7 +25,7 @@ import java.io.File
  * OTLP payload contains exactly 3 disk attributes with correct keys and structure.
  *
  * Validates resourceSpans.scopeSpans.spans.attributes nesting, case-sensitive key strings,
- * doubleValue encoding, and absence of legacy disk attribute keys.
+ * intValue encoding, and absence of legacy disk attribute keys.
  */
 @RunWith(RobolectricTestRunner::class)
 internal class DiskIoMetricsOtlpPayloadTest {
@@ -98,27 +98,23 @@ internal class DiskIoMetricsOtlpPayloadTest {
 
         diskAttributes.forEach { attribute: JSONObject ->
             val value = attribute.getJSONObject("value")
-            assertTrue(value.has("doubleValue"))
-            assertFalse(value.has("intValue"))
+            assertTrue(value.has("intValue"))
+            assertFalse(value.has("doubleValue"))
             assertFalse(value.has("stringValue"))
             assertFalse(value.has("boolValue"))
-            assertTrue(value.getDouble("doubleValue").isFinite())
         }
 
         assertEquals(
-            45.0,
-            diskAttributes.doubleValueFor(DiskIoMetricsSource.ATTR_IOPS_TOTAL),
-            0.001,
+            45L,
+            diskAttributes.longValueFor(DiskIoMetricsSource.ATTR_IOPS_TOTAL),
         )
         assertEquals(
-            30.0,
-            diskAttributes.doubleValueFor(DiskIoMetricsSource.ATTR_IOPS_READ),
-            0.001,
+            30L,
+            diskAttributes.longValueFor(DiskIoMetricsSource.ATTR_IOPS_READ),
         )
         assertEquals(
-            15.0,
-            diskAttributes.doubleValueFor(DiskIoMetricsSource.ATTR_IOPS_WRITE),
-            0.001,
+            15L,
+            diskAttributes.longValueFor(DiskIoMetricsSource.ATTR_IOPS_WRITE),
         )
     }
 
@@ -139,9 +135,10 @@ internal class DiskIoMetricsOtlpPayloadTest {
         return attributes
     }
 
-    private fun List<JSONObject>.doubleValueFor(key: String): Double {
+    private fun List<JSONObject>.longValueFor(key: String): Long {
         val attribute = first { it.getString("key") == key }
-        return attribute.getJSONObject("value").getDouble("doubleValue")
+        // intValue is encoded as a string in OTLP JSON
+        return attribute.getJSONObject("value").getString("intValue").toLong()
     }
 
     private fun writeIoFile(

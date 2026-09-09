@@ -90,7 +90,7 @@ internal class ProcIoReaderFailureTest {
 
     @Test
     fun parseMissingSyscwReturnsFalse() {
-        copyResourceToFile("io_missing_syscw")
+        copyResourceToFile("io_missing_cw")
         val parser = ProcIoReader(file.absolutePath)
         val output = ProcIoReader.IoCounters()
         assertFalse(parser.parse(output))

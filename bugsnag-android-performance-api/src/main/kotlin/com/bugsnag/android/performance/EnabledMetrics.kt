@@ -21,7 +21,7 @@ public class EnabledMetrics(
      * Determines whether disk I/O metrics is gathered and reported. When enabled. read/write
      * syscall rates (IOPS) are captured for spans that requests disk metrics
      */
-    public val disk: Boolean = false,
+    public var disk: Boolean = false,
 ) {
     public constructor(enable: Boolean) : this(enable, enable, enable, enable)
 

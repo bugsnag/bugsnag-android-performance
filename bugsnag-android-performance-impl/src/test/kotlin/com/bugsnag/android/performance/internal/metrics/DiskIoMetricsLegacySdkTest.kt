@@ -43,7 +43,7 @@ internal class DiskIoMetricsLegacySdkTest {
         assertFalse(json.contains(DiskIoMetricsSource.ATTR_IOPS_READ))
         assertFalse(json.contains(DiskIoMetricsSource.ATTR_IOPS_WRITE))
         assertFalse(json.contains(DiskIoMetricsSource.ATTR_IOPS_TOTAL))
-        assertFalse(json.contains("\"doubleValue\":null"))
+        assertFalse(json.contains("\"intValue\":null"))
     }
 
     @Test

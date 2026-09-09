@@ -86,10 +86,9 @@ internal object DiskIoMetricsTestSupport {
 
     fun assertDiskIopsOnSpan(
         span: com.bugsnag.android.performance.internal.SpanImpl,
-        expectedRead: Double,
-        expectedWrite: Double,
-        expectedTotal: Double,
-        tolerance: Double = 0.001,
+        expectedRead: Long,
+        expectedWrite: Long,
+        expectedTotal: Long,
     ) {
         assertNotNull(
             "Disk IOPS read attribute was not set on span. " +
@@ -106,18 +105,15 @@ internal object DiskIoMetricsTestSupport {
         )
         assertEquals(
             expectedRead,
-            span.attributes[DiskIoMetricsSource.ATTR_IOPS_READ] as Double,
-            tolerance,
+            span.attributes[DiskIoMetricsSource.ATTR_IOPS_READ],
         )
         assertEquals(
             expectedWrite,
-            span.attributes[DiskIoMetricsSource.ATTR_IOPS_WRITE] as Double,
-            tolerance,
+            span.attributes[DiskIoMetricsSource.ATTR_IOPS_WRITE],
         )
         assertEquals(
             expectedTotal,
-            span.attributes[DiskIoMetricsSource.ATTR_IOPS_TOTAL] as Double,
-            tolerance,
+            span.attributes[DiskIoMetricsSource.ATTR_IOPS_TOTAL],
         )
     }
 

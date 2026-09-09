@@ -40,9 +40,9 @@ internal class DiskIoMetricsFormulaTest {
                     readEnd = 1260L,
                     writeEnd = 430L,
                     durationSec = 2.0,
-                    expectedRead = 30.0,
-                    expectedWrite = 15.0,
-                    expectedTotal = 45.0,
+                    expectedRead = 30L,
+                    expectedWrite = 15L,
+                    expectedTotal = 45L,
                 ),
                 // ROAD 2233 Scenario 2 – Android zero activity
                 FormulaCase(
@@ -52,9 +52,9 @@ internal class DiskIoMetricsFormulaTest {
                     readEnd = 5000L,
                     writeEnd = 2000L,
                     durationSec = 3.0,
-                    expectedRead = 0.0,
-                    expectedWrite = 0.0,
-                    expectedTotal = 0.0,
+                    expectedRead = 0L,
+                    expectedWrite = 0L,
+                    expectedTotal = 0L,
                 ),
             )
     }
@@ -218,9 +218,9 @@ internal class DiskIoMetricsFormulaTest {
         val readEnd: Long,
         val writeEnd: Long,
         val durationSec: Double,
-        val expectedRead: Double,
-        val expectedWrite: Double,
-        val expectedTotal: Double,
+        val expectedRead: Long,
+        val expectedWrite: Long,
+        val expectedTotal: Long,
     ) {
         override fun toString(): String = name
     }

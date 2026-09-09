@@ -1,14 +1,14 @@
 Feature: Disk IOPS
 
   # ROAD 2233 – Scenario 1
-  # SDK emits all 3 disk IOPS attributes as doubleValue on eligible spans.
-  Scenario Outline: SDK emits all 3 disk IOPS attributes as doubleValue on eligible spans
+  # SDK emits all 3 disk IOPS attributes as IntValue on eligible spans.
+  Scenario Outline: SDK emits all 3 disk IOPS attributes as IntValue on eligible spans
     When I run "DiskIopsScenario" configured as "<span_type>"
     And I wait to receive a span named "<span_name>"
-    Then the "<span_name>" span has double attribute named "bugsnag.device.disk.iops_read"
-    And the "<span_name>" span has double attribute named "bugsnag.device.disk.iops_write"
-    And the "<span_name>" span has double attribute named "bugsnag.device.disk.iops_total"
-    And the "<span_name>" span double attribute "bugsnag.device.disk.iops_total" equals the sum of "bugsnag.device.disk.iops_read" and "bugsnag.device.disk.iops_write"
+    Then the "<span_name>" span has integer attribute named "bugsnag.device.disk.iops_read"
+    And the "<span_name>" span has integer attribute named "bugsnag.device.disk.iops_write"
+    And the "<span_name>" span has integer attribute named "bugsnag.device.disk.iops_total"
+    And the "<span_name>" span integer attribute "bugsnag.device.disk.iops_total" equals the sum of "bugsnag.device.disk.iops_read" and "bugsnag.device.disk.iops_write"
 
     Examples:
       | platform | span_type   | span_name             |
@@ -17,15 +17,15 @@ Feature: Disk IOPS
 
   # ROAD 2233 – Scenario 1 (app_start)
   @skip_below_android_10
-  Scenario: SDK emits all 3 disk IOPS attributes as doubleValue on app_start spans
+  Scenario: SDK emits all 3 disk IOPS attributes as IntValue on app_start spans
     Given I run "DiskIopsAppStartScenario"
     Then I relaunch the app after shutdown
     And I load scenario "DiskIopsAppStartScenario"
     And I wait to receive a span named "[AppStart/AndroidCold]SplashScreen"
-    Then the "[AppStart/AndroidCold]SplashScreen" span has double attribute named "bugsnag.device.disk.iops_read"
-    And the "[AppStart/AndroidCold]SplashScreen" span has double attribute named "bugsnag.device.disk.iops_write"
-    And the "[AppStart/AndroidCold]SplashScreen" span has double attribute named "bugsnag.device.disk.iops_total"
-    And the "[AppStart/AndroidCold]SplashScreen" span double attribute "bugsnag.device.disk.iops_total" equals the sum of "bugsnag.device.disk.iops_read" and "bugsnag.device.disk.iops_write"
+    Then the "[AppStart/AndroidCold]SplashScreen" span has integer attribute named "bugsnag.device.disk.iops_read"
+    And the "[AppStart/AndroidCold]SplashScreen" span has integer attribute named "bugsnag.device.disk.iops_write"
+    And the "[AppStart/AndroidCold]SplashScreen" span has integer attribute named "bugsnag.device.disk.iops_total"
+    And the "[AppStart/AndroidCold]SplashScreen" span integer attribute "bugsnag.device.disk.iops_total" equals the sum of "bugsnag.device.disk.iops_read" and "bugsnag.device.disk.iops_write"
 
   # ROAD 2233 – Scenario 2
   # Exact IOPS formula with fixed start/end counters is NOT implementable as a Maze scenario.
@@ -33,7 +33,7 @@ Feature: Disk IOPS
   # Why Maze cannot cover this:
   # - The Scenario Outline examples require injecting known /proc/self/io counter values
   #   (e.g. syscr 1200→1260, syscw 400→430) over a fixed duration (e.g. 2.0s) and asserting
-  #   exact doubles (read=30.0, write=15.0, total=45.0).
+  #   exact values (read=30, write=15, total=45).
   # - On a real device/emulator, syscr/syscw are owned by the kernel and advance with all
   #   process I/O. Maze cannot set or freeze those counters at span start/end.
   # - Real-device IOPS therefore vary by device, OS, and background activity, so exact expected
@@ -70,7 +70,7 @@ Feature: Disk IOPS
   #
   # Validity vs the ROAD Scenario Outline:
   # - The outline text ("clamped to zero for all dimensions") and Expected columns assume
-  #   per-dimension clamping, e.g. only-read-regresses → read=0.0, write=15.0, total=15.0
+  #   per-dimension clamping, e.g. only-read-regresses → read=0, write=15, total=15
   #   (over a 2.0s duration). That is ONE allowed ED interpretation.
   # - Android does NOT clamp: if readDelta < 0 OR writeDelta < 0, DiskIoMetricsSource returns
   #   early and omits ALL disk iops_* attributes. That is the other ED-allowed path
@@ -113,15 +113,15 @@ Feature: Disk IOPS
   #
   # Android examples (valid per ED):
   # | Activity Type | Expected Read | Expected Write | Expected Total |
-  # | none (idle)   | 0.0           | 0.0            | 0.0            |
-  # | read-only     | > 0           | 0.0            | equals read    |
-  # | write-only    | 0.0           | > 0            | equals write   |
+  # | none (idle)   | 0             | 0              | 0              |
+  # | read-only     | > 0           | 0              | equals read    |
+  # | write-only    | 0             | > 0            | equals write   |
   #
   # Unlike Scenario 5 (unavailable source → omit attrs), a valid counter source with
-  # unchanged counters must still emit all three attributes as 0.0.
+  # unchanged counters must still emit all three attributes as 0.
   #
   # Why Maze cannot cover this reliably:
-  # - Requires asserting exact 0.0 on one or all dimensions (idle, read-only, write-only).
+  # - Requires asserting exact 0 on one or all dimensions (idle, read-only, write-only).
   # - On a real device/emulator, syscr/syscw advance with framework and background I/O even
   #   when the fixture performs no (or only read / only write) app-level file operations.
   # - Maze cannot inject /proc/self/io counter values or freeze kernel counters at span
@@ -132,7 +132,7 @@ Feature: Disk IOPS
   #     (none_idle, read_only, write_only)
   # Also overlaps with DiskIoMetricsFormulaTest (android_zero_activity) and
   # DiskIoMetricsSourceTest (endMetricsSetsZeroIopsWhenCountersUnchanged) for idle.
-  # Asserts: all bugsnag.device.disk.iops_* attributes present; exact doubles per table.
+  # Asserts: all bugsnag.device.disk.iops_* attributes present; exact integers per table.
 
   # ROAD 2233 – Scenario 7 (concurrent spans – independent IOPS, no snapshot collision)
   # Scenario: Concurrent spans each compute independent disk IOPS without collision.
@@ -215,15 +215,15 @@ Feature: Disk IOPS
   # Android SDK scope (valid here):
   # - Spans with no disk metric source emit no bugsnag.device.disk.iops_* attributes.
   # - Other span attributes (e.g. CPU, fps) are unaffected when disk source is absent.
-  # - OTLP JSON payload omits disk IOPS keys entirely (no null doubleValue sent).
+  # - OTLP JSON payload omits disk IOPS keys entirely (no null intValue sent).
   #
   # Covered by unit tests:
   #   DiskIoMetricsLegacySdkTest
   #     (spanWithoutDiskMetricsOmitsDiskAttrsFromPayload,
   #      otherMetricsUnaffectedWhenDiskSourceAbsent)
 
-  # ROAD 2233 – Scenario 11 (high and burst I/O – valid Float64)
-  # Scenario Outline: Disk IOPS values are valid Float64 under high and burst I/O conditions.
+  # ROAD 2233 – Scenario 11 (high and burst I/O – valid Int64)
+  # Scenario Outline: Disk IOPS values are valid Int64 under high and burst I/O conditions.
   #
   # Android examples (valid per ED):
   # | Workload                          | Duration Sec | Notes                              |
@@ -231,7 +231,7 @@ Feature: Disk IOPS
   # | 10MB burst write then idle        | 10.0         | burst averaged over full duration  |
   # | 50MB file copy                    | 5.0          | both read and write > 0            |
   #
-  # Asserts: finite doubles (not NaN/Infinity); formula averages burst over full span duration.
+  # Asserts: valid integers; formula averages burst over full span duration.
   #
   # Why Maze cannot cover this reliably:
   # - Real SQLite/file-copy workloads produce device-dependent syscr/syscw rates.
@@ -240,8 +240,8 @@ Feature: Disk IOPS
   # Covered instead by unit tests with injectable io fixtures + mocked clocks:
   #   DiskIoMetricsHighIopsTest
   #     (intensive_sqlite, burst_write_then_idle, large_file_copy)
-  #   DiskIoMetricsHighIopsJsonTest (serializesHighIopsAsDoubleValueInJsonPayload)
-  # Asserts: finite Float64 values; JSON encodes as doubleValue (not null).
+  #   DiskIoMetricsHighIopsJsonTest (serializesHighIopsAsIntValueInJsonPayload)
+  # Asserts: valid Long values; JSON encodes as intValue (not null).
 
   # ROAD 2233 – Scenario 12 (OTLP payload structure for disk IOPS)
   # Scenario: OTLP payload contains exactly 3 disk attributes with correct keys and structure.
@@ -251,7 +251,7 @@ Feature: Disk IOPS
   #     bugsnag.device.disk.iops_read
   #     bugsnag.device.disk.iops_write
   #     bugsnag.device.disk.iops_total
-  # - Each value nested as attributes[].value.doubleValue
+  # - Each value nested as attributes[].value.intValue
   # - No legacy keys (bugsnag.app.disk.bytes_read, bytes_written, read_bytes_per_sec,
   #   write_bytes_per_sec, ops_per_sec)
   # - No raw /proc counter attribute keys (syscr, syscw, read_bytes, etc.)
@@ -266,7 +266,7 @@ Feature: Disk IOPS
   # Disk State examples:
   # | enabled with valid disk data  | disk IOPS attrs present with non-zero values |
   # | disabled (source unavailable) | disk source absent; no disk IOPS attrs       |
-  # | emitting zero IOPS values     | disk IOPS attrs present as 0.0               |
+  # | emitting zero IOPS values     | disk IOPS attrs present as 0                 |
   #
   # In all cases CPU, memory, and frozen-frame attributes must remain present and correct.
   # SpanMetricsSnapshot invokes each MetricSource independently; disk collection does not
@@ -305,9 +305,9 @@ Feature: Disk IOPS
   # Scenario: SDK delivers span payload to trace API successfully with disk IOPS attributes.
   #
   # Example attribute values (ROAD):
-  #   bugsnag.device.disk.iops_read  = 18.0
-  #   bugsnag.device.disk.iops_write = 16.4
-  #   bugsnag.device.disk.iops_total = 34.4
+  #   bugsnag.device.disk.iops_read  = 18
+  #   bugsnag.device.disk.iops_write = 16
+  #   bugsnag.device.disk.iops_total = 34
   #
   # Validation:
   # - OTLP payload is POSTed to the trace API via HttpDelivery
@@ -319,3 +319,22 @@ Feature: Disk IOPS
   # Covered by unit test:
   #   DiskIoMetricsHttpDeliveryTest (deliversSpanPayloadWithDiskIopsAttributesToTraceApi)
   # Asserts: gzip OTLP body contains the three disk IOPS attrs; DeliveryResult.Success on 200.
+
+  Scenario Outline: Disk IOPS is computed correctly using platform-specific formula
+    Given I load scenario "ManualSpanScenario"
+    And I configure scenario "Platform" to "<Platform>"
+    And I configure scenario "R Start" to "<R Start>"
+    And I configure scenario "W Start" to "<W Start>"
+    And I configure scenario "R End" to "<R End>"
+    And I configure scenario "W End" to "<W End>"
+    And I configure scenario "Duration Sec" to "<Duration Sec>"
+    And I run the loaded scenario
+    And I wait to receive a span named "DiskIopsMock"
+    Then the "DiskIopsMock" span integer attribute "bugsnag.device.disk.iops_read" equals "<Expected Read>"
+    And the "DiskIopsMock" span integer attribute "bugsnag.device.disk.iops_write" equals "<Expected Write>"
+    And the "DiskIopsMock" span integer attribute "bugsnag.device.disk.iops_total" equals "<Expected Total>"
+
+    Examples:
+      | Platform | R Start | W Start | R End | W End | Duration Sec | Expected Read | Expected Write | Expected Total | Notes                  |
+      | android  | 1200    | 400     | 1260  | 430   | 2.0          | 30            | 15             | 45             | Android syscr/syscw    |
+      | android  | 5000    | 2000    | 5000  | 2000  | 3.0          | 0             | 0              | 0              | Android zero activity  |

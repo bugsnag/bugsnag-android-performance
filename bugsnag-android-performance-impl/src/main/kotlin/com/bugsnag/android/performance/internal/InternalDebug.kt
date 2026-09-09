@@ -12,6 +12,8 @@ import androidx.annotation.RestrictTo
 public object InternalDebug {
     public var spanBatchSizeSendTriggerPoint: Int = 100
 
+    public var procIoPath: String = "/proc/self/io"
+
     /**
      * The maximum amount of time the worker thread will sleep without a `wake()`
      */

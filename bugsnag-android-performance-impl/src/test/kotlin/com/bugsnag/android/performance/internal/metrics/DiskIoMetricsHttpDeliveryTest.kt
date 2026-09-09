@@ -50,7 +50,8 @@ internal class DiskIoMetricsHttpDeliveryTest {
 
     @Test
     fun deliversSpanPayloadWithDiskIopsAttributesToTraceApi() {
-        val span = spanWithDiskIops(read = 18.0, write = 16.4, total = 34.4)
+        // ROAD values 18.0, 16.4, 34.4 -> rounded to 18, 16, 34
+        val span = spanWithDiskIops(read = 18.0, write = 16.0, total = 34.0)
 
         val connectivity =
             mock<Connectivity> {
@@ -86,19 +87,16 @@ internal class DiskIoMetricsHttpDeliveryTest {
         val diskAttributes = diskAttributesFromPayload(JSONObject(payloadJson))
         assertEquals(3, diskAttributes.size)
         assertEquals(
-            18.0,
-            diskAttributes.doubleValueFor(DiskIoMetricsSource.ATTR_IOPS_READ),
-            0.001,
+            18L,
+            diskAttributes.longValueFor(DiskIoMetricsSource.ATTR_IOPS_READ),
         )
         assertEquals(
-            16.4,
-            diskAttributes.doubleValueFor(DiskIoMetricsSource.ATTR_IOPS_WRITE),
-            0.001,
+            16L,
+            diskAttributes.longValueFor(DiskIoMetricsSource.ATTR_IOPS_WRITE),
         )
         assertEquals(
-            34.4,
-            diskAttributes.doubleValueFor(DiskIoMetricsSource.ATTR_IOPS_TOTAL),
-            0.001,
+            34L,
+            diskAttributes.longValueFor(DiskIoMetricsSource.ATTR_IOPS_TOTAL),
         )
     }
 
@@ -146,9 +144,9 @@ internal class DiskIoMetricsHttpDeliveryTest {
 
         DiskIoMetricsTestSupport.assertDiskIopsOnSpan(
             span = span,
-            expectedRead = read,
-            expectedWrite = write,
-            expectedTotal = total,
+            expectedRead = read.toLong(),
+            expectedWrite = write.toLong(),
+            expectedTotal = total.toLong(),
         )
 
         return span
@@ -174,9 +172,10 @@ internal class DiskIoMetricsHttpDeliveryTest {
             .filter { it.getString("key").startsWith(DISK_KEY_PREFIX) }
     }
 
-    private fun List<JSONObject>.doubleValueFor(key: String): Double {
+    private fun List<JSONObject>.longValueFor(key: String): Long {
         val attribute = first { it.getString("key") == key }
-        return attribute.getJSONObject("value").getDouble("doubleValue")
+        // intValue is encoded as a string in OTLP JSON
+        return attribute.getJSONObject("value").getString("intValue").toLong()
     }
 
     private class RecordingHttpConnection(

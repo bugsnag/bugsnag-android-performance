@@ -99,14 +99,14 @@ internal class DiskIoMetricsSystemMetricsIsolationTest {
 
         when (testCase.diskMode) {
             DiskMode.ENABLED_VALID -> {
-                assertEquals(50.0, span.attributes[DiskIoMetricsSource.ATTR_IOPS_READ])
-                assertEquals(25.0, span.attributes[DiskIoMetricsSource.ATTR_IOPS_WRITE])
-                assertEquals(75.0, span.attributes[DiskIoMetricsSource.ATTR_IOPS_TOTAL])
+                assertEquals(50L, span.attributes[DiskIoMetricsSource.ATTR_IOPS_READ])
+                assertEquals(25L, span.attributes[DiskIoMetricsSource.ATTR_IOPS_WRITE])
+                assertEquals(75L, span.attributes[DiskIoMetricsSource.ATTR_IOPS_TOTAL])
             }
             DiskMode.ZERO_IOPS -> {
-                assertEquals(0.0, span.attributes[DiskIoMetricsSource.ATTR_IOPS_READ])
-                assertEquals(0.0, span.attributes[DiskIoMetricsSource.ATTR_IOPS_WRITE])
-                assertEquals(0.0, span.attributes[DiskIoMetricsSource.ATTR_IOPS_TOTAL])
+                assertEquals(0L, span.attributes[DiskIoMetricsSource.ATTR_IOPS_READ])
+                assertEquals(0L, span.attributes[DiskIoMetricsSource.ATTR_IOPS_WRITE])
+                assertEquals(0L, span.attributes[DiskIoMetricsSource.ATTR_IOPS_TOTAL])
             }
             DiskMode.DISABLED -> {
                 assertNull(span.attributes[DiskIoMetricsSource.ATTR_IOPS_READ])

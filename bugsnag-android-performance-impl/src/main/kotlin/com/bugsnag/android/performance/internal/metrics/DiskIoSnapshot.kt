@@ -8,11 +8,12 @@ import androidx.annotation.RestrictTo
  * @property readSyscalls Total cumulative read syscalls (syscr from /proc/self/io).
  * @property writeSyscalls Total cumulative write syscalls (syscw from /proc/self/io).
  * @property timestampNanos Timestamp when this snapshot was captured, in nanoseconds (elapsedRealtimeNanos).
+ * @property status Internal status or error message from the reader.
  */
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP_PREFIX)
 public data class DiskIoSnapshot(
     val readSyscalls: Long,
     val writeSyscalls: Long,
     val timestampNanos: Long,
+    val status: String? = null,
 )
-

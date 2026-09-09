@@ -30,7 +30,7 @@ internal class DiskIoMetricsOrphanedSpansTest {
     }
 
     @Test
-    fun completedSpansReportCorrectDiskIopsWithOrphanedSnapshotsPresent() {
+    fun completedSpans reportCorrectDiskIopsWithOrphanedSnapshotsPresent() {
         val diskSource = DiskIoMetricsSource(ProcIoReader(ioFile.absolutePath))
         var syscr = 1000L
         var syscw = 500L
@@ -115,8 +115,8 @@ internal class DiskIoMetricsOrphanedSpansTest {
         private const val SPAN_DURATION_NS = 2L * NANOS_PER_SECOND
         private const val READ_DELTA_PER_SPAN = 20L
         private const val WRITE_DELTA_PER_SPAN = 10L
-        private const val EXPECTED_READ_IOPS = 10.0
-        private const val EXPECTED_WRITE_IOPS = 5.0
-        private const val EXPECTED_TOTAL_IOPS = 15.0
+        private const val EXPECTED_READ_IOPS = 10L
+        private const val EXPECTED_WRITE_IOPS = 5L
+        private const val EXPECTED_TOTAL_IOPS = 15L
     }
 }

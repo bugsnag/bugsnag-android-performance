@@ -42,9 +42,10 @@ internal class DiskIoMetricsSourceTest {
         val source = DiskIoMetricsSource(ProcIoReader("/proc/does-not-exist-${System.nanoTime()}"))
         val snapshot = source.createStartMetrics()
 
-        assertEquals(-1L, snapshot.readSyscalls)
-        assertEquals(-1L, snapshot.writeSyscalls)
-        assertEquals(0L, snapshot.timestampNanos)
+        // -2L is used in the updated DiskIoMetricsSource for start-parse-failed marker
+        assertEquals(-2L, snapshot.readSyscalls)
+        assertEquals(-2L, snapshot.writeSyscalls)
+        assertTrue(snapshot.timestampNanos > 0L)
     }
 
     @Test
@@ -62,9 +63,9 @@ internal class DiskIoMetricsSourceTest {
             val span = TestSpanFactory().newSpan(processor = NoopSpanProcessor.INSTANCE)
             source.endMetrics(startSnapshot, span)
 
-            assertEquals(50.0, span.attributes[DiskIoMetricsSource.ATTR_IOPS_READ])
-            assertEquals(25.0, span.attributes[DiskIoMetricsSource.ATTR_IOPS_WRITE])
-            assertEquals(75.0, span.attributes[DiskIoMetricsSource.ATTR_IOPS_TOTAL])
+            assertEquals(50L, span.attributes[DiskIoMetricsSource.ATTR_IOPS_READ])
+            assertEquals(25L, span.attributes[DiskIoMetricsSource.ATTR_IOPS_WRITE])
+            assertEquals(75L, span.attributes[DiskIoMetricsSource.ATTR_IOPS_TOTAL])
         }
     }
 
@@ -82,9 +83,9 @@ internal class DiskIoMetricsSourceTest {
             val span = TestSpanFactory().newSpan(processor = NoopSpanProcessor.INSTANCE)
             source.endMetrics(startSnapshot, span)
 
-            assertEquals(0.0, span.attributes[DiskIoMetricsSource.ATTR_IOPS_READ])
-            assertEquals(0.0, span.attributes[DiskIoMetricsSource.ATTR_IOPS_WRITE])
-            assertEquals(0.0, span.attributes[DiskIoMetricsSource.ATTR_IOPS_TOTAL])
+            assertEquals(0L, span.attributes[DiskIoMetricsSource.ATTR_IOPS_READ])
+            assertEquals(0L, span.attributes[DiskIoMetricsSource.ATTR_IOPS_WRITE])
+            assertEquals(0L, span.attributes[DiskIoMetricsSource.ATTR_IOPS_TOTAL])
         }
     }
 
@@ -142,9 +143,9 @@ internal class DiskIoMetricsSourceTest {
             val span = TestSpanFactory().newSpan(processor = NoopSpanProcessor.INSTANCE)
             source.endMetrics(startSnapshot, span)
 
-            assertEquals(50.0, span.attributes[DiskIoMetricsSource.ATTR_IOPS_READ])
-            assertEquals(0.0, span.attributes[DiskIoMetricsSource.ATTR_IOPS_WRITE])
-            assertEquals(50.0, span.attributes[DiskIoMetricsSource.ATTR_IOPS_TOTAL])
+            assertEquals(50L, span.attributes[DiskIoMetricsSource.ATTR_IOPS_READ])
+            assertEquals(0L, span.attributes[DiskIoMetricsSource.ATTR_IOPS_WRITE])
+            assertEquals(50L, span.attributes[DiskIoMetricsSource.ATTR_IOPS_TOTAL])
         }
     }
 
@@ -269,9 +270,9 @@ internal class DiskIoMetricsSourceTest {
             val span = TestSpanFactory().newSpan(processor = NoopSpanProcessor.INSTANCE)
             snapshot!!.finish(span)
 
-            assertEquals(20.0, span.attributes[DiskIoMetricsSource.ATTR_IOPS_READ])
-            assertEquals(10.0, span.attributes[DiskIoMetricsSource.ATTR_IOPS_WRITE])
-            assertEquals(30.0, span.attributes[DiskIoMetricsSource.ATTR_IOPS_TOTAL])
+            assertEquals(20L, span.attributes[DiskIoMetricsSource.ATTR_IOPS_READ])
+            assertEquals(10L, span.attributes[DiskIoMetricsSource.ATTR_IOPS_WRITE])
+            assertEquals(30L, span.attributes[DiskIoMetricsSource.ATTR_IOPS_TOTAL])
         }
     }
 

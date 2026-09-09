@@ -1,18 +1,30 @@
 pluginManagement {
     repositories {
-        mavenLocal()
         gradlePluginPortal()
         google()
         mavenCentral()
     }
 }
+
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
-        mavenLocal()
         google()
         mavenCentral()
     }
 }
+
 rootProject.name = "Maze Racer"
 include ':app'
+
+includeBuild('../../..') {
+    dependencySubstitution {
+        substitute module('com.bugsnag:bugsnag-android-performance') using project(':bugsnag-android-performance')
+        substitute module('com.bugsnag:bugsnag-android-performance-api') using project(':bugsnag-android-performance-api')
+        substitute module('com.bugsnag:bugsnag-android-performance-impl') using project(':bugsnag-android-performance-impl')
+        substitute module('com.bugsnag:bugsnag-android-performance-okhttp') using project(':bugsnag-android-performance-okhttp')
+        substitute module('com.bugsnag:bugsnag-android-performance-compose') using project(':bugsnag-android-performance-compose')
+        substitute module('com.bugsnag:bugsnag-android-performance-appcompat') using project(':bugsnag-android-performance-appcompat')
+        substitute module('com.bugsnag:bugsnag-android-performance-coroutines') using project(':bugsnag-android-performance-coroutines')
+    }
+}

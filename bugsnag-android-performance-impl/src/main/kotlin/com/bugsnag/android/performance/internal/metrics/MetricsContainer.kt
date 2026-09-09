@@ -32,6 +32,10 @@ internal open class MetricsContainer(
     var diskIoMetricSource: MetricSource<DiskIoSnapshot>? = null
         private set
 
+    init {
+        diskIoMetricSource = createDiskIoMetricSource()
+    }
+
     /**
      * Called before we are fully configured, typically from `InstrumentedAppState.attach`. This
      * installs all of the metrics instrumentation - which can then be uninstalled when
@@ -43,7 +47,10 @@ internal open class MetricsContainer(
         memoryMetricSource = startSampling(createMemoryMetricSource(application))
         cpuMetricSource = startSampling(createCpuMetricSource(application))
         renderingMetricsSource = createFrameMetricSource(application)
-        diskIoMetricSource = createDiskIoMetricSource()
+
+        if (diskIoMetricSource == null) {
+            diskIoMetricSource = createDiskIoMetricSource()
+        }
     }
 
     /**
@@ -51,17 +58,29 @@ internal open class MetricsContainer(
      * as required to match the given configuration.
      */
     fun configure(enabledMetrics: EnabledMetrics) {
-        if (!enabledMetrics.cpu) {
+        if (enabledMetrics.cpu) {
+            if (cpuMetricSource == null) {
+                cpuMetricSource = startSampling(createCpuMetricSource(requireNotNull(application)))
+            }
+        } else {
             stopSampling(cpuMetricSource)
             cpuMetricSource = null
         }
 
-        if (!enabledMetrics.memory) {
+        if (enabledMetrics.memory) {
+            if (memoryMetricSource == null) {
+                memoryMetricSource = startSampling(createMemoryMetricSource(requireNotNull(application)))
+            }
+        } else {
             stopSampling(memoryMetricSource)
             memoryMetricSource = null
         }
 
-        if (!enabledMetrics.rendering) {
+        if (enabledMetrics.rendering) {
+            if (renderingMetricsSource == null) {
+                renderingMetricsSource = createFrameMetricSource(requireNotNull(application))
+            }
+        } else {
             (renderingMetricsSource as? ActivityLifecycleCallbacks)?.let {
                 application?.unregisterActivityLifecycleCallbacks(it)
             }
@@ -69,7 +88,11 @@ internal open class MetricsContainer(
             renderingMetricsSource = null
         }
 
-        if (!enabledMetrics.disk) {
+        if (enabledMetrics.disk) {
+            if (diskIoMetricSource == null) {
+                diskIoMetricSource = createDiskIoMetricSource()
+            }
+        } else {
             diskIoMetricSource = null
         }
     }

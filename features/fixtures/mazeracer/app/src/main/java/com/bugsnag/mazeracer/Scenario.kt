@@ -18,6 +18,12 @@ abstract class Scenario(
 
     lateinit var context: Activity
 
+    protected val scenarioConfig = mutableMapOf<String, String>()
+
+    open fun configureScenario(key: String, value: String) {
+        scenarioConfig[key] = value
+    }
+
     abstract fun startScenario()
 
     /**
@@ -38,6 +44,26 @@ abstract class Scenario(
 
         mainHandler.post {
             PerformanceTestUtils.flushBatch()
+        }
+    }
+
+    fun forceConfigureMetrics(enabledMetrics: com.bugsnag.android.performance.EnabledMetrics) {
+        try {
+            val implClass = Class.forName("com.bugsnag.android.performance.internal.BugsnagPerformanceImpl")
+            val implInstance = implClass.getField("INSTANCE").get(null)
+            val instrumentedAppState = implClass.getMethod("getInstrumentedAppState").invoke(implInstance)
+
+            val spanFactory = instrumentedAppState.javaClass.getMethod("getSpanFactory").invoke(instrumentedAppState)
+
+            val getMetricsContainer = spanFactory.javaClass.getDeclaredMethod("getMetricsContainer")
+            getMetricsContainer.isAccessible = true
+            val metricsContainer = getMetricsContainer.invoke(spanFactory)
+
+            val configure = metricsContainer.javaClass.getDeclaredMethod("configure", enabledMetrics.javaClass)
+            configure.isAccessible = true
+            configure.invoke(metricsContainer, enabledMetrics)
+        } catch (e: Exception) {
+            log("Failed to force configure metrics", e)
         }
     }
 

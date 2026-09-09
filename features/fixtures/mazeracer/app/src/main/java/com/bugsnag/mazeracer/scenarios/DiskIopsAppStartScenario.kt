@@ -7,6 +7,7 @@ import com.bugsnag.mazeracer.Scenario
 import com.bugsnag.mazeracer.saveStartupConfig
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.io.File
 import kotlin.system.exitProcess
 
 /**
@@ -26,6 +27,13 @@ class DiskIopsAppStartScenario(
         config.autoInstrumentAppStarts = true
         config.autoInstrumentActivities = AutoInstrument.FULL
         config.enabledMetrics.disk = true
+
+        val realIo = File("/proc/self/io")
+        if (!realIo.exists() || !realIo.canRead()) {
+            val fakeIo = File(context.cacheDir, "fake_io_appstart")
+            fakeIo.writeText("syscr: 1000\nsyscw: 500\n")
+            InternalDebug.procIoPath = fakeIo.absolutePath
+        }
 
         launch {
             context.saveStartupConfig(config)

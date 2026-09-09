@@ -14,7 +14,7 @@ import org.robolectric.RobolectricTestRunner
 import java.io.File
 import java.io.StringWriter
 
-/** ROAD 2233 – Scenario 11: high IOPS serializes as OTLP doubleValue in JSON payload. */
+/** ROAD 2233 – Scenario 11: high IOPS serializes as OTLP intValue in JSON payload. */
 @RunWith(RobolectricTestRunner::class)
 internal class DiskIoMetricsHighIopsJsonTest {
     private lateinit var ioFile: File
@@ -25,7 +25,7 @@ internal class DiskIoMetricsHighIopsJsonTest {
     }
 
     @Test
-    fun serializesHighIopsAsDoubleValueInJsonPayload() {
+    fun serializesHighIopsAsIntValueInJsonPayload() {
         writeIoFile(syscr = 0L, syscw = 0L)
 
         withStaticMock<SystemClock> { clock ->
@@ -50,8 +50,9 @@ internal class DiskIoMetricsHighIopsJsonTest {
                 }.toString()
 
             assertTrue(json.contains("\"key\":\"${DiskIoMetricsSource.ATTR_IOPS_READ}\""))
-            assertTrue(json.contains("\"doubleValue\":100000.0"))
-            assertFalse(json.contains("\"doubleValue\":null"))
+            // OTLP intValue is encoded as a string in JSON
+            assertTrue(json.contains("\"intValue\":\"100000\""))
+            assertFalse(json.contains("\"intValue\":null"))
         }
     }
 

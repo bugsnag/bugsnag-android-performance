@@ -19,7 +19,7 @@ import java.io.File
  * Disk IOPS attributes are emitted correctly for zero and asymmetric activity.
  *
  * Unlike Scenario 5 (unavailable source → omit attrs), a valid counter source with
- * unchanged counters must still emit all three attributes as 0.0.
+ * unchanged counters must still emit all three attributes as 0.
  *
  * Exact counter injection is not possible in Maze Runner on a real device, so these
  * cases are covered here instead of in features/full_tests.
@@ -33,7 +33,7 @@ internal class DiskIoMetricsAsymmetricActivityTest {
         @get:Parameters(name = "{0}")
         val parameters =
             listOf(
-                // ROAD 2233 Scenario 6 – none (idle): attrs present, all 0.0
+                // ROAD 2233 Scenario 6 – none (idle): attrs present, all 0
                 AsymmetricActivityCase(
                     name = "none_idle",
                     readStart = 5000L,
@@ -41,11 +41,11 @@ internal class DiskIoMetricsAsymmetricActivityTest {
                     readEnd = 5000L,
                     writeEnd = 2000L,
                     durationSec = 3.0,
-                    expectedRead = 0.0,
-                    expectedWrite = 0.0,
-                    expectedTotal = 0.0,
+                    expectedRead = 0L,
+                    expectedWrite = 0L,
+                    expectedTotal = 0L,
                 ),
-                // ROAD 2233 Scenario 6 – read-only: read > 0, write = 0.0, total = read
+                // ROAD 2233 Scenario 6 – read-only: read > 0, write = 0, total = read
                 AsymmetricActivityCase(
                     name = "read_only",
                     readStart = 1000L,
@@ -53,11 +53,11 @@ internal class DiskIoMetricsAsymmetricActivityTest {
                     readEnd = 1060L,
                     writeEnd = 500L,
                     durationSec = 2.0,
-                    expectedRead = 30.0,
-                    expectedWrite = 0.0,
-                    expectedTotal = 30.0,
+                    expectedRead = 30L,
+                    expectedWrite = 0L,
+                    expectedTotal = 30L,
                 ),
-                // ROAD 2233 Scenario 6 – write-only: read = 0.0, write > 0, total = write
+                // ROAD 2233 Scenario 6 – write-only: read = 0, write > 0, total = write
                 AsymmetricActivityCase(
                     name = "write_only",
                     readStart = 1000L,
@@ -65,9 +65,9 @@ internal class DiskIoMetricsAsymmetricActivityTest {
                     readEnd = 1000L,
                     writeEnd = 530L,
                     durationSec = 2.0,
-                    expectedRead = 0.0,
-                    expectedWrite = 15.0,
-                    expectedTotal = 15.0,
+                    expectedRead = 0L,
+                    expectedWrite = 15L,
+                    expectedTotal = 15L,
                 ),
             )
     }
@@ -111,7 +111,7 @@ internal class DiskIoMetricsAsymmetricActivityTest {
             assertEquals(testCase.expectedRead, iopsRead)
             assertEquals(testCase.expectedWrite, iopsWrite)
             assertEquals(testCase.expectedTotal, iopsTotal)
-            assertEquals((iopsRead as Double) + (iopsWrite as Double), iopsTotal)
+            assertEquals((iopsRead as Long) + (iopsWrite as Long), iopsTotal)
         }
     }
 
@@ -139,9 +139,9 @@ internal class DiskIoMetricsAsymmetricActivityTest {
         val readEnd: Long,
         val writeEnd: Long,
         val durationSec: Double,
-        val expectedRead: Double,
-        val expectedWrite: Double,
-        val expectedTotal: Double,
+        val expectedRead: Long,
+        val expectedWrite: Long,
+        val expectedTotal: Long,
     ) {
         override fun toString(): String = name
     }
