@@ -1,8 +1,7 @@
 package com.bugsnag.android.performance.internal.metrics
 
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
+import org.junit.Assert.assertNotEquals
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -45,7 +44,7 @@ internal class ProcIoReaderTest {
         val (_, expectedReadSyscalls, expectedWriteSyscalls) = testData
         val parser = ProcIoReader(file.absolutePath)
         val output = ProcIoReader.IoCounters()
-        assertTrue(parser.parse(output))
+        assertEquals("ok", parser.parse(output))
         assertEquals(expectedReadSyscalls, output.readSyscalls)
         assertEquals(expectedWriteSyscalls, output.writeSyscalls)
         assertEquals(expectedReadSyscalls + expectedWriteSyscalls, output.totalSyscalls)
@@ -56,7 +55,7 @@ internal class ProcIoReaderTest {
         val (_, expectedReadSyscalls, expectedWriteSyscalls) = testData
         val parser = ProcIoReader(file.absolutePath)
         val output = ProcIoReader.IoCounters(readSyscalls = 99L, writeSyscalls = 99L)
-        assertTrue(parser.parse(output))
+        assertEquals("ok", parser.parse(output))
         assertEquals(expectedReadSyscalls, output.readSyscalls)
         assertEquals(expectedWriteSyscalls, output.writeSyscalls)
     }
@@ -75,7 +74,7 @@ internal class ProcIoReaderFailureTest {
         file.writeText("")
         val parser = ProcIoReader(file.absolutePath)
         val output = ProcIoReader.IoCounters()
-        assertFalse(parser.parse(output))
+        assertEquals("file_empty", parser.parse(output))
         assertEquals(0L, output.readSyscalls)
         assertEquals(0L, output.writeSyscalls)
     }
@@ -85,7 +84,7 @@ internal class ProcIoReaderFailureTest {
         copyResourceToFile("io_missing_syscr")
         val parser = ProcIoReader(file.absolutePath)
         val output = ProcIoReader.IoCounters()
-        assertFalse(parser.parse(output))
+        assertNotEquals("ok", parser.parse(output))
     }
 
     @Test
@@ -93,14 +92,14 @@ internal class ProcIoReaderFailureTest {
         copyResourceToFile("io_missing_cw")
         val parser = ProcIoReader(file.absolutePath)
         val output = ProcIoReader.IoCounters()
-        assertFalse(parser.parse(output))
+        assertNotEquals("ok", parser.parse(output))
     }
 
     @Test
     fun parseNonExistentFileReturnsFalse() {
         val parser = ProcIoReader("/proc/does-not-exist-${System.nanoTime()}")
         val output = ProcIoReader.IoCounters()
-        assertFalse(parser.parse(output))
+        assertEquals("file_not_found", parser.parse(output))
     }
 
     @Test
@@ -108,7 +107,7 @@ internal class ProcIoReaderFailureTest {
         copyResourceToFile("io_non_numeric")
         val parser = ProcIoReader(file.absolutePath)
         val output = ProcIoReader.IoCounters()
-        assertFalse(parser.parse(output))
+        assertNotEquals("ok", parser.parse(output))
     }
 
     @Test

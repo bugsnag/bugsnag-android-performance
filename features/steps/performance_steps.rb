@@ -148,6 +148,28 @@ Then('the {string} span {word} attribute {string} is greater than {float}') do |
   end
 end
 
+Then('the {string} span {word} attribute {string} is less than or equal to span {word} attribute {string}') do |span_name, type1, attr1, type2, attr2|
+  spans = spans_from_request_list(Maze::Server.list_for('traces'))
+  found_spans = spans.find_all { |span| span['name'].eql?(span_name) }
+  raise Test::Unit::AssertionFailedError.new "No spans were found with the name #{span_name}" if found_spans.empty?
+
+  found_spans.each do |span|
+    attributes = span['attributes']
+    attr1_obj = attributes.find { |a| a['key'] == attr1 }
+    attr2_obj = attributes.find { |a| a['key'] == attr2 }
+    raise Test::Unit::AssertionFailedError.new "No attribute named #{attr1} was found in span #{span_name}" if attr1_obj.nil?
+    raise Test::Unit::AssertionFailedError.new "No attribute named #{attr2} was found in span #{span_name}" if attr2_obj.nil?
+
+    value1 = get_span_attribute_value(attr1_obj, type1)
+    value2 = get_span_attribute_value(attr2_obj, type2)
+    raise Test::Unit::AssertionFailedError.new "Attribute #{attr1} in span #{span_name} is not of type #{type1}" if value1.nil?
+    raise Test::Unit::AssertionFailedError.new "Attribute #{attr2} in span #{span_name} is not of type #{type2}" if value2.nil?
+
+    Maze.check.operator value1.to_f, :<=, value2.to_f,
+                          "The span '#{span_name}' attribute '#{attr1}' (#{value1}) is greater than '#{attr2}' (#{value2})"
+  end
+end
+
 Then('the {string} span {word} attribute {string} is less than or equal to {float}') do |span_name, type, attribute, expected|
   spans = spans_from_request_list(Maze::Server.list_for('traces'))
   found_spans = spans.find_all { |span| span['name'].eql?(span_name) }
@@ -303,6 +325,22 @@ Then('the {string} span string attribute {string} equals {string}') do |span_nam
 
     value = attribute_obj['value']['stringValue']
     Maze.check.equal(expected, value)
+  end
+end
+
+Then('the {string} span string attribute {string} starts with {string}') do |span_name, attribute, prefix|
+  spans = spans_from_request_list(Maze::Server.list_for('traces'))
+  found_spans = spans.find_all { |span| span['name'].eql?(span_name) }
+  raise Test::Unit::AssertionFailedError.new "No spans were found with the name #{span_name}" if found_spans.empty?
+
+  found_spans.each do |span|
+    attributes = span['attributes']
+    attribute_obj = attributes.find { |a| a['key'] == attribute }
+    raise Test::Unit::AssertionFailedError.new "No attribute named #{attribute} was found in span #{span_name}" if attribute_obj.nil?
+
+    value = attribute_obj['value']['stringValue']
+    Maze.check.true(value.start_with?(prefix),
+                    "The span '#{span_name}' attribute '#{attribute}' (#{value}) does not start with '#{prefix}'")
   end
 end
 

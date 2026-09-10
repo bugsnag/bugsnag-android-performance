@@ -91,7 +91,7 @@ internal class DiskIoMetricsHighIopsTest {
 
         withStaticMock<SystemClock> { clock ->
             clock.`when`<Long>(SystemClock::elapsedRealtimeNanos)
-                .thenReturn(startNanos, startNanos, endNanos)
+                .thenReturn(startNanos, endNanos)
 
             val source = DiskIoMetricsSource(ProcIoReader(ioFile.absolutePath))
             val startSnapshot = source.createStartMetrics()

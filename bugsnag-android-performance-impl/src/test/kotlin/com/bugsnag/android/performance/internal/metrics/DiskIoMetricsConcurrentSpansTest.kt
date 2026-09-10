@@ -39,8 +39,6 @@ internal class DiskIoMetricsConcurrentSpansTest {
             clock.`when`<Long>(SystemClock::elapsedRealtimeNanos)
                 .thenReturn(
                     T0,
-                    T0, // Span A start (createStartMetrics logs then snapshots)
-                    T1,
                     T1, // Span B start
                     T2, // Span B end
                     T3, // Span A end
@@ -100,8 +98,6 @@ internal class DiskIoMetricsConcurrentSpansTest {
             clock.`when`<Long>(SystemClock::elapsedRealtimeNanos)
                 .thenReturn(
                     T0,
-                    T0,
-                    T1,
                     T1,
                     T2,
                     T3,

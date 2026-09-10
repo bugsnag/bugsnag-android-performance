@@ -32,7 +32,6 @@ internal class DiskIoMetricsHighIopsJsonTest {
             clock.`when`<Long>(SystemClock::elapsedRealtimeNanos)
                 .thenReturn(
                     NANOS_PER_SECOND,
-                    NANOS_PER_SECOND,
                     3L * NANOS_PER_SECOND,
                 )
 

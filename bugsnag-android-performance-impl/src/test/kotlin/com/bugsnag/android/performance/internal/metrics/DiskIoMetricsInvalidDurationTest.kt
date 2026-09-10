@@ -17,8 +17,9 @@ import java.io.File
  * ROAD 2233 – Scenario 3:
  * Disk metrics are NOT emitted when span duration is invalid (zero or negative).
  *
- * Exact start/end nanosecond injection is not possible in Maze Runner, so this is
- * covered as a unit test. The span itself remains usable (no crash / metrics skipped).
+ * Exact start/end nanosecond injection is covered in this unit test.
+ * Maze Scenario 3 uses InternalDebug.diskIoTimestampFault to hit the same omit path
+ * on a real device without asserting these ROAD nanosecond values.
  */
 @RunWith(Parameterized::class)
 internal class DiskIoMetricsInvalidDurationTest {
@@ -58,7 +59,7 @@ internal class DiskIoMetricsInvalidDurationTest {
 
         withStaticMock<SystemClock> { clock ->
             clock.`when`<Long>(SystemClock::elapsedRealtimeNanos)
-                .thenReturn(testCase.startNs, testCase.startNs, testCase.endNs)
+                .thenReturn(testCase.startNs, testCase.endNs)
 
             val source = DiskIoMetricsSource(ProcIoReader(ioFile.absolutePath))
             val startSnapshot = source.createStartMetrics()

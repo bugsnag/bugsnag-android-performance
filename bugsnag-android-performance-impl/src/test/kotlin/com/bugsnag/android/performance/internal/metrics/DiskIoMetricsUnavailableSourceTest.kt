@@ -4,7 +4,7 @@ import android.os.SystemClock
 import com.bugsnag.android.performance.test.NoopSpanProcessor
 import com.bugsnag.android.performance.test.TestSpanFactory
 import com.bugsnag.android.performance.test.withStaticMock
-import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
@@ -63,7 +63,7 @@ internal class DiskIoMetricsUnavailableSourceTest {
 
         withStaticMock<SystemClock> { clock ->
             clock.`when`<Long>(SystemClock::elapsedRealtimeNanos)
-                .thenReturn(START_NS, START_NS, END_NS)
+                .thenReturn(START_NS, END_NS)
 
             val startSnapshot = source.createStartMetrics()
             // Even if a valid file appears later, an invalid start snapshot must omit metrics.
@@ -86,7 +86,7 @@ internal class DiskIoMetricsUnavailableSourceTest {
 
         withStaticMock<SystemClock> { clock ->
             clock.`when`<Long>(SystemClock::elapsedRealtimeNanos)
-                .thenReturn(START_NS, START_NS, END_NS)
+                .thenReturn(START_NS, END_NS)
 
             val startSnapshot = source.createStartMetrics()
             applyFailureContentForEnd()
@@ -104,7 +104,7 @@ internal class DiskIoMetricsUnavailableSourceTest {
     @Test
     fun procIoReaderReportsFailureForMode() {
         val reader = readerForFailureAtStart()
-        assertFalse(reader.parse(ProcIoReader.IoCounters()))
+        assertNotEquals("ok", reader.parse(ProcIoReader.IoCounters()))
     }
 
     private fun readerForFailureAtStart(): ProcIoReader {

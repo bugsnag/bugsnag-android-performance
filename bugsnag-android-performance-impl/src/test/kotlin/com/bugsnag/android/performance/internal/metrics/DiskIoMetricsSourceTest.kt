@@ -10,7 +10,6 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
-import org.mockito.kotlin.mock
 import java.io.File
 
 internal class DiskIoMetricsSourceTest {
@@ -39,13 +38,17 @@ internal class DiskIoMetricsSourceTest {
 
     @Test
     fun createStartMetricsReturnsInvalidSnapshotOnReadFailure() {
-        val source = DiskIoMetricsSource(ProcIoReader("/proc/does-not-exist-${System.nanoTime()}"))
-        val snapshot = source.createStartMetrics()
+        withStaticMock<SystemClock> { clock ->
+            clock.`when`<Long>(SystemClock::elapsedRealtimeNanos).thenReturn(123L)
 
-        // -2L is used in the updated DiskIoMetricsSource for start-parse-failed marker
-        assertEquals(-2L, snapshot.readSyscalls)
-        assertEquals(-2L, snapshot.writeSyscalls)
-        assertTrue(snapshot.timestampNanos > 0L)
+            val source = DiskIoMetricsSource(ProcIoReader("/proc/does-not-exist-${System.nanoTime()}"))
+            val snapshot = source.createStartMetrics()
+
+            assertEquals(-1L, snapshot.readSyscalls)
+            assertEquals(-1L, snapshot.writeSyscalls)
+            assertEquals("file_not_found", snapshot.status)
+            assertEquals(123L, snapshot.timestampNanos)
+        }
     }
 
     @Test
@@ -54,7 +57,7 @@ internal class DiskIoMetricsSourceTest {
 
         withStaticMock<SystemClock> { clock ->
             clock.`when`<Long>(SystemClock::elapsedRealtimeNanos)
-                .thenReturn(0L, 2_000_000_000L)
+                .thenReturn(1_000_000_000L, 3_000_000_000L)
 
             val source = DiskIoMetricsSource(ProcIoReader(ioFile.absolutePath))
             val startSnapshot = source.createStartMetrics()
@@ -97,6 +100,7 @@ internal class DiskIoMetricsSourceTest {
                 readSyscalls = -1L,
                 writeSyscalls = 50L,
                 timestampNanos = 100L,
+                status = "ok",
             )
         val span = TestSpanFactory().newSpan(processor = NoopSpanProcessor.INSTANCE)
 
@@ -115,6 +119,7 @@ internal class DiskIoMetricsSourceTest {
                 readSyscalls = 100L,
                 writeSyscalls = 50L,
                 timestampNanos = 0L,
+                status = "ok",
             )
         writeIoFile(syscr = 200L, syscw = 100L)
 
@@ -134,7 +139,7 @@ internal class DiskIoMetricsSourceTest {
 
         withStaticMock<SystemClock> { clock ->
             clock.`when`<Long>(SystemClock::elapsedRealtimeNanos)
-                .thenReturn(0L, 4_000_000_000L)
+                .thenReturn(1_000_000_000L, 5_000_000_000L)
 
             val source = DiskIoMetricsSource(ProcIoReader(ioFile.absolutePath))
             val startSnapshot = source.createStartMetrics()
@@ -154,7 +159,7 @@ internal class DiskIoMetricsSourceTest {
         writeIoFile(syscr = 100L, syscw = 50L)
 
         withStaticMock<SystemClock> { clock ->
-            clock.`when`<Long>(SystemClock::elapsedRealtimeNanos).thenReturn(0L, 1_000_000_000L)
+            clock.`when`<Long>(SystemClock::elapsedRealtimeNanos).thenReturn(1_000_000_000L, 2_000_000_000L)
 
             val source = DiskIoMetricsSource(ProcIoReader(ioFile.absolutePath))
             val startSnapshot = source.createStartMetrics()
@@ -175,6 +180,7 @@ internal class DiskIoMetricsSourceTest {
                 readSyscalls = 100L,
                 writeSyscalls = 50L,
                 timestampNanos = 5_000_000_000L,
+                status = "ok",
             )
         writeIoFile(syscr = 200L, syscw = 100L)
 
@@ -195,12 +201,13 @@ internal class DiskIoMetricsSourceTest {
             DiskIoSnapshot(
                 readSyscalls = 200L,
                 writeSyscalls = 50L,
-                timestampNanos = 0L,
+                timestampNanos = 1_000_000_000L,
+                status = "ok",
             )
         writeIoFile(syscr = 100L, syscw = 50L)
 
         withStaticMock<SystemClock> { clock ->
-            clock.`when`<Long>(SystemClock::elapsedRealtimeNanos).thenReturn(1_000_000_000L)
+            clock.`when`<Long>(SystemClock::elapsedRealtimeNanos).thenReturn(3_000_000_000L)
 
             val span = TestSpanFactory().newSpan(processor = NoopSpanProcessor.INSTANCE)
             source.endMetrics(startSnapshot, span)
@@ -216,12 +223,13 @@ internal class DiskIoMetricsSourceTest {
             DiskIoSnapshot(
                 readSyscalls = 100L,
                 writeSyscalls = 200L,
-                timestampNanos = 0L,
+                timestampNanos = 1_000_000_000L,
+                status = "ok",
             )
         writeIoFile(syscr = 150L, syscw = 100L)
 
         withStaticMock<SystemClock> { clock ->
-            clock.`when`<Long>(SystemClock::elapsedRealtimeNanos).thenReturn(1_000_000_000L)
+            clock.`when`<Long>(SystemClock::elapsedRealtimeNanos).thenReturn(3_000_000_000L)
 
             val span = TestSpanFactory().newSpan(processor = NoopSpanProcessor.INSTANCE)
             source.endMetrics(startSnapshot, span)
@@ -236,13 +244,13 @@ internal class DiskIoMetricsSourceTest {
 
         withStaticMock<SystemClock> { clock ->
             clock.`when`<Long>(SystemClock::elapsedRealtimeNanos)
-                .thenReturn(0L, 1_000_000_000L)
+                .thenReturn(1_000_000_000L, 2_000_000_000L)
 
             val source = DiskIoMetricsSource(ProcIoReader(ioFile.absolutePath))
             val startSnapshot = source.createStartMetrics()
             writeIoFile(syscr = 200L, syscw = 100L)
 
-            val span = mock<Span>()
+            val span: Span = DelegatingSpan(TestSpanFactory().newSpan(processor = NoopSpanProcessor.INSTANCE))
             source.endMetrics(startSnapshot, span)
         }
     }
@@ -253,7 +261,7 @@ internal class DiskIoMetricsSourceTest {
 
         withStaticMock<SystemClock> { clock ->
             clock.`when`<Long>(SystemClock::elapsedRealtimeNanos)
-                .thenReturn(0L, 1_000_000_000L)
+                .thenReturn(1_000_000_000L, 2_000_000_000L)
 
             val diskSource = DiskIoMetricsSource(ProcIoReader(ioFile.absolutePath))
             val snapshot =
@@ -305,4 +313,6 @@ internal class DiskIoMetricsSourceTest {
             """.trimIndent(),
         )
     }
+
+    private class DelegatingSpan(private val delegate: Span) : Span by delegate
 }

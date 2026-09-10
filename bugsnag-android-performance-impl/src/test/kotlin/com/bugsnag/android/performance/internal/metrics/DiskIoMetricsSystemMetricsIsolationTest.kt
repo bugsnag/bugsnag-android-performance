@@ -130,7 +130,7 @@ internal class DiskIoMetricsSystemMetricsIsolationTest {
         lateinit var span: SpanImpl
         withStaticMock<SystemClock> { clock ->
             clock.`when`<Long>(SystemClock::elapsedRealtimeNanos)
-                .thenReturn(NANOS_PER_SECOND, NANOS_PER_SECOND, 3L * NANOS_PER_SECOND)
+                .thenReturn(NANOS_PER_SECOND, 3L * NANOS_PER_SECOND)
 
             val diskSource = DiskIoMetricsSource(ProcIoReader(ioFile.absolutePath))
             val snapshot =

@@ -177,10 +177,10 @@ internal class DiskIoMetricsFormulaTest {
         expectedWriteSyscalls: Long,
     ) {
         val endCounters = ProcIoReader.IoCounters()
-        assertTrue(
+        assertEquals(
             "ProcIoReader.parse failed at span end for ${ioFile.absolutePath}. " +
                     "Check io fixture content and ProcIoReader strict numeric parsing (ED §3.1.4).",
-            reader.parse(endCounters),
+            "ok", reader.parse(endCounters),
         )
         assertEquals(
             "Unexpected read syscalls at span end for ${ioFile.absolutePath}.",

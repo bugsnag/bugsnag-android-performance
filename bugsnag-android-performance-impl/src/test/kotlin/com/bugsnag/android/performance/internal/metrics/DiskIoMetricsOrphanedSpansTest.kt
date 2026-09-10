@@ -30,7 +30,7 @@ internal class DiskIoMetricsOrphanedSpansTest {
     }
 
     @Test
-    fun completedSpans reportCorrectDiskIopsWithOrphanedSnapshotsPresent() {
+    fun completedSpansReportCorrectDiskIopsWithOrphanedSnapshotsPresent() {
         val diskSource = DiskIoMetricsSource(ProcIoReader(ioFile.absolutePath))
         var syscr = 1000L
         var syscw = 500L

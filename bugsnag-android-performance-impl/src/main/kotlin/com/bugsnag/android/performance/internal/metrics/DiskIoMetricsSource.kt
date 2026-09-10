@@ -3,6 +3,7 @@ package com.bugsnag.android.performance.internal.metrics
 import android.os.SystemClock
 import com.bugsnag.android.performance.Logger
 import com.bugsnag.android.performance.Span
+import com.bugsnag.android.performance.internal.InternalDebug
 import com.bugsnag.android.performance.internal.SpanImpl
 import kotlin.math.roundToLong
 
@@ -66,7 +67,7 @@ internal class DiskIoMetricsSource(
             return
         }
 
-        val endTimestamp = SystemClock.elapsedRealtimeNanos()
+        val endTimestamp = endTimestampNanos(startMetrics.timestampNanos)
         val durationNanos = endTimestamp - startMetrics.timestampNanos
         if (durationNanos <= 0L) {
             val reason = "invalid_duration_${durationNanos}ns_start${startMetrics.timestampNanos}_end${endTimestamp}"
@@ -106,6 +107,21 @@ internal class DiskIoMetricsSource(
         spanImpl.attributes[ATTR_IOPS_READ] = iopsRead.roundToLong()
         spanImpl.attributes[ATTR_IOPS_WRITE] = iopsWrite.roundToLong()
         spanImpl.attributes[ATTR_IOPS_TOTAL] = iopsTotal.roundToLong()
+
+        if (InternalDebug.attachDiskIoSnapshots) {
+            spanImpl.attributes[ATTR_READ_START] = startMetrics.readSyscalls
+            spanImpl.attributes[ATTR_READ_END] = counters.readSyscalls
+            spanImpl.attributes[ATTR_WRITE_START] = startMetrics.writeSyscalls
+            spanImpl.attributes[ATTR_WRITE_END] = counters.writeSyscalls
+        }
+    }
+
+    private fun endTimestampNanos(startTimestampNanos: Long): Long {
+        return when (InternalDebug.diskIoTimestampFault) {
+            "zero" -> startTimestampNanos
+            "negative" -> startTimestampNanos - 1L
+            else -> SystemClock.elapsedRealtimeNanos()
+        }
     }
 
     private val DiskIoSnapshot.isValid: Boolean
@@ -120,5 +136,9 @@ internal class DiskIoMetricsSource(
 
         internal const val ATTR_SKIP_REASON = "bugsnag.internal.disk_io.skip_reason"
         internal const val ATTR_CANARY = "bugsnag.internal.disk_io.end_metrics_called"
+        internal const val ATTR_READ_START = "bugsnag.internal.disk_io.read_start"
+        internal const val ATTR_READ_END = "bugsnag.internal.disk_io.read_end"
+        internal const val ATTR_WRITE_START = "bugsnag.internal.disk_io.write_start"
+        internal const val ATTR_WRITE_END = "bugsnag.internal.disk_io.write_end"
     }
 }

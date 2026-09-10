@@ -114,13 +114,11 @@ internal class DiskIoMetricsLifecycleTest {
                 clock.`when`<Long>(SystemClock::elapsedRealtimeNanos)
                     .thenReturn(
                         testCase.startNanos,
-                        testCase.startNanos,
                         testCase.endNanos,
                     )
             } else {
                 clock.`when`<Long>(SystemClock::elapsedRealtimeNanos)
                     .thenReturn(
-                        testCase.startNanos,
                         testCase.startNanos,
                     )
             }

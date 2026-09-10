@@ -55,9 +55,10 @@ internal object DiskIoMetricsTestSupport {
         expectedWriteSyscalls: Long,
     ) {
         val endCounters = ProcIoReader.IoCounters()
-        assertTrue(
+        assertEquals(
             "ProcIoReader.parse failed at span end for ${ioFile.absolutePath}. " +
                     "Check io fixture content and ProcIoReader strict numeric parsing (ED §3.1.4).",
+            "ok",
             reader.parse(endCounters),
         )
         assertEquals(

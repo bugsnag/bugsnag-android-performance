@@ -77,7 +77,7 @@ internal class DiskIoMetricsNegativeDeltaTest {
 
         withStaticMock<SystemClock> { clock ->
             clock.`when`<Long>(SystemClock::elapsedRealtimeNanos)
-                .thenReturn(START_NS, START_NS, END_NS)
+                .thenReturn(START_NS, END_NS)
 
             val source = DiskIoMetricsSource(ProcIoReader(ioFile.absolutePath))
             val startSnapshot = source.createStartMetrics()

@@ -14,12 +14,14 @@ class DiskIopsScenario(
 ) : Scenario(config, scenarioMetadata) {
     init {
         InternalDebug.spanBatchSizeSendTriggerPoint = 1
+        InternalDebug.attachDiskIoSnapshots = true
         config.appSessionConfig.autoStartSession = false
         config.enabledMetrics.disk = true
     }
 
     override fun startScenario() {
-        val type = scenarioMetadata
+        val type = scenarioConfig["span_type"] ?: scenarioMetadata
+        InternalDebug.diskIoTimestampFault = scenarioConfig["duration_fault"].orEmpty()
 
         // If real /proc/self/io is blocked, we use a fake one in the fixture to ensure
         // that we can still test the SDK's internal IOPS logic on restricted devices.

@@ -46,6 +46,32 @@ Feature: Disk IOPS
   # Formula under test: iops = (sysc*_end - sysc*_start) / durationSec ; total = read + write
   # iOS 16KB-block rows from the ROAD table are out of scope for this Android repository.
 
+
+# ROAD 2233 – Scenario 2
+  # Maze cannot freeze /proc/self/io or the clock, so it cannot assert the ROAD table
+  # numbers (30/15/45). It runs the real DiskIoMetricsSource path and checks the values
+  # the SDK actually computed on the device: integers >= 0, total = read + write, and
+  # end syscall counts are not less than start (read and write).
+  #
+  # Covered by unit test with injectable io fixtures + mocked clocks:
+  #   DiskIoMetricsFormulaTest
+  #     (computesIopsUsingSyscrSyscwFormula_androidTrueIops,
+  #      computesIopsUsingSyscrSyscwFormula_androidZeroActivity)
+  Scenario Outline: SDK reports real disk IOPS values computed on the device
+    When I run "DiskIopsScenario" configured as "<span_type>"
+    And I wait to receive a span named "<span_name>"
+    Then the "<span_name>" span integer attribute "bugsnag.device.disk.iops_read" is greater than or equal to 0
+    And the "<span_name>" span integer attribute "bugsnag.device.disk.iops_write" is greater than or equal to 0
+    And the "<span_name>" span integer attribute "bugsnag.device.disk.iops_total" is greater than or equal to 0
+    And the "<span_name>" span integer attribute "bugsnag.device.disk.iops_total" equals the sum of "bugsnag.device.disk.iops_read" and "bugsnag.device.disk.iops_write"
+    And the "<span_name>" span integer attribute "bugsnag.internal.disk_io.read_start" is less than or equal to span integer attribute "bugsnag.internal.disk_io.read_end"
+    And the "<span_name>" span integer attribute "bugsnag.internal.disk_io.write_start" is less than or equal to span integer attribute "bugsnag.internal.disk_io.write_end"
+
+    Examples:
+      | platform | span_type   | span_name             |
+      | android  | custom      | DiskIopsCustom        |
+      | android  | app_session | [AppSession/DiskIops] |
+
   # ROAD 2233 – Scenario 3 (ED 3.1.4 – omit disk metrics when duration is zero or negative)
   # Invalid-duration fallback is NOT implementable as a Maze scenario.
   #
@@ -65,6 +91,34 @@ Feature: Disk IOPS
   # Covered instead by unit tests with mocked SystemClock:
   #   DiskIoMetricsInvalidDurationTest (zero_duration, negative_duration)
   # Asserts: no bugsnag.device.disk.iops_* attributes, span still ends, no crash.
+
+# ROAD 2233 – Scenario 3 (ED 3.1.4 – omit disk metrics when duration is zero or negative)
+  # Maze cannot rewind the device clock, so InternalDebug.diskIoTimestampFault makes
+  # DiskIoMetricsSource treat duration as zero or negative. The real collector still runs:
+  # the span is delivered, iops_* are omitted, skip_reason starts with invalid_duration.
+  #
+  # Covered by unit test with mocked SystemClock:
+  #   DiskIoMetricsInvalidDurationTest
+  #     (zero_duration, negative_duration)
+  Scenario Outline: SDK omits disk IOPS when span duration is invalid
+    Given I load scenario "DiskIopsScenario"
+    And I configure scenario "span_type" to "<span_type>"
+    And I configure scenario "duration_fault" to "<duration_fault>"
+    And I run the loaded scenario
+    And I wait to receive a span named "<span_name>"
+    Then the "<span_name>" span string attribute "bugsnag.internal.disk_io.end_metrics_called" equals "true"
+    And the "<span_name>" span string attribute "bugsnag.internal.disk_io.skip_reason" starts with "invalid_duration"
+    And the "<span_name>" span has no "bugsnag.device.disk.iops_read" attribute
+    And the "<span_name>" span has no "bugsnag.device.disk.iops_write" attribute
+    And the "<span_name>" span has no "bugsnag.device.disk.iops_total" attribute
+
+    Examples:
+      | platform | span_type   | duration_fault | span_name             |
+      | android  | custom      | zero           | DiskIopsCustom        |
+      | android  | custom      | negative       | DiskIopsCustom        |
+      | android  | app_session | zero           | [AppSession/DiskIops] |
+      | android  | app_session | negative       | [AppSession/DiskIops] |
+
 
   # ROAD 2233 – Scenario 4 (ED §3.1.4 – negative deltas clamped OR treated as invalid)
   #
