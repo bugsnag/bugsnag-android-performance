@@ -5,12 +5,12 @@ import com.bugsnag.android.performance.Logger
 import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.internal.InternalDebug
 import com.bugsnag.android.performance.internal.SpanImpl
+import java.util.Locale
 import kotlin.math.roundToLong
 
 internal class DiskIoMetricsSource(
     private val reader: ProcIoReader = ProcIoReader(),
 ) : MetricSource<DiskIoSnapshot> {
-
     override fun createStartMetrics(): DiskIoSnapshot {
         val counters = ProcIoReader.IoCounters()
         val status = reader.parse(counters)
@@ -36,77 +36,80 @@ internal class DiskIoMetricsSource(
         startMetrics: DiskIoSnapshot,
         span: Span,
     ) {
-        val spanImpl = span as? SpanImpl ?: run {
-            Logger.w("Disk I/O metrics skipped: Span is not a SpanImpl ($span)")
+        val spanImpl = span as? SpanImpl
+        if (spanImpl == null) {
+            reportSkip(
+                span = null,
+                reason = "Span is not a SpanImpl ($span)",
+            )
             return
         }
 
         // Always set a canary to prove this method was called
         spanImpl.attributes[ATTR_CANARY] = "true"
 
-        if (startMetrics.status != "ok") {
-            val reason = "start_parse_failed_${startMetrics.status}"
-            Logger.w("Disk I/O metrics skipped: $reason")
-            spanImpl.attributes[ATTR_SKIP_REASON] = reason
-            return
+        when {
+            startMetrics.status != "ok" ->
+                reportSkip(
+                    span = spanImpl,
+                    reason = "start_parse_failed_${startMetrics.status}",
+                )
+
+            !startMetrics.isValid ->
+                reportSkip(
+                    span = spanImpl,
+                    reason =
+                        "invalid_start_snapshot_r${startMetrics.readSyscalls}_w${startMetrics.writeSyscalls}" +
+                            "_ts${startMetrics.timestampNanos}",
+                )
+
+            else -> {
+                val counters = ProcIoReader.IoCounters()
+                val endStatus = reader.parse(counters)
+
+                when (val result = computeMetrics(startMetrics, counters, endStatus)) {
+                    is DiskIoComputationResult.Success ->
+                        attachMetrics(
+                            spanImpl = spanImpl,
+                            startMetrics = startMetrics,
+                            counters = counters,
+                            stats = result.stats,
+                        )
+
+                    is DiskIoComputationResult.Failure ->
+                        reportSkip(
+                            span = spanImpl,
+                            reason = result.reason,
+                        )
+                }
+            }
         }
+    }
 
-        if (!startMetrics.isValid) {
-            val reason = "invalid_start_snapshot_r${startMetrics.readSyscalls}_w${startMetrics.writeSyscalls}_ts${startMetrics.timestampNanos}"
-            Logger.w("Disk I/O metrics skipped: $reason")
-            spanImpl.attributes[ATTR_SKIP_REASON] = reason
-            return
-        }
+    private fun reportSkip(
+        span: SpanImpl?,
+        reason: String,
+    ) {
+        Logger.w("Disk I/O metrics skipped: $reason")
+        span?.attributes?.set(ATTR_SKIP_REASON, reason)
+    }
 
-        val counters = ProcIoReader.IoCounters()
-        val endStatus = reader.parse(counters)
-        if (endStatus != "ok") {
-            val reason = "end_parse_failed_$endStatus"
-            Logger.w("Disk I/O metrics skipped: $reason")
-            spanImpl.attributes[ATTR_SKIP_REASON] = reason
-            return
-        }
-
-        val endTimestamp = endTimestampNanos(startMetrics.timestampNanos)
-        val durationNanos = endTimestamp - startMetrics.timestampNanos
-        if (durationNanos <= 0L) {
-            val reason = "invalid_duration_${durationNanos}ns_start${startMetrics.timestampNanos}_end${endTimestamp}"
-            Logger.w("Disk I/O metrics skipped: $reason")
-            spanImpl.attributes[ATTR_SKIP_REASON] = reason
-            return
-        }
-
-        val durationSec = durationNanos / NANOS_PER_SECOND
-        val readDelta = counters.readSyscalls - startMetrics.readSyscalls
-        val writeDelta = counters.writeSyscalls - startMetrics.writeSyscalls
-        if (readDelta < 0L || writeDelta < 0L) {
-            val reason = "negative_delta_r${readDelta}_w${writeDelta}_startR${startMetrics.readSyscalls}_endR${counters.readSyscalls}"
-            Logger.w("Disk I/O metrics skipped: $reason")
-            spanImpl.attributes[ATTR_SKIP_REASON] = reason
-            return
-        }
-
-        val iopsRead = readDelta.toDouble() / durationSec
-        val iopsWrite = writeDelta.toDouble() / durationSec
-        val iopsTotal = iopsRead + iopsWrite
-
-        if (!iopsRead.isFinite() || !iopsWrite.isFinite() || !iopsTotal.isFinite()) {
-            val reason = "non_finite_iops_r${iopsRead}_w${iopsWrite}_dur${durationSec}"
-            Logger.w("Disk I/O metrics skipped: $reason")
-            spanImpl.attributes[ATTR_SKIP_REASON] = reason
-            return
-        }
-
-        Logger.d("=== Disk I/O Metrics - Span Ended ===")
-        Logger.d("Read Delta: $readDelta (${String.format("%.2f", iopsRead)} IOPS)")
-        Logger.d("Write Delta: $writeDelta (${String.format("%.2f", iopsWrite)} IOPS)")
-        Logger.d("Total IOPS: ${String.format("%.2f", iopsTotal)}")
-        Logger.d("Duration: ${String.format("%.3f", durationSec)} seconds")
+    private fun attachMetrics(
+        spanImpl: SpanImpl,
+        startMetrics: DiskIoSnapshot,
+        counters: ProcIoReader.IoCounters,
+        stats: DiskIoStats,
+    ) {
+        Logger.d(String.format(Locale.US, "=== Disk I/O Metrics - Span Ended ==="))
+        Logger.d(String.format(Locale.US, "Read Delta: %d (%.2f IOPS)", stats.readDelta, stats.iopsRead))
+        Logger.d(String.format(Locale.US, "Write Delta: %d (%.2f IOPS)", stats.writeDelta, stats.iopsWrite))
+        Logger.d(String.format(Locale.US, "Total IOPS: %.2f", stats.iopsTotal))
+        Logger.d(String.format(Locale.US, "Duration: %.3f seconds", stats.durationSec))
 
         // SDK emits all three disk IOPS attributes as IntValue (Long internally)
-        spanImpl.attributes[ATTR_IOPS_READ] = iopsRead.roundToLong()
-        spanImpl.attributes[ATTR_IOPS_WRITE] = iopsWrite.roundToLong()
-        spanImpl.attributes[ATTR_IOPS_TOTAL] = iopsTotal.roundToLong()
+        spanImpl.attributes[ATTR_IOPS_READ] = stats.iopsRead.roundToLong()
+        spanImpl.attributes[ATTR_IOPS_WRITE] = stats.iopsWrite.roundToLong()
+        spanImpl.attributes[ATTR_IOPS_TOTAL] = stats.iopsTotal.roundToLong()
 
         if (InternalDebug.attachDiskIoSnapshots) {
             spanImpl.attributes[ATTR_READ_START] = startMetrics.readSyscalls
@@ -116,12 +119,76 @@ internal class DiskIoMetricsSource(
         }
     }
 
+    private fun computeMetrics(
+        startMetrics: DiskIoSnapshot,
+        counters: ProcIoReader.IoCounters,
+        endStatus: String,
+    ): DiskIoComputationResult {
+        val endTimestamp = endTimestampNanos(startMetrics.timestampNanos)
+        val durationNanos = endTimestamp - startMetrics.timestampNanos
+        val durationSec = durationNanos / NANOS_PER_SECOND
+        val readDelta = counters.readSyscalls - startMetrics.readSyscalls
+        val writeDelta = counters.writeSyscalls - startMetrics.writeSyscalls
+        val iopsRead = readDelta.toDouble() / durationSec
+        val iopsWrite = writeDelta.toDouble() / durationSec
+        val iopsTotal = iopsRead + iopsWrite
+
+        return when {
+            endStatus != "ok" ->
+                DiskIoComputationResult.Failure("end_parse_failed_$endStatus")
+
+            durationNanos <= 0L ->
+                DiskIoComputationResult.Failure(
+                    "invalid_duration_${durationNanos}ns_start${startMetrics.timestampNanos}" +
+                        "_end$endTimestamp",
+                )
+
+            readDelta < 0L || writeDelta < 0L ->
+                DiskIoComputationResult.Failure(
+                    "negative_delta_r${readDelta}_w${writeDelta}_startR${startMetrics.readSyscalls}" +
+                        "_endR${counters.readSyscalls}",
+                )
+
+            !iopsRead.isFinite() || !iopsWrite.isFinite() || !iopsTotal.isFinite() ->
+                DiskIoComputationResult.Failure(
+                    "non_finite_iops_r${iopsRead}_w${iopsWrite}_dur$durationSec",
+                )
+
+            else ->
+                DiskIoComputationResult.Success(
+                    DiskIoStats(
+                        readDelta = readDelta,
+                        writeDelta = writeDelta,
+                        durationSec = durationSec,
+                        iopsRead = iopsRead,
+                        iopsWrite = iopsWrite,
+                        iopsTotal = iopsTotal,
+                    ),
+                )
+        }
+    }
+
     private fun endTimestampNanos(startTimestampNanos: Long): Long {
         return when (InternalDebug.diskIoTimestampFault) {
             "zero" -> startTimestampNanos
             "negative" -> startTimestampNanos - 1L
             else -> SystemClock.elapsedRealtimeNanos()
         }
+    }
+
+    private data class DiskIoStats(
+        val readDelta: Long,
+        val writeDelta: Long,
+        val durationSec: Double,
+        val iopsRead: Double,
+        val iopsWrite: Double,
+        val iopsTotal: Double,
+    )
+
+    private sealed interface DiskIoComputationResult {
+        data class Success(val stats: DiskIoStats) : DiskIoComputationResult
+
+        data class Failure(val reason: String) : DiskIoComputationResult
     }
 
     private val DiskIoSnapshot.isValid: Boolean

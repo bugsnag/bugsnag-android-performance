@@ -197,31 +197,38 @@ Feature: Disk IOPS
   #     (completedSpansReportCorrectDiskIopsWithOrphanedSnapshotsPresent)
   # Asserts: 50 orphaned snapshots present; 100 completed spans each get read=10, write=5, total=15.
 
-  # ROAD 2233 – Scenario 9 (disk IOPS across app lifecycle transitions)
+# ROAD 2233 – Scenario 9 (disk IOPS across app lifecycle transitions)
   # DiskIoMetricsSource does not pause on foreground state. Maze cannot assert exact IOPS
   # (counters keep moving) or termination-without-end (the span is never delivered).
-  # The three completable ED rows run the real collector through HOME / resume.
+  # The three completable ED rows run the real collector through HOME / resume for both
+  # custom and app_session spans.
   #
   # Covered by unit tests with injectable io fixtures + mocked clocks:
   #   DiskIoMetricsLifecycleTest
   #     (mid_span_background_transition, ends_while_in_background, starts_in_background,
   #      orphaned_on_termination)
   Scenario Outline: SDK captures disk IOPS across app lifecycle transitions
-    When I run "DiskIopsLifecycleScenario" configured as "<transition>"
-    And I wait to receive a span named "DiskIopsLifecycle"
-    Then the "DiskIopsLifecycle" span has integer attribute named "bugsnag.device.disk.iops_read"
-    And the "DiskIopsLifecycle" span has integer attribute named "bugsnag.device.disk.iops_write"
-    And the "DiskIopsLifecycle" span has integer attribute named "bugsnag.device.disk.iops_total"
-    And the "DiskIopsLifecycle" span integer attribute "bugsnag.device.disk.iops_read" is greater than or equal to 0
-    And the "DiskIopsLifecycle" span integer attribute "bugsnag.device.disk.iops_write" is greater than or equal to 0
-    And the "DiskIopsLifecycle" span integer attribute "bugsnag.device.disk.iops_total" is greater than or equal to 0
-    And the "DiskIopsLifecycle" span integer attribute "bugsnag.device.disk.iops_total" equals the sum of "bugsnag.device.disk.iops_read" and "bugsnag.device.disk.iops_write"
+    Given I load scenario "DiskIopsLifecycleScenario"
+    And I configure scenario "span_type" to "<span_type>"
+    And I configure scenario "transition" to "<transition>"
+    And I run the loaded scenario
+    And I wait to receive a span named "<span_name>"
+    Then the "<span_name>" span has integer attribute named "bugsnag.device.disk.iops_read"
+    And the "<span_name>" span has integer attribute named "bugsnag.device.disk.iops_write"
+    And the "<span_name>" span has integer attribute named "bugsnag.device.disk.iops_total"
+    And the "<span_name>" span integer attribute "bugsnag.device.disk.iops_read" is greater than or equal to 0
+    And the "<span_name>" span integer attribute "bugsnag.device.disk.iops_write" is greater than or equal to 0
+    And the "<span_name>" span integer attribute "bugsnag.device.disk.iops_total" is greater than or equal to 0
+    And the "<span_name>" span integer attribute "bugsnag.device.disk.iops_total" equals the sum of "bugsnag.device.disk.iops_read" and "bugsnag.device.disk.iops_write"
 
     Examples:
-      | platform | transition            |
-      | android  | mid_span_bg_fg        |
-      | android  | ends_in_background    |
-      | android  | starts_in_background  |
+      | platform | span_type   | transition           | span_name             |
+      | android  | custom      | mid_span_bg_fg       | DiskIopsCustom        |
+      | android  | custom      | ends_in_background   | DiskIopsCustom        |
+      | android  | custom      | starts_in_background | DiskIopsCustom        |
+      | android  | app_session | mid_span_bg_fg       | [AppSession/DiskIops] |
+      | android  | app_session | ends_in_background   | [AppSession/DiskIops] |
+      | android  | app_session | starts_in_background | [AppSession/DiskIops] |
 
   # ROAD 2233 – Scenario 10 (spans from older SDK without disk IOPS)
   # Pipeline (-1 default) and API (null) behaviour are backend concerns.

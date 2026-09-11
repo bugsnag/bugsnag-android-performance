@@ -19,9 +19,9 @@ internal object DiskIoMetricsTestSupport {
     ) {
         assertTrue(
             "ProcIoReader.parse failed at span start for ${ioFile.absolutePath} " +
-                    "(readSyscalls=${startSnapshot.readSyscalls}, " +
-                    "writeSyscalls=${startSnapshot.writeSyscalls}). " +
-                    "Ensure ProcIoReader.kt changes are present and the temp io file is readable.",
+                "(readSyscalls=${startSnapshot.readSyscalls}, " +
+                "writeSyscalls=${startSnapshot.writeSyscalls}). " +
+                "Ensure ProcIoReader.kt changes are present and the temp io file is readable.",
             startSnapshot.readSyscalls >= 0L && startSnapshot.writeSyscalls >= 0L,
         )
         assertEquals(
@@ -36,13 +36,13 @@ internal object DiskIoMetricsTestSupport {
         )
         assertTrue(
             "SystemClock.elapsedRealtimeNanos was not set for span start " +
-                    "(timestampNanos=${startSnapshot.timestampNanos}). " +
-                    "Use Robolectric ShadowSystemClock.advanceBy or mockStatic(SystemClock) on this JVM.",
+                "(timestampNanos=${startSnapshot.timestampNanos}). " +
+                "Use Robolectric ShadowSystemClock.advanceBy or mockStatic(SystemClock) on this JVM.",
             startSnapshot.timestampNanos > 0L,
         )
         assertEquals(
             "Span start timestamp does not match the controlled clock " +
-                    "(expected $expectedTimestampNanos, got ${startSnapshot.timestampNanos}).",
+                "(expected $expectedTimestampNanos, got ${startSnapshot.timestampNanos}).",
             expectedTimestampNanos,
             startSnapshot.timestampNanos,
         )
@@ -57,7 +57,7 @@ internal object DiskIoMetricsTestSupport {
         val endCounters = ProcIoReader.IoCounters()
         assertEquals(
             "ProcIoReader.parse failed at span end for ${ioFile.absolutePath}. " +
-                    "Check io fixture content and ProcIoReader strict numeric parsing (ED §3.1.4).",
+                "Check io fixture content and ProcIoReader strict numeric parsing (ED §3.1.4).",
             "ok",
             reader.parse(endCounters),
         )
@@ -79,8 +79,8 @@ internal object DiskIoMetricsTestSupport {
     ) {
         assertTrue(
             "Expected positive span duration but end timestamp ($endTimestampNanos) <= " +
-                    "start timestamp (${startSnapshot.timestampNanos}). " +
-                    "Advance the test clock before endMetrics (ShadowSystemClock or mockStatic).",
+                "start timestamp (${startSnapshot.timestampNanos}). " +
+                "Advance the test clock before endMetrics (ShadowSystemClock or mockStatic).",
             endTimestampNanos > startSnapshot.timestampNanos,
         )
     }
@@ -93,7 +93,7 @@ internal object DiskIoMetricsTestSupport {
     ) {
         assertNotNull(
             "Disk IOPS read attribute was not set on span. " +
-                    "If diagnostics above passed, check DiskIoMetricsSource guard paths.",
+                "If diagnostics above passed, check DiskIoMetricsSource guard paths.",
             span.attributes[DiskIoMetricsSource.ATTR_IOPS_READ],
         )
         assertNotNull(

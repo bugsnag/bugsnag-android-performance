@@ -39,9 +39,9 @@ internal class DiskIoMetricsConcurrentSpansTest {
             clock.`when`<Long>(SystemClock::elapsedRealtimeNanos)
                 .thenReturn(
                     T0,
-                    T1, // Span B start
-                    T2, // Span B end
-                    T3, // Span A end
+                    T1,
+                    T2,
+                    T3,
                 )
 
             writeIoFile(syscr = 1000L, syscw = 500L)

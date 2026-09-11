@@ -100,8 +100,8 @@ internal class DiskIoMetricsFormulaTest {
             )
             assertTrue(
                 "Expected positive span duration but mocked endNanos ($endNanos) <= " +
-                        "start timestamp (${startSnapshot.timestampNanos}). " +
-                        "SystemClock.elapsedRealtimeNanos mock may not be applied on this JVM.",
+                    "start timestamp (${startSnapshot.timestampNanos}). " +
+                    "SystemClock.elapsedRealtimeNanos mock may not be applied on this JVM.",
                 endNanos > startSnapshot.timestampNanos,
             )
 
@@ -110,8 +110,8 @@ internal class DiskIoMetricsFormulaTest {
 
             assertNotNull(
                 "Disk IOPS attributes were not set after endMetrics. " +
-                        "If preconditions above passed, check DiskIoMetricsSource guard paths " +
-                        "(invalid start, failed end read, non-positive duration, negative delta).",
+                    "If preconditions above passed, check DiskIoMetricsSource guard paths " +
+                    "(invalid start, failed end read, non-positive duration, negative delta).",
                 span.attributes[DiskIoMetricsSource.ATTR_IOPS_READ],
             )
 
@@ -139,9 +139,9 @@ internal class DiskIoMetricsFormulaTest {
     ) {
         assertTrue(
             "ProcIoReader.parse failed at span start for ${ioFile.absolutePath} " +
-                    "(readSyscalls=${startSnapshot.readSyscalls}, " +
-                    "writeSyscalls=${startSnapshot.writeSyscalls}). " +
-                    "Ensure ProcIoReader.kt changes are present and the temp io file is readable.",
+                "(readSyscalls=${startSnapshot.readSyscalls}, " +
+                "writeSyscalls=${startSnapshot.writeSyscalls}). " +
+                "Ensure ProcIoReader.kt changes are present and the temp io file is readable.",
             startSnapshot.readSyscalls >= 0L && startSnapshot.writeSyscalls >= 0L,
         )
         assertEquals(
@@ -156,15 +156,15 @@ internal class DiskIoMetricsFormulaTest {
         )
         assertTrue(
             "SystemClock.elapsedRealtimeNanos mock may not be applied " +
-                    "(timestampNanos=${startSnapshot.timestampNanos}). " +
-                    "DiskIoMetricsSource requires timestampNanos > 0. " +
-                    "Try the project JDK (Android Studio JBR) or check mockito-inline compatibility with your JVM.",
+                "(timestampNanos=${startSnapshot.timestampNanos}). " +
+                "DiskIoMetricsSource requires timestampNanos > 0. " +
+                "Try the project JDK (Android Studio JBR) or check mockito-inline compatibility with your JVM.",
             startSnapshot.timestampNanos > 0L,
         )
         assertEquals(
             "Mocked SystemClock value was not used for span start timestamp " +
-                    "(expected $expectedTimestampNanos, got ${startSnapshot.timestampNanos}). " +
-                    "mockStatic(SystemClock) may not be intercepting calls on this JVM.",
+                "(expected $expectedTimestampNanos, got ${startSnapshot.timestampNanos}). " +
+                "mockStatic(SystemClock) may not be intercepting calls on this JVM.",
             expectedTimestampNanos,
             startSnapshot.timestampNanos,
         )
@@ -179,8 +179,9 @@ internal class DiskIoMetricsFormulaTest {
         val endCounters = ProcIoReader.IoCounters()
         assertEquals(
             "ProcIoReader.parse failed at span end for ${ioFile.absolutePath}. " +
-                    "Check io fixture content and ProcIoReader strict numeric parsing (ED §3.1.4).",
-            "ok", reader.parse(endCounters),
+                "Check io fixture content and ProcIoReader strict numeric parsing (ED §3.1.4).",
+            "ok",
+            reader.parse(endCounters),
         )
         assertEquals(
             "Unexpected read syscalls at span end for ${ioFile.absolutePath}.",

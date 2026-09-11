@@ -45,10 +45,12 @@ public class SpanMetricsSnapshot(
             memoryMetricsSource: MetricSource<MemoryMetricsSnapshot>?,
             diskIoMetricsSource: MetricSource<DiskIoSnapshot>?,
         ): SpanMetricsSnapshot? {
-            if (renderingMetricsSource == null &&
-                cpuMetricsSource == null &&
-                memoryMetricsSource == null &&
-                diskIoMetricsSource == null
+            if (allSourcesAreNull(
+                    renderingMetricsSource,
+                    cpuMetricsSource,
+                    memoryMetricsSource,
+                    diskIoMetricsSource,
+                )
             ) {
                 return null
             }
@@ -59,6 +61,18 @@ public class SpanMetricsSnapshot(
                 memoryMetricsSource,
                 diskIoMetricsSource,
             )
+        }
+
+        private fun allSourcesAreNull(
+            renderingMetricsSource: MetricSource<FramerateMetricsSnapshot>?,
+            cpuMetricsSource: MetricSource<CpuMetricsSnapshot>?,
+            memoryMetricsSource: MetricSource<MemoryMetricsSnapshot>?,
+            diskIoMetricsSource: MetricSource<DiskIoSnapshot>?,
+        ): Boolean {
+            return renderingMetricsSource == null &&
+                cpuMetricsSource == null &&
+                memoryMetricsSource == null &&
+                diskIoMetricsSource == null
         }
     }
 }

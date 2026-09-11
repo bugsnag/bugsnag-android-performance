@@ -55,6 +55,10 @@ project.afterEvaluate {
     }
 
     signing {
+        required {
+            (project.hasProperty("signing.keyId") || project.hasProperty("signing.signingKey")) &&
+                    gradle.taskGraph.hasTask(":${project.name}:publishSDKPublicationToOssrhStagingRepository")
+        }
         sign publishing.publications
     }
 }

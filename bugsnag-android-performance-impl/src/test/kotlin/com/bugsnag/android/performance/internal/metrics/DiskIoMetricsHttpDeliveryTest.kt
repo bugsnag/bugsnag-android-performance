@@ -56,12 +56,12 @@ internal class DiskIoMetricsHttpDeliveryTest {
         val connectivity =
             mock<Connectivity> {
                 on { connectivityStatus } doReturn
-                        ConnectivityStatus(
-                            true,
-                            ConnectionMetering.POTENTIALLY_METERED,
-                            NetworkType.CELL,
-                            null,
-                        )
+                    ConnectivityStatus(
+                        true,
+                        ConnectionMetering.POTENTIALLY_METERED,
+                        NetworkType.CELL,
+                        null,
+                    )
             }
 
         val recordingConnection = RecordingHttpConnection()

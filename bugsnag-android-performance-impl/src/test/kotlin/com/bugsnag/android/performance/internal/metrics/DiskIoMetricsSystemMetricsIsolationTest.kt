@@ -7,7 +7,6 @@ import com.bugsnag.android.performance.internal.framerate.FramerateMetricsSnapsh
 import com.bugsnag.android.performance.internal.framerate.TimestampPairBuffer
 import com.bugsnag.android.performance.test.NoopSpanProcessor
 import com.bugsnag.android.performance.test.TestSpanFactory
-import com.bugsnag.android.performance.test.withStaticMock
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
@@ -17,6 +16,7 @@ import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 import org.junit.runners.Parameterized.Parameter
 import org.junit.runners.Parameterized.Parameters
+import org.mockito.Mockito.mockStatic
 import java.io.File
 
 /**
@@ -77,20 +77,26 @@ internal class DiskIoMetricsSystemMetricsIsolationTest {
                         cpuSource,
                         memorySource,
                         renderingSource,
-                        readStart = 100L,
-                        writeStart = 50L,
-                        readEnd = 200L,
-                        writeEnd = 100L,
+                        values =
+                            DiskIoValues(
+                                readStart = 100L,
+                                writeStart = 50L,
+                                readEnd = 200L,
+                                writeEnd = 100L,
+                            ),
                     )
                 DiskMode.ZERO_IOPS ->
                     finishSpanWithDisk(
                         cpuSource,
                         memorySource,
                         renderingSource,
-                        readStart = 500L,
-                        writeStart = 250L,
-                        readEnd = 500L,
-                        writeEnd = 250L,
+                        values =
+                            DiskIoValues(
+                                readStart = 500L,
+                                writeStart = 250L,
+                                readEnd = 500L,
+                                writeEnd = 250L,
+                            ),
                     )
                 DiskMode.DISABLED -> finishSpanWithoutDisk(cpuSource, memorySource, renderingSource)
             }
@@ -120,16 +126,13 @@ internal class DiskIoMetricsSystemMetricsIsolationTest {
         cpuSource: SampledMetricSource<CpuMetricsSnapshot>,
         memorySource: SampledMetricSource<MemoryMetricsSnapshot>,
         renderingSource: MetricSource<FramerateMetricsSnapshot>,
-        readStart: Long,
-        writeStart: Long,
-        readEnd: Long,
-        writeEnd: Long,
+        values: DiskIoValues,
     ): SpanImpl {
-        writeIoFile(syscr = readStart, syscw = writeStart)
+        writeIoFile(syscr = values.readStart, syscw = values.writeStart)
 
         lateinit var span: SpanImpl
-        withStaticMock<SystemClock> { clock ->
-            clock.`when`<Long>(SystemClock::elapsedRealtimeNanos)
+        mockStatic(SystemClock::class.java).use { clock ->
+            clock.`when`<Long> { SystemClock.elapsedRealtimeNanos() }
                 .thenReturn(NANOS_PER_SECOND, 3L * NANOS_PER_SECOND)
 
             val diskSource = DiskIoMetricsSource(ProcIoReader(ioFile.absolutePath))
@@ -142,7 +145,7 @@ internal class DiskIoMetricsSystemMetricsIsolationTest {
                 )
             assertNotNull(snapshot)
 
-            writeIoFile(syscr = readEnd, syscw = writeEnd)
+            writeIoFile(syscr = values.readEnd, syscw = values.writeEnd)
             span = TestSpanFactory().newSpan(processor = NoopSpanProcessor.INSTANCE)
             snapshot!!.finish(span)
         }
@@ -206,8 +209,9 @@ internal class DiskIoMetricsSystemMetricsIsolationTest {
         object : MetricSource<FramerateMetricsSnapshot> {
             private val buffer = TimestampPairBuffer()
 
-            override fun createStartMetrics(): FramerateMetricsSnapshot =
-                FramerateMetricsSnapshot(0L, 0L, 0L, buffer, 0)
+            override fun createStartMetrics(): FramerateMetricsSnapshot {
+                return FramerateMetricsSnapshot(0L, 0L, 0L, buffer, 0)
+            }
 
             override fun endMetrics(
                 startMetrics: FramerateMetricsSnapshot,
@@ -239,6 +243,13 @@ internal class DiskIoMetricsSystemMetricsIsolationTest {
         DISABLED,
         ZERO_IOPS,
     }
+
+    private data class DiskIoValues(
+        val readStart: Long,
+        val writeStart: Long,
+        val readEnd: Long,
+        val writeEnd: Long,
+    )
 
     internal data class SystemMetricsDiskState(
         val name: String,

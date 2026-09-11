@@ -12,13 +12,25 @@ import com.bugsnag.mazeracer.log
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
- * ROAD 2233 Scenario 9: disk IOPS still collected across real lifecycle transitions.
- * Termination-without-end is not Maze-deliverable (the span never completes).
+ * ROAD 2233 Scenario 9: disk IOPS still collected across real lifecycle transitions
+ * for custom and app_session spans. Termination-without-end is not Maze-deliverable
+ * (the span never completes).
  */
 class DiskIopsLifecycleScenario(
     config: PerformanceConfiguration,
     scenarioMetadata: String,
 ) : Scenario(config, scenarioMetadata) {
+    private var customSpan: Span? = null
+
+    private val spanType: String
+        get() = scenarioConfig["span_type"] ?: "custom"
+
+    private val transition: String
+        get() = scenarioConfig["transition"] ?: scenarioMetadata
+
+    private val isAppSession: Boolean
+        get() = spanType == "app_session"
+
     init {
         InternalDebug.spanBatchSizeSendTriggerPoint = 1
         InternalDebug.attachDiskIoSnapshots = true
@@ -31,7 +43,7 @@ class DiskIopsLifecycleScenario(
         BugsnagPerformance.start(config)
         forceConfigureMetrics(config.enabledMetrics)
 
-        when (scenarioMetadata) {
+        when (transition) {
             "ends_in_background" -> endSpanInBackground()
             "starts_in_background" -> startSpanInBackground()
             else -> midSpanBackgroundThenForeground()
@@ -39,28 +51,28 @@ class DiskIopsLifecycleScenario(
     }
 
     private fun endSpanInBackground() {
-        val span = startLifecycleSpan()
+        startLifecycleSpan()
         DiskIopsSupport.generateDiskActivity(context, "lifecycle-fg")
         runOnceOnStop {
             DiskIopsSupport.generateDiskActivity(context, "lifecycle-bg")
             Thread.sleep(DiskIopsSupport.SPAN_SLEEP_MS)
-            finishSpan(span)
+            finishSpan()
         }
         sendToHome()
     }
 
     private fun startSpanInBackground() {
         runOnceOnStop {
-            val span = startLifecycleSpan()
+            startLifecycleSpan()
             DiskIopsSupport.generateDiskActivity(context, "lifecycle-bg-start")
             Thread.sleep(DiskIopsSupport.SPAN_SLEEP_MS)
-            finishSpan(span)
+            finishSpan()
         }
         sendToHome()
     }
 
     private fun midSpanBackgroundThenForeground() {
-        val span = startLifecycleSpan()
+        startLifecycleSpan()
         DiskIopsSupport.generateDiskActivity(context, "lifecycle-mid-start")
         val sawStop = AtomicBoolean(false)
         val ended = AtomicBoolean(false)
@@ -84,7 +96,7 @@ class DiskIopsLifecycleScenario(
                     application.unregisterActivityLifecycleCallbacks(this)
                     DiskIopsSupport.generateDiskActivity(context, "lifecycle-mid-fg")
                     Thread.sleep(DiskIopsSupport.SPAN_SLEEP_MS)
-                    finishSpan(span)
+                    finishSpan()
                 }
             }
 
@@ -107,15 +119,25 @@ class DiskIopsLifecycleScenario(
         application.registerActivityLifecycleCallbacks(callbacks)
     }
 
-    private fun startLifecycleSpan(): Span {
-        return BugsnagPerformance.startSpan(
-            "DiskIopsLifecycle",
-            DiskIopsSupport.diskSpanOptions(),
-        )
+    private fun startLifecycleSpan() {
+        if (isAppSession) {
+            BugsnagPerformance.startAppSessionSpan(APP_SESSION_NAME)
+        } else {
+            customSpan =
+                BugsnagPerformance.startSpan(
+                    CUSTOM_SPAN_NAME,
+                    DiskIopsSupport.diskSpanOptions(),
+                )
+        }
     }
 
-    private fun finishSpan(span: Span) {
-        span.end()
+    private fun finishSpan() {
+        if (isAppSession) {
+            BugsnagPerformance.endAppSessionSpan()
+        } else {
+            customSpan?.end()
+            customSpan = null
+        }
         mainHandler.post { PerformanceTestUtils.flushBatch() }
     }
 
@@ -146,5 +168,7 @@ class DiskIopsLifecycleScenario(
 
     private companion object {
         const val BRING_TO_FRONT_DELAY_MS = 300L
+        const val CUSTOM_SPAN_NAME = "DiskIopsCustom"
+        const val APP_SESSION_NAME = "DiskIops"
     }
 }

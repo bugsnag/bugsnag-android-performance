@@ -98,7 +98,10 @@ internal open class MetricsContainer(
     }
 
     private fun isEnabled(): Boolean {
-        return memoryMetricSource != null || renderingMetricsSource != null || cpuMetricSource != null || diskIoMetricSource != null
+        return memoryMetricSource != null ||
+            renderingMetricsSource != null ||
+            cpuMetricSource != null ||
+            diskIoMetricSource != null
     }
 
     fun createSpanMetricsSnapshot(

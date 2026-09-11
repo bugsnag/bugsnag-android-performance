@@ -7,7 +7,6 @@ import com.bugsnag.android.performance.internal.TracePayload
 import com.bugsnag.android.performance.test.NoopSpanProcessor
 import com.bugsnag.android.performance.test.OtelValidator.assertTraceDataValid
 import com.bugsnag.android.performance.test.TestSpanFactory
-import com.bugsnag.android.performance.test.withStaticMock
 import org.json.JSONArray
 import org.json.JSONObject
 import org.junit.Assert.assertEquals
@@ -17,6 +16,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.Mockito.mockStatic
 import org.robolectric.RobolectricTestRunner
 import java.io.File
 
@@ -40,9 +40,18 @@ internal class DiskIoMetricsOtlpPayloadTest {
     fun otlpPayloadContainsExactlyThreeDiskIopsAttributes() {
         lateinit var span: SpanImpl
 
-        withStaticMock<SystemClock> { clock ->
+        span = createSpanWithDiskMetrics()
+
+        val payloadJson = encodePayload(span)
+
+        assertPayloadDoesNotContainLegacyOrRawKeys(payloadJson)
+        assertDiskAttributes(payloadJson)
+    }
+
+    private fun createSpanWithDiskMetrics(): SpanImpl {
+        mockStatic(SystemClock::class.java).use { clock ->
             writeIoFile(syscr = 1000L, syscw = 500L)
-            clock.`when`<Long>(SystemClock::elapsedRealtimeNanos)
+            clock.`when`<Long> { SystemClock.elapsedRealtimeNanos() }
                 .thenReturn(
                     NANOS_PER_SECOND,
                     3L * NANOS_PER_SECOND,
@@ -52,11 +61,14 @@ internal class DiskIoMetricsOtlpPayloadTest {
             val startSnapshot = source.createStartMetrics()
             writeIoFile(syscr = 1060L, syscw = 530L)
 
-            span = TestSpanFactory().newSpan(processor = NoopSpanProcessor.INSTANCE)
+            val span = TestSpanFactory().newSpan(processor = NoopSpanProcessor.INSTANCE)
             source.endMetrics(startSnapshot, span)
             span.end(3L * NANOS_PER_SECOND)
+            return span
         }
+    }
 
+    private fun encodePayload(span: SpanImpl): String {
         val payload =
             TracePayload.encodeSpanPayload(
                 listOf(span),
@@ -69,8 +81,10 @@ internal class DiskIoMetricsOtlpPayloadTest {
             )
 
         assertTraceDataValid(payload)
+        return payload.toString(Charsets.UTF_8)
+    }
 
-        val payloadJson = payload.toString(Charsets.UTF_8)
+    private fun assertPayloadDoesNotContainLegacyOrRawKeys(payloadJson: String) {
         LEGACY_DISK_KEYS.forEach { legacyKey ->
             assertFalse(
                 "Legacy disk key must not appear in payload: $legacyKey",
@@ -83,7 +97,9 @@ internal class DiskIoMetricsOtlpPayloadTest {
                 payloadJson.contains("\"key\":\"$rawKey\""),
             )
         }
+    }
 
+    private fun assertDiskAttributes(payloadJson: String) {
         val spanAttributes = jsonArrayToList(spanAttributesFromPayload(JSONObject(payloadJson)))
         val diskAttributes =
             spanAttributes.filter { attribute: JSONObject ->
@@ -103,22 +119,14 @@ internal class DiskIoMetricsOtlpPayloadTest {
             assertFalse(value.has("boolValue"))
         }
 
-        assertEquals(
-            45L,
-            diskAttributes.longValueFor(DiskIoMetricsSource.ATTR_IOPS_TOTAL),
-        )
-        assertEquals(
-            30L,
-            diskAttributes.longValueFor(DiskIoMetricsSource.ATTR_IOPS_READ),
-        )
-        assertEquals(
-            15L,
-            diskAttributes.longValueFor(DiskIoMetricsSource.ATTR_IOPS_WRITE),
-        )
+        assertEquals(45L, diskAttributes.longValueFor(DiskIoMetricsSource.ATTR_IOPS_TOTAL))
+        assertEquals(30L, diskAttributes.longValueFor(DiskIoMetricsSource.ATTR_IOPS_READ))
+        assertEquals(15L, diskAttributes.longValueFor(DiskIoMetricsSource.ATTR_IOPS_WRITE))
     }
 
-    private fun jsonArrayToList(array: JSONArray): List<JSONObject> =
-        List(array.length()) { index -> array.getJSONObject(index) }
+    private fun jsonArrayToList(array: JSONArray): List<JSONObject> {
+        return List(array.length()) { index -> array.getJSONObject(index) }
+    }
 
     private fun spanAttributesFromPayload(payload: JSONObject): JSONArray {
         val attributes =

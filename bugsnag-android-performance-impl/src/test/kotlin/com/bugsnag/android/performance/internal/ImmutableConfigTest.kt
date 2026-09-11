@@ -53,7 +53,7 @@ class ImmutableConfigTest {
     }
 
     @Test
-    fun enableMatricsAllTrueEnablesDisk(){
+    fun enableMatricsAllTrueEnablesDisk() {
         val enabledMetrics = EnabledMetrics(true)
         assertTrue(enabledMetrics.rendering)
         assertTrue(enabledMetrics.cpu)

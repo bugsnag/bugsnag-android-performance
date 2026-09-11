@@ -27,10 +27,10 @@ public class EnabledMetrics(
 
     override fun equals(other: Any?): Boolean {
         return other is EnabledMetrics &&
-                rendering == other.rendering &&
-                cpu == other.cpu &&
-                memory == other.memory &&
-                disk == other.disk
+            rendering == other.rendering &&
+            cpu == other.cpu &&
+            memory == other.memory &&
+            disk == other.disk
     }
 
     override fun hashCode(): Int {
