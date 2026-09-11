@@ -2,7 +2,7 @@ plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
     id 'org.jlleitschuh.gradle.ktlint'
-    id 'io.gitlab.arturbosch.detekt' version '1.23.8'
+    id 'io.gitlab.arturbosch.detekt'
 }
 
 android {

@@ -669,3 +669,51 @@ Then(/a span (integer|float|boolean|bool|string|double) array attribute "([^"]+)
 
   raise Test::Unit::AssertionFailedError.new "No span found where #{type} array attribute #{attribute} equals #{expected_values}" if found.nil?
 end
+
+Then('the {string} span has exactly {int} attributes whose keys start with {string}') do |span_name, count, prefix|
+  spans = spans_from_request_list(Maze::Server.list_for('traces'))
+  found_spans = spans.find_all { |span| span['name'].eql?(span_name) }
+  raise Test::Unit::AssertionFailedError.new "No spans were found with the name #{span_name}" if found_spans.empty?
+
+  found_spans.each do |span|
+    matching = span['attributes'].select { |a| a['key'].to_s.start_with?(prefix) }
+    keys = matching.map { |a| a['key'] }
+    Maze.check.equal(count, matching.size,
+                     "Span '#{span_name}' had #{matching.size} attributes starting with '#{prefix}': #{keys.join(', ')}")
+  end
+end
+
+Then('the {string} span attribute {string} is encoded as intValue') do |span_name, attribute|
+  spans = spans_from_request_list(Maze::Server.list_for('traces'))
+  found_spans = spans.find_all { |span| span['name'].eql?(span_name) }
+  raise Test::Unit::AssertionFailedError.new "No spans were found with the name #{span_name}" if found_spans.empty?
+
+  found_spans.each do |span|
+    attribute_obj = span['attributes'].find { |a| a['key'] == attribute }
+    raise Test::Unit::AssertionFailedError.new "No attribute named #{attribute} was found in span #{span_name}" if attribute_obj.nil?
+
+    value = attribute_obj['value'] || {}
+    Maze.check.true(value.key?('intValue'),
+                    "Attribute '#{attribute}' in span '#{span_name}' is not encoded as intValue: #{value}")
+    Maze.check.false(value.key?('doubleValue'),
+                     "Attribute '#{attribute}' in span '#{span_name}' unexpectedly has doubleValue")
+    Maze.check.false(value.key?('stringValue'),
+                     "Attribute '#{attribute}' in span '#{span_name}' unexpectedly has stringValue")
+    Maze.check.false(value.key?('boolValue'),
+                     "Attribute '#{attribute}' in span '#{span_name}' unexpectedly has boolValue")
+  end
+end
+
+Then('the {string} span has none of the following attributes:') do |span_name, table|
+  spans = spans_from_request_list(Maze::Server.list_for('traces'))
+  found_spans = spans.find_all { |span| span['name'].eql?(span_name) }
+  raise Test::Unit::AssertionFailedError.new "No spans were found with the name #{span_name}" if found_spans.empty?
+
+  forbidden = table.raw.flatten
+  found_spans.each do |span|
+    keys = span['attributes'].map { |a| a['key'] }
+    present = forbidden.select { |key| keys.include?(key) }
+    Maze.check.true(present.empty?,
+                    "Span '#{span_name}' should not have attributes #{present.join(', ')}")
+  end
+end
