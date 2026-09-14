@@ -4,7 +4,6 @@ import com.bugsnag.android.performance.BugsnagPerformance
 import com.bugsnag.android.performance.PerformanceConfiguration
 import com.bugsnag.android.performance.measureSpan
 import com.bugsnag.mazeracer.Scenario
-import kotlin.math.roundToLong
 
 class ManualSpanScenario(
     config: PerformanceConfiguration,

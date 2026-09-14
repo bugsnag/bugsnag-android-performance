@@ -28,7 +28,9 @@ class DiskIopsScenario(
         val realIo = File("/proc/self/io")
         if (!realIo.exists() || !realIo.canRead()) {
             val fakeIo = File(context.cacheDir, "fake_io")
-            fakeIo.writeText("syscr: 100\nsyscw: 50\n")
+            fakeIo.writeText(
+                "syscr: $FAKE_SYSCR_INITIAL\nsyscw: $FAKE_SYSCW_INITIAL\n",
+            )
             InternalDebug.procIoPath = fakeIo.absolutePath
         }
 
@@ -38,29 +40,47 @@ class DiskIopsScenario(
 
         runAndFlush {
             if (type == "custom") {
-                val span = BugsnagPerformance.startSpan(
-                    "DiskIopsCustom",
-                    SpanOptions.withMetrics(SpanMetrics(disk = true)),
-                )
+                val span =
+                    BugsnagPerformance.startSpan(
+                        "DiskIopsCustom",
+                        SpanOptions.withMetrics(SpanMetrics(disk = true)),
+                    )
                 // Do some I/O to ensure deltas can be > 0 if using real file
                 if (InternalDebug.procIoPath == "/proc/self/io") {
                     File(context.cacheDir, "test_custom.txt").writeText("some data to force disk I/O")
                 } else {
                     // Update fake file to simulate I/O
-                    File(InternalDebug.procIoPath).writeText("syscr: 130\nsyscw: 65\n")
+                    File(InternalDebug.procIoPath).writeText(
+                        "syscr: $FAKE_SYSCR_CUSTOM\nsyscw: $FAKE_SYSCW_CUSTOM\n",
+                    )
                 }
-                Thread.sleep(200L) // Ensure duration > 0
+                Thread.sleep(SPAN_END_DELAY_MS) // Ensure duration > 0
                 span.end()
             } else if (type == "app_session") {
                 BugsnagPerformance.startAppSessionSpan("DiskIops")
                 if (InternalDebug.procIoPath == "/proc/self/io") {
                     File(context.cacheDir, "test_session.txt").writeText("session data")
                 } else {
-                    File(InternalDebug.procIoPath).writeText("syscr: 140\nsyscw: 70\n")
+                    File(InternalDebug.procIoPath).writeText(
+                        "syscr: $FAKE_SYSCR_SESSION\nsyscw: $FAKE_SYSCW_SESSION\n",
+                    )
                 }
-                Thread.sleep(200L)
+                Thread.sleep(SPAN_END_DELAY_MS)
                 BugsnagPerformance.endAppSessionSpan()
             }
         }
+    }
+
+    private companion object {
+        private const val SPAN_END_DELAY_MS = 200L
+
+        private const val FAKE_SYSCR_INITIAL = 100L
+        private const val FAKE_SYSCW_INITIAL = 50L
+
+        private const val FAKE_SYSCR_CUSTOM = 130L
+        private const val FAKE_SYSCW_CUSTOM = 65L
+
+        private const val FAKE_SYSCR_SESSION = 140L
+        private const val FAKE_SYSCW_SESSION = 70L
     }
 }

@@ -19,7 +19,7 @@ class DiskIopsAppStartScenario(
     scenarioMetadata: String,
 ) : Scenario(config, scenarioMetadata) {
     init {
-        InternalDebug.workerSleepMs = 5000L
+        InternalDebug.workerSleepMs = WORKER_SLEEP_MS
     }
 
     override fun startScenario() {
@@ -31,15 +31,24 @@ class DiskIopsAppStartScenario(
         val realIo = File("/proc/self/io")
         if (!realIo.exists() || !realIo.canRead()) {
             val fakeIo = File(context.cacheDir, "fake_io_appstart")
-            fakeIo.writeText("syscr: 1000\nsyscw: 500\n")
+            fakeIo.writeText(
+                "syscr: $FAKE_SYSCR\nsyscw: $FAKE_SYSCW\n",
+            )
             InternalDebug.procIoPath = fakeIo.absolutePath
         }
 
         launch {
             context.saveStartupConfig(config)
 
-            delay(500L)
+            delay(SAVE_AND_EXIT_DELAY_MS)
             exitProcess(0)
         }
+    }
+
+    private companion object {
+        private const val WORKER_SLEEP_MS = 5000L
+        private const val SAVE_AND_EXIT_DELAY_MS = 500L
+        private const val FAKE_SYSCR = 1000L
+        private const val FAKE_SYSCW = 500L
     }
 }

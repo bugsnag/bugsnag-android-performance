@@ -10,7 +10,6 @@ class AppSessionResourceUsageScenario(
     config: PerformanceConfiguration,
     scenarioMetadata: String,
 ) : Scenario(config, scenarioMetadata) {
-
     init {
         InternalDebug.spanBatchSizeSendTriggerPoint = 1
         config.autoInstrumentAppStarts = false

@@ -24,7 +24,6 @@ class MazeRacerApplication : Application() {
 
     override fun attachBaseContext(base: Context?) {
         super.attachBaseContext(base)
-        
         // We must initialize procIoPath as early as possible (before ContentProviders run)
         // so that the auto-instrumented AppStart span uses the correct file.
         val prefs = getSharedPreferences("StartupConfig", Context.MODE_PRIVATE)
@@ -43,20 +42,23 @@ class MazeRacerApplication : Application() {
         // if there is stored "startup" config then we start BugsnagPerformance before the scenario
         // this is used to test things like app-start instrumentation
         readStartupConfig()?.let { config ->
-            InternalDebug.workerSleepMs = 2000L
-            
+            InternalDebug.workerSleepMs = WORKER_SLEEP_MS
             // Advance fake counters to ensure delta > 0 for AppStart on restricted devices
             if (InternalDebug.procIoPath.contains("fake_io")) {
                 val file = File(InternalDebug.procIoPath)
                 // Start counters
-                file.writeText("syscr: 500\nsyscw: 250\n")
-                
+                file.writeText(
+                    "syscr: $FAKE_SYSCR_START\nsyscw: $FAKE_SYSCW_START\n",
+                )
                 // Update file again after a small delay so endMetrics sees higher values
                 Thread {
                     try {
-                        Thread.sleep(300L)
-                        file.writeText("syscr: 1500\nsyscw: 750\n")
-                    } catch (_: Exception) {}
+                        Thread.sleep(FAKE_COUNTER_UPDATE_DELAY_MS)
+                        file.writeText(
+                            "syscr: $FAKE_SYSCR_END\nsyscw: $FAKE_SYSCW_END\n",
+                        )
+                    } catch (_: Exception) {
+                    }
                 }.start()
             }
 
@@ -72,5 +74,16 @@ class MazeRacerApplication : Application() {
                 .penaltyDeath()
                 .build(),
         )
+    }
+
+    private companion object {
+        private const val WORKER_SLEEP_MS = 2000L
+        private const val FAKE_COUNTER_UPDATE_DELAY_MS = 300L
+
+        private const val FAKE_SYSCR_START = 500L
+        private const val FAKE_SYSCW_START = 250L
+
+        private const val FAKE_SYSCR_END = 1500L
+        private const val FAKE_SYSCW_END = 750L
     }
 }

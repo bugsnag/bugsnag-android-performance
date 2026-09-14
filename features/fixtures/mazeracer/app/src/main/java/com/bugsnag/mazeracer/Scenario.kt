@@ -20,7 +20,10 @@ abstract class Scenario(
 
     protected val scenarioConfig = mutableMapOf<String, String>()
 
-    open fun configureScenario(key: String, value: String) {
+    open fun configureScenario(
+        key: String,
+        value: String,
+    ) {
         scenarioConfig[key] = value
     }
 
@@ -62,7 +65,9 @@ abstract class Scenario(
             val configure = metricsContainer.javaClass.getDeclaredMethod("configure", enabledMetrics.javaClass)
             configure.isAccessible = true
             configure.invoke(metricsContainer, enabledMetrics)
-        } catch (e: Exception) {
+        } catch (e: ReflectiveOperationException) {
+            log("Failed to force configure metrics", e)
+        } catch (e: SecurityException) {
             log("Failed to force configure metrics", e)
         }
     }

@@ -16,7 +16,6 @@ class CheckDiskIoSupportScenario(
             val ioFile = File("/proc/self/io")
             val exists = ioFile.exists()
             val content = if (exists) ioFile.readText() else "MISSING"
-            
             BugsnagPerformance.startSpan("CheckDiskIoSupport").use { span ->
                 span.setAttribute("io_file_exists", exists)
                 span.setAttribute("io_file_content", content)
