@@ -176,12 +176,18 @@ public final class com/bugsnag/android/performance/internal/InstrumentedAppState
 
 public final class com/bugsnag/android/performance/internal/InternalDebug {
 	public static final field INSTANCE Lcom/bugsnag/android/performance/internal/InternalDebug;
+	public final fun getAttachDiskIoSnapshots ()Z
+	public final fun getDiskIoTimestampFault ()Ljava/lang/String;
 	public final fun getDropSpansOlderThanMs ()J
 	public final fun getPValueExpireAfterMs ()I
+	public final fun getProcIoPath ()Ljava/lang/String;
 	public final fun getSpanBatchSizeSendTriggerPoint ()I
 	public final fun getWorkerSleepMs ()J
+	public final fun setAttachDiskIoSnapshots (Z)V
+	public final fun setDiskIoTimestampFault (Ljava/lang/String;)V
 	public final fun setDropSpansOlderThanMs (J)V
 	public final fun setPValueExpireAfterMs (I)V
+	public final fun setProcIoPath (Ljava/lang/String;)V
 	public final fun setSpanBatchSizeSendTriggerPoint (I)V
 	public final fun setWorkerSleepMs (J)V
 }
@@ -667,6 +673,24 @@ public final class com/bugsnag/android/performance/internal/metrics/CpuMetricsSn
 	public fun toString ()Ljava/lang/String;
 }
 
+public final class com/bugsnag/android/performance/internal/metrics/DiskIoSnapshot {
+	public fun <init> (JJJLjava/lang/String;)V
+	public synthetic fun <init> (JJJLjava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()J
+	public final fun component2 ()J
+	public final fun component3 ()J
+	public final fun component4 ()Ljava/lang/String;
+	public final fun copy (JJJLjava/lang/String;)Lcom/bugsnag/android/performance/internal/metrics/DiskIoSnapshot;
+	public static synthetic fun copy$default (Lcom/bugsnag/android/performance/internal/metrics/DiskIoSnapshot;JJJLjava/lang/String;ILjava/lang/Object;)Lcom/bugsnag/android/performance/internal/metrics/DiskIoSnapshot;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getReadSyscalls ()J
+	public final fun getStatus ()Ljava/lang/String;
+	public final fun getTimestampNanos ()J
+	public final fun getWriteSyscalls ()J
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
 public class com/bugsnag/android/performance/internal/metrics/LinkedMetricsSnapshot {
 	public field blocking Lcom/bugsnag/android/performance/internal/SpanImpl$Condition;
 	public field next Lcom/bugsnag/android/performance/internal/metrics/LinkedMetricsSnapshot;
@@ -689,7 +713,7 @@ public abstract interface class com/bugsnag/android/performance/internal/metrics
 }
 
 public final class com/bugsnag/android/performance/internal/metrics/SpanMetricsSnapshot {
-	public fun <init> (Lcom/bugsnag/android/performance/internal/metrics/MetricSource;Lcom/bugsnag/android/performance/internal/metrics/MetricSource;Lcom/bugsnag/android/performance/internal/metrics/MetricSource;)V
+	public fun <init> (Lcom/bugsnag/android/performance/internal/metrics/MetricSource;Lcom/bugsnag/android/performance/internal/metrics/MetricSource;Lcom/bugsnag/android/performance/internal/metrics/MetricSource;Lcom/bugsnag/android/performance/internal/metrics/MetricSource;)V
 	public final fun finish (Lcom/bugsnag/android/performance/internal/SpanImpl;)V
 }
 

@@ -10,8 +10,6 @@ class AppSessionResourceUsageScenario(
     config: PerformanceConfiguration,
     scenarioMetadata: String,
 ) : Scenario(config, scenarioMetadata) {
-    private val scenarioConfig = mutableMapOf<String, String>()
-
     init {
         InternalDebug.spanBatchSizeSendTriggerPoint = 1
         config.autoInstrumentAppStarts = false
@@ -25,18 +23,13 @@ class AppSessionResourceUsageScenario(
         when (key) {
             "cpuMetrics" -> config.enabledMetrics.cpu = value.toBoolean()
             "memoryMetrics" -> config.enabledMetrics.memory = value.toBoolean()
+            "diskMetrics" -> config.enabledMetrics.disk = value.toBoolean()
         }
-    }
-
-    fun configureScenario(
-        key: String,
-        value: String,
-    ) {
-        scenarioConfig[key] = value
     }
 
     fun startBugsnag() {
         BugsnagPerformance.start(config)
+        forceConfigureMetrics(config.enabledMetrics)
     }
 
     override fun startScenario() {

@@ -24,22 +24,28 @@ public class SpanMetrics(
      * Determines whether memory consumption is reported for the span.
      */
     public val memory: Boolean? = null,
+    /**
+     * Determines whether disk I/O metrics are reported for the span.
+     */
+    public val disk: Boolean? = null,
 ) {
     override fun equals(other: Any?): Boolean {
         return other is SpanMetrics &&
             rendering == other.rendering &&
             cpu == other.cpu &&
-            memory == other.memory
+            memory == other.memory &&
+            disk == other.disk
     }
 
     override fun hashCode(): Int {
         var result = rendering.hashCode()
         result = 31 * result + cpu.hashCode()
         result = 31 * result + memory.hashCode()
+        result = 31 * result + disk.hashCode()
         return result
     }
 
     override fun toString(): String {
-        return "SpanMetrics(rendering=$rendering, cpu=$cpu, memory=$memory)"
+        return "SpanMetrics(rendering=$rendering, cpu=$cpu, memory=$memory, disk=$disk)"
     }
 }

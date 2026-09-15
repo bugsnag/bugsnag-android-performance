@@ -93,3 +93,12 @@ Feature: Manual creation of spans
     * a span string array attribute "arrayAttribute" equals the array:
       | this is a *** 68 CHARS TRUNCATED |
     * every span string attribute "droppedAttribute" does not exist
+
+  Scenario: Manual spans can include configured disk metrics
+    Given I load scenario "ManualSpanScenario"
+    And I configure scenario "disk_read_bytes" to "1024"
+    And I configure scenario "disk_write_bytes" to "2048"
+    And I run the loaded scenario
+    And I wait to receive a span named "DiskMetricsMock"
+    Then a span integer attribute "bugsnag.system.disk.read_bytes" equals "1024"
+    And a span integer attribute "bugsnag.system.disk.write_bytes" equals "2048"

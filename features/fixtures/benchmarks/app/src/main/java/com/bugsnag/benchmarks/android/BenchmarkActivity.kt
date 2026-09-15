@@ -81,6 +81,7 @@ class BenchmarkActivity : Activity(), CoroutineScope by MainScope() {
             rendering = config.contains("rendering"),
             cpu = config.contains("cpu"),
             memory = config.contains("memory"),
+            disk = config.contains("disk"),
         )
 
         if (config.contains("NamedSpan")) {

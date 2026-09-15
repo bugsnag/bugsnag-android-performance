@@ -1,8 +1,6 @@
 package com.example.bugsnag.performance
 
 import android.app.Application
-import android.os.Handler
-import android.os.Looper
 import com.bugsnag.android.performance.BugsnagPerformance
 import com.bugsnag.android.performance.EnabledMetrics
 import com.bugsnag.android.performance.PerformanceConfiguration
@@ -29,9 +27,6 @@ class PerformanceApplication : Application() {
         super.onCreate()
         val config = PerformanceConfiguration.load(this)
         config.enabledMetrics = EnabledMetrics(true)
-        // Disable automatic session management for manual testing
-        config.appSessionConfig.autoStartSession = false
-        config.appSessionConfig.backgroundTimeoutMs = 0L // No automatic timeout
         BugsnagPerformance.start(config)
     }
 }
