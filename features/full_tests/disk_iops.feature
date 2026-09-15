@@ -174,6 +174,24 @@ Feature: Disk IOPS
   #      finishingNestedSpanDoesNotAffectOuterSpanMetrics)
   # Asserts: each span gets independent IOPS; finishing inner span does not corrupt outer span.
 
+  # ROAD 2233 – Scenario 7b (sequential spans – fresh snapshots, no stale start counters)
+  # Maze cannot control overlapping concurrent counters (Scenario 7), but consecutive spans
+  # are reproducible E2E: each span creates its own DiskIoSnapshot at start. Span 2's
+  # start counters must be >= Span 1's end counters (monotonic /proc counters), proving
+  # Span 2 did not reuse Span 1's start snapshot.
+  Scenario: Multiple sequential spans capture independent disk metrics
+    When I run "DiskIopsSequentialScenario"
+    And I wait to receive a span named "DiskIopsSequential1"
+    And I wait to receive a span named "DiskIopsSequential2"
+    Then the "DiskIopsSequential1" span has integer attribute named "bugsnag.device.disk.iops_read"
+    And the "DiskIopsSequential1" span has integer attribute named "bugsnag.device.disk.iops_write"
+    And the "DiskIopsSequential1" span has integer attribute named "bugsnag.device.disk.iops_total"
+    And the "DiskIopsSequential2" span has integer attribute named "bugsnag.device.disk.iops_read"
+    And the "DiskIopsSequential2" span has integer attribute named "bugsnag.device.disk.iops_write"
+    And the "DiskIopsSequential2" span has integer attribute named "bugsnag.device.disk.iops_total"
+    And the "DiskIopsSequential2" span integer attribute "bugsnag.internal.disk_io.read_start" is greater than or equal to the "DiskIopsSequential1" span integer attribute "bugsnag.internal.disk_io.read_end"
+    And the "DiskIopsSequential2" span integer attribute "bugsnag.internal.disk_io.write_start" is greater than or equal to the "DiskIopsSequential1" span integer attribute "bugsnag.internal.disk_io.write_end"
+
   # ROAD 2233 – Scenario 8 (orphaned span snapshots – no corruption of normal spans)
   # Scenario: Orphaned span snapshot does not cause memory leak / corrupt completed spans.
   #
@@ -200,14 +218,34 @@ Feature: Disk IOPS
 # ROAD 2233 – Scenario 9 (disk IOPS across app lifecycle transitions)
   # DiskIoMetricsSource does not pause on foreground state. Maze cannot assert exact IOPS
   # (counters keep moving) or termination-without-end (the span is never delivered).
-  # The three completable ED rows run the real collector through HOME / resume for both
-  # custom and app_session spans.
+  # mid_span_bg_fg uses Appium background/foreground (programmatic resume is blocked on
+  # modern Android). ends/starts_in_background send HOME from the fixture.
   #
   # Covered by unit tests with injectable io fixtures + mocked clocks:
   #   DiskIoMetricsLifecycleTest
   #     (mid_span_background_transition, ends_while_in_background, starts_in_background,
   #      orphaned_on_termination)
-  Scenario Outline: SDK captures disk IOPS across app lifecycle transitions
+  Scenario Outline: SDK captures disk IOPS across mid-span background/foreground
+    Given I load scenario "DiskIopsLifecycleScenario"
+    And I configure scenario "span_type" to "<span_type>"
+    And I configure scenario "transition" to "mid_span_bg_fg"
+    And I run the loaded scenario
+    And I send the app to the background for 2 seconds
+    And I wait to receive a span named "<span_name>"
+    Then the "<span_name>" span has integer attribute named "bugsnag.device.disk.iops_read"
+    And the "<span_name>" span has integer attribute named "bugsnag.device.disk.iops_write"
+    And the "<span_name>" span has integer attribute named "bugsnag.device.disk.iops_total"
+    And the "<span_name>" span integer attribute "bugsnag.device.disk.iops_read" is greater than or equal to 0
+    And the "<span_name>" span integer attribute "bugsnag.device.disk.iops_write" is greater than or equal to 0
+    And the "<span_name>" span integer attribute "bugsnag.device.disk.iops_total" is greater than or equal to 0
+    And the "<span_name>" span integer attribute "bugsnag.device.disk.iops_total" equals the sum of "bugsnag.device.disk.iops_read" and "bugsnag.device.disk.iops_write"
+
+    Examples:
+      | platform | span_type   | span_name             |
+      | android  | custom      | DiskIopsCustom        |
+      | android  | app_session | [AppSession/DiskIops] |
+
+  Scenario Outline: SDK captures disk IOPS when span ends or starts in background
     Given I load scenario "DiskIopsLifecycleScenario"
     And I configure scenario "span_type" to "<span_type>"
     And I configure scenario "transition" to "<transition>"
@@ -223,10 +261,8 @@ Feature: Disk IOPS
 
     Examples:
       | platform | span_type   | transition           | span_name             |
-      | android  | custom      | mid_span_bg_fg       | DiskIopsCustom        |
       | android  | custom      | ends_in_background   | DiskIopsCustom        |
       | android  | custom      | starts_in_background | DiskIopsCustom        |
-      | android  | app_session | mid_span_bg_fg       | [AppSession/DiskIops] |
       | android  | app_session | ends_in_background   | [AppSession/DiskIops] |
       | android  | app_session | starts_in_background | [AppSession/DiskIops] |
 
