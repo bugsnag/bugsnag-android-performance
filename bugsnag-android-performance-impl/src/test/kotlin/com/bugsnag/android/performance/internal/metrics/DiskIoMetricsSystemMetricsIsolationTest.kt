@@ -3,10 +3,10 @@ package com.bugsnag.android.performance.internal.metrics
 import android.os.SystemClock
 import com.bugsnag.android.performance.Logger
 import com.bugsnag.android.performance.Span
+import com.bugsnag.android.performance.internal.NoopLogger
 import com.bugsnag.android.performance.internal.SpanImpl
 import com.bugsnag.android.performance.internal.framerate.FramerateMetricsSnapshot
 import com.bugsnag.android.performance.internal.framerate.TimestampPairBuffer
-import com.bugsnag.android.performance.internal.NoopLogger
 import com.bugsnag.android.performance.test.NoopSpanProcessor
 import com.bugsnag.android.performance.test.TestSpanFactory
 import org.junit.Assert.assertEquals

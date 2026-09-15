@@ -3,9 +3,9 @@ package com.bugsnag.android.performance.internal.metrics
 import android.os.SystemClock
 import com.bugsnag.android.performance.Logger
 import com.bugsnag.android.performance.internal.Attributes
+import com.bugsnag.android.performance.internal.NoopLogger
 import com.bugsnag.android.performance.internal.SpanImpl
 import com.bugsnag.android.performance.internal.TracePayload
-import com.bugsnag.android.performance.internal.NoopLogger
 import com.bugsnag.android.performance.test.NoopSpanProcessor
 import com.bugsnag.android.performance.test.OtelValidator.assertTraceDataValid
 import com.bugsnag.android.performance.test.TestSpanFactory

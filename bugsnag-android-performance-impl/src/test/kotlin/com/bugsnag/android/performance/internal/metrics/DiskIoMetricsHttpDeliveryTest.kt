@@ -5,8 +5,8 @@ import com.bugsnag.android.performance.Logger
 import com.bugsnag.android.performance.internal.Attributes
 import com.bugsnag.android.performance.internal.DeliveryResult
 import com.bugsnag.android.performance.internal.HttpDelivery
-import com.bugsnag.android.performance.internal.SpanImpl
 import com.bugsnag.android.performance.internal.NoopLogger
+import com.bugsnag.android.performance.internal.SpanImpl
 import com.bugsnag.android.performance.internal.connectivity.ConnectionMetering
 import com.bugsnag.android.performance.internal.connectivity.Connectivity
 import com.bugsnag.android.performance.internal.connectivity.ConnectivityStatus
