@@ -14,14 +14,6 @@ class MazeRacerApplication : Application() {
         Log.i("MazeRacer", "MazeRacerApplication static init")
     }
 
-    companion object {
-        private var instance: MazeRacerApplication? = null
-
-        fun applicationContext(): Context {
-            return instance!!.applicationContext
-        }
-    }
-
     override fun attachBaseContext(base: Context?) {
         super.attachBaseContext(base)
         // We must initialize procIoPath as early as possible (before ContentProviders run)
@@ -76,7 +68,9 @@ class MazeRacerApplication : Application() {
         )
     }
 
-    private companion object {
+    companion object {
+        private var instance: MazeRacerApplication? = null
+
         private const val WORKER_SLEEP_MS = 2000L
         private const val FAKE_COUNTER_UPDATE_DELAY_MS = 300L
 
@@ -85,5 +79,9 @@ class MazeRacerApplication : Application() {
 
         private const val FAKE_SYSCR_END = 1500L
         private const val FAKE_SYSCW_END = 750L
+
+        fun applicationContext(): Context {
+            return instance!!.applicationContext
+        }
     }
 }

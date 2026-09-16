@@ -1,9 +1,11 @@
 package com.bugsnag.android.performance.internal.metrics
 
 import android.os.SystemClock
+import com.bugsnag.android.performance.Logger
 import com.bugsnag.android.performance.internal.Attributes
 import com.bugsnag.android.performance.internal.DeliveryResult
 import com.bugsnag.android.performance.internal.HttpDelivery
+import com.bugsnag.android.performance.internal.NoopLogger
 import com.bugsnag.android.performance.internal.SpanImpl
 import com.bugsnag.android.performance.internal.connectivity.ConnectionMetering
 import com.bugsnag.android.performance.internal.connectivity.Connectivity
@@ -45,6 +47,7 @@ internal class DiskIoMetricsHttpDeliveryTest {
 
     @Before
     fun setup() {
+        Logger.delegate = NoopLogger
         ioFile = File.createTempFile("diskio-http-delivery", null)
     }
 

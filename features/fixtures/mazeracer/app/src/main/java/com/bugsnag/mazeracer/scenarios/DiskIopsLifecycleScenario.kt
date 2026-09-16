@@ -1,6 +1,8 @@
 package com.bugsnag.mazeracer.scenarios
 
 import android.app.Activity
+import android.app.ActivityManager
+import android.content.Context
 import android.content.Intent
 import com.bugsnag.android.performance.BugsnagPerformance
 import com.bugsnag.android.performance.PerformanceConfiguration
@@ -80,7 +82,9 @@ class DiskIopsLifecycleScenario(
         val callbacks =
             object : NoOpActivityLifecycleCallbacks() {
                 override fun onActivityStopped(activity: Activity) {
-                    if (activity !== context) {
+                    // Match by package: the original Activity instance may be destroyed
+                    // while backgrounded and replaced on resume.
+                    if (!isFixtureActivity(activity)) {
                         return
                     }
                     if (sawStop.compareAndSet(false, true)) {
@@ -90,7 +94,7 @@ class DiskIopsLifecycleScenario(
                 }
 
                 override fun onActivityResumed(activity: Activity) {
-                    if (activity !== context || !sawStop.get() || !ended.compareAndSet(false, true)) {
+                    if (!isFixtureActivity(activity) || !sawStop.get() || !ended.compareAndSet(false, true)) {
                         return
                     }
                     application.unregisterActivityLifecycleCallbacks(this)
@@ -153,17 +157,33 @@ class DiskIopsLifecycleScenario(
         }
     }
 
+    /**
+     * Prefer [ActivityManager.AppTask.moveToFront] over [Context.startActivity].
+     * Background activity launches are blocked on modern Android (incl. ANDROID_16),
+     * which left mid_span_bg_fg spans never ending (0 spans received).
+     */
     private fun bringTaskToForeground() {
         log("DiskIopsLifecycleScenario bringing task to foreground")
+        val am = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        val task = am.appTasks.firstOrNull()
+        if (task != null) {
+            task.moveToFront()
+            return
+        }
+        log("DiskIopsLifecycleScenario no AppTask available; falling back to startActivity")
         val intent =
             Intent(context, context.javaClass).apply {
                 addFlags(
                     Intent.FLAG_ACTIVITY_NEW_TASK or
-                        Intent.FLAG_ACTIVITY_REORDER_TO_FRONT or
-                        Intent.FLAG_ACTIVITY_SINGLE_TOP,
+                            Intent.FLAG_ACTIVITY_REORDER_TO_FRONT or
+                            Intent.FLAG_ACTIVITY_SINGLE_TOP,
                 )
             }
-        context.startActivity(intent)
+        application.startActivity(intent)
+    }
+
+    private fun isFixtureActivity(activity: Activity): Boolean {
+        return activity.packageName == application.packageName
     }
 
     private companion object {

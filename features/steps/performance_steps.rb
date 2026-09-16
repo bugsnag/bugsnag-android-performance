@@ -60,6 +60,21 @@ When('I invoke {string} for {string}') do |function, metadata|
   execute_command 'invoke', function, metadata
 end
 
+When('I run disk IOPS Scenario 1 as {string}') do |span_type|
+  case span_type
+  when 'app_start'
+    execute_command 'run_scenario', 'DiskIopsAppStartScenario'
+    steps %(
+      Then I relaunch the app after shutdown
+      And I load scenario "DiskIopsAppStartScenario"
+    )
+  when 'custom', 'app_session'
+    execute_command 'run_scenario', 'DiskIopsScenario', span_type
+  else
+    raise ArgumentError, "Unknown disk IOPS Scenario 1 span_type: #{span_type}"
+  end
+end
+
 Then('I received no span named {string}') do |span_name|
   spans = spans_from_request_list(Maze::Server.list_for('traces'))
   named_spans = spans.select { |s| s['name'].eql?(span_name) }
@@ -716,4 +731,26 @@ Then('the {string} span has none of the following attributes:') do |span_name, t
     Maze.check.true(present.empty?,
                     "Span '#{span_name}' should not have attributes #{present.join(', ')}")
   end
+end
+
+Then('the {string} span {word} attribute {string} is greater than or equal to the {string} span {word} attribute {string}') do |span_name1, type1, attr1, span_name2, type2, attr2|
+  spans = spans_from_request_list(Maze::Server.list_for('traces'))
+  span1 = spans.find { |span| span['name'].eql?(span_name1) }
+  span2 = spans.find { |span| span['name'].eql?(span_name2) }
+  raise Test::Unit::AssertionFailedError.new "No span named #{span_name1} found" if span1.nil?
+  raise Test::Unit::AssertionFailedError.new "No span named #{span_name2} found" if span2.nil?
+
+  attr1_obj = span1['attributes'].find { |a| a['key'] == attr1 }
+  attr2_obj = span2['attributes'].find { |a| a['key'] == attr2 }
+  raise Test::Unit::AssertionFailedError.new "No attribute named #{attr1} was found in span #{span_name1}" if attr1_obj.nil?
+  raise Test::Unit::AssertionFailedError.new "No attribute named #{attr2} was found in span #{span_name2}" if attr2_obj.nil?
+
+  value1 = get_span_attribute_value(attr1_obj, type1)
+  value2 = get_span_attribute_value(attr2_obj, type2)
+  raise Test::Unit::AssertionFailedError.new "Attribute #{attr1} in span #{span_name1} is not of type #{type1}" if value1.nil?
+  raise Test::Unit::AssertionFailedError.new "Attribute #{attr2} in span #{span_name2} is not of type #{type2}" if value2.nil?
+
+  Maze.check.operator value1.to_f, :>=, value2.to_f,
+                        "The span '#{span_name1}' attribute '#{attr1}' (#{value1}) is not >= " \
+                        "span '#{span_name2}' attribute '#{attr2}' (#{value2})"
 end
