@@ -60,7 +60,7 @@ internal class DiskIoMetricsSource(
                     span = spanImpl,
                     reason =
                         "invalid_start_snapshot_r${startMetrics.readSyscalls}_w${startMetrics.writeSyscalls}" +
-                            "_ts${startMetrics.timestampNanos}",
+                                "_ts${startMetrics.timestampNanos}",
                 )
 
             else -> {
@@ -106,10 +106,14 @@ internal class DiskIoMetricsSource(
         Logger.d(String.format(Locale.US, "Total IOPS: %.2f", stats.iopsTotal))
         Logger.d(String.format(Locale.US, "Duration: %.3f seconds", stats.durationSec))
 
-        // SDK emits all three disk IOPS attributes as IntValue (Long internally)
-        spanImpl.attributes[ATTR_IOPS_READ] = stats.iopsRead.roundToLong()
-        spanImpl.attributes[ATTR_IOPS_WRITE] = stats.iopsWrite.roundToLong()
-        spanImpl.attributes[ATTR_IOPS_TOTAL] = stats.iopsTotal.roundToLong()
+        // Emit IntValues. Round read/write first, then derive total so
+        // iops_total always equals iops_read + iops_write after integer conversion
+        // (independent rounding of the float total can be off-by-one).
+        val iopsRead = stats.iopsRead.roundToLong()
+        val iopsWrite = stats.iopsWrite.roundToLong()
+        spanImpl.attributes[ATTR_IOPS_READ] = iopsRead
+        spanImpl.attributes[ATTR_IOPS_WRITE] = iopsWrite
+        spanImpl.attributes[ATTR_IOPS_TOTAL] = iopsRead + iopsWrite
 
         if (InternalDebug.attachDiskIoSnapshots) {
             spanImpl.attributes[ATTR_READ_START] = startMetrics.readSyscalls
@@ -140,13 +144,13 @@ internal class DiskIoMetricsSource(
             durationNanos <= 0L ->
                 DiskIoComputationResult.Failure(
                     "invalid_duration_${durationNanos}ns_start${startMetrics.timestampNanos}" +
-                        "_end$endTimestamp",
+                            "_end$endTimestamp",
                 )
 
             readDelta < 0L || writeDelta < 0L ->
                 DiskIoComputationResult.Failure(
                     "negative_delta_r${readDelta}_w${writeDelta}_startR${startMetrics.readSyscalls}" +
-                        "_endR${counters.readSyscalls}",
+                            "_endR${counters.readSyscalls}",
                 )
 
             !iopsRead.isFinite() || !iopsWrite.isFinite() || !iopsTotal.isFinite() ->
