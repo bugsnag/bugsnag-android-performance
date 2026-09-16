@@ -60,6 +60,21 @@ When('I invoke {string} for {string}') do |function, metadata|
   execute_command 'invoke', function, metadata
 end
 
+When('I run disk IOPS Scenario 1 as {string}') do |span_type|
+  case span_type
+  when 'app_start'
+    execute_command 'run_scenario', 'DiskIopsAppStartScenario'
+    steps %(
+      Then I relaunch the app after shutdown
+      And I load scenario "DiskIopsAppStartScenario"
+    )
+  when 'custom', 'app_session'
+    execute_command 'run_scenario', 'DiskIopsScenario', span_type
+  else
+    raise ArgumentError, "Unknown disk IOPS Scenario 1 span_type: #{span_type}"
+  end
+end
+
 Then('I received no span named {string}') do |span_name|
   spans = spans_from_request_list(Maze::Server.list_for('traces'))
   named_spans = spans.select { |s| s['name'].eql?(span_name) }
