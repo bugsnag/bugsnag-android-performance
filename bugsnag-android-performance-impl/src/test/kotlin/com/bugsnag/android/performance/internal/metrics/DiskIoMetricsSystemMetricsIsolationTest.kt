@@ -1,7 +1,9 @@
 package com.bugsnag.android.performance.internal.metrics
 
 import android.os.SystemClock
+import com.bugsnag.android.performance.Logger
 import com.bugsnag.android.performance.Span
+import com.bugsnag.android.performance.internal.NoopLogger
 import com.bugsnag.android.performance.internal.SpanImpl
 import com.bugsnag.android.performance.internal.framerate.FramerateMetricsSnapshot
 import com.bugsnag.android.performance.internal.framerate.TimestampPairBuffer
@@ -61,6 +63,7 @@ internal class DiskIoMetricsSystemMetricsIsolationTest {
 
     @Before
     fun setup() {
+        Logger.delegate = NoopLogger
         ioFile = File.createTempFile("diskio-system-metrics", null)
     }
 
