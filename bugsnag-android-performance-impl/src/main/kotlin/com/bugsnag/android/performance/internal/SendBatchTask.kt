@@ -11,14 +11,20 @@ public class SendBatchTask(
     public val delivery: Delivery,
     private val tracer: Tracer,
     private val resourceAttributes: Attributes,
+    private val onSuccess: (() -> Unit)? = null,
 ) : AbstractTask() {
     override fun execute(): Boolean {
         val nextBatch = tracer.collectNextBatch() ?: return false
-        if (nextBatch.isNotEmpty()) {
-            Logger.d("Sending a batch of ${nextBatch.size} spans from $tracer to $delivery")
+        if (nextBatch.isEmpty()) {
+            return false
         }
+
+        Logger.d("Sending a batch of ${nextBatch.size} spans from $tracer to $delivery")
         val result = delivery.deliver(nextBatch, resourceAttributes)
-        return nextBatch.isNotEmpty() && result is DeliveryResult.Success
+        if (result is DeliveryResult.Success) {
+            onSuccess?.invoke()
+        }
+        return result is DeliveryResult.Success
     }
 
     override fun toString(): String = "SendBatch[$delivery]"

@@ -47,7 +47,7 @@ import kotlin.concurrent.withLock
  * Format: `{ "appSessions": [ { … }, … ] }`
  */
 internal class AppSessionBuffer(
-    context: Context,
+    private val context: Context,
     /**
      * How often (milliseconds) the in-memory queue is flushed to disk.
      * Default: 30 seconds.
@@ -80,7 +80,7 @@ internal class AppSessionBuffer(
      * Start the periodic persistence scheduler and load any previously saved app sessions from disk
      * (e.g. app sessions written before the process was killed).
      */
-    fun start() {
+    internal fun start() {
         loadFromDisk()
 
         persistFuture =
@@ -102,8 +102,10 @@ internal class AppSessionBuffer(
      * This is lock-free and safe to call from any thread. The data will be persisted
      * to disk within [persistIntervalMs] milliseconds by the background scheduler.
      */
-    fun add(data: AppSessionData) {
+    internal fun add(data: AppSessionData) {
         heap.addLast(data)
+        // Persist immediately to disk on a background thread to ensure robustness against crashes
+        scheduler.execute { persistToDisk() }
         Logger.d(
             "AppSessionBuffer: buffered app session #${data.index} " +
                 "(${data.appSessionName?.let { " \"$it\"" } ?: ""}) " +
@@ -115,14 +117,14 @@ internal class AppSessionBuffer(
      * Returns a snapshot of all buffered app sessions in insertion order.
      * The heap is **not** cleared — use [drain] to also remove items.
      */
-    fun snapshot(): List<AppSessionData> = heap.toList()
+    internal fun snapshot(): List<AppSessionData> = heap.toList()
 
     /**
      * Atomically drain all buffered app sessions and persist the (now empty) state to disk.
      *
      * @return all app sessions that were in the buffer at the time of the call.
      */
-    fun drain(): List<AppSessionData> =
+    internal fun drain(): List<AppSessionData> =
         diskLock.withLock {
             val items = mutableListOf<AppSessionData>()
             while (true) {
@@ -136,7 +138,7 @@ internal class AppSessionBuffer(
      * Immediately flush the heap buffer to disk and shut down the scheduler.
      * Call this when the SDK stops or the app is being terminated cleanly.
      */
-    fun stop() {
+    internal fun stop() {
         persistFuture?.cancel(false)
         persistToDisk() // final flush
         scheduler.shutdownNow()
@@ -152,7 +154,7 @@ internal class AppSessionBuffer(
      * Called periodically by the scheduler and also on [stop].
      * Guarded by [diskLock] so concurrent calls from scheduler + [stop] are safe.
      */
-    fun persistToDisk() =
+    internal fun persistToDisk(): Unit =
         diskLock.withLock {
             persistUnderLock()
         }
@@ -176,7 +178,7 @@ internal class AppSessionBuffer(
      * Called once on [start] to recover any app sessions that were buffered but not yet
      * drained before the process was killed.
      */
-    private fun loadFromDisk() =
+    private fun loadFromDisk(): Unit =
         diskLock.withLock {
             if (!bufferFile.exists()) return@withLock
 
@@ -201,11 +203,11 @@ internal class AppSessionBuffer(
             }
         }
 
-    companion object {
+    internal companion object {
         private const val BUFFER_FILENAME = "app-session-buffer.json"
         private const val KEY_APP_SESSIONS = "appSessions"
 
         /** Default persistence interval: 30 seconds */
-        const val DEFAULT_PERSIST_INTERVAL_MS: Long = 30_000L
+        internal const val DEFAULT_PERSIST_INTERVAL_MS: Long = 30_000L
     }
 }

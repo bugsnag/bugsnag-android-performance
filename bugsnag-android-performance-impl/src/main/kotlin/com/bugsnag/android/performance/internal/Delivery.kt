@@ -8,6 +8,13 @@ public sealed class DeliveryResult {
         override fun toString(): String = "Success"
     }
 
+    /**
+     * The delivery failed, but the payload has been queued for later retry.
+     */
+    public object Queued : DeliveryResult() {
+        override fun toString(): String = "Queued"
+    }
+
     public data class Failed(
         val payload: TracePayload,
         val canRetry: Boolean,

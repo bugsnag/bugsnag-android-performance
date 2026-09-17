@@ -10,6 +10,7 @@ public class RetryDeliveryTask(
     private val retryQueue: RetryQueue,
     private val delivery: Delivery,
     private val connectivity: Connectivity,
+    private val onSuccess: (() -> Unit)? = null,
 ) : AbstractTask() {
     override fun execute(): Boolean {
         if (!connectivity.shouldAttemptDelivery()) {
@@ -25,6 +26,10 @@ public class RetryDeliveryTask(
             (result is DeliveryResult.Failed && !result.canRetry)
         ) {
             retryQueue.remove(nextPayload.timestamp)
+        }
+
+        if (result is DeliveryResult.Success) {
+            onSuccess?.invoke()
         }
 
         return result is DeliveryResult.Success

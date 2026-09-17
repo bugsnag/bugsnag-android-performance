@@ -35,7 +35,6 @@ internal class AppSessionSpanController
         private val spanFactory: SpanFactory,
         private val enabledMetrics: EnabledMetrics = EnabledMetrics(true),
         internal val sessionConfig: AppSessionConfig = AppSessionConfig(),
-        private val samplingIntervalMs: Long = DEFAULT_SAMPLING_INTERVAL_MS,
         /**
          * Invoked immediately after each app-session span ends so the delivery layer can flush the span
          * without waiting for the normal batch timer. Wired to `tracer.forceCurrentBatch()` by
@@ -48,6 +47,8 @@ internal class AppSessionSpanController
          */
         private val buffer: AppSessionBuffer? = null,
     ) {
+        private val samplingIntervalMs: Long = sessionConfig.samplingIntervalMs
+
         // ── Session identity ─────────────────────────────────────────────────────
         private var sessionId: String = UUID.randomUUID().toString()
         private val segmentIndex = AtomicInteger(0)
@@ -301,7 +302,13 @@ internal class AppSessionSpanController
                     }
                 }
 
-            val collector = AppSessionMetricsCollector(appContext, enabledMetrics, samplingIntervalMs)
+            val collector =
+                AppSessionMetricsCollector(
+                    appContext,
+                    enabledMetrics,
+                    samplingIntervalMs,
+                    sessionConfig.deviceMemorySamplingIntervalMs,
+                )
             collector.start()
 
             activeSpan = span

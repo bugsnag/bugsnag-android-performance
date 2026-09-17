@@ -148,13 +148,19 @@ public object BugsnagPerformanceImpl {
                     spanFactory.sampler = DiscardingSampler
                 }
 
-                workerTasks.add(SendBatchTask(delivery, tracer, resourceAttributes))
+                workerTasks.add(
+                    SendBatchTask(delivery, tracer, resourceAttributes) {
+                        appSessionBuffer.drain()
+                    },
+                )
                 workerTasks.add(
                     RetryDeliveryTask(
                         persistence.retryQueue,
                         httpDelivery,
                         connectivity,
-                    ),
+                    ) {
+                        appSessionBuffer.drain()
+                    },
                 )
 
                 pluginManager.startPlugins()

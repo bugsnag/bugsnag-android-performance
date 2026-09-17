@@ -29,6 +29,12 @@ class PerformanceApplication : Application() {
         super.onCreate()
         val config = PerformanceConfiguration.load(this)
         config.enabledMetrics = EnabledMetrics(true)
+        // Set higher sampling intervals for App Sessions to reduce CPU usage on low-end hardware
+        // Note: The SDK enforces a maximum of 60 seconds for all sampling intervals.
+        config.appSessionConfig.samplingIntervalMs = 1000L // Sample CPU/ART every 60 seconds
+        config.appSessionConfig.deviceMemorySamplingIntervalMs = 1000L // Sample PSS every 60 seconds
+        config.appSessionConfig.maxSessionDurationMs = 120_000L // Auto-finalize session after 120s
+
         // Disable automatic session management for manual testing
         config.appSessionConfig.autoStartSession = false
         config.appSessionConfig.backgroundTimeoutMs = 0L // No automatic timeout

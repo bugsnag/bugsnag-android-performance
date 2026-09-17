@@ -79,6 +79,6 @@ class SendBatchTaskTest {
         val workDone = sendBatchTask.execute()
 
         assertFalse("SendBatchTask should not have done any work", workDone)
-        verify(delivery).deliver(any<List<SpanImpl>>(), eq(resourceAttributes))
+        verifyNoInteractions(delivery)
     }
 }

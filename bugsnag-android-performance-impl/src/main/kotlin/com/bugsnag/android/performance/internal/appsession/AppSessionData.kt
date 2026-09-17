@@ -17,58 +17,58 @@ import org.json.JSONObject
  */
 internal data class AppSessionData(
     /** Shared identifier for all app sessions in the same logical session. */
-    val sessionId: String,
+    internal val sessionId: String,
     /** 1-based monotonic index of this app session within the logical session. */
-    val index: Int,
+    internal val index: Int,
     /**
      * Optional human-readable label supplied by the caller, e.g. `"checkout_flow"`.
      * Stored only in internal app-session persistence for local diagnostics / recovery.
      */
-    val appSessionName: String?,
+    internal val appSessionName: String?,
     /** Wall-clock milliseconds (Unix epoch) when the app session started. */
-    val startTimeMs: Long,
+    internal val startTimeMs: Long,
     /** Wall-clock nanoseconds (Unix epoch) when the app session started. */
-    val startTimeUnixNano: Long = startTimeMs * NANOS_IN_MILLI,
+    internal val startTimeUnixNano: Long = startTimeMs * NANOS_IN_MILLI,
     /** Wall-clock milliseconds (Unix epoch) when the app session ended. */
-    val endTimeMs: Long,
+    internal val endTimeMs: Long,
     /** Wall-clock nanoseconds (Unix epoch) when the app session ended. */
-    val endTimeUnixNano: Long = endTimeMs * NANOS_IN_MILLI,
+    internal val endTimeUnixNano: Long = endTimeMs * NANOS_IN_MILLI,
     /** `endTimeMs - startTimeMs` in milliseconds. */
-    val durationMs: Long,
+    internal val durationMs: Long,
     /**
      * Why this app session was closed.
      * One of: `state_switched`, `client_end_foreground`, `client_end_background`,
      *         `background_timeout`, `session_max_duration`, `sdk_stopped`.
      */
-    val closeReason: String,
+    internal val closeReason: String,
     // ── Metrics ──────────────────────────────────────────────────────────────
-    val cpuCount: Int = 0,
-    val cpuMin: Double = 0.0,
-    val cpuMax: Double = 0.0,
-    val cpuMean: Double = 0.0,
-    val runtimeMemoryCount: Int = 0,
-    val runtimeMemoryMinBytes: Long = 0L,
-    val runtimeMemoryMaxBytes: Long = 0L,
-    val runtimeMemoryMeanBytes: Long = 0L,
+    internal val cpuCount: Int = 0,
+    internal val cpuMin: Double = 0.0,
+    internal val cpuMax: Double = 0.0,
+    internal val cpuMean: Double = 0.0,
+    internal val runtimeMemoryCount: Int = 0,
+    internal val runtimeMemoryMinBytes: Long = 0L,
+    internal val runtimeMemoryMaxBytes: Long = 0L,
+    internal val runtimeMemoryMeanBytes: Long = 0L,
     /**
      * ART heap aliases for the runtime memory aggregates.
      * These mirror the runtime fields so the persisted app-session payload can expose
      * the same naming as the span attributes owned by `MemoryMetricsSource`.
      */
-    val artMemoryCount: Int = runtimeMemoryCount,
-    val artMemoryMinBytes: Long = runtimeMemoryMinBytes,
-    val artMemoryMaxBytes: Long = runtimeMemoryMaxBytes,
-    val artMemoryMeanBytes: Long = runtimeMemoryMeanBytes,
-    val deviceMemoryCount: Int = 0,
-    val deviceMemoryMinBytes: Long = 0L,
-    val deviceMemoryMaxBytes: Long = 0L,
-    val deviceMemoryMeanBytes: Long = 0L,
+    internal val artMemoryCount: Int = runtimeMemoryCount,
+    internal val artMemoryMinBytes: Long = runtimeMemoryMinBytes,
+    internal val artMemoryMaxBytes: Long = runtimeMemoryMaxBytes,
+    internal val artMemoryMeanBytes: Long = runtimeMemoryMeanBytes,
+    internal val deviceMemoryCount: Int = 0,
+    internal val deviceMemoryMinBytes: Long = 0L,
+    internal val deviceMemoryMaxBytes: Long = 0L,
+    internal val deviceMemoryMeanBytes: Long = 0L,
 ) {
     // ─────────────────────────────────────────────────────────────────────────
     // Serialisation helpers
     // ─────────────────────────────────────────────────────────────────────────
 
-    fun toJson(): JSONObject =
+    internal fun toJson(): JSONObject =
         JSONObject().apply {
             put(KEY_SESSION_ID, sessionId)
             put(KEY_INDEX, index)
@@ -106,7 +106,39 @@ internal data class AppSessionData(
             }
         }
 
-    companion object {
+    internal fun toMap(): Map<String, Any?> =
+        mutableMapOf<String, Any?>(
+            "sessionId" to sessionId,
+            "index" to index,
+            "appSessionName" to appSessionName,
+            "startTimeMs" to startTimeMs,
+            "startTimeUnixNano" to startTimeUnixNano,
+            "endTimeMs" to endTimeMs,
+            "endTimeUnixNano" to endTimeUnixNano,
+            "durationMs" to durationMs,
+            "closeReason" to closeReason,
+        ).apply {
+            if (cpuCount > 0) {
+                put("cpuCount", cpuCount)
+                put("cpuMin", cpuMin)
+                put("cpuMax", cpuMax)
+                put("cpuMean", cpuMean)
+            }
+            if (runtimeMemoryCount > 0) {
+                put("runtimeMemoryCount", runtimeMemoryCount)
+                put("runtimeMemoryMinBytes", runtimeMemoryMinBytes)
+                put("runtimeMemoryMaxBytes", runtimeMemoryMaxBytes)
+                put("runtimeMemoryMeanBytes", runtimeMemoryMeanBytes)
+            }
+            if (deviceMemoryCount > 0) {
+                put("deviceMemoryCount", deviceMemoryCount)
+                put("deviceMemoryMinBytes", deviceMemoryMinBytes)
+                put("deviceMemoryMaxBytes", deviceMemoryMaxBytes)
+                put("deviceMemoryMeanBytes", deviceMemoryMeanBytes)
+            }
+        }
+
+    internal companion object {
         // ── JSON keys ─────────────────────────────────────────────────────────
         private const val KEY_SESSION_ID = "sessionId"
         private const val KEY_INDEX = "index"
@@ -141,7 +173,7 @@ internal data class AppSessionData(
         private const val KEY_DEV_MEM_MAX = "deviceMemoryMaxBytes"
         private const val KEY_DEV_MEM_MEAN = "deviceMemoryMeanBytes"
 
-        fun fromJson(json: JSONObject): AppSessionData =
+        internal fun fromJson(json: JSONObject): AppSessionData =
             AppSessionData(
                 sessionId = json.getString(KEY_SESSION_ID),
                 index = json.optInt(KEY_INDEX, json.optInt("segmentIndex")),
