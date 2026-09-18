@@ -19,7 +19,7 @@ import java.io.StringWriter
  * Spans without disk IOPS attributes are accepted and delivered without disk keys.
  *
  * Pipeline storage (-1 default) and API null responses are backend concerns outside this
- * repository. Here we verify the SDK emits spans with no bugsnag.device.disk.iops_* keys
+ * repository. Here we verify the SDK emits spans with no bugsnag.system.disk.iops_* keys
  * when disk metrics are absent (as with an older SDK), while other span attributes remain.
  */
 @RunWith(RobolectricTestRunner::class)

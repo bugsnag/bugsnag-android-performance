@@ -170,7 +170,7 @@ internal class DiskIoMetricsOtlpPayloadTest {
 
     private companion object {
         private const val NANOS_PER_SECOND = 1_000_000_000L
-        private const val DISK_KEY_PREFIX = "bugsnag.device.disk."
+        private const val DISK_KEY_PREFIX = "bugsnag.system.disk."
 
         private val REQUIRED_DISK_KEYS =
             setOf(

@@ -201,9 +201,9 @@ internal class DiskIoMetricsSource(
     companion object {
         private const val NANOS_PER_SECOND = 1_000_000_000.0
 
-        internal const val ATTR_IOPS_READ = "bugsnag.device.disk.iops_read"
-        internal const val ATTR_IOPS_WRITE = "bugsnag.device.disk.iops_write"
-        internal const val ATTR_IOPS_TOTAL = "bugsnag.device.disk.iops_total"
+        internal const val ATTR_IOPS_READ = "bugsnag.system.disk.iops_read"
+        internal const val ATTR_IOPS_WRITE = "bugsnag.system.disk.iops_write"
+        internal const val ATTR_IOPS_TOTAL = "bugsnag.system.disk.iops_total"
 
         internal const val ATTR_SKIP_REASON = "bugsnag.internal.disk_io.skip_reason"
         internal const val ATTR_CANARY = "bugsnag.internal.disk_io.end_metrics_called"
