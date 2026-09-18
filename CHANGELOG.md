@@ -1,3 +1,13 @@
+## 3.1.0 (2026-09-07)
+
+### Changes
+
+* Added first-class GraphQL request tracing.
+* Added `BugsnagPerformance.startGraphQlRequestSpan` for manual GraphQL request instrumentation.
+* Added the new `bugsnag-android-performance-apollo` module and `ApolloClient.Builder.withBugsnagPerformance()` to instrument Apollo Kotlin requests automatically.
+* GraphQL requests are reported with GraphQL-specific span naming and status handling while avoiding capture of GraphQL documents and variables.
+  [#542](https://github.com/bugsnag/bugsnag-android-performance/pull/542)
+
 ## 3.0.0 (2026-07-08)
 
 ### Changes
@@ -270,7 +280,7 @@
   [#171](https://github.com/bugsnag/bugsnag-android-performance/pull/171)
 * AppStartPhase/Framework introduced to mark the time between class loading & Application.onCreate
   [#163](https://github.com/bugsnag/bugsnag-android-performance/pull/163)
-* Support for OkHttp 5.0.0 in [bugsnag-plugin-android-performance-okhttp](bugsnag-plugin-android-performance-okhttp)
+* Support for OkHttp 5.0.0 in [`bugsnag-android-performance-okhttp`](bugsnag-android-performance-okhttp)
   [#167](https://github.com/bugsnag/bugsnag-android-performance/pull/167)
 
 ### Bug fixes
