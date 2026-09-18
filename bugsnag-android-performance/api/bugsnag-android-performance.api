@@ -13,6 +13,9 @@ public final class com/bugsnag/android/performance/BugsnagPerformance {
 	public static final fun startAppSessionSpan ()V
 	public static final fun startAppSessionSpan (Ljava/lang/String;)V
 	public static synthetic fun startAppSessionSpan$default (Ljava/lang/String;ILjava/lang/Object;)V
+	public static final fun startGraphQlRequestSpan (Ljava/net/URL;Ljava/lang/String;Ljava/lang/String;)Lcom/bugsnag/android/performance/Span;
+	public static final fun startGraphQlRequestSpan (Ljava/net/URL;Ljava/lang/String;Ljava/lang/String;Lcom/bugsnag/android/performance/SpanOptions;)Lcom/bugsnag/android/performance/Span;
+	public static synthetic fun startGraphQlRequestSpan$default (Ljava/net/URL;Ljava/lang/String;Ljava/lang/String;Lcom/bugsnag/android/performance/SpanOptions;ILjava/lang/Object;)Lcom/bugsnag/android/performance/Span;
 	public static final fun startNetworkRequestSpan (Landroid/net/Uri;Ljava/lang/String;)Lcom/bugsnag/android/performance/Span;
 	public static final fun startNetworkRequestSpan (Landroid/net/Uri;Ljava/lang/String;Lcom/bugsnag/android/performance/SpanOptions;)Lcom/bugsnag/android/performance/Span;
 	public static final fun startNetworkRequestSpan (Ljava/net/URL;Ljava/lang/String;)Lcom/bugsnag/android/performance/Span;

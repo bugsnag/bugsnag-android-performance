@@ -21,7 +21,7 @@ import com.bugsnag.android.performance.internal.util.Prioritized
 
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 public object BugsnagPerformanceImpl {
-    public const val VERSION: String = "3.0.0"
+    public const val VERSION: String = "3.1.0"
 
     public val instrumentedAppState: InstrumentedAppState = InstrumentedAppState()
 
@@ -211,6 +211,7 @@ public object BugsnagPerformanceImpl {
         val moduleLoader = Module.Loader(instrumentedAppState)
         moduleLoader.loadModule("com.bugsnag.android.performance.AppCompatModule")
         moduleLoader.loadModule("com.bugsnag.android.performance.okhttp.OkhttpModule")
+        moduleLoader.loadModule("com.bugsnag.android.performance.apollo.ApolloModule")
         moduleLoader.loadModule("com.bugsnag.android.performance.compose.ComposeModule")
     }
 

@@ -1,8 +1,8 @@
 public final class com/bugsnag/android/performance/okhttp/BugsnagPerformanceOkhttp : com/bugsnag/android/performance/okhttp/util/DelegateEventListener, okhttp3/Interceptor {
 	public static final field EventListenerFactory Lcom/bugsnag/android/performance/okhttp/BugsnagPerformanceOkhttp$EventListenerFactory;
 	public fun <init> ()V
-	public fun <init> (Lokhttp3/EventListener;)V
-	public synthetic fun <init> (Lokhttp3/EventListener;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lokhttp3/EventListener;Lcom/bugsnag/android/performance/SpanOptions;)V
+	public synthetic fun <init> (Lokhttp3/EventListener;Lcom/bugsnag/android/performance/SpanOptions;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun callEnd (Lokhttp3/Call;)V
 	public fun callFailed (Lokhttp3/Call;Ljava/io/IOException;)V
 	public fun callStart (Lokhttp3/Call;)V
@@ -39,10 +39,12 @@ public class com/bugsnag/android/performance/okhttp/util/DelegateEventListener :
 	protected final fun getDelegateEventListener ()Lokhttp3/EventListener;
 	public fun proxySelectEnd (Lokhttp3/Call;Lokhttp3/HttpUrl;Ljava/util/List;)V
 	public fun proxySelectStart (Lokhttp3/Call;Lokhttp3/HttpUrl;)V
+	public fun requestBodyEnd (Lokhttp3/Call;J)V
 	public fun requestBodyStart (Lokhttp3/Call;)V
 	public fun requestFailed (Lokhttp3/Call;Ljava/io/IOException;)V
 	public fun requestHeadersEnd (Lokhttp3/Call;Lokhttp3/Request;)V
 	public fun requestHeadersStart (Lokhttp3/Call;)V
+	public fun responseBodyEnd (Lokhttp3/Call;J)V
 	public fun responseBodyStart (Lokhttp3/Call;)V
 	public fun responseFailed (Lokhttp3/Call;Ljava/io/IOException;)V
 	public fun responseHeadersStart (Lokhttp3/Call;)V
