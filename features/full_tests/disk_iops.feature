@@ -55,7 +55,6 @@ Feature: Disk IOPS
     And I configure scenario "span_type" to "<span_type>"
     And I configure scenario "transition" to "mid_span_bg_fg"
     And I run the loaded scenario
-    And I send the app to the background for 2 seconds
     And I wait to receive a span named "<span_name>"
     Then the "<span_name>" span has integer attribute named "bugsnag.device.disk.iops_read"
     And the "<span_name>" span has integer attribute named "bugsnag.device.disk.iops_write"
