@@ -60,7 +60,7 @@ internal class DiskIoMetricsSource(
                     span = spanImpl,
                     reason =
                         "invalid_start_snapshot_r${startMetrics.readSyscalls}_w${startMetrics.writeSyscalls}" +
-                                "_ts${startMetrics.timestampNanos}",
+                            "_ts${startMetrics.timestampNanos}",
                 )
 
             else -> {
@@ -144,13 +144,13 @@ internal class DiskIoMetricsSource(
             durationNanos <= 0L ->
                 DiskIoComputationResult.Failure(
                     "invalid_duration_${durationNanos}ns_start${startMetrics.timestampNanos}" +
-                            "_end$endTimestamp",
+                        "_end$endTimestamp",
                 )
 
             readDelta < 0L || writeDelta < 0L ->
                 DiskIoComputationResult.Failure(
                     "negative_delta_r${readDelta}_w${writeDelta}_startR${startMetrics.readSyscalls}" +
-                            "_endR${counters.readSyscalls}",
+                        "_endR${counters.readSyscalls}",
                 )
 
             !iopsRead.isFinite() || !iopsWrite.isFinite() || !iopsTotal.isFinite() ->
