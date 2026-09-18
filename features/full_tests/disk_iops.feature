@@ -4,10 +4,10 @@ Feature: Disk IOPS
   Scenario Outline: SDK emits all 3 disk IOPS attributes as IntValue on eligible spans
     When I run disk IOPS Scenario 1 as "<span_type>"
     And I wait to receive a span named "<span_name>"
-    Then the "<span_name>" span has integer attribute named "bugsnag.device.disk.iops_read"
-    And the "<span_name>" span has integer attribute named "bugsnag.device.disk.iops_write"
-    And the "<span_name>" span has integer attribute named "bugsnag.device.disk.iops_total"
-    And the "<span_name>" span integer attribute "bugsnag.device.disk.iops_total" equals the sum of "bugsnag.device.disk.iops_read" and "bugsnag.device.disk.iops_write"
+    Then the "<span_name>" span has integer attribute named "bugsnag.system.disk.iops_read"
+    And the "<span_name>" span has integer attribute named "bugsnag.system.disk.iops_write"
+    And the "<span_name>" span has integer attribute named "bugsnag.system.disk.iops_total"
+    And the "<span_name>" span integer attribute "bugsnag.system.disk.iops_total" equals the sum of "bugsnag.system.disk.iops_read" and "bugsnag.system.disk.iops_write"
 
     Examples:
       | platform | span_type   | span_name                          |
@@ -23,10 +23,10 @@ Feature: Disk IOPS
   Scenario Outline: SDK reports real disk IOPS values computed on the device
     When I run "DiskIopsScenario" configured as "<span_type>"
     And I wait to receive a span named "<span_name>"
-    Then the "<span_name>" span integer attribute "bugsnag.device.disk.iops_read" is greater than or equal to 0
-    And the "<span_name>" span integer attribute "bugsnag.device.disk.iops_write" is greater than or equal to 0
-    And the "<span_name>" span integer attribute "bugsnag.device.disk.iops_total" is greater than or equal to 0
-    And the "<span_name>" span integer attribute "bugsnag.device.disk.iops_total" equals the sum of "bugsnag.device.disk.iops_read" and "bugsnag.device.disk.iops_write"
+    Then the "<span_name>" span integer attribute "bugsnag.system.disk.iops_read" is greater than or equal to 0
+    And the "<span_name>" span integer attribute "bugsnag.system.disk.iops_write" is greater than or equal to 0
+    And the "<span_name>" span integer attribute "bugsnag.system.disk.iops_total" is greater than or equal to 0
+    And the "<span_name>" span integer attribute "bugsnag.system.disk.iops_total" equals the sum of "bugsnag.system.disk.iops_read" and "bugsnag.system.disk.iops_write"
     And the "<span_name>" span integer attribute "bugsnag.internal.disk_io.read_start" is less than or equal to span integer attribute "bugsnag.internal.disk_io.read_end"
     And the "<span_name>" span integer attribute "bugsnag.internal.disk_io.write_start" is less than or equal to span integer attribute "bugsnag.internal.disk_io.write_end"
 
@@ -40,12 +40,12 @@ Feature: Disk IOPS
     When I run "DiskIopsSequentialScenario"
     And I wait to receive a span named "DiskIopsSequential1"
     And I wait to receive a span named "DiskIopsSequential2"
-    Then the "DiskIopsSequential1" span has integer attribute named "bugsnag.device.disk.iops_read"
-    And the "DiskIopsSequential1" span has integer attribute named "bugsnag.device.disk.iops_write"
-    And the "DiskIopsSequential1" span has integer attribute named "bugsnag.device.disk.iops_total"
-    And the "DiskIopsSequential2" span has integer attribute named "bugsnag.device.disk.iops_read"
-    And the "DiskIopsSequential2" span has integer attribute named "bugsnag.device.disk.iops_write"
-    And the "DiskIopsSequential2" span has integer attribute named "bugsnag.device.disk.iops_total"
+    Then the "DiskIopsSequential1" span has integer attribute named "bugsnag.system.disk.iops_read"
+    And the "DiskIopsSequential1" span has integer attribute named "bugsnag.system.disk.iops_write"
+    And the "DiskIopsSequential1" span has integer attribute named "bugsnag.system.disk.iops_total"
+    And the "DiskIopsSequential2" span has integer attribute named "bugsnag.system.disk.iops_read"
+    And the "DiskIopsSequential2" span has integer attribute named "bugsnag.system.disk.iops_write"
+    And the "DiskIopsSequential2" span has integer attribute named "bugsnag.system.disk.iops_total"
     And the "DiskIopsSequential2" span integer attribute "bugsnag.internal.disk_io.read_start" is greater than or equal to the "DiskIopsSequential1" span integer attribute "bugsnag.internal.disk_io.read_end"
     And the "DiskIopsSequential2" span integer attribute "bugsnag.internal.disk_io.write_start" is greater than or equal to the "DiskIopsSequential1" span integer attribute "bugsnag.internal.disk_io.write_end"
 
@@ -55,15 +55,14 @@ Feature: Disk IOPS
     And I configure scenario "span_type" to "<span_type>"
     And I configure scenario "transition" to "mid_span_bg_fg"
     And I run the loaded scenario
-    And I send the app to the background for 2 seconds
     And I wait to receive a span named "<span_name>"
-    Then the "<span_name>" span has integer attribute named "bugsnag.device.disk.iops_read"
-    And the "<span_name>" span has integer attribute named "bugsnag.device.disk.iops_write"
-    And the "<span_name>" span has integer attribute named "bugsnag.device.disk.iops_total"
-    And the "<span_name>" span integer attribute "bugsnag.device.disk.iops_read" is greater than or equal to 0
-    And the "<span_name>" span integer attribute "bugsnag.device.disk.iops_write" is greater than or equal to 0
-    And the "<span_name>" span integer attribute "bugsnag.device.disk.iops_total" is greater than or equal to 0
-    And the "<span_name>" span integer attribute "bugsnag.device.disk.iops_total" equals the sum of "bugsnag.device.disk.iops_read" and "bugsnag.device.disk.iops_write"
+    Then the "<span_name>" span has integer attribute named "bugsnag.system.disk.iops_read"
+    And the "<span_name>" span has integer attribute named "bugsnag.system.disk.iops_write"
+    And the "<span_name>" span has integer attribute named "bugsnag.system.disk.iops_total"
+    And the "<span_name>" span integer attribute "bugsnag.system.disk.iops_read" is greater than or equal to 0
+    And the "<span_name>" span integer attribute "bugsnag.system.disk.iops_write" is greater than or equal to 0
+    And the "<span_name>" span integer attribute "bugsnag.system.disk.iops_total" is greater than or equal to 0
+    And the "<span_name>" span integer attribute "bugsnag.system.disk.iops_total" equals the sum of "bugsnag.system.disk.iops_read" and "bugsnag.system.disk.iops_write"
 
     Examples:
       | platform | span_type   | span_name             |
@@ -76,13 +75,13 @@ Feature: Disk IOPS
     And I configure scenario "transition" to "<transition>"
     And I run the loaded scenario
     And I wait to receive a span named "<span_name>"
-    Then the "<span_name>" span has integer attribute named "bugsnag.device.disk.iops_read"
-    And the "<span_name>" span has integer attribute named "bugsnag.device.disk.iops_write"
-    And the "<span_name>" span has integer attribute named "bugsnag.device.disk.iops_total"
-    And the "<span_name>" span integer attribute "bugsnag.device.disk.iops_read" is greater than or equal to 0
-    And the "<span_name>" span integer attribute "bugsnag.device.disk.iops_write" is greater than or equal to 0
-    And the "<span_name>" span integer attribute "bugsnag.device.disk.iops_total" is greater than or equal to 0
-    And the "<span_name>" span integer attribute "bugsnag.device.disk.iops_total" equals the sum of "bugsnag.device.disk.iops_read" and "bugsnag.device.disk.iops_write"
+    Then the "<span_name>" span has integer attribute named "bugsnag.system.disk.iops_read"
+    And the "<span_name>" span has integer attribute named "bugsnag.system.disk.iops_write"
+    And the "<span_name>" span has integer attribute named "bugsnag.system.disk.iops_total"
+    And the "<span_name>" span integer attribute "bugsnag.system.disk.iops_read" is greater than or equal to 0
+    And the "<span_name>" span integer attribute "bugsnag.system.disk.iops_write" is greater than or equal to 0
+    And the "<span_name>" span integer attribute "bugsnag.system.disk.iops_total" is greater than or equal to 0
+    And the "<span_name>" span integer attribute "bugsnag.system.disk.iops_total" equals the sum of "bugsnag.system.disk.iops_read" and "bugsnag.system.disk.iops_write"
 
     Examples:
       | platform | span_type   | transition           | span_name             |
@@ -95,22 +94,22 @@ Feature: Disk IOPS
   Scenario: SDK omits disk IOPS when disk metrics are disabled
     When I run "DiskIopsDisabledScenario"
     And I wait to receive a span named "DiskIopsDisabled"
-    Then the "DiskIopsDisabled" span has no "bugsnag.device.disk.iops_read" attribute
-    And the "DiskIopsDisabled" span has no "bugsnag.device.disk.iops_write" attribute
-    And the "DiskIopsDisabled" span has no "bugsnag.device.disk.iops_total" attribute
+    Then the "DiskIopsDisabled" span has no "bugsnag.system.disk.iops_read" attribute
+    And the "DiskIopsDisabled" span has no "bugsnag.system.disk.iops_write" attribute
+    And the "DiskIopsDisabled" span has no "bugsnag.system.disk.iops_total" attribute
 
 # ROAD 2233 – Scenario 11 (high and burst I/O – valid Int64)
   Scenario Outline: SDK reports valid disk IOPS under high and burst I/O
     When I run "DiskIopsWorkloadScenario" configured as "<workload>"
     And I wait to receive a span named "DiskIopsWorkload"
-    Then the "DiskIopsWorkload" span has integer attribute named "bugsnag.device.disk.iops_read"
-    And the "DiskIopsWorkload" span has integer attribute named "bugsnag.device.disk.iops_write"
-    And the "DiskIopsWorkload" span has integer attribute named "bugsnag.device.disk.iops_total"
-    And the "DiskIopsWorkload" span integer attribute "bugsnag.device.disk.iops_read" is greater than or equal to 0
-    And the "DiskIopsWorkload" span integer attribute "bugsnag.device.disk.iops_write" is greater than or equal to 0
-    And the "DiskIopsWorkload" span integer attribute "bugsnag.device.disk.iops_total" is greater than 0
-    And the "DiskIopsWorkload" span integer attribute "bugsnag.device.disk.iops_total" equals the sum of "bugsnag.device.disk.iops_read" and "bugsnag.device.disk.iops_write"
-    And the "DiskIopsWorkload" span attribute "bugsnag.device.disk.iops_total" is encoded as intValue
+    Then the "DiskIopsWorkload" span has integer attribute named "bugsnag.system.disk.iops_read"
+    And the "DiskIopsWorkload" span has integer attribute named "bugsnag.system.disk.iops_write"
+    And the "DiskIopsWorkload" span has integer attribute named "bugsnag.system.disk.iops_total"
+    And the "DiskIopsWorkload" span integer attribute "bugsnag.system.disk.iops_read" is greater than or equal to 0
+    And the "DiskIopsWorkload" span integer attribute "bugsnag.system.disk.iops_write" is greater than or equal to 0
+    And the "DiskIopsWorkload" span integer attribute "bugsnag.system.disk.iops_total" is greater than 0
+    And the "DiskIopsWorkload" span integer attribute "bugsnag.system.disk.iops_total" equals the sum of "bugsnag.system.disk.iops_read" and "bugsnag.system.disk.iops_write"
+    And the "DiskIopsWorkload" span attribute "bugsnag.system.disk.iops_total" is encoded as intValue
 
     Examples:
       | platform | workload    |
@@ -122,10 +121,10 @@ Feature: Disk IOPS
   Scenario: OTLP payload contains exactly 3 disk IOPS attributes with intValue encoding
     When I run "DiskIopsScenario" configured as "custom"
     And I wait to receive a span named "DiskIopsCustom"
-    Then the "DiskIopsCustom" span has exactly 3 attributes whose keys start with "bugsnag.device.disk.iops_"
-    And the "DiskIopsCustom" span attribute "bugsnag.device.disk.iops_read" is encoded as intValue
-    And the "DiskIopsCustom" span attribute "bugsnag.device.disk.iops_write" is encoded as intValue
-    And the "DiskIopsCustom" span attribute "bugsnag.device.disk.iops_total" is encoded as intValue
+    Then the "DiskIopsCustom" span has exactly 3 attributes whose keys start with "bugsnag.system.disk.iops_"
+    And the "DiskIopsCustom" span attribute "bugsnag.system.disk.iops_read" is encoded as intValue
+    And the "DiskIopsCustom" span attribute "bugsnag.system.disk.iops_write" is encoded as intValue
+    And the "DiskIopsCustom" span attribute "bugsnag.system.disk.iops_total" is encoded as intValue
     And the "DiskIopsCustom" span has none of the following attributes:
       | bugsnag.app.disk.bytes_read         |
       | bugsnag.app.disk.bytes_written      |
@@ -143,18 +142,18 @@ Feature: Disk IOPS
   Scenario: CPU and memory system metrics remain present alongside disk IOPS
     When I run "DiskIopsIsolationScenario" configured as "enabled"
     And I wait to receive a span named "[AppSession/DiskIopsIsolation]"
-    Then the "[AppSession/DiskIopsIsolation]" span has integer attribute named "bugsnag.device.disk.iops_read"
-    And the "[AppSession/DiskIopsIsolation]" span has integer attribute named "bugsnag.device.disk.iops_write"
-    And the "[AppSession/DiskIopsIsolation]" span has integer attribute named "bugsnag.device.disk.iops_total"
+    Then the "[AppSession/DiskIopsIsolation]" span has integer attribute named "bugsnag.system.disk.iops_read"
+    And the "[AppSession/DiskIopsIsolation]" span has integer attribute named "bugsnag.system.disk.iops_write"
+    And the "[AppSession/DiskIopsIsolation]" span has integer attribute named "bugsnag.system.disk.iops_total"
     And the "[AppSession/DiskIopsIsolation]" span has double attribute named "bugsnag.system.cpu_min_total"
     And the "[AppSession/DiskIopsIsolation]" span has int attribute named "bugsnag.system.memory.spaces.device.min"
 
   Scenario: CPU and memory system metrics remain present when disk IOPS is disabled
     When I run "DiskIopsIsolationScenario" configured as "disabled"
     And I wait to receive a span named "[AppSession/DiskIopsIsolation]"
-    Then the "[AppSession/DiskIopsIsolation]" span has no "bugsnag.device.disk.iops_read" attribute
-    And the "[AppSession/DiskIopsIsolation]" span has no "bugsnag.device.disk.iops_write" attribute
-    And the "[AppSession/DiskIopsIsolation]" span has no "bugsnag.device.disk.iops_total" attribute
+    Then the "[AppSession/DiskIopsIsolation]" span has no "bugsnag.system.disk.iops_read" attribute
+    And the "[AppSession/DiskIopsIsolation]" span has no "bugsnag.system.disk.iops_write" attribute
+    And the "[AppSession/DiskIopsIsolation]" span has no "bugsnag.system.disk.iops_total" attribute
     And the "[AppSession/DiskIopsIsolation]" span has double attribute named "bugsnag.system.cpu_min_total"
     And the "[AppSession/DiskIopsIsolation]" span has int attribute named "bugsnag.system.memory.spaces.device.min"
 
@@ -164,20 +163,20 @@ Feature: Disk IOPS
     When I run "DiskIopsMixedScenario"
     And I wait to receive a span named "DiskIopsNewSdk"
     And I wait to receive a span named "DiskIopsOldSdk"
-    Then the "DiskIopsNewSdk" span has integer attribute named "bugsnag.device.disk.iops_read"
-    And the "DiskIopsNewSdk" span has integer attribute named "bugsnag.device.disk.iops_write"
-    And the "DiskIopsNewSdk" span has integer attribute named "bugsnag.device.disk.iops_total"
+    Then the "DiskIopsNewSdk" span has integer attribute named "bugsnag.system.disk.iops_read"
+    And the "DiskIopsNewSdk" span has integer attribute named "bugsnag.system.disk.iops_write"
+    And the "DiskIopsNewSdk" span has integer attribute named "bugsnag.system.disk.iops_total"
     And the "DiskIopsNewSdk" span has double attribute named "bugsnag.system.cpu_mean_total"
-    And the "DiskIopsOldSdk" span has no "bugsnag.device.disk.iops_read" attribute
-    And the "DiskIopsOldSdk" span has no "bugsnag.device.disk.iops_write" attribute
-    And the "DiskIopsOldSdk" span has no "bugsnag.device.disk.iops_total" attribute
+    And the "DiskIopsOldSdk" span has no "bugsnag.system.disk.iops_read" attribute
+    And the "DiskIopsOldSdk" span has no "bugsnag.system.disk.iops_write" attribute
+    And the "DiskIopsOldSdk" span has no "bugsnag.system.disk.iops_total" attribute
     And the "DiskIopsOldSdk" span has double attribute named "bugsnag.system.cpu_mean_total"
 
 # Scenario 15 (SDK delivers span payload to trace API with disk IOPS)
   Scenario: SDK delivers a disk IOPS span payload to the trace API
     When I run "DiskIopsScenario" configured as "custom"
     And I wait to receive a span named "DiskIopsCustom"
-    Then the "DiskIopsCustom" span has integer attribute named "bugsnag.device.disk.iops_read"
-    And the "DiskIopsCustom" span has integer attribute named "bugsnag.device.disk.iops_write"
-    And the "DiskIopsCustom" span has integer attribute named "bugsnag.device.disk.iops_total"
+    Then the "DiskIopsCustom" span has integer attribute named "bugsnag.system.disk.iops_read"
+    And the "DiskIopsCustom" span has integer attribute named "bugsnag.system.disk.iops_write"
+    And the "DiskIopsCustom" span has integer attribute named "bugsnag.system.disk.iops_total"
     And the trace payload field "resourceSpans.0.resource" string attribute "telemetry.sdk.name" equals "bugsnag.performance.android"

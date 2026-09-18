@@ -200,6 +200,6 @@ internal class DiskIoMetricsHttpDeliveryTest {
     }
 
     private companion object {
-        private const val DISK_KEY_PREFIX = "bugsnag.device.disk."
+        private const val DISK_KEY_PREFIX = "bugsnag.system.disk."
     }
 }

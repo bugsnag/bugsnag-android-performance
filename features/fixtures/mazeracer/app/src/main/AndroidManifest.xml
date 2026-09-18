@@ -39,6 +39,9 @@
         <receiver
             android:name=".MazeRacerAlarmReceiver"
             android:exported="true" />
+        <receiver
+            android:name=".BringToForegroundReceiver"
+            android:exported="false" />
     </application>
 
 </manifest>

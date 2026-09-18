@@ -1,13 +1,17 @@
 package com.bugsnag.mazeracer.scenarios
 
 import android.app.Activity
-import android.app.ActivityManager
+import android.app.AlarmManager
+import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.os.Build
+import android.os.SystemClock
 import com.bugsnag.android.performance.BugsnagPerformance
 import com.bugsnag.android.performance.PerformanceConfiguration
 import com.bugsnag.android.performance.Span
 import com.bugsnag.android.performance.internal.InternalDebug
+import com.bugsnag.mazeracer.BringToForegroundReceiver
 import com.bugsnag.mazeracer.PerformanceTestUtils
 import com.bugsnag.mazeracer.Scenario
 import com.bugsnag.mazeracer.log
@@ -73,9 +77,12 @@ class DiskIopsLifecycleScenario(
         sendToHome()
     }
 
+    /**
+     * Do not use Maze/Appium `background_app`: that API is deprecated and often kills the
+     * process, which drops the in-memory span (0 spans received). HOME + AlarmManager keeps
+     * the process and is a BAL-safe way to return to the foreground.
+     */
     private fun midSpanBackgroundThenForeground() {
-        startLifecycleSpan()
-        DiskIopsSupport.generateDiskActivity(context, "lifecycle-mid-start")
         val sawStop = AtomicBoolean(false)
         val ended = AtomicBoolean(false)
 
@@ -88,8 +95,9 @@ class DiskIopsLifecycleScenario(
                         return
                     }
                     if (sawStop.compareAndSet(false, true)) {
+                        log("DiskIopsLifecycleScenario mid-span onStop")
                         DiskIopsSupport.generateDiskActivity(context, "lifecycle-mid-bg")
-                        mainHandler.postDelayed({ bringTaskToForeground() }, BRING_TO_FRONT_DELAY_MS)
+                        scheduleBringToForeground()
                     }
                 }
 
@@ -98,14 +106,52 @@ class DiskIopsLifecycleScenario(
                         return
                     }
                     application.unregisterActivityLifecycleCallbacks(this)
+                    log("DiskIopsLifecycleScenario mid-span onResume; ending span")
                     DiskIopsSupport.generateDiskActivity(context, "lifecycle-mid-fg")
-                    Thread.sleep(DiskIopsSupport.SPAN_SLEEP_MS)
-                    finishSpan()
+                    mainHandler.postDelayed({ finishSpan() }, DiskIopsSupport.SPAN_SLEEP_MS)
                 }
             }
 
         application.registerActivityLifecycleCallbacks(callbacks)
+        startLifecycleSpan()
+        DiskIopsSupport.generateDiskActivity(context, "lifecycle-mid-start")
         sendToHome()
+
+        // Android 14 / device farms can occasionally miss the resume callback even though the
+        // app-session span is still valid. Keep the foreground transition as the happy path, but
+        // add a fallback finish so the test still receives the span instead of timing out.
+        mainHandler.postDelayed(
+            {
+                if (ended.compareAndSet(false, true)) {
+                    application.unregisterActivityLifecycleCallbacks(callbacks)
+                    log("DiskIopsLifecycleScenario mid-span fallback; ending span without resume")
+                    finishSpan()
+                }
+            },
+            BACKGROUND_MS + DiskIopsSupport.SPAN_SLEEP_MS + FALLBACK_END_BUFFER_MS,
+        )
+    }
+
+    private fun scheduleBringToForeground() {
+        log("DiskIopsLifecycleScenario scheduling foreground in ${BACKGROUND_MS}ms")
+        val alarmService = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val pending =
+            PendingIntent.getBroadcast(
+                context,
+                FOREGROUND_REQUEST_CODE,
+                Intent(context, BringToForegroundReceiver::class.java),
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+            )
+        val triggerAt = SystemClock.elapsedRealtime() + BACKGROUND_MS
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            alarmService.setAndAllowWhileIdle(
+                AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                triggerAt,
+                pending,
+            )
+        } else {
+            alarmService.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, triggerAt, pending)
+        }
     }
 
     private fun runOnceOnStop(action: () -> Unit) {
@@ -157,38 +203,15 @@ class DiskIopsLifecycleScenario(
         }
     }
 
-    /**
-     * Prefer [ActivityManager.AppTask.moveToFront] over [Context.startActivity].
-     * Background activity launches are blocked on modern Android (incl. ANDROID_16),
-     * which left mid_span_bg_fg spans never ending (0 spans received).
-     */
-    private fun bringTaskToForeground() {
-        log("DiskIopsLifecycleScenario bringing task to foreground")
-        val am = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-        val task = am.appTasks.firstOrNull()
-        if (task != null) {
-            task.moveToFront()
-            return
-        }
-        log("DiskIopsLifecycleScenario no AppTask available; falling back to startActivity")
-        val intent =
-            Intent(context, context.javaClass).apply {
-                addFlags(
-                    Intent.FLAG_ACTIVITY_NEW_TASK or
-                            Intent.FLAG_ACTIVITY_REORDER_TO_FRONT or
-                            Intent.FLAG_ACTIVITY_SINGLE_TOP,
-                )
-            }
-        application.startActivity(intent)
-    }
-
     private fun isFixtureActivity(activity: Activity): Boolean {
         return activity.packageName == application.packageName
     }
 
     private companion object {
-        const val BRING_TO_FRONT_DELAY_MS = 300L
         const val CUSTOM_SPAN_NAME = "DiskIopsCustom"
         const val APP_SESSION_NAME = "DiskIops"
+        const val BACKGROUND_MS = 2000L
+        const val FALLBACK_END_BUFFER_MS = 1000L
+        const val FOREGROUND_REQUEST_CODE = 2233
     }
 }

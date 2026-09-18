@@ -60,7 +60,7 @@ internal class DiskIoMetricsSource(
                     span = spanImpl,
                     reason =
                         "invalid_start_snapshot_r${startMetrics.readSyscalls}_w${startMetrics.writeSyscalls}" +
-                                "_ts${startMetrics.timestampNanos}",
+                            "_ts${startMetrics.timestampNanos}",
                 )
 
             else -> {
@@ -144,13 +144,13 @@ internal class DiskIoMetricsSource(
             durationNanos <= 0L ->
                 DiskIoComputationResult.Failure(
                     "invalid_duration_${durationNanos}ns_start${startMetrics.timestampNanos}" +
-                            "_end$endTimestamp",
+                        "_end$endTimestamp",
                 )
 
             readDelta < 0L || writeDelta < 0L ->
                 DiskIoComputationResult.Failure(
                     "negative_delta_r${readDelta}_w${writeDelta}_startR${startMetrics.readSyscalls}" +
-                            "_endR${counters.readSyscalls}",
+                        "_endR${counters.readSyscalls}",
                 )
 
             !iopsRead.isFinite() || !iopsWrite.isFinite() || !iopsTotal.isFinite() ->
@@ -201,9 +201,9 @@ internal class DiskIoMetricsSource(
     companion object {
         private const val NANOS_PER_SECOND = 1_000_000_000.0
 
-        internal const val ATTR_IOPS_READ = "bugsnag.device.disk.iops_read"
-        internal const val ATTR_IOPS_WRITE = "bugsnag.device.disk.iops_write"
-        internal const val ATTR_IOPS_TOTAL = "bugsnag.device.disk.iops_total"
+        internal const val ATTR_IOPS_READ = "bugsnag.system.disk.iops_read"
+        internal const val ATTR_IOPS_WRITE = "bugsnag.system.disk.iops_write"
+        internal const val ATTR_IOPS_TOTAL = "bugsnag.system.disk.iops_total"
 
         internal const val ATTR_SKIP_REASON = "bugsnag.internal.disk_io.skip_reason"
         internal const val ATTR_CANARY = "bugsnag.internal.disk_io.end_metrics_called"
