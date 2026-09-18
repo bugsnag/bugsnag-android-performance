@@ -38,7 +38,7 @@ class DiskIopsIsolationScenario(
         DiskIopsSupport.generateDiskActivity(context, "isolation")
         log(
             "DiskIopsIsolationScenario started app session " +
-                    "(disk=${config.enabledMetrics.disk}); ending after ${SAMPLER_DELAY_MS}ms",
+                "(disk=${config.enabledMetrics.disk}); ending after ${SAMPLER_DELAY_MS}ms",
         )
 
         // Allow AppSessionMetricsCollector (~1s interval) to take samples, then end on main.
