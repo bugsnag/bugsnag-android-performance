@@ -26,8 +26,6 @@ class AppSessionMetricsCollectorTest {
             pssSupplier = { 1024L } // Return constant non-zero value for tests
         }
 
-        collector.start()
-        
         // Sample 0: triggers PSS because lastPssSampleUptime is 0L
         collector.takeSample()
         

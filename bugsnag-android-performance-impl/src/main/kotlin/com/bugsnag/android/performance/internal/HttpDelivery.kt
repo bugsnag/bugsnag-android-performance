@@ -7,9 +7,11 @@ import com.bugsnag.android.performance.Logger
 import com.bugsnag.android.performance.internal.connectivity.Connectivity
 import com.bugsnag.android.performance.internal.connectivity.shouldAttemptDelivery
 import com.bugsnag.android.performance.internal.processing.AttributeLimits
+import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
+import java.util.zip.GZIPInputStream
 
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP_PREFIX)
 public open class HttpDelivery(
@@ -46,8 +48,14 @@ public open class HttpDelivery(
     }
 
     override fun deliver(tracePayload: TracePayload): DeliveryResult {
+        val requestLabel = if (tracePayload === initialProbabilityRequest) {
+            "App session config"
+        } else {
+            "App session delivery"
+        }
+
         if (!connectivity.shouldAttemptDelivery()) {
-            Logger.d("HttpDelivery refusing to delivery payload - no connectivity.")
+            Logger.d("$requestLabel request skipped - no connectivity.")
             // We can't deliver now but can retry later.
             return DeliveryResult.Failed(tracePayload, true)
         }
@@ -55,6 +63,11 @@ public open class HttpDelivery(
         TrafficStats.setThreadStatsTag(1)
         return try {
             val connection = openConnection()
+            Logger.d(
+                "$requestLabel request -> POST $endpoint " +
+                    "headers=${tracePayload.headers.asDebugString()} body=${tracePayload.describeBody()}",
+            )
+
             with(connection) {
                 requestMethod = "POST"
 
@@ -65,15 +78,30 @@ public open class HttpDelivery(
                 outputStream.use { out -> out.write(tracePayload.body) }
             }
 
-            val result = getDeliveryResult(connection.responseCode, tracePayload)
+            val responseCode = connection.responseCode
+            val responseMessage = connection.responseMessage.orEmpty()
+            val responseHeaders = connection.describeHeaders()
+            val responseBody = connection.readResponseBody(responseCode)
+            Logger.d(
+                "$requestLabel response <- HTTP $responseCode ${responseMessage.ifEmpty { "<no message>" }} " +
+                    "headers=$responseHeaders body=$responseBody",
+            )
+
+            val result = getDeliveryResult(responseCode, tracePayload)
             val newP = connection.getHeaderField("Bugsnag-Sampling-Probability")?.toDoubleOrNull()
+            if (newP != null) {
+                Logger.d("$requestLabel response header Bugsnag-Sampling-Probability=$newP")
+            }
             connection.disconnect()
             newP?.let { newProbabilityCallback?.onNewProbability(it) }
 
+            Logger.d("$requestLabel delivery result -> $result")
             result
-        } catch (_: IOException) {
+        } catch (ioe: IOException) {
+            Logger.w("$requestLabel request failed - I/O error", ioe)
             DeliveryResult.Failed(tracePayload, true)
-        } catch (_: Exception) {
+        } catch (ex: Exception) {
+            Logger.e("$requestLabel request failed - unexpected error", ex)
             DeliveryResult.Failed(tracePayload, false)
         } finally {
             TrafficStats.clearThreadStatsTag()
@@ -119,6 +147,61 @@ public open class HttpDelivery(
         }
 
         setRequestProperty("Bugsnag-Sent-At", DateUtils.toIso8601(BugsnagClock.toDate()))
+    }
+
+    private fun Map<String, String>.asDebugString(): String {
+        if (isEmpty()) return "{}"
+
+        return entries.joinToString(prefix = "{", postfix = "}") { (name, value) ->
+            "$name=$value"
+        }
+    }
+
+    private fun TracePayload.describeBody(): String {
+        val rawBody =
+            runCatching {
+                if (headers["Content-Encoding"]?.equals("gzip", ignoreCase = true) == true) {
+                    GZIPInputStream(ByteArrayInputStream(body)).bufferedReader().use { it.readText() }
+                } else {
+                    body.toString(Charsets.UTF_8)
+                }
+            }.getOrElse {
+                return "<${body.size} bytes>"
+            }
+
+        return rawBody.truncateForLogging()
+    }
+
+    private fun HttpURLConnection.describeHeaders(): String {
+        val headers =
+            headerFields.orEmpty().mapNotNull { (name, values) ->
+                name?.let { "$it=${values.joinToString(",")}" }
+            }
+
+        return headers.joinToString(prefix = "{", postfix = "}")
+    }
+
+    private fun HttpURLConnection.readResponseBody(statusCode: Int): String {
+        val stream =
+            runCatching {
+                if (statusCode in 200..299) inputStream else errorStream
+            }.getOrNull() ?: return "<empty>"
+
+        return runCatching {
+            val bytes = stream.use { it.readBytes() }
+            if (contentEncoding?.equals("gzip", ignoreCase = true) == true) {
+                GZIPInputStream(ByteArrayInputStream(bytes)).bufferedReader().use { it.readText() }
+            } else {
+                bytes.toString(Charsets.UTF_8)
+            }
+        }.getOrElse {
+            "<unreadable response body: ${it.javaClass.simpleName}>"
+        }.truncateForLogging()
+    }
+
+    private fun String.truncateForLogging(maxChars: Int = 4096): String {
+        if (length <= maxChars) return this
+        return take(maxChars) + "…<truncated ${length - maxChars} chars>"
     }
 
     internal companion object {
