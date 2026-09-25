@@ -24,6 +24,7 @@ include(":bugsnag-android-performance-appcompat")
 include(":bugsnag-android-performance-compose")
 include(":bugsnag-android-performance-coroutines")
 include(":bugsnag-android-performance-okhttp")
+include(":bugsnag-android-performance-apollo")
 
 include(":bugsnag-plugin-android-performance-named-spans")
 
