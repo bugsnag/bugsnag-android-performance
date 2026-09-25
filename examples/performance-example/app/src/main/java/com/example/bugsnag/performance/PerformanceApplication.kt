@@ -52,6 +52,8 @@ class PerformanceApplication : Application() {
         super.onCreate()
         val config = PerformanceConfiguration.load(this)
         config.enabledMetrics = EnabledMetrics(true)
+        config.appSessionConfig.samplingIntervalMs = 10_000L
+        config.appSessionConfig.deviceMemorySamplingIntervalMs = 10_000L
         // Disable automatic session management for manual testing
         config.appSessionConfig.autoStartSession = false
         config.appSessionConfig.backgroundTimeoutMs = 0L // No automatic timeout

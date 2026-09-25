@@ -35,7 +35,6 @@ internal class AppSessionSpanController
         private val spanFactory: SpanFactory,
         private val enabledMetrics: EnabledMetrics = EnabledMetrics(true),
         internal val sessionConfig: AppSessionConfig = AppSessionConfig(),
-        private val samplingIntervalMs: Long = DEFAULT_SAMPLING_INTERVAL_MS,
         /**
          * Invoked immediately after each app-session span ends so the delivery layer can flush the span
          * without waiting for the normal batch timer. Wired to `tracer.forceCurrentBatch()` by
@@ -48,6 +47,8 @@ internal class AppSessionSpanController
          */
         private val buffer: AppSessionBuffer? = null,
     ) {
+        private val samplingIntervalMs: Long = sessionConfig.samplingIntervalMs
+
         // ── Session identity ─────────────────────────────────────────────────────
         private var sessionId: String = UUID.randomUUID().toString()
         private val segmentIndex = AtomicInteger(0)
@@ -103,9 +104,6 @@ internal class AppSessionSpanController
 
         @Volatile
         private var backgroundTimeoutFuture: Future<*>? = null
-
-        @Volatile
-        private var maxSessionFuture: Future<*>? = null
 
         // ─────────────────────────────────────────────────────────────────────────
         // Public API (Unified)
@@ -205,7 +203,6 @@ internal class AppSessionSpanController
         /** Closes any open segment span and shuts down the scheduler and buffer. */
         fun stop() {
             cancelBackgroundTimeout()
-            cancelMaxSessionTimeout()
             closeCurrentSegmentSpan(closeReason = "sdk_stopped")
             ForegroundState.removeForegroundChangedCallback(foregroundChangedCallback)
             scheduler.shutdownNow()
@@ -237,26 +234,6 @@ internal class AppSessionSpanController
             backgroundTimeoutFuture = null
         }
 
-        private fun scheduleMaxSessionTimeout() {
-            val capMs = sessionConfig.maxSessionDurationMs
-            if (capMs <= 0L) return
-
-            maxSessionFuture =
-                scheduler.schedule(
-                    {
-                        cancelBackgroundTimeout()
-                        closeCurrentSegmentSpan(closeReason = CLOSE_REASON_MAX_DURATION)
-                    },
-                    capMs,
-                    TimeUnit.MILLISECONDS,
-                )
-        }
-
-        private fun cancelMaxSessionTimeout() {
-            maxSessionFuture?.cancel(false)
-            maxSessionFuture = null
-        }
-
         // ─────────────────────────────────────────────────────────────────────────
         // Segment span helpers
         // ─────────────────────────────────────────────────────────────────────────
@@ -268,11 +245,9 @@ internal class AppSessionSpanController
             if (activeSpan != null) {
                 closeCurrentSegmentSpan(closeReason = "segment_switched")
             }
-            val index = segmentIndex.incrementAndGet()
+            segmentIndex.incrementAndGet()
             val startMs = System.currentTimeMillis()
             val startUnixNano = BugsnagClock.currentUnixNanoTime()
-
-            if (index == 1) scheduleMaxSessionTimeout()
 
             val spanName =
                 if (appSessionName != null) {
@@ -301,7 +276,13 @@ internal class AppSessionSpanController
                     }
                 }
 
-            val collector = AppSessionMetricsCollector(appContext, enabledMetrics, samplingIntervalMs)
+            val collector =
+                AppSessionMetricsCollector(
+                    appContext,
+                    enabledMetrics,
+                    samplingIntervalMs,
+                    sessionConfig.deviceMemorySamplingIntervalMs,
+                )
             collector.start()
 
             activeSpan = span
@@ -550,7 +531,6 @@ internal class AppSessionSpanController
         companion object {
             private const val SEGMENT_FOREGROUND = "foreground"
             private const val SEGMENT_BACKGROUND = "background"
-            private const val DEFAULT_SAMPLING_INTERVAL_MS = 1_000L
 
             internal const val CLOSE_REASON_BG_TIMEOUT = "background_timeout"
             internal const val CLOSE_REASON_MAX_DURATION = "session_max_duration"

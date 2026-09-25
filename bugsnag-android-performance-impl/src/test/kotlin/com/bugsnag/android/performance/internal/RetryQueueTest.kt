@@ -4,6 +4,7 @@ import android.os.SystemClock
 import com.bugsnag.android.performance.test.withStaticMock
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import java.io.File
@@ -19,6 +20,7 @@ class RetryQueueTest {
                 System.getProperty("java.io.tmpdir"),
                 "retry-queue-test-${System.currentTimeMillis()}",
             )
+        dir.mkdirs()
 
         retryQueue = RetryQueue(dir)
     }
@@ -67,4 +69,18 @@ class RetryQueueTest {
             retryQueue.remove(expectedPayload2.timestamp)
             assertEquals(expectedPayload1, retryQueue.next())
         }
+
+    @Test
+    fun isEmptyReflectsQueuedPayloads() {
+        assertTrue(retryQueue.isEmpty())
+
+        val queuedFile = File(dir, "retry-0000000000000000123.json")
+        queuedFile.writeText("{}")
+
+        assertTrue(!retryQueue.isEmpty())
+
+        queuedFile.delete()
+
+        assertTrue(retryQueue.isEmpty())
+    }
 }

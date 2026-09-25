@@ -195,6 +195,10 @@ public class RetryQueue(
         }
     }
 
+    public fun isEmpty(): Boolean {
+        return queueDirectory.listFiles().isNullOrEmpty()
+    }
+
     public fun remove(timestamp: Long) {
         fileForNanoTimestamp(timestamp).delete()
     }

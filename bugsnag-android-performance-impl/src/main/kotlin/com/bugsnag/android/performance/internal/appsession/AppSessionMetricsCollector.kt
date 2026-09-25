@@ -5,6 +5,7 @@ import android.content.Context
 import android.os.Process
 import android.os.SystemClock
 import android.util.AndroidException
+import androidx.annotation.VisibleForTesting
 import com.bugsnag.android.performance.EnabledMetrics
 import com.bugsnag.android.performance.Logger
 import com.bugsnag.android.performance.internal.BugsnagClock
@@ -29,6 +30,7 @@ internal class AppSessionMetricsCollector(
     private val appContext: Context,
     private val enabledMetrics: EnabledMetrics = EnabledMetrics(true),
     private val samplingIntervalMs: Long = DEFAULT_INTERVAL_MS,
+    private val deviceMemorySamplingIntervalMs: Long = DEFAULT_INTERVAL_MS,
 ) {
     // ── CPU state ─────────────────────────────────────────────────────────────
     private val procStatReader = ProcStatReader("/proc/${Process.myPid()}/stat")
@@ -48,8 +50,19 @@ internal class AppSessionMetricsCollector(
     // ── Accumulator fields (written only on sampler thread) ──────────────────
     private val accumulators = Accumulators()
 
+    // ── PSS skip logic ───────────────────────────────────────────────────────
+    private var lastPssSampleUptime = 0L
+    private var lastPssValue = -1L
+
     // ── ActivityManager for PSS ───────────────────────────────────────────────
     private val physicalDeviceMemory = calculateTotalMemory()
+
+    @VisibleForTesting
+    internal var pssSupplier: () -> Long = {
+        val memInfo = android.os.Debug.MemoryInfo()
+        android.os.Debug.getMemoryInfo(memInfo)
+        (memInfo.dalvikPss.toLong() + memInfo.nativePss + memInfo.otherPss) * KILOBYTE
+    }
 
     // ── Scheduler ────────────────────────────────────────────────────────────
     private var future: ScheduledFuture<*>? = null
@@ -67,6 +80,7 @@ internal class AppSessionMetricsCollector(
             mainThreadTid[0] = Process.myTid()
         }
         accumulators.reset()
+        lastPssSampleUptime = 0L
         overheadStatReader = null
         // Prime the CPU samplers so the first delta is meaningful
         primeCpuSampler()
@@ -121,18 +135,38 @@ internal class AppSessionMetricsCollector(
         }
     }
 
+    @VisibleForTesting
     @Synchronized
-    private fun takeSample() {
+    internal fun takeSample() {
         @Suppress("TooGenericExceptionCaught")
         try {
             val timestamp = BugsnagClock.currentUnixNanoTime()
+            val uptimeMs = SystemClock.elapsedRealtime()
             if (enabledMetrics.cpu) sampleCpu(timestamp)
-            if (enabledMetrics.memory) {
-                sampleRuntimeMemory(timestamp)
-                sampleDeviceMemory(timestamp)
-            }
+            if (enabledMetrics.memory) sampleMemory(timestamp, uptimeMs)
         } catch (e: Throwable) {
             Logger.w("AppSessionMetricsCollector failed to take sample", e)
+        }
+    }
+
+    @Synchronized
+    private fun sampleMemory(
+        timestamp: Long,
+        uptimeMs: Long,
+    ) {
+        sampleRuntimeMemory(timestamp)
+
+        // Sample PSS less frequently as it is very expensive (kernel walk).
+        // Always allow the first sample (lastPssSampleUptime == 0).
+        if (lastPssSampleUptime == 0L || uptimeMs - lastPssSampleUptime >= deviceMemorySamplingIntervalMs) {
+            val pssBytes = pssSupplier()
+
+            lastPssValue = if (pssBytes > 0L) pssBytes else -1L
+            lastPssSampleUptime = uptimeMs
+        }
+
+        if (lastPssValue > 0L) {
+            accumulators.addDeviceMemorySample(lastPssValue, timestamp)
         }
     }
 
@@ -223,21 +257,6 @@ internal class AppSessionMetricsCollector(
         val used = rt.totalMemory() - rt.freeMemory()
         if (used > 0L) {
             accumulators.addRuntimeMemorySample(used, timestamp)
-        }
-    }
-
-    // ── Device memory (PSS) sample ────────────────────────────────────────────
-
-    @Synchronized
-    private fun sampleDeviceMemory(timestamp: Long) {
-        val memInfo = android.os.Debug.MemoryInfo()
-        android.os.Debug.getMemoryInfo(memInfo)
-
-        val pssBytes =
-            (memInfo.dalvikPss.toLong() + memInfo.nativePss + memInfo.otherPss) * KILOBYTE
-
-        if (pssBytes > 0L) {
-            accumulators.addDeviceMemorySample(pssBytes, timestamp)
         }
     }
 

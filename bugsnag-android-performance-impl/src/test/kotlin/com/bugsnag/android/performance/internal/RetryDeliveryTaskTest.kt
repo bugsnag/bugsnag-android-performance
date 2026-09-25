@@ -50,6 +50,28 @@ class RetryDeliveryTaskTest {
     }
 
     @Test
+    fun testNoConnectivityRequestsBackoff() {
+        val connectivity =
+            mock<Connectivity> {
+                on { connectivityStatus } doReturn
+                    ConnectivityStatus(
+                        false,
+                        ConnectionMetering.DISCONNECTED,
+                        NetworkType.CELL,
+                        null,
+                    )
+            }
+
+        val retryDeliveryTask = RetryDeliveryTask(mock(), mock(), connectivity)
+        val worker = mock<Worker>()
+        retryDeliveryTask.onAttach(worker)
+
+        assertFalse(retryDeliveryTask.execute())
+
+        verify(worker).suggestIdleWaitMs(60_000L)
+    }
+
+    @Test
     fun testRetrySuccessDelivery() {
         val tracePayload =
             TracePayload.createTracePayload("fake-api-key", byteArrayOf(), timestamp = 0L)
