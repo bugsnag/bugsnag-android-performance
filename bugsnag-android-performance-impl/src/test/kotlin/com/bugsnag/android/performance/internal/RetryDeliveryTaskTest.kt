@@ -49,7 +49,6 @@ class RetryDeliveryTaskTest {
         assertNull(delivery.lastSpanDelivery)
     }
 
-
     @Test
     fun testNoConnectivityRequestsBackoff() {
         val connectivity =

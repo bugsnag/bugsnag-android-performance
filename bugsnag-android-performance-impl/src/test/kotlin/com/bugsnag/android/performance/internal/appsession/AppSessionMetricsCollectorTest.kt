@@ -12,13 +12,13 @@ import java.time.Duration
 
 @RunWith(RobolectricTestRunner::class)
 class AppSessionMetricsCollectorTest {
-
     @Test
     fun testPssSamplingCarryOverLogic() {
         val context = ApplicationProvider.getApplicationContext<Context>()
         val enabledMetrics = EnabledMetrics(memory = true)
         // PSS every 30s
-        val collector = AppSessionMetricsCollector(
+        val collector =
+            AppSessionMetricsCollector(
             context,
             enabledMetrics,
             samplingIntervalMs = 1000L,
@@ -30,7 +30,7 @@ class AppSessionMetricsCollectorTest {
         // Sample 0: triggers PSS because lastPssSampleUptime is 0L
         collector.takeSample()
 
-        // Take 29 more samples at 1s intervals. 
+        // Take 29 more samples at 1s intervals.
         // All should CARRY OVER the value from sample 0.
         repeat(29) {
             ShadowSystemClock.advanceBy(Duration.ofMillis(1000L))

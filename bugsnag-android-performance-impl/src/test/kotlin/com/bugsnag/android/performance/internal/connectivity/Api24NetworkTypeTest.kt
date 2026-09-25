@@ -93,7 +93,6 @@ class Api24NetworkTypeTest {
         assertEquals(NetworkType.UNKNOWN, connectivity.connectivityStatus.networkType)
     }
 
-
     private fun testTransportType(
         transportType: Int,
         expectedNetworkType: NetworkType,

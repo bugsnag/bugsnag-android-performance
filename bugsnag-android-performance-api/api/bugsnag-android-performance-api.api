@@ -36,16 +36,23 @@ public final class com/bugsnag/android/performance/AppSessionCallback$DefaultImp
 public final class com/bugsnag/android/performance/AppSessionConfig {
 	public static final field Companion Lcom/bugsnag/android/performance/AppSessionConfig$Companion;
 	public static final field DEFAULT_BACKGROUND_TIMEOUT_MS J
+	public static final field DEFAULT_SAMPLING_INTERVAL_MS J
+	public static final field MAX_SAMPLING_INTERVAL_MS J
+	public static final field MIN_SAMPLING_INTERVAL_MS J
 	public fun <init> ()V
-	public fun <init> (ZJLjava/lang/String;Ljava/util/List;)V
-	public synthetic fun <init> (ZJLjava/lang/String;Ljava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (ZJLjava/lang/String;Ljava/util/List;JJ)V
+	public synthetic fun <init> (ZJLjava/lang/String;Ljava/util/List;JJILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getAutoStartSession ()Z
 	public final fun getBackgroundTimeoutMs ()J
+	public final fun getDeviceMemorySamplingIntervalMs ()J
 	public final fun getManualSessionDefaultName ()Ljava/lang/String;
+	public final fun getSamplingIntervalMs ()J
 	public final fun getSessionCallbacks ()Ljava/util/List;
 	public final fun setAutoStartSession (Z)V
 	public final fun setBackgroundTimeoutMs (J)V
+	public final fun setDeviceMemorySamplingIntervalMs (J)V
 	public final fun setManualSessionDefaultName (Ljava/lang/String;)V
+	public final fun setSamplingIntervalMs (J)V
 	public final fun setSessionCallbacks (Ljava/util/List;)V
 }
 
