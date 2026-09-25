@@ -19,13 +19,13 @@ class AppSessionMetricsCollectorTest {
         // PSS every 30s
         val collector =
             AppSessionMetricsCollector(
-            context,
-            enabledMetrics,
-            samplingIntervalMs = 1000L,
-            deviceMemorySamplingIntervalMs = 30000L,
-        ).apply {
-            pssSupplier = { 1024L } // Return constant non-zero value for tests
-        }
+                context,
+                enabledMetrics,
+                samplingIntervalMs = 1000L,
+                deviceMemorySamplingIntervalMs = 30000L,
+            ).apply {
+                pssSupplier = { 1024L } // Return constant non-zero value for tests
+            }
 
         // Sample 0: triggers PSS because lastPssSampleUptime is 0L
         collector.takeSample()

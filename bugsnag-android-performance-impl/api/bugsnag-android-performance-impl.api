@@ -99,15 +99,23 @@ public abstract class com/bugsnag/android/performance/internal/DeliveryResult {
 }
 
 public final class com/bugsnag/android/performance/internal/DeliveryResult$Failed : com/bugsnag/android/performance/internal/DeliveryResult {
-	public fun <init> (Lcom/bugsnag/android/performance/internal/TracePayload;Z)V
+	public fun <init> (Lcom/bugsnag/android/performance/internal/TracePayload;ZLjava/lang/Long;)V
+	public synthetic fun <init> (Lcom/bugsnag/android/performance/internal/TracePayload;ZLjava/lang/Long;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Lcom/bugsnag/android/performance/internal/TracePayload;
 	public final fun component2 ()Z
-	public final fun copy (Lcom/bugsnag/android/performance/internal/TracePayload;Z)Lcom/bugsnag/android/performance/internal/DeliveryResult$Failed;
-	public static synthetic fun copy$default (Lcom/bugsnag/android/performance/internal/DeliveryResult$Failed;Lcom/bugsnag/android/performance/internal/TracePayload;ZILjava/lang/Object;)Lcom/bugsnag/android/performance/internal/DeliveryResult$Failed;
+	public final fun component3 ()Ljava/lang/Long;
+	public final fun copy (Lcom/bugsnag/android/performance/internal/TracePayload;ZLjava/lang/Long;)Lcom/bugsnag/android/performance/internal/DeliveryResult$Failed;
+	public static synthetic fun copy$default (Lcom/bugsnag/android/performance/internal/DeliveryResult$Failed;Lcom/bugsnag/android/performance/internal/TracePayload;ZLjava/lang/Long;ILjava/lang/Object;)Lcom/bugsnag/android/performance/internal/DeliveryResult$Failed;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getCanRetry ()Z
 	public final fun getPayload ()Lcom/bugsnag/android/performance/internal/TracePayload;
+	public final fun getRetryAfterMs ()Ljava/lang/Long;
 	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/bugsnag/android/performance/internal/DeliveryResult$Queued : com/bugsnag/android/performance/internal/DeliveryResult {
+	public static final field INSTANCE Lcom/bugsnag/android/performance/internal/DeliveryResult$Queued;
 	public fun toString ()Ljava/lang/String;
 }
 
@@ -276,7 +284,8 @@ public final class com/bugsnag/android/performance/internal/RetryDelivery : com/
 }
 
 public final class com/bugsnag/android/performance/internal/RetryDeliveryTask : com/bugsnag/android/performance/internal/AbstractTask {
-	public fun <init> (Lcom/bugsnag/android/performance/internal/RetryQueue;Lcom/bugsnag/android/performance/internal/Delivery;Lcom/bugsnag/android/performance/internal/connectivity/Connectivity;)V
+	public fun <init> (Lcom/bugsnag/android/performance/internal/RetryQueue;Lcom/bugsnag/android/performance/internal/Delivery;Lcom/bugsnag/android/performance/internal/connectivity/Connectivity;Lkotlin/jvm/functions/Function0;)V
+	public synthetic fun <init> (Lcom/bugsnag/android/performance/internal/RetryQueue;Lcom/bugsnag/android/performance/internal/Delivery;Lcom/bugsnag/android/performance/internal/connectivity/Connectivity;Lkotlin/jvm/functions/Function0;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun execute ()Z
 	public fun toString ()Ljava/lang/String;
 }
@@ -285,6 +294,7 @@ public final class com/bugsnag/android/performance/internal/RetryQueue {
 	public fun <init> (Ljava/io/File;J)V
 	public synthetic fun <init> (Ljava/io/File;JILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun add (Lcom/bugsnag/android/performance/internal/TracePayload;)V
+	public final fun isEmpty ()Z
 	public final fun next ()Lcom/bugsnag/android/performance/internal/TracePayload;
 	public final fun remove (J)V
 	public final fun sweep ()V
@@ -310,7 +320,8 @@ public final class com/bugsnag/android/performance/internal/SamplerTask : com/bu
 }
 
 public final class com/bugsnag/android/performance/internal/SendBatchTask : com/bugsnag/android/performance/internal/AbstractTask {
-	public fun <init> (Lcom/bugsnag/android/performance/internal/Delivery;Lcom/bugsnag/android/performance/internal/processing/Tracer;Lcom/bugsnag/android/performance/internal/Attributes;)V
+	public fun <init> (Lcom/bugsnag/android/performance/internal/Delivery;Lcom/bugsnag/android/performance/internal/processing/Tracer;Lcom/bugsnag/android/performance/internal/Attributes;Lkotlin/jvm/functions/Function0;)V
+	public synthetic fun <init> (Lcom/bugsnag/android/performance/internal/Delivery;Lcom/bugsnag/android/performance/internal/processing/Tracer;Lcom/bugsnag/android/performance/internal/Attributes;Lkotlin/jvm/functions/Function0;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun execute ()Z
 	public final fun getDelivery ()Lcom/bugsnag/android/performance/internal/Delivery;
 	public fun toString ()Ljava/lang/String;
@@ -537,6 +548,7 @@ public final class com/bugsnag/android/performance/internal/Worker : java/lang/R
 	public final fun start ()V
 	public final fun stop (Z)V
 	public static synthetic fun stop$default (Lcom/bugsnag/android/performance/internal/Worker;ZILjava/lang/Object;)V
+	public final fun suggestIdleWaitMs (J)V
 	public final fun wake ()V
 }
 
@@ -551,6 +563,7 @@ public final class com/bugsnag/android/performance/internal/connectivity/Connect
 public abstract interface class com/bugsnag/android/performance/internal/connectivity/Connectivity {
 	public static final field Factory Lcom/bugsnag/android/performance/internal/connectivity/Connectivity$Factory;
 	public abstract fun getConnectivityStatus ()Lcom/bugsnag/android/performance/internal/connectivity/ConnectivityStatus;
+	public abstract fun refreshConnectivityStatus ()V
 	public abstract fun registerForNetworkChanges ()V
 	public abstract fun unregisterForNetworkChanges ()V
 }

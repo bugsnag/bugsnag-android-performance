@@ -61,10 +61,10 @@ class SendBatchTaskTest {
             mock<Delivery> {
                 on { deliver(any(), any()) } doReturn
                     DeliveryResult.Failed(
-                    TracePayload.createTracePayload("fake-api-key", byteArrayOf(), timestamp = 0L),
-                    true,
-                    60_000L,
-                )
+                        TracePayload.createTracePayload("fake-api-key", byteArrayOf(), timestamp = 0L),
+                        true,
+                        60_000L,
+                    )
             }
 
         val worker = mock<Worker>()
