@@ -106,11 +106,6 @@ internal class AppSessionBuffer(
         heap.addLast(data)
         // Persist immediately to disk on a background thread to ensure robustness against crashes
         scheduler.execute { persistToDisk() }
-        Logger.d(
-            "AppSessionBuffer: buffered app session #${data.index} " +
-                "(${data.appSessionName?.let { " \"$it\"" } ?: ""}) " +
-                "reason=${data.closeReason} heap_size=${heap.size}",
-        )
     }
 
     /**
@@ -186,17 +181,14 @@ internal class AppSessionBuffer(
             try {
                 val json = JSONObject(bufferFile.readText())
                 val array = json.optJSONArray(KEY_APP_SESSIONS) ?: return@withLock
-                var loaded = 0
                 for (i in 0 until array.length()) {
                     @Suppress("SwallowedException")
                     try {
                         heap.addLast(AppSessionData.fromJson(array.getJSONObject(i)))
-                        loaded++
                     } catch (e: Exception) {
                         Logger.w("AppSessionBuffer: skipping malformed app session entry at index $i")
                     }
                 }
-                Logger.d("AppSessionBuffer: recovered $loaded app session(s) from disk")
             } catch (ex: Exception) {
                 Logger.w("AppSessionBuffer: failed to load from disk — discarding file", ex)
                 bufferFile.delete()

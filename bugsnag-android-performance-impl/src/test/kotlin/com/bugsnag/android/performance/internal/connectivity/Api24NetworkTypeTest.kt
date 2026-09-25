@@ -56,6 +56,44 @@ class Api24NetworkTypeTest {
         assertTrue(connectivity.shouldAttemptDelivery())
     }
 
+    @Test
+    fun shouldAttemptDeliveryWhenNetworkIsInternetCapableButUnvalidated() {
+        val context = mock<Context>()
+        val connectivityManager = mock<ConnectivityManager>()
+        val network = mock<android.net.Network>()
+        val networkCapabilities = mock<NetworkCapabilities>()
+
+        whenever(connectivityManager.activeNetwork).thenReturn(network)
+        whenever(networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI))
+            .thenReturn(true)
+        whenever(networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET))
+            .thenReturn(true)
+        whenever(networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED))
+            .thenReturn(false)
+        whenever(connectivityManager.getNetworkCapabilities(network))
+            .thenReturn(networkCapabilities)
+
+        val connectivity = ConnectivityApi24(context, connectivityManager, null)
+
+        assertTrue(connectivity.shouldAttemptDelivery())
+        assertTrue(connectivity.connectivityStatus.hasConnection)
+        assertEquals(NetworkType.WIFI, connectivity.connectivityStatus.networkType)
+    }
+
+    @Test
+    fun shouldAttemptDeliveryWhenActiveNetworkIsUnavailableFallsBackToUnknown() {
+        val context = mock<Context>()
+        val connectivityManager = mock<ConnectivityManager>()
+
+        whenever(connectivityManager.activeNetwork).thenReturn(null)
+
+        val connectivity = ConnectivityApi24(context, connectivityManager, null)
+
+        assertTrue(connectivity.shouldAttemptDelivery())
+        assertEquals(NetworkType.UNKNOWN, connectivity.connectivityStatus.networkType)
+    }
+
+
     private fun testTransportType(
         transportType: Int,
         expectedNetworkType: NetworkType,

@@ -1,8 +1,6 @@
 package com.example.bugsnag.performance
 
 import android.app.Application
-import android.os.Handler
-import android.os.Looper
 import com.bugsnag.android.performance.BugsnagPerformance
 import com.bugsnag.android.performance.EnabledMetrics
 import com.bugsnag.android.performance.PerformanceConfiguration
@@ -29,15 +27,8 @@ class PerformanceApplication : Application() {
         super.onCreate()
         val config = PerformanceConfiguration.load(this)
         config.enabledMetrics = EnabledMetrics(true)
-        // Set higher sampling intervals for App Sessions to reduce CPU usage on low-end hardware
-        // Note: The SDK enforces a maximum of 60 seconds for all sampling intervals.
-        config.appSessionConfig.samplingIntervalMs = 30_000L // Sample CPU/ART every 60 seconds
-        config.appSessionConfig.deviceMemorySamplingIntervalMs = 30_000L // Sample PSS every 60 seconds
-        config.appSessionConfig.maxSessionDurationMs = 60_000L // Auto-finalize session after 120s
-
-        // Disable automatic session management for manual testing
-        config.appSessionConfig.autoStartSession = false
-        config.appSessionConfig.backgroundTimeoutMs = 0L // No automatic timeout
+        config.appSessionConfig.samplingIntervalMs = 10_000L
+        config.appSessionConfig.deviceMemorySamplingIntervalMs = 10_000L
         BugsnagPerformance.start(config)
     }
 }

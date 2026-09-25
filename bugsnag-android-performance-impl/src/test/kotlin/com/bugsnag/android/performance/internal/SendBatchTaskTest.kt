@@ -50,6 +50,31 @@ class SendBatchTaskTest {
     }
 
     @Test
+    fun retryableFailureRequestsBackoff() {
+        val spanFactory = TestSpanFactory()
+        val tracer =
+            mock<Tracer> {
+                on { collectNextBatch() } doReturn spanFactory.newSpans(1, NoopSpanProcessor.INSTANCE)
+            }
+
+        val delivery =
+            mock<Delivery> {
+                on { deliver(any(), any()) } doReturn DeliveryResult.Failed(
+                    TracePayload.createTracePayload("fake-api-key", byteArrayOf(), timestamp = 0L),
+                    true,
+                    60_000L,
+                )
+            }
+
+        val worker = mock<Worker>()
+        val sendBatchTask = SendBatchTask(delivery, tracer, Attributes())
+        sendBatchTask.onAttach(worker)
+
+        assertFalse(sendBatchTask.execute())
+        verify(worker).suggestIdleWaitMs(60_000L)
+    }
+
+    @Test
     fun noBatchToSend() {
         val tracer =
             mock<Tracer> {

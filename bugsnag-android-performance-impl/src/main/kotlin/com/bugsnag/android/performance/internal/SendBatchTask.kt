@@ -2,7 +2,6 @@ package com.bugsnag.android.performance.internal
 
 import androidx.annotation.RestrictTo
 import androidx.annotation.VisibleForTesting
-import com.bugsnag.android.performance.Logger
 import com.bugsnag.android.performance.internal.processing.Tracer
 
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP_PREFIX)
@@ -19,8 +18,10 @@ public class SendBatchTask(
             return false
         }
 
-        Logger.d("Sending a batch of ${nextBatch.size} spans from $tracer to $delivery")
         val result = delivery.deliver(nextBatch, resourceAttributes)
+        if (result is DeliveryResult.Failed) {
+            result.retryAfterMs?.let { worker?.suggestIdleWaitMs(it) }
+        }
         if (result is DeliveryResult.Success) {
             onSuccess?.invoke()
         }

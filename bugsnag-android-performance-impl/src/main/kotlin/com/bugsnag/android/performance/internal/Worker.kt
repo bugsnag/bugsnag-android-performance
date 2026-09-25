@@ -42,6 +42,7 @@ public class Worker(
     private var startup: () -> List<Task> = { emptyList() },
 ) : Runnable {
     private lateinit var tasks: List<Task>
+    private var idleWaitOverrideMs: Long = 0L
 
     private val lock = ReentrantLock(false)
     private val wakeWorker = lock.newCondition()
@@ -141,6 +142,14 @@ public class Worker(
         }
     }
 
+    public fun suggestIdleWaitMs(waitMs: Long) {
+        if (waitMs <= 0L) return
+
+        lock.withLock {
+            idleWaitOverrideMs = maxOf(idleWaitOverrideMs, waitMs)
+        }
+    }
+
     private fun runFixedTasks(): Boolean {
         var shouldWaitForWork = true
 
@@ -160,9 +169,12 @@ public class Worker(
 
     private fun waitForWorkOrWakeup() {
         lock.withLock {
+            val waitMs = maxOf(InternalDebug.workerSleepMs, idleWaitOverrideMs)
+            idleWaitOverrideMs = 0L
+
             if (!wakeIsPending) {
                 try {
-                    wakeWorker.await(InternalDebug.workerSleepMs, TimeUnit.MILLISECONDS)
+                    wakeWorker.await(waitMs, TimeUnit.MILLISECONDS)
                 } catch (ie: InterruptedException) {
                     // ignore these, we treat interrupts as wake-ups
                 }

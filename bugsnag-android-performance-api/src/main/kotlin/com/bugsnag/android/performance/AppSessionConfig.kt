@@ -9,9 +9,8 @@ package com.bugsnag.android.performance
  * BugsnagPerformance.start(
  *     PerformanceConfiguration.load(this).apply {
  *         appSessionConfig = AppSessionConfig(
- *             autoStartSession = true,
- *             backgroundTimeoutMs = 30_000L,
- *             sessionCallbacks = listOf(mySessionCallback)
+ *             samplingIntervalMs = 10_000L,
+ *             deviceMemorySamplingIntervalMs = 10_000L
  *         )
  *     }
  * )
@@ -37,13 +36,6 @@ public class AppSessionConfig(
      * Default: **30 000 ms (30 seconds)**
      */
     public var backgroundTimeoutMs: Long = DEFAULT_BACKGROUND_TIMEOUT_MS,
-    /**
-     * Maximum duration (in milliseconds) a single session may remain open before being
-     * automatically finalised. Use 0 to disable the cap.
-     *
-     * Default: **0 (no cap)**
-     */
-    public var maxSessionDurationMs: Long = 0L,
     /**
      * Optional default custom app-session name used by manual
      * [BugsnagPerformance.startAppSessionSpan] calls when no `appSessionName` is provided.

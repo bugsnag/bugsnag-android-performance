@@ -250,8 +250,7 @@ internal open class ConnectivityApi24(
     }
 
     protected open fun connectedFor(capabilities: NetworkCapabilities): Boolean {
-        return capabilities.hasCapability(NET_CAPABILITY_INTERNET) &&
-            capabilities.hasCapability(NET_CAPABILITY_VALIDATED)
+        return capabilities.hasCapability(NET_CAPABILITY_INTERNET)
     }
 
     override fun refreshConnectivityStatus() {
@@ -294,11 +293,14 @@ internal open class ConnectivityApi24(
     private fun updateActiveNetwork() {
         val activeNetwork = cm.activeNetwork
         if (activeNetwork == null) {
-            connectivityStatus = noNetwork
+            connectivityStatus = unknownNetwork
             return
         }
 
-        val capabilities = cm.safeGetNetworkCapabilities(activeNetwork) ?: return
+        val capabilities = cm.safeGetNetworkCapabilities(activeNetwork) ?: run {
+            connectivityStatus = unknownNetwork
+            return
+        }
         connectivityStatus = networkCapabilitiesToStatus(capabilities)
     }
 }
@@ -343,5 +345,6 @@ internal object UnknownConnectivity : Connectivity {
 public fun Connectivity.shouldAttemptDelivery(): Boolean =
     run {
         refreshConnectivityStatus()
-        connectivityStatus.networkType == NetworkType.UNKNOWN || connectivityStatus.hasConnection
+        val status = connectivityStatus
+        status.networkType == NetworkType.UNKNOWN || status.hasConnection
     }

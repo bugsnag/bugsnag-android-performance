@@ -18,6 +18,7 @@ public sealed class DeliveryResult {
     public data class Failed(
         val payload: TracePayload,
         val canRetry: Boolean,
+        val retryAfterMs: Long? = null,
     ) : DeliveryResult() {
         override fun toString(): String = "Failed[canRetry=$canRetry]"
     }

@@ -105,9 +105,6 @@ internal class AppSessionSpanController
         @Volatile
         private var backgroundTimeoutFuture: Future<*>? = null
 
-        @Volatile
-        private var maxSessionFuture: Future<*>? = null
-
         // ─────────────────────────────────────────────────────────────────────────
         // Public API (Unified)
         // ─────────────────────────────────────────────────────────────────────────
@@ -206,7 +203,6 @@ internal class AppSessionSpanController
         /** Closes any open segment span and shuts down the scheduler and buffer. */
         fun stop() {
             cancelBackgroundTimeout()
-            cancelMaxSessionTimeout()
             closeCurrentSegmentSpan(closeReason = "sdk_stopped")
             ForegroundState.removeForegroundChangedCallback(foregroundChangedCallback)
             scheduler.shutdownNow()
@@ -238,26 +234,6 @@ internal class AppSessionSpanController
             backgroundTimeoutFuture = null
         }
 
-        private fun scheduleMaxSessionTimeout() {
-            val capMs = sessionConfig.maxSessionDurationMs
-            if (capMs <= 0L) return
-
-            maxSessionFuture =
-                scheduler.schedule(
-                    {
-                        cancelBackgroundTimeout()
-                        closeCurrentSegmentSpan(closeReason = CLOSE_REASON_MAX_DURATION)
-                    },
-                    capMs,
-                    TimeUnit.MILLISECONDS,
-                )
-        }
-
-        private fun cancelMaxSessionTimeout() {
-            maxSessionFuture?.cancel(false)
-            maxSessionFuture = null
-        }
-
         // ─────────────────────────────────────────────────────────────────────────
         // Segment span helpers
         // ─────────────────────────────────────────────────────────────────────────
@@ -269,11 +245,10 @@ internal class AppSessionSpanController
             if (activeSpan != null) {
                 closeCurrentSegmentSpan(closeReason = "segment_switched")
             }
-            val index = segmentIndex.incrementAndGet()
+            segmentIndex.incrementAndGet()
             val startMs = System.currentTimeMillis()
             val startUnixNano = BugsnagClock.currentUnixNanoTime()
 
-            if (index == 1) scheduleMaxSessionTimeout()
 
             val spanName =
                 if (appSessionName != null) {
