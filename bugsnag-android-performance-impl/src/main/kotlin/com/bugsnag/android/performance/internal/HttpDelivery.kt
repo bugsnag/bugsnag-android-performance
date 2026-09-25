@@ -46,11 +46,12 @@ public open class HttpDelivery(
     }
 
     override fun deliver(tracePayload: TracePayload): DeliveryResult {
-        val requestLabel = if (tracePayload === initialProbabilityRequest) {
-            "App session config"
-        } else {
-            "App session delivery"
-        }
+        val requestLabel =
+            if (tracePayload === initialProbabilityRequest) {
+                "App session config"
+            } else {
+                "App session delivery"
+            }
 
         if (!connectivity.shouldAttemptDelivery()) {
             // We can't deliver now but can retry later.
@@ -59,32 +60,43 @@ public open class HttpDelivery(
 
         TrafficStats.setThreadStatsTag(1)
         return try {
-            val connection = openConnection()
+            runCatching {
+                val connection = openConnection()
+                try {
+                    with(connection) {
+                        requestMethod = "POST"
 
-            with(connection) {
-                requestMethod = "POST"
+                        setHeaders(tracePayload)
 
-                setHeaders(tracePayload)
+                        doOutput = true
+                        doInput = true
+                        outputStream.use { out -> out.write(tracePayload.body) }
+                    }
 
-                doOutput = true
-                doInput = true
-                outputStream.use { out -> out.write(tracePayload.body) }
+                    val responseCode = connection.responseCode
+                    val result = getDeliveryResult(responseCode, tracePayload)
+                    val newP = connection.getHeaderField("Bugsnag-Sampling-Probability")?.toDoubleOrNull()
+                    newP?.let { newProbabilityCallback?.onNewProbability(it) }
+                    if (result is DeliveryResult.Success) {
+                        Logger.d("$requestLabel request delivered successfully.")
+                    }
+                    result
+                } finally {
+                    connection.disconnect()
+                }
+            }.getOrElse { throwable ->
+                when (throwable) {
+                    is IOException -> {
+                        Logger.w("$requestLabel request failed - network error", throwable)
+                        DeliveryResult.Failed(tracePayload, true, RETRY_BACKOFF_MS)
+                    }
+
+                    else -> {
+                        Logger.e("App session delivery request failed - unexpected error", throwable)
+                        DeliveryResult.Failed(tracePayload, false)
+                    }
+                }
             }
-
-            val responseCode = connection.responseCode
-            val result = getDeliveryResult(responseCode, tracePayload)
-            val newP = connection.getHeaderField("Bugsnag-Sampling-Probability")?.toDoubleOrNull()
-            connection.disconnect()
-            newP?.let { newProbabilityCallback?.onNewProbability(it) }
-            if (result is DeliveryResult.Success) {
-                Logger.d("$requestLabel request delivered successfully.")
-            }
-            result
-        } catch (ioe: IOException) {
-            DeliveryResult.Failed(tracePayload, true, RETRY_BACKOFF_MS)
-        } catch (ex: Exception) {
-            Logger.e("App session delivery request failed - unexpected error", ex)
-            DeliveryResult.Failed(tracePayload, false)
         } finally {
             TrafficStats.clearThreadStatsTag()
         }
@@ -130,7 +142,6 @@ public open class HttpDelivery(
 
         setRequestProperty("Bugsnag-Sent-At", DateUtils.toIso8601(BugsnagClock.toDate()))
     }
-
 
     internal companion object {
         private const val RETRY_BACKOFF_MS = 60_000L

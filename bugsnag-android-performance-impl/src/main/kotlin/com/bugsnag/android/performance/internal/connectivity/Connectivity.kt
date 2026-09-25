@@ -12,7 +12,6 @@ import android.net.NetworkCapabilities
 import android.net.NetworkCapabilities.NET_CAPABILITY_INTERNET
 import android.net.NetworkCapabilities.NET_CAPABILITY_NOT_METERED
 import android.net.NetworkCapabilities.NET_CAPABILITY_TEMPORARILY_NOT_METERED
-import android.net.NetworkCapabilities.NET_CAPABILITY_VALIDATED
 import android.net.NetworkCapabilities.TRANSPORT_CELLULAR
 import android.net.NetworkCapabilities.TRANSPORT_ETHERNET
 import android.net.NetworkCapabilities.TRANSPORT_USB
@@ -209,7 +208,7 @@ internal open class ConnectivityApi24(
 
         return try {
             nameForDataNetworkType(tm.dataNetworkType)
-        } catch (e: Exception) {
+        } catch (_: SecurityException) {
             null
         }
     }
@@ -297,10 +296,11 @@ internal open class ConnectivityApi24(
             return
         }
 
-        val capabilities = cm.safeGetNetworkCapabilities(activeNetwork) ?: run {
-            connectivityStatus = unknownNetwork
-            return
-        }
+        val capabilities =
+            cm.safeGetNetworkCapabilities(activeNetwork) ?: run {
+                connectivityStatus = unknownNetwork
+                return
+            }
         connectivityStatus = networkCapabilitiesToStatus(capabilities)
     }
 }

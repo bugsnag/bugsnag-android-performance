@@ -13,17 +13,16 @@ public class SendBatchTask(
     private val onSuccess: (() -> Unit)? = null,
 ) : AbstractTask() {
     override fun execute(): Boolean {
-        val nextBatch = tracer.collectNextBatch() ?: return false
-        if (nextBatch.isEmpty()) {
-            return false
-        }
+        val nextBatch = tracer.collectNextBatch()
+        return nextBatch?.takeIf { it.isNotEmpty() }?.let { executeBatch(it) } ?: false
+    }
 
+    private fun executeBatch(nextBatch: Collection<SpanImpl>): Boolean {
         val result = delivery.deliver(nextBatch, resourceAttributes)
-        if (result is DeliveryResult.Failed) {
-            result.retryAfterMs?.let { worker?.suggestIdleWaitMs(it) }
-        }
-        if (result is DeliveryResult.Success) {
-            onSuccess?.invoke()
+        when (result) {
+            is DeliveryResult.Failed -> result.retryAfterMs?.let { worker?.suggestIdleWaitMs(it) }
+            is DeliveryResult.Queued -> Unit
+            is DeliveryResult.Success -> onSuccess?.invoke()
         }
         return result is DeliveryResult.Success
     }

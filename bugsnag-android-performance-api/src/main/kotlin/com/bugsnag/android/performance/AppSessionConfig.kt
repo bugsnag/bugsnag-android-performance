@@ -61,11 +61,11 @@ public class AppSessionConfig(
      */
     public var samplingIntervalMs: Long = samplingIntervalMs
         set(value) {
-            field = if (value in MIN_SAMPLING_INTERVAL_MS..MAX_SAMPLING_INTERVAL_MS) {
-                value
-            } else {
-                DEFAULT_SAMPLING_INTERVAL_MS
-            }
+            field =
+                when (value) {
+                    in MIN_SAMPLING_INTERVAL_MS..MAX_SAMPLING_INTERVAL_MS -> value
+                    else -> DEFAULT_SAMPLING_INTERVAL_MS
+                }
         }
 
     /**
@@ -77,17 +77,12 @@ public class AppSessionConfig(
      */
     public var deviceMemorySamplingIntervalMs: Long = deviceMemorySamplingIntervalMs
         set(value) {
-            field = if (value in MIN_SAMPLING_INTERVAL_MS..MAX_SAMPLING_INTERVAL_MS) {
-                value
-            } else {
-                DEFAULT_SAMPLING_INTERVAL_MS
-            }
+            field =
+                when (value) {
+                    in MIN_SAMPLING_INTERVAL_MS..MAX_SAMPLING_INTERVAL_MS -> value
+                    else -> DEFAULT_SAMPLING_INTERVAL_MS
+                }
         }
-
-    init {
-        this.samplingIntervalMs = samplingIntervalMs
-        this.deviceMemorySamplingIntervalMs = deviceMemorySamplingIntervalMs
-    }
 
     public companion object {
         /** Default background grace-period before a session is closed: 30 s. */

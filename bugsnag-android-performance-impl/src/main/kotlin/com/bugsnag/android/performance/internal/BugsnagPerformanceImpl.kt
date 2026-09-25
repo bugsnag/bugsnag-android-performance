@@ -11,7 +11,6 @@ import com.bugsnag.android.performance.controls.SpanQuery
 import com.bugsnag.android.performance.internal.appsession.AppSessionBuffer
 import com.bugsnag.android.performance.internal.appsession.AppSessionSpanController
 import com.bugsnag.android.performance.internal.connectivity.Connectivity
-import com.bugsnag.android.performance.internal.connectivity.ConnectivityStatus
 import com.bugsnag.android.performance.internal.controls.AppStartControlProvider
 import com.bugsnag.android.performance.internal.controls.CompositeSpanControlProvider
 import com.bugsnag.android.performance.internal.integration.NotifierIntegration
@@ -246,7 +245,6 @@ public object BugsnagPerformanceImpl {
     }
 }
 
-
 internal data class ManualAppSessionStartOptions(
     val appSessionName: String?,
 )
@@ -269,4 +267,3 @@ internal fun drainAppSessionBufferIfNoPendingRetries(
         appSessionBuffer.drain()
     }
 }
-

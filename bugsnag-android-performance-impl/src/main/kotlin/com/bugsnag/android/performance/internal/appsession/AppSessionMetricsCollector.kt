@@ -143,23 +143,30 @@ internal class AppSessionMetricsCollector(
             val timestamp = BugsnagClock.currentUnixNanoTime()
             val uptimeMs = SystemClock.elapsedRealtime()
             if (enabledMetrics.cpu) sampleCpu(timestamp)
-            if (enabledMetrics.memory) {
-                sampleRuntimeMemory(timestamp)
-                // Sample PSS less frequently as it is very expensive (kernel walk).
-                // Always allow the first sample (lastPssSampleUptime == 0).
-                if (lastPssSampleUptime == 0L || uptimeMs - lastPssSampleUptime >= deviceMemorySamplingIntervalMs) {
-                    val pssBytes = pssSupplier()
-
-                    lastPssValue = if (pssBytes > 0L) pssBytes else -1L
-                    lastPssSampleUptime = uptimeMs
-                }
-
-                if (lastPssValue > 0L) {
-                    accumulators.addDeviceMemorySample(lastPssValue, timestamp)
-                }
-            }
+            if (enabledMetrics.memory) sampleMemory(timestamp, uptimeMs)
         } catch (e: Throwable) {
             Logger.w("AppSessionMetricsCollector failed to take sample", e)
+        }
+    }
+
+    @Synchronized
+    private fun sampleMemory(
+        timestamp: Long,
+        uptimeMs: Long,
+    ) {
+        sampleRuntimeMemory(timestamp)
+
+        // Sample PSS less frequently as it is very expensive (kernel walk).
+        // Always allow the first sample (lastPssSampleUptime == 0).
+        if (lastPssSampleUptime == 0L || uptimeMs - lastPssSampleUptime >= deviceMemorySamplingIntervalMs) {
+            val pssBytes = pssSupplier()
+
+            lastPssValue = if (pssBytes > 0L) pssBytes else -1L
+            lastPssSampleUptime = uptimeMs
+        }
+
+        if (lastPssValue > 0L) {
+            accumulators.addDeviceMemorySample(lastPssValue, timestamp)
         }
     }
 
@@ -251,13 +258,6 @@ internal class AppSessionMetricsCollector(
         if (used > 0L) {
             accumulators.addRuntimeMemorySample(used, timestamp)
         }
-    }
-
-    // ── Device memory (PSS) sample ────────────────────────────────────────────
-
-    @Synchronized
-    private fun sampleDeviceMemory(timestamp: Long) {
-        // This method is no longer used, as PSS logic is in takeSample()
     }
 
     // ── Build result ──────────────────────────────────────────────────────────

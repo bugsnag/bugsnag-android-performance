@@ -249,7 +249,6 @@ internal class AppSessionSpanController
             val startMs = System.currentTimeMillis()
             val startUnixNano = BugsnagClock.currentUnixNanoTime()
 
-
             val spanName =
                 if (appSessionName != null) {
                     "[AppSession/$appSessionName]"
@@ -532,7 +531,6 @@ internal class AppSessionSpanController
         companion object {
             private const val SEGMENT_FOREGROUND = "foreground"
             private const val SEGMENT_BACKGROUND = "background"
-            private const val DEFAULT_SAMPLING_INTERVAL_MS = 1_000L
 
             internal const val CLOSE_REASON_BG_TIMEOUT = "background_timeout"
             internal const val CLOSE_REASON_MAX_DURATION = "session_max_duration"
