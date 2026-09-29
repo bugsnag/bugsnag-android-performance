@@ -9,9 +9,8 @@ package com.bugsnag.android.performance
  * BugsnagPerformance.start(
  *     PerformanceConfiguration.load(this).apply {
  *         appSessionConfig = AppSessionConfig(
- *             autoStartSession = true,
- *             backgroundTimeoutMs = 30_000L,
- *             sessionCallbacks = listOf(mySessionCallback)
+ *             samplingIntervalMs = 10_000L,
+ *             deviceMemorySamplingIntervalMs = 10_000L
  *         )
  *     }
  * )
@@ -38,13 +37,6 @@ public class AppSessionConfig(
      */
     public var backgroundTimeoutMs: Long = DEFAULT_BACKGROUND_TIMEOUT_MS,
     /**
-     * Maximum duration (in milliseconds) a single session may remain open before being
-     * automatically finalised. Use 0 to disable the cap.
-     *
-     * Default: **0 (no cap)**
-     */
-    public var maxSessionDurationMs: Long = 0L,
-    /**
      * Optional default custom app-session name used by manual
      * [BugsnagPerformance.startAppSessionSpan] calls when no `appSessionName` is provided.
      *
@@ -58,10 +50,52 @@ public class AppSessionConfig(
      * foregrounded / ended).  Callbacks are called on the main thread.
      */
     public var sessionCallbacks: List<AppSessionCallback> = emptyList(),
+    samplingIntervalMs: Long = DEFAULT_SAMPLING_INTERVAL_MS,
+    deviceMemorySamplingIntervalMs: Long = DEFAULT_SAMPLING_INTERVAL_MS,
 ) {
+    /**
+     * How often (in milliseconds) the SDK samples CPU and ART memory metrics while an
+     * app-session is active.
+     *
+     * Default: **1 000 ms (1 second)**
+     */
+    public var samplingIntervalMs: Long = samplingIntervalMs
+        set(value) {
+            field =
+                when (value) {
+                    in MIN_SAMPLING_INTERVAL_MS..MAX_SAMPLING_INTERVAL_MS -> value
+                    else -> DEFAULT_SAMPLING_INTERVAL_MS
+                }
+        }
+
+    /**
+     * How often (in milliseconds) the SDK samples device (PSS) memory metrics while an
+     * app-session is active. Calculating PSS is an expensive operation; increasing this
+     * interval can significantly reduce CPU usage on low-end devices.
+     *
+     * Default: **1 000 ms (1 second)**
+     */
+    public var deviceMemorySamplingIntervalMs: Long = deviceMemorySamplingIntervalMs
+        set(value) {
+            field =
+                when (value) {
+                    in MIN_SAMPLING_INTERVAL_MS..MAX_SAMPLING_INTERVAL_MS -> value
+                    else -> DEFAULT_SAMPLING_INTERVAL_MS
+                }
+        }
+
     public companion object {
         /** Default background grace-period before a session is closed: 30 s. */
         public const val DEFAULT_BACKGROUND_TIMEOUT_MS: Long = 30_000L
+
+        /** Default interval between metric samples: 1 s. */
+        public const val DEFAULT_SAMPLING_INTERVAL_MS: Long = 1_000L
+
+        /** Minimum allowed sampling interval: 1 second. */
+        public const val MIN_SAMPLING_INTERVAL_MS: Long = 1_000L
+
+        /** Maximum allowed sampling interval: 60 seconds. */
+        public const val MAX_SAMPLING_INTERVAL_MS: Long = 60_000L
     }
 }
 
