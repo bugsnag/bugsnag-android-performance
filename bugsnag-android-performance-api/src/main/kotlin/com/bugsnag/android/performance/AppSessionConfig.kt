@@ -59,13 +59,9 @@ public class AppSessionConfig(
      *
      * Default: **1 000 ms (1 second)**
      */
-    public var samplingIntervalMs: Long = samplingIntervalMs
+    public var samplingIntervalMs: Long = normalizeSamplingInterval(samplingIntervalMs)
         set(value) {
-            field =
-                when (value) {
-                    in MIN_SAMPLING_INTERVAL_MS..MAX_SAMPLING_INTERVAL_MS -> value
-                    else -> DEFAULT_SAMPLING_INTERVAL_MS
-                }
+            field = normalizeSamplingInterval(value)
         }
 
     /**
@@ -75,13 +71,15 @@ public class AppSessionConfig(
      *
      * Default: **1 000 ms (1 second)**
      */
-    public var deviceMemorySamplingIntervalMs: Long = deviceMemorySamplingIntervalMs
+    public var deviceMemorySamplingIntervalMs: Long = normalizeSamplingInterval(deviceMemorySamplingIntervalMs)
         set(value) {
-            field =
-                when (value) {
-                    in MIN_SAMPLING_INTERVAL_MS..MAX_SAMPLING_INTERVAL_MS -> value
-                    else -> DEFAULT_SAMPLING_INTERVAL_MS
-                }
+            field = normalizeSamplingInterval(value)
+        }
+
+    private fun normalizeSamplingInterval(value: Long): Long =
+        when (value) {
+            in MIN_SAMPLING_INTERVAL_MS..MAX_SAMPLING_INTERVAL_MS -> value
+            else -> DEFAULT_SAMPLING_INTERVAL_MS
         }
 
     public companion object {

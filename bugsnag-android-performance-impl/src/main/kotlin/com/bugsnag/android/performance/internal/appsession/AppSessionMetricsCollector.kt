@@ -51,7 +51,7 @@ internal class AppSessionMetricsCollector(
     private val accumulators = Accumulators()
 
     // ── PSS skip logic ───────────────────────────────────────────────────────
-    private var lastPssSampleUptime = 0L
+    private var lastPssSampleUptime: Long? = null
     private var lastPssValue = -1L
 
     // ── ActivityManager for PSS ───────────────────────────────────────────────
@@ -80,7 +80,7 @@ internal class AppSessionMetricsCollector(
             mainThreadTid[0] = Process.myTid()
         }
         accumulators.reset()
-        lastPssSampleUptime = 0L
+        lastPssSampleUptime = null
         overheadStatReader = null
         // Prime the CPU samplers so the first delta is meaningful
         primeCpuSampler()
@@ -157,8 +157,8 @@ internal class AppSessionMetricsCollector(
         sampleRuntimeMemory(timestamp)
 
         // Sample PSS less frequently as it is very expensive (kernel walk).
-        // Always allow the first sample (lastPssSampleUptime == 0).
-        if (lastPssSampleUptime == 0L || uptimeMs - lastPssSampleUptime >= deviceMemorySamplingIntervalMs) {
+        // Always allow the first sample (lastPssSampleUptime == null).
+        if (shouldSamplePss(uptimeMs)) {
             val pssBytes = pssSupplier()
 
             lastPssValue = if (pssBytes > 0L) pssBytes else -1L
@@ -168,6 +168,11 @@ internal class AppSessionMetricsCollector(
         if (lastPssValue > 0L) {
             accumulators.addDeviceMemorySample(lastPssValue, timestamp)
         }
+    }
+
+    private fun shouldSamplePss(uptimeMs: Long): Boolean {
+        val lastSampleUptime = lastPssSampleUptime ?: return true
+        return uptimeMs - lastSampleUptime >= deviceMemorySamplingIntervalMs
     }
 
     // ── CPU sample ────────────────────────────────────────────────────────────

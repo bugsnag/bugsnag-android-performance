@@ -38,7 +38,7 @@ internal data class AppSessionData(
     /**
      * Why this app session was closed.
      * One of: `state_switched`, `client_end_foreground`, `client_end_background`,
-     *         `background_timeout`, `session_max_duration`, `sdk_stopped`.
+     *         `background_timeout`, `sdk_stopped`.
      */
     internal val closeReason: String,
     // ── Metrics ──────────────────────────────────────────────────────────────

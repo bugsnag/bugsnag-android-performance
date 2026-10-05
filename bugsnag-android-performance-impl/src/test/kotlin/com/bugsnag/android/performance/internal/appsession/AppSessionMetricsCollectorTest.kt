@@ -1,8 +1,10 @@
 package com.bugsnag.android.performance.internal.appsession
 
+import android.os.SystemClock
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import com.bugsnag.android.performance.EnabledMetrics
+import com.bugsnag.android.performance.test.withStaticMock
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -43,6 +45,34 @@ class AppSessionMetricsCollectorTest {
         assertEquals(31, metrics.runtimeMemoryCount)
         assertEquals(31, metrics.deviceMemoryCount) // Verify carry-over fills the array
     }
+
+    @Test
+    fun testPssSamplingDoesNotResampleAtZeroElapsedRealtime() =
+        withStaticMock<SystemClock> { mockedClock ->
+            mockedClock.`when`<Long> { SystemClock.elapsedRealtime() }.thenReturn(0L)
+
+            val context = ApplicationProvider.getApplicationContext<Context>()
+            val enabledMetrics = EnabledMetrics(memory = true)
+            var pssSampleCount = 0
+            val collector =
+                AppSessionMetricsCollector(
+                    context,
+                    enabledMetrics,
+                    samplingIntervalMs = 1000L,
+                    deviceMemorySamplingIntervalMs = 30000L,
+                ).apply {
+                    pssSupplier = {
+                        pssSampleCount++
+                        1024L
+                    }
+                }
+
+            repeat(5) {
+                collector.takeSample()
+            }
+
+            assertEquals(1, pssSampleCount)
+        }
 
     @Test
     fun testValidationDefaultsIfOutsideRange() {

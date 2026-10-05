@@ -533,7 +533,6 @@ internal class AppSessionSpanController
             private const val SEGMENT_BACKGROUND = "background"
 
             internal const val CLOSE_REASON_BG_TIMEOUT = "background_timeout"
-            internal const val CLOSE_REASON_MAX_DURATION = "session_max_duration"
         }
     }
 
