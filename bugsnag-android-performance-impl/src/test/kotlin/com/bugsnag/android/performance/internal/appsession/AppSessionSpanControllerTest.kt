@@ -292,7 +292,6 @@ class AppSessionSpanControllerTest {
             deviceMemorySizeBytes = 4096L,
         )
 
-
     @Test
     fun testCustomSessionNameFormat() {
         val config = AppSessionConfig(autoStartSession = false)

@@ -1,7 +1,7 @@
 package com.bugsnag.android.performance.internal.appsession
 
-import android.os.SystemClock
 import android.content.Context
+import android.os.SystemClock
 import androidx.test.core.app.ApplicationProvider
 import com.bugsnag.android.performance.EnabledMetrics
 import com.bugsnag.android.performance.test.withStaticMock
