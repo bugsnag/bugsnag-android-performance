@@ -179,6 +179,7 @@ class MainActivity : AppCompatActivity() {
     private fun startBugsnag() {
         val config =
             Configuration.load(this).apply {
+                autoTrackSessions = false
                 endpoints =
                     EndpointConfiguration(
                         notify = "http://$mazeAddress/notify",
