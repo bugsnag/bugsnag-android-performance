@@ -334,21 +334,6 @@ Then('the {string} span {word} attribute {string} equals the sum of {string} and
   end
 end
 
-Then('the {string} span string attribute {string} equals {string}') do |span_name, attribute, expected|
-  spans = spans_from_request_list(Maze::Server.list_for('traces'))
-  found_spans = spans.find_all { |span| span['name'].eql?(span_name) }
-  raise Test::Unit::AssertionFailedError.new "No spans were found with the name #{span_name}" if found_spans.empty?
-
-  found_spans.each do |span|
-    attributes = span['attributes']
-    attribute_obj = attributes.find { |a| a['key'] == attribute }
-    raise Test::Unit::AssertionFailedError.new "No attribute named #{attribute} was found in span #{span_name}" if attribute_obj.nil?
-
-    value = attribute_obj['value']['stringValue']
-    Maze.check.equal(expected, value)
-  end
-end
-
 Then('the {string} span string attribute {string} starts with {string}') do |span_name, attribute, prefix|
   spans = spans_from_request_list(Maze::Server.list_for('traces'))
   found_spans = spans.find_all { |span| span['name'].eql?(span_name) }

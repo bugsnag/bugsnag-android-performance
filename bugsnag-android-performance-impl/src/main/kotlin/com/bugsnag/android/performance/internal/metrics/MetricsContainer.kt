@@ -32,7 +32,6 @@ internal open class MetricsContainer(
     var diskIoMetricSource: MetricSource<DiskIoSnapshot>? = null
         private set
 
-
     /**
      * Called before we are fully configured, typically from `InstrumentedAppState.attach`. This
      * installs all of the metrics instrumentation - which can then be uninstalled when
