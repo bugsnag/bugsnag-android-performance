@@ -81,6 +81,14 @@ fun AllButtons(network: ExampleNetworkCalls, contentPadding: PaddingValues) {
             network.runRequest()
         }
 
+        DemoAction(label = "GraphQL Request (countries.trevorblades.com)") {
+            network.runGraphQlRequest()
+        }
+
+        DemoAction(label = "Plain POST Request (httpbin.org/post)") {
+            network.runPlainPostRequest()
+        }
+
         DemoAction(label = "Custom Span") {
             val span = BugsnagPerformance.startSpan(
                 "I am custom!",

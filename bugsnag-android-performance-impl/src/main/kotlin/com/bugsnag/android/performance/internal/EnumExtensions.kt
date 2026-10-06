@@ -4,6 +4,7 @@ package com.bugsnag.android.performance.internal
 
 import androidx.annotation.RestrictTo
 import com.bugsnag.android.performance.SpanKind
+import com.bugsnag.android.performance.SpanStatusCode
 import com.bugsnag.android.performance.ViewType
 
 public val ViewType.typeName: String
@@ -40,4 +41,20 @@ public val SpanKind.otelOrdinal: Int
             SpanKind.CLIENT -> 3
             SpanKind.PRODUCER -> 4
             SpanKind.CONSUMER -> 5
+        }
+
+public val SpanStatusCode.otelOrdinal: Int
+    get() =
+        when (this) {
+            SpanStatusCode.UNSET -> 0
+            SpanStatusCode.OK -> 1
+            SpanStatusCode.ERROR -> 2
+        }
+
+public val SpanStatusCode.otelName: String
+    get() =
+        when (this) {
+            SpanStatusCode.UNSET -> "STATUS_CODE_UNSET"
+            SpanStatusCode.OK -> "STATUS_CODE_OK"
+            SpanStatusCode.ERROR -> "STATUS_CODE_ERROR"
         }

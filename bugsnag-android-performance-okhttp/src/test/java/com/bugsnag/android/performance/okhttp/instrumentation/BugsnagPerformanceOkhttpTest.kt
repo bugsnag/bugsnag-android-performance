@@ -1,26 +1,46 @@
 package com.bugsnag.android.performance.okhttp.instrumentation
 
+import com.bugsnag.android.performance.Span
+import com.bugsnag.android.performance.SpanStatusCode
+import com.bugsnag.android.performance.internal.BugsnagPerformanceImpl
+import com.bugsnag.android.performance.internal.SpanImpl
+import com.bugsnag.android.performance.internal.SpanProcessor
 import com.bugsnag.android.performance.okhttp.OkhttpModule
+import com.bugsnag.android.performance.okhttp.withBugsnagPerformance
+import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertNotNull
 import junit.framework.TestCase.assertTrue
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.mockwebserver.MockResponse
+import okhttp3.mockwebserver.MockWebServer
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import java.net.URL
+import java.util.concurrent.ConcurrentLinkedQueue
 
 @RunWith(RobolectricTestRunner::class)
 class BugsnagPerformanceOkhttpTest {
+    private lateinit var spanProcessor: CollectingSpanProcessor
+    private lateinit var originalSpanProcessor: SpanProcessor
+
     @Before
     fun setUp() {
         OkhttpModule.tracePropagationUrls = listOf(".*".toPattern())
+        originalSpanProcessor = BugsnagPerformanceImpl.spanFactory.spanProcessor
+        spanProcessor = CollectingSpanProcessor()
+        BugsnagPerformanceImpl.spanFactory.spanProcessor = spanProcessor
     }
 
     @After
     fun tearDown() {
         OkhttpModule.tracePropagationUrls = emptyList()
+        BugsnagPerformanceImpl.spanFactory.spanProcessor = originalSpanProcessor
     }
 
     @Test
@@ -33,5 +53,307 @@ class BugsnagPerformanceOkhttpTest {
 
         assertNotNull(validHeader)
         assertTrue(validHeader!!.matches(matchPattern))
+    }
+
+    @Test
+    fun testGraphQlRequestIsInterceptedWithTraceParent() {
+        // GraphQL requests should be classified and still receive traceparent propagation.
+        val graphqlBody =
+            """{"operationName":"GetUser","query":"query GetUser { user { id } }"}"""
+
+        val request =
+            Request.Builder()
+                .post(graphqlBody.toRequestBody("application/json".toMediaType()))
+        val mockResponse = MockResponse().setBody("ok")
+
+        val result = makeNetworkOkhttpRequest(request, mockResponse)
+        val traceparent = result.headers["traceparent"]
+        val matchPattern = "00-[0-9a-f]{32}-[0-9a-f]{16}-0[01]".toRegex()
+
+        // Trace propagation should still work for GraphQL requests.
+        assertNotNull(traceparent)
+        assertTrue(traceparent!!.matches(matchPattern))
+    }
+
+    @Test
+    fun testNonGraphQlRequestReceivesTraceParent() {
+        val plainBody =
+            """{"message":"hello from test"}"""
+
+        val request =
+            Request.Builder()
+                .post(plainBody.toRequestBody("application/json".toMediaType()))
+        val mockResponse = MockResponse().setBody("ok")
+
+        val result = makeNetworkOkhttpRequest(request, mockResponse)
+        val traceparent = result.headers["traceparent"]
+        val matchPattern = "00-[0-9a-f]{32}-[0-9a-f]{16}-0[01]".toRegex()
+
+        assertNotNull(traceparent)
+        assertTrue(traceparent!!.matches(matchPattern))
+    }
+
+    @Test
+    fun testGraphQlRequestRecordsRequestAndResponseContentLengthIndependently() {
+        val graphqlBody =
+            """{"operationName":"GetUser","query":"query GetUser { user { id } }"}"""
+        val responseBody = """{"data":{"user":{"id":"123"}}}"""
+
+        executeRequest(
+            Request.Builder().post(graphqlBody.toRequestBody("application/json".toMediaType())),
+            MockResponse().setBody(responseBody),
+            "/graphql",
+        )
+
+        val span = spanProcessor.singleSpan()
+        val requestUrl = URL(span.attributes["http.url"] as String)
+
+        assertEquals("GraphQL ${requestUrl.authority}${requestUrl.path} - query:GetUser", span.name)
+        assertEquals("graphql", span.attributes["bugsnag.span.category"])
+        assertEquals(
+            graphqlBody.toByteArray().size.toLong(),
+            span.attributes["http.request_content_length"],
+        )
+        assertEquals(
+            responseBody.toByteArray().size.toLong(),
+            span.attributes["http.response_content_length"],
+        )
+        assertTrue(span.attributes["http.request_content_length"] != span.attributes["http.response_content_length"])
+    }
+
+    @Test
+    fun testApplicationGraphQlContentTypeCreatesGraphQlSpanOnNonGraphQlPath() {
+        val graphqlBody = "query GetUserProfile { user { id name } }"
+        val responseBody = """{"data":{"user":{"id":"123","name":"Ada"}}}"""
+
+        executeRequest(
+            Request.Builder()
+                .post(graphqlBody.toRequestBody("application/graphql".toMediaType())),
+            MockResponse().setBody(responseBody),
+            "/data",
+        )
+
+        val span = spanProcessor.singleSpan()
+        val requestUrl = URL(span.attributes["http.url"] as String)
+
+        assertEquals(
+            "GraphQL ${requestUrl.authority}${requestUrl.path} - query:GetUserProfile",
+            span.name,
+        )
+        assertEquals("graphql", span.attributes["bugsnag.span.category"])
+        assertEquals("POST", span.attributes["http.method"])
+        assertEquals(
+            graphqlBody.toByteArray().size.toLong(),
+            span.attributes["http.request_content_length"],
+        )
+        assertEquals(
+            responseBody.toByteArray().size.toLong(),
+            span.attributes["http.response_content_length"],
+        )
+    }
+
+    @Test
+    fun testGraphQlHttp200WithErrorsSetsErrorStatus() {
+        val graphqlBody =
+            """{"query":"query GetUser { user { id } }","operationName":"GetUser"}"""
+        val responseBody =
+            """{"data":null,"errors":[{"message":"User not found","path":["user"]}]}"""
+
+        executeRequest(
+            Request.Builder().post(graphqlBody.toRequestBody("application/json".toMediaType())),
+            MockResponse().setBody(responseBody),
+            "/graphql",
+        )
+
+        val span = spanProcessor.singleSpan()
+        assertEquals("graphql", span.attributes["bugsnag.span.category"])
+        assertEquals(SpanStatusCode.ERROR, span.statusCode)
+    }
+
+    @Test
+    fun testGraphQlHttp200SuccessSetsOkStatus() {
+        val graphqlBody =
+            """{"query":"query GetUser { user { id } }","operationName":"GetUser"}"""
+        val responseBody = """{"data":{"user":{"id":"1","name":"John"}}}"""
+
+        executeRequest(
+            Request.Builder().post(graphqlBody.toRequestBody("application/json".toMediaType())),
+            MockResponse().setBody(responseBody),
+            "/graphql",
+        )
+
+        val span = spanProcessor.singleSpan()
+        assertEquals(SpanStatusCode.OK, span.statusCode)
+    }
+
+    @Test
+    fun testGraphQlHttp200EmptyErrorsSetsOkStatus() {
+        val graphqlBody =
+            """{"query":"query GetUser { user { id } }","operationName":"GetUser"}"""
+        val responseBody = """{"data":{"user":{"id":"1"}},"errors":[]}"""
+
+        executeRequest(
+            Request.Builder().post(graphqlBody.toRequestBody("application/json".toMediaType())),
+            MockResponse().setBody(responseBody),
+            "/graphql",
+        )
+
+        val span = spanProcessor.singleSpan()
+        assertEquals(SpanStatusCode.OK, span.statusCode)
+    }
+
+    @Test
+    fun testGraphQlHttp500SetsErrorStatus() {
+        val graphqlBody =
+            """{"query":"query GetUser { user { id } }","operationName":"GetUser"}"""
+
+        executeRequest(
+            Request.Builder().post(graphqlBody.toRequestBody("application/json".toMediaType())),
+            MockResponse().setResponseCode(500).setBody("internal error"),
+            "/graphql",
+        )
+
+        val span = spanProcessor.singleSpan()
+        assertEquals(500L, span.attributes["http.status_code"])
+        assertEquals(SpanStatusCode.ERROR, span.statusCode)
+    }
+
+    @Test
+    fun testGraphQlTimeoutEndsSpanWithErrorStatus() {
+        val graphqlBody =
+            """{"query":"query GetUser { user { id } }","operationName":"GetUser"}"""
+        val server = MockWebServer().apply { start() }
+
+        try {
+            val client =
+                OkHttpClient.Builder()
+                    .withBugsnagPerformance()
+                    .addInterceptor { throw java.net.SocketTimeoutException("GraphQL request timed out") }
+                    .build()
+            try {
+                client.newCall(
+                    Request.Builder()
+                        .url(server.url("/graphql"))
+                        .post(graphqlBody.toRequestBody("application/json".toMediaType()))
+                        .build(),
+                ).execute()
+            } catch (_: java.io.IOException) {
+                // Expected timeout.
+            }
+        } finally {
+            server.shutdown()
+        }
+
+        val span = spanProcessor.singleSpan()
+        assertEquals("graphql", span.attributes["bugsnag.span.category"])
+        assertEquals(SpanStatusCode.ERROR, span.statusCode)
+        assertTrue(span.isEnded())
+    }
+
+    @Test
+    fun testGraphQlConnectionRefusedEndsSpan() {
+        val graphqlBody =
+            """{"query":"query GetUser { user { id } }","operationName":"GetUser"}"""
+        val server = MockWebServer().apply { start() }
+
+        try {
+            val client =
+                OkHttpClient.Builder()
+                    .withBugsnagPerformance()
+                    .addInterceptor { throw java.net.ConnectException("Connection refused") }
+                    .build()
+            try {
+                client.newCall(
+                    Request.Builder()
+                        .url(server.url("/graphql"))
+                        .post(graphqlBody.toRequestBody("application/json".toMediaType()))
+                        .build(),
+                ).execute()
+            } catch (_: java.io.IOException) {
+                // Expected connection failure.
+            }
+        } finally {
+            server.shutdown()
+        }
+
+        val span = spanProcessor.singleSpan()
+        assertEquals("graphql", span.attributes["bugsnag.span.category"])
+        assertTrue(span.name.matches(Regex("^GraphQL .+/graphql - query:GetUser$")))
+        assertTrue(span.isEnded())
+    }
+
+    @Test
+    fun testGraphQlHttp204EmptyBodyCreatesSpan() {
+        val graphqlBody =
+            """{"query":"query GetUser { user { id } }","operationName":"GetUser"}"""
+
+        executeRequest(
+            Request.Builder().post(graphqlBody.toRequestBody("application/json".toMediaType())),
+            MockResponse().setResponseCode(204).setBody(""),
+            "/graphql",
+        )
+
+        val span = spanProcessor.singleSpan()
+        assertEquals("graphql", span.attributes["bugsnag.span.category"])
+        assertEquals(204L, span.attributes["http.status_code"])
+        assertTrue(span.isEnded())
+    }
+
+    @Test
+    fun testPlainTextPostRequestRecordsResponseContentLengthFromResponseBody() {
+        val requestBody = "hello from test"
+        val responseBody = "created"
+
+        executeRequest(
+            Request.Builder().post(requestBody.toRequestBody("text/plain".toMediaType())),
+            MockResponse().setBody(responseBody),
+        )
+
+        val span = spanProcessor.singleSpan()
+
+        assertEquals("[HTTP/POST]", span.name)
+        assertEquals("network", span.attributes["bugsnag.span.category"])
+        assertEquals(
+            requestBody.toByteArray().size.toLong(),
+            span.attributes["http.request_content_length"],
+        )
+        assertEquals(
+            responseBody.toByteArray().size.toLong(),
+            span.attributes["http.response_content_length"],
+        )
+    }
+
+    private fun executeRequest(
+        request: Request.Builder,
+        response: MockResponse,
+        path: String = "/test",
+    ) {
+        val server =
+            MockWebServer().apply {
+                enqueue(response)
+                start()
+            }
+
+        try {
+            val client = OkHttpClient.Builder().withBugsnagPerformance().build()
+            client.newCall(request.url(server.url(path)).build()).execute().use { httpResponse ->
+                httpResponse.body?.string()
+            }
+        } finally {
+            server.shutdown()
+        }
+    }
+
+    private class CollectingSpanProcessor : SpanProcessor {
+        private val spans = ConcurrentLinkedQueue<SpanImpl>()
+
+        fun singleSpan(): SpanImpl {
+            assertEquals(1, spans.size)
+            return spans.single()
+        }
+
+        override fun onEnd(span: Span) {
+            spans.add(span as SpanImpl)
+        }
     }
 }

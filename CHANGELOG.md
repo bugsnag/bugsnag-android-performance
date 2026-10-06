@@ -1,11 +1,27 @@
-## 2.4.0 (2026-07-07)
+## 3.1.0 (2026-09-07)
+
+### Changes
+
+* Added first-class GraphQL request tracing.
+* Added `BugsnagPerformance.startGraphQlRequestSpan` for manual GraphQL request instrumentation.
+* Added the new `bugsnag-android-performance-apollo` module and `ApolloClient.Builder.withBugsnagPerformance()` to instrument Apollo Kotlin requests automatically.
+* GraphQL requests are reported with GraphQL-specific span naming and status handling while avoiding capture of GraphQL documents and variables.
+  [#542](https://github.com/bugsnag/bugsnag-android-performance/pull/542)
+
+## 3.0.0 (2026-07-08)
 
 ### Changes
 
 * Introduced App Sessions to track long-running app experiences and resource usage.
   * Added `BugsnagPerformance.startAppSessionSpan` and `BugsnagPerformance.endAppSessionSpan` for manual session control.
   * Added `AppSessionConfig` to `PerformanceConfiguration` for automatic session management and background timeout configuration.
-  * App Sessions automatically capture CPU and memory metrics during the session.
+  * App Sessions automatically capture CPU and memory metrics during the session.[#531](https://github.com/bugsnag/bugsnag-android-performance/pull/531)
+## 2.3.1 (2026-06-15)
+
+### Bug fixes
+
+* First-class `ViewLoad` spans now default to rendering metrics only (`cpu`/`memory` are disabled unless explicitly enabled via `SpanOptions.withMetrics(...)`) to avoid main-thread blocking during ViewLoad completion.
+  [#523](https://github.com/bugsnag/bugsnag-android-performance/pull/523)
 
 ## 2.3.0 (2026-02-16)
 
@@ -264,7 +280,7 @@
   [#171](https://github.com/bugsnag/bugsnag-android-performance/pull/171)
 * AppStartPhase/Framework introduced to mark the time between class loading & Application.onCreate
   [#163](https://github.com/bugsnag/bugsnag-android-performance/pull/163)
-* Support for OkHttp 5.0.0 in [bugsnag-plugin-android-performance-okhttp](bugsnag-plugin-android-performance-okhttp)
+* Support for OkHttp 5.0.0 in [`bugsnag-android-performance-okhttp`](bugsnag-android-performance-okhttp)
   [#167](https://github.com/bugsnag/bugsnag-android-performance/pull/167)
 
 ### Bug fixes
