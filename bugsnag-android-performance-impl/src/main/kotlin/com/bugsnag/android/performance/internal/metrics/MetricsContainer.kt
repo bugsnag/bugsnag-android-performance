@@ -32,9 +32,6 @@ internal open class MetricsContainer(
     var diskIoMetricSource: MetricSource<DiskIoSnapshot>? = null
         private set
 
-    init {
-        diskIoMetricSource = createDiskIoMetricSource()
-    }
 
     /**
      * Called before we are fully configured, typically from `InstrumentedAppState.attach`. This
@@ -47,10 +44,7 @@ internal open class MetricsContainer(
         memoryMetricSource = startSampling(createMemoryMetricSource(application))
         cpuMetricSource = startSampling(createCpuMetricSource(application))
         renderingMetricsSource = createFrameMetricSource(application)
-
-        if (diskIoMetricSource == null) {
-            diskIoMetricSource = createDiskIoMetricSource()
-        }
+        diskIoMetricSource = createDiskIoMetricSource()
     }
 
     /**
