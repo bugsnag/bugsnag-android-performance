@@ -1,7 +1,6 @@
 
 ## 3.1.1 (2026-10-08)
 
-
 ### Enhancements
 
 * Added interval-based sampling for app session metrics so the SDK can collect CPU and PSS memory data less frequently, reducing overhead on low-end devices while still preserving useful metrics.[#550](https://github.com/bugsnag/bugsnag-android-performance/pull/550)
