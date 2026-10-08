@@ -1,15 +1,18 @@
 package com.bugsnag.android.performance.internal
 
+import com.bugsnag.android.performance.Logger
 import com.bugsnag.android.performance.internal.connectivity.ConnectionMetering
 import com.bugsnag.android.performance.internal.connectivity.Connectivity
 import com.bugsnag.android.performance.internal.connectivity.ConnectivityStatus
 import com.bugsnag.android.performance.internal.connectivity.NetworkType
 import com.bugsnag.android.performance.test.CollectingSpanProcessor
 import com.bugsnag.android.performance.test.TestSpanFactory
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentCaptor
@@ -22,7 +25,10 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.robolectric.RobolectricTestRunner
 import java.io.ByteArrayOutputStream
+import java.io.IOException
+import java.io.OutputStream
 import java.net.HttpURLConnection
+import java.net.URL
 import java.nio.file.Files
 import java.util.Date
 
@@ -30,6 +36,11 @@ import java.util.Date
 class HttpDeliveryTest {
     val spanFactory = TestSpanFactory()
     val spanProcessor = CollectingSpanProcessor()
+
+    @Before
+    fun setupLogger() {
+        Logger.delegate = NoopLogger
+    }
 
     @Test
     fun noConnectivity() {
@@ -59,6 +70,49 @@ class HttpDeliveryTest {
         assertTrue(result is DeliveryResult.Failed)
         val failed = (result as DeliveryResult.Failed)
         assertTrue(failed.canRetry)
+        assertEquals(60_000L, failed.retryAfterMs!!)
+    }
+
+    @Test
+    fun ioFailureIsRetryable() {
+        val connectivity =
+            mock<Connectivity> {
+                on { connectivityStatus } doReturn
+                    ConnectivityStatus(
+                        true,
+                        ConnectionMetering.POTENTIALLY_METERED,
+                        NetworkType.CELL,
+                        null,
+                    )
+            }
+
+        val delivery =
+            object : HttpDelivery(
+                "http://localhost",
+                "0123456789abcdef0123456789abcdef",
+                connectivity,
+                false,
+                null,
+            ) {
+                override fun openConnection(): HttpURLConnection =
+                    object : HttpURLConnection(URL("http://localhost")) {
+                        override fun disconnect() = Unit
+
+                        override fun usingProxy(): Boolean = false
+
+                        override fun connect() = Unit
+
+                        override fun getOutputStream(): OutputStream {
+                            throw IOException("boom")
+                        }
+                    }
+            }
+
+        val result = delivery.deliver(spanFactory.newSpans(1, spanProcessor), Attributes())
+
+        assertTrue(result is DeliveryResult.Failed)
+        assertTrue((result as DeliveryResult.Failed).canRetry)
+        assertEquals(60_000L, result.retryAfterMs!!)
     }
 
     @Test
@@ -113,6 +167,45 @@ class HttpDeliveryTest {
             eq("User-Agent"),
             eq("bugsnag-android-performance/${BugsnagPerformanceImpl.VERSION}"),
         )
+    }
+
+    @Test
+    fun successfulDeliveryIsLogged() {
+        val logger = mock<Logger>()
+        Logger.delegate = logger
+
+        val connectivity =
+            mock<Connectivity> {
+                on { connectivityStatus } doReturn
+                    ConnectivityStatus(
+                        true,
+                        ConnectionMetering.POTENTIALLY_METERED,
+                        NetworkType.CELL,
+                        null,
+                    )
+            }
+
+        val connection =
+            mock<HttpURLConnection> {
+                on { responseCode } doReturn 200
+                on { outputStream } doReturn ByteArrayOutputStream()
+            }
+
+        val delivery =
+            object : HttpDelivery(
+                "http://localhost",
+                "0123456789abcdef0123456789abcdef",
+                connectivity,
+                false,
+                null,
+            ) {
+                override fun openConnection(): HttpURLConnection = connection
+            }
+
+        val result = delivery.deliver(spanFactory.newSpans(1, spanProcessor), Attributes())
+
+        assertTrue(result is DeliveryResult.Success)
+        verify(logger).d("App session delivery request delivered successfully.")
     }
 
     @Test
