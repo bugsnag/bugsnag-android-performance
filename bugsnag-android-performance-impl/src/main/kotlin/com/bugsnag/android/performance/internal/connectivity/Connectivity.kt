@@ -12,7 +12,6 @@ import android.net.NetworkCapabilities
 import android.net.NetworkCapabilities.NET_CAPABILITY_INTERNET
 import android.net.NetworkCapabilities.NET_CAPABILITY_NOT_METERED
 import android.net.NetworkCapabilities.NET_CAPABILITY_TEMPORARILY_NOT_METERED
-import android.net.NetworkCapabilities.NET_CAPABILITY_VALIDATED
 import android.net.NetworkCapabilities.TRANSPORT_CELLULAR
 import android.net.NetworkCapabilities.TRANSPORT_ETHERNET
 import android.net.NetworkCapabilities.TRANSPORT_USB
@@ -64,6 +63,8 @@ public enum class ConnectionMetering {
 public interface Connectivity {
     public val connectivityStatus: ConnectivityStatus
 
+    public fun refreshConnectivityStatus()
+
     public fun registerForNetworkChanges()
 
     public fun unregisterForNetworkChanges()
@@ -110,6 +111,10 @@ internal class ConnectivityLegacy(
         }
     }
 
+    override fun refreshConnectivityStatus() {
+        connectivityStatus = networkInfoToStatus(cm.activeNetworkInfo)
+    }
+
     override fun unregisterForNetworkChanges() {
         runCatching {
             context.unregisterReceiverSafe(this)
@@ -150,7 +155,7 @@ internal class ConnectivityLegacy(
         context: Context,
         intent: Intent,
     ) {
-        connectivityStatus = networkInfoToStatus(cm.activeNetworkInfo)
+        refreshConnectivityStatus()
     }
 }
 
@@ -203,7 +208,7 @@ internal open class ConnectivityApi24(
 
         return try {
             nameForDataNetworkType(tm.dataNetworkType)
-        } catch (e: Exception) {
+        } catch (_: SecurityException) {
             null
         }
     }
@@ -244,8 +249,11 @@ internal open class ConnectivityApi24(
     }
 
     protected open fun connectedFor(capabilities: NetworkCapabilities): Boolean {
-        return capabilities.hasCapability(NET_CAPABILITY_INTERNET) &&
-            capabilities.hasCapability(NET_CAPABILITY_VALIDATED)
+        return capabilities.hasCapability(NET_CAPABILITY_INTERNET)
+    }
+
+    override fun refreshConnectivityStatus() {
+        updateActiveNetwork()
     }
 
     override fun registerForNetworkChanges() {
@@ -284,11 +292,15 @@ internal open class ConnectivityApi24(
     private fun updateActiveNetwork() {
         val activeNetwork = cm.activeNetwork
         if (activeNetwork == null) {
-            connectivityStatus = noNetwork
+            connectivityStatus = unknownNetwork
             return
         }
 
-        val capabilities = cm.safeGetNetworkCapabilities(activeNetwork) ?: return
+        val capabilities =
+            cm.safeGetNetworkCapabilities(activeNetwork) ?: run {
+                connectivityStatus = unknownNetwork
+                return
+            }
         connectivityStatus = networkCapabilitiesToStatus(capabilities)
     }
 }
@@ -317,6 +329,8 @@ internal object UnknownConnectivity : Connectivity {
     override val connectivityStatus: ConnectivityStatus
         get() = unknownNetwork
 
+    override fun refreshConnectivityStatus() = Unit
+
     override fun registerForNetworkChanges() = Unit
 
     override fun unregisterForNetworkChanges() = Unit
@@ -329,4 +343,8 @@ internal object UnknownConnectivity : Connectivity {
  */
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 public fun Connectivity.shouldAttemptDelivery(): Boolean =
-    connectivityStatus.networkType == NetworkType.UNKNOWN || connectivityStatus.hasConnection
+    run {
+        refreshConnectivityStatus()
+        val status = connectivityStatus
+        status.networkType == NetworkType.UNKNOWN || status.hasConnection
+    }
