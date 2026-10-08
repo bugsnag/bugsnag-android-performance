@@ -86,14 +86,16 @@ public abstract interface annotation class com/bugsnag/android/performance/DoNot
 public final class com/bugsnag/android/performance/EnabledMetrics {
 	public fun <init> ()V
 	public fun <init> (Z)V
-	public fun <init> (ZZZ)V
-	public synthetic fun <init> (ZZZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (ZZZZ)V
+	public synthetic fun <init> (ZZZZILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getCpu ()Z
+	public final fun getDisk ()Z
 	public final fun getMemory ()Z
 	public final fun getRendering ()Z
 	public fun hashCode ()I
 	public final fun setCpu (Z)V
+	public final fun setDisk (Z)V
 	public final fun setMemory (Z)V
 	public final fun setRendering (Z)V
 	public fun toString ()Ljava/lang/String;
@@ -324,10 +326,11 @@ public final class com/bugsnag/android/performance/SpanKind : java/lang/Enum {
 
 public final class com/bugsnag/android/performance/SpanMetrics {
 	public fun <init> ()V
-	public fun <init> (Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;)V
-	public synthetic fun <init> (Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;)V
+	public synthetic fun <init> (Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getCpu ()Ljava/lang/Boolean;
+	public final fun getDisk ()Ljava/lang/Boolean;
 	public final fun getMemory ()Ljava/lang/Boolean;
 	public final fun getRendering ()Ljava/lang/Boolean;
 	public fun hashCode ()I

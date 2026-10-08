@@ -12,6 +12,23 @@ import androidx.annotation.RestrictTo
 public object InternalDebug {
     public var spanBatchSizeSendTriggerPoint: Int = 100
 
+    public var procIoPath: String = "/proc/self/io"
+
+    /**
+     * When true, successful disk IOPS collection also attaches the start/end syscall
+     * snapshots used in the formula. Maze uses these to assert end >= start.
+     * Do not enable in production.
+     */
+    public var attachDiskIoSnapshots: Boolean = false
+
+    /**
+     * Maze-only: force DiskIoMetricsSource to treat span duration as invalid.
+     * `"zero"` → end timestamp equals start; `"negative"` → end is before start.
+     * Empty means use the real clock. Do not enable in production.
+     */
+
+    public var diskIoTimestampFault: String = ""
+
     /**
      * The maximum amount of time the worker thread will sleep without a `wake()`
      */

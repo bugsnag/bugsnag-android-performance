@@ -6,8 +6,8 @@ import android.util.Log
 import com.bugsnag.android.performance.BugsnagPerformance
 import com.bugsnag.android.performance.EnabledMetrics
 import com.bugsnag.android.performance.PerformanceConfiguration
-import com.bugsnag.android.performance.SpanKind
 import com.bugsnag.android.performance.SpanContext
+import com.bugsnag.android.performance.SpanKind
 import com.bugsnag.android.performance.context.HybridSpanContextStorage
 import org.json.JSONArray
 import org.json.JSONObject

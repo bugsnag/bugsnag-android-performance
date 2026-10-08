@@ -97,7 +97,7 @@ public class ImmutableConfig(
         private const val HUB_ENDPOINT = "https://%s.otlp.bugsnag.smartbear.com/v1/traces"
         private const val HUB_API_PREFIX = "00000"
 
-        internal fun EnabledMetrics.copy() = EnabledMetrics(rendering, cpu, memory)
+        internal fun EnabledMetrics.copy() = EnabledMetrics(rendering, cpu, memory, disk)
 
         internal fun <T> createPrioritizedList(
             normalPriority: Collection<T>,

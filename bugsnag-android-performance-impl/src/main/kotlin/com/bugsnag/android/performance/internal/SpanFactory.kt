@@ -100,6 +100,7 @@ public class SpanFactory internal constructor(
                 rendering = true,
                 cpu = true,
                 memory = true,
+                disk = true,
             ),
             spanProcessor,
         )
@@ -305,6 +306,7 @@ public class SpanFactory internal constructor(
                     rendering = true,
                     cpu = true,
                     memory = true,
+                    disk = true,
                 ),
                 spanProcessor,
             )
@@ -455,6 +457,7 @@ public class SpanFactory internal constructor(
                 rendering = true,
                 cpu = false,
                 memory = false,
+                disk = true,
             )
     }
 }
