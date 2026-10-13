@@ -297,26 +297,36 @@ public class PerformanceConfiguration private constructor(public val context: Co
                 data.getString(SERVICE_NAME_KEY)
                     ?.also { config.serviceName = it }
 
-                if (data.containsKey(ENABLED_METRICS_KEY)) {
-                    val enableAll = data.getBoolean(ENABLED_METRICS_KEY, false)
-                    config.enabledMetrics = EnabledMetrics(enableAll)
-                } else {
-                    if (data.containsKey(ENABLED_METRICS_DISK_KEY)) {
-                        config.enabledMetrics.disk = data.getBoolean(ENABLED_METRICS_DISK_KEY, config.enabledMetrics.disk)
-                    }
-                    if (data.containsKey(ENABLED_METRICS_CPU_KEY)) {
-                        config.enabledMetrics.cpu = data.getBoolean(ENABLED_METRICS_CPU_KEY, config.enabledMetrics.cpu)
-                    }
-                    if (data.containsKey(ENABLED_METRICS_MEMORY_KEY)) {
-                        config.enabledMetrics.memory = data.getBoolean(ENABLED_METRICS_MEMORY_KEY, config.enabledMetrics.memory)
-                    }
-                    if (data.containsKey(ENABLED_METRICS_RENDERING_KEY)) {
-                        config.enabledMetrics.rendering = data.getBoolean(ENABLED_METRICS_RENDERING_KEY, config.enabledMetrics.rendering)
-                    }
-                }
+                loadEnabledMetrics(data, config)
             }
 
             return config
+        }
+
+        private fun loadEnabledMetrics(
+            data: Bundle,
+            config: PerformanceConfiguration,
+        ) {
+            if (data.containsKey(ENABLED_METRICS_KEY)) {
+                config.enabledMetrics = EnabledMetrics(data.getBoolean(ENABLED_METRICS_KEY, false))
+            } else {
+                if (data.containsKey(ENABLED_METRICS_DISK_KEY)) {
+                    config.enabledMetrics.disk =
+                        data.getBoolean(ENABLED_METRICS_DISK_KEY, config.enabledMetrics.disk)
+                }
+                if (data.containsKey(ENABLED_METRICS_CPU_KEY)) {
+                    config.enabledMetrics.cpu =
+                        data.getBoolean(ENABLED_METRICS_CPU_KEY, config.enabledMetrics.cpu)
+                }
+                if (data.containsKey(ENABLED_METRICS_MEMORY_KEY)) {
+                    config.enabledMetrics.memory =
+                        data.getBoolean(ENABLED_METRICS_MEMORY_KEY, config.enabledMetrics.memory)
+                }
+                if (data.containsKey(ENABLED_METRICS_RENDERING_KEY)) {
+                    config.enabledMetrics.rendering =
+                        data.getBoolean(ENABLED_METRICS_RENDERING_KEY, config.enabledMetrics.rendering)
+                }
+            }
         }
     }
 }
