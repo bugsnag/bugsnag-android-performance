@@ -201,6 +201,11 @@ public class PerformanceConfiguration private constructor(public val context: Co
         private const val ATTRIBUTE_ARRAY_LENGTH_LIMIT_KEY =
             "$BUGSNAG_PERF_NS.ATTRIBUTE_ARRAY_LENGTH_LIMIT"
         private const val ATTRIBUTE_COUNT_LIMIT_KEY = "$BUGSNAG_PERF_NS.ATTRIBUTE_COUNT_LIMIT"
+        private const val ENABLED_METRICS_KEY = "$BUGSNAG_PERF_NS.ENABLED_METRICS"
+        private const val ENABLED_METRICS_DISK_KEY = "$BUGSNAG_PERF_NS.ENABLED_METRICS_DISK"
+        private const val ENABLED_METRICS_CPU_KEY = "$BUGSNAG_PERF_NS.ENABLED_METRICS_CPU"
+        private const val ENABLED_METRICS_MEMORY_KEY = "$BUGSNAG_PERF_NS.ENABLED_METRICS_MEMORY"
+        private const val ENABLED_METRICS_RENDERING_KEY = "$BUGSNAG_PERF_NS.ENABLED_METRICS_RENDERING"
 
         // Bugsnag Notifier keys that we can read
         private const val BSG_API_KEY = "$BUGSNAG_NS.API_KEY"
@@ -291,6 +296,24 @@ public class PerformanceConfiguration private constructor(public val context: Co
 
                 data.getString(SERVICE_NAME_KEY)
                     ?.also { config.serviceName = it }
+
+                if (data.containsKey(ENABLED_METRICS_KEY)) {
+                    val enableAll = data.getBoolean(ENABLED_METRICS_KEY, false)
+                    config.enabledMetrics = EnabledMetrics(enableAll)
+                } else {
+                    if (data.containsKey(ENABLED_METRICS_DISK_KEY)) {
+                        config.enabledMetrics.disk = data.getBoolean(ENABLED_METRICS_DISK_KEY, config.enabledMetrics.disk)
+                    }
+                    if (data.containsKey(ENABLED_METRICS_CPU_KEY)) {
+                        config.enabledMetrics.cpu = data.getBoolean(ENABLED_METRICS_CPU_KEY, config.enabledMetrics.cpu)
+                    }
+                    if (data.containsKey(ENABLED_METRICS_MEMORY_KEY)) {
+                        config.enabledMetrics.memory = data.getBoolean(ENABLED_METRICS_MEMORY_KEY, config.enabledMetrics.memory)
+                    }
+                    if (data.containsKey(ENABLED_METRICS_RENDERING_KEY)) {
+                        config.enabledMetrics.rendering = data.getBoolean(ENABLED_METRICS_RENDERING_KEY, config.enabledMetrics.rendering)
+                    }
+                }
             }
 
             return config

@@ -1,5 +1,7 @@
 package com.bugsnag.android.performance.internal.metrics
 
+import android.util.Log
+import com.bugsnag.android.performance.Logger
 import com.bugsnag.android.performance.internal.InternalDebug
 import java.io.File
 import java.io.FileInputStream
@@ -19,11 +21,21 @@ internal class ProcIoReader(private val customPath: String? = null) {
     fun parse(target: IoCounters): String {
         return try {
             parseFile(File(path), target)
-        } catch (_: FileNotFoundException) {
+        } catch (e: FileNotFoundException) {
+            val msg = "ProcIoReader: /proc/self/io not found at $path"
+            Logger.w(msg)
+            Log.w("Bugsnag", msg)
             "file_not_found"
         } catch (e: IOException) {
-            mapIoException(e)
-        } catch (_: SecurityException) {
+            val status = mapIoException(e)
+            val msg = "ProcIoReader: Failed to read /proc/self/io ($status): ${e.message}"
+            Logger.w(msg)
+            Log.w("Bugsnag", msg, e)
+            status
+        } catch (e: SecurityException) {
+            val msg = "ProcIoReader: SecurityException reading /proc/self/io (SELinux/permission restriction): ${e.message}"
+            Logger.w(msg)
+            Log.w("Bugsnag", msg, e)
             "file_not_readable"
         }
     }

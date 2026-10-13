@@ -11,6 +11,7 @@ public class SendBatchTask(
     public val delivery: Delivery,
     private val tracer: Tracer,
     private val resourceAttributes: Attributes,
+    private val appSessionBuffer: Any? = null,
 ) : AbstractTask() {
     override fun execute(): Boolean {
         val nextBatch = tracer.collectNextBatch() ?: return false
@@ -18,6 +19,9 @@ public class SendBatchTask(
             Logger.d("Sending a batch of ${nextBatch.size} spans from $tracer to $delivery")
         }
         val result = delivery.deliver(nextBatch, resourceAttributes)
+        if (result is DeliveryResult.Success) {
+            (appSessionBuffer as? com.bugsnag.android.performance.internal.appsession.AppSessionBuffer)?.drain()
+        }
         return nextBatch.isNotEmpty() && result is DeliveryResult.Success
     }
 

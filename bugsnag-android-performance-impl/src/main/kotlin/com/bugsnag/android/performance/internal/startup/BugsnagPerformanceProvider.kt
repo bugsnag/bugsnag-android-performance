@@ -1,6 +1,7 @@
 package com.bugsnag.android.performance.internal.startup
 
 import android.app.Application
+import com.bugsnag.android.performance.PerformanceConfiguration
 import com.bugsnag.android.performance.internal.BugsnagPerformanceImpl
 import com.bugsnag.android.performance.internal.instrumentation.ForegroundState
 
@@ -16,6 +17,13 @@ public class BugsnagPerformanceProvider : AbstractStartupProvider() {
             // it would capture a `null` metrics snapshot and never collect any system metrics
             // for the lifetime of that span.
             BugsnagPerformanceImpl.instrumentedAppState.attach(app)
+
+            try {
+                val config = PerformanceConfiguration.load(app)
+                BugsnagPerformanceImpl.spanFactory.metricsContainer.configure(config.enabledMetrics)
+            } catch (_: Exception) {
+                // ignore if config cannot be loaded yet
+            }
         }
 
         // report the earliest class load we are aware of, now that metric sources are attached
