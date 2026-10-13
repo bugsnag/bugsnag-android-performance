@@ -148,7 +148,11 @@ public object BugsnagPerformanceImpl {
                     spanFactory.sampler = DiscardingSampler
                 }
 
-                workerTasks.add(SendBatchTask(delivery, tracer, resourceAttributes, appSessionBuffer))
+                workerTasks.add(
+                    SendBatchTask(delivery, tracer, resourceAttributes).also {
+                        it.attachAppSessionBuffer(appSessionBuffer)
+                    },
+                )
                 workerTasks.add(
                     RetryDeliveryTask(
                         persistence.retryQueue,

@@ -3,6 +3,7 @@ package com.bugsnag.android.performance.internal
 import androidx.annotation.RestrictTo
 import androidx.annotation.VisibleForTesting
 import com.bugsnag.android.performance.Logger
+import com.bugsnag.android.performance.internal.appsession.AppSessionBuffer
 import com.bugsnag.android.performance.internal.processing.Tracer
 
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP_PREFIX)
@@ -11,8 +12,13 @@ public class SendBatchTask(
     public val delivery: Delivery,
     private val tracer: Tracer,
     private val resourceAttributes: Attributes,
-    private val appSessionBuffer: Any? = null,
 ) : AbstractTask() {
+    private var appSessionBuffer: AppSessionBuffer? = null
+
+    internal fun attachAppSessionBuffer(buffer: AppSessionBuffer) {
+        appSessionBuffer = buffer
+    }
+
     override fun execute(): Boolean {
         val nextBatch = tracer.collectNextBatch() ?: return false
         if (nextBatch.isNotEmpty()) {
@@ -20,7 +26,7 @@ public class SendBatchTask(
         }
         val result = delivery.deliver(nextBatch, resourceAttributes)
         if (result is DeliveryResult.Success) {
-            (appSessionBuffer as? com.bugsnag.android.performance.internal.appsession.AppSessionBuffer)?.drain()
+            appSessionBuffer?.drain()
         }
         return nextBatch.isNotEmpty() && result is DeliveryResult.Success
     }
