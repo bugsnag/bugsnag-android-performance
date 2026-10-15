@@ -457,7 +457,7 @@ public class SpanFactory internal constructor(
                 rendering = true,
                 cpu = false,
                 memory = false,
-                disk = true,
+                disk = false,
             )
     }
 }
