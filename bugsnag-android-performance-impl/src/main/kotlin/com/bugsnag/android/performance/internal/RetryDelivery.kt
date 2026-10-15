@@ -1,7 +1,6 @@
 package com.bugsnag.android.performance.internal
 
 import androidx.annotation.RestrictTo
-import com.bugsnag.android.performance.Logger
 
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP_PREFIX)
 public class RetryDelivery(
@@ -18,7 +17,6 @@ public class RetryDelivery(
 
         val result = delivery.deliver(spans, resourceAttributes)
         if (result is DeliveryResult.Failed && result.canRetry) {
-            Logger.d("Delivery failed - will schedule for retry")
             retryQueue.add(result.payload)
         }
         return result

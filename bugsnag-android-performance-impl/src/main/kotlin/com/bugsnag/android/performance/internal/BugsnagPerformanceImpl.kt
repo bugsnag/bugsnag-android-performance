@@ -122,6 +122,12 @@ public object BugsnagPerformanceImpl {
 
                 val persistence = Persistence(application)
                 val delivery = RetryDelivery(persistence.retryQueue, httpDelivery)
+                val drainAppSessionBuffer = {
+                    drainAppSessionBufferIfNoPendingRetries(
+                        retryQueue = persistence.retryQueue,
+                        appSessionBuffer = appSessionBuffer,
+                    )
+                }
 
                 val workerTasks = ArrayList<Task>()
                 if (configuration.isReleaseStageEnabled) {
@@ -149,8 +155,8 @@ public object BugsnagPerformanceImpl {
                 }
 
                 workerTasks.add(
-                    SendBatchTask(delivery, tracer, resourceAttributes).also {
-                        it.attachAppSessionBuffer(appSessionBuffer)
+                    SendBatchTask(delivery, tracer, resourceAttributes) {
+                        drainAppSessionBuffer()
                     },
                 )
                 workerTasks.add(
@@ -158,7 +164,9 @@ public object BugsnagPerformanceImpl {
                         persistence.retryQueue,
                         httpDelivery,
                         connectivity,
-                    ),
+                    ) {
+                        drainAppSessionBuffer()
+                    },
                 )
 
                 pluginManager.startPlugins()
@@ -248,4 +256,13 @@ internal fun resolveManualAppSessionStartOptions(
     return ManualAppSessionStartOptions(
         appSessionName = resolvedAppSessionName,
     )
+}
+
+internal fun drainAppSessionBufferIfNoPendingRetries(
+    retryQueue: RetryQueue,
+    appSessionBuffer: AppSessionBuffer,
+) {
+    if (retryQueue.isEmpty()) {
+        appSessionBuffer.drain()
+    }
 }
