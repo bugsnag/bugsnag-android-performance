@@ -58,14 +58,14 @@ class AppSessionActivity : AppCompatActivity() {
 fun AppSessionMediaContent(contentPadding: PaddingValues) {
     val coroutineScope = rememberCoroutineScope()
     val scrollStateVertical = rememberScrollState()
-    
+
     Column(
         modifier = Modifier
             .padding(contentPadding)
             .verticalScroll(scrollStateVertical),
     ) {
         Spacer(modifier = Modifier.height(24.dp))
-        
+
         // --- Other Sections below ---
         Text("General", modifier = Modifier.padding(8.dp))
         DemoAction(label = "Start Default Session") {
@@ -76,7 +76,7 @@ fun AppSessionMediaContent(contentPadding: PaddingValues) {
         }
 
         DemoAction(label = "Send Custom + App Session Span") {
-            BugsnagPerformance.startAppSessionSpan("combined-test")
+            BugsnagPerformance.startAppSessionSpan("Custom Session")
             val customSpan =
                 BugsnagPerformance.startSpan(
                     "Custom Span During App Session",

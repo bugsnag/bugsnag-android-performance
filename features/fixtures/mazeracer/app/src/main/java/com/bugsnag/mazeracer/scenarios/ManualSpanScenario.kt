@@ -34,7 +34,17 @@ class ManualSpanScenario(
             true
         }
         BugsnagPerformance.start(config)
+
+        val diskRead = scenarioConfig["disk_read_bytes"]?.toLongOrNull() ?: 0L
+        val diskWrite = scenarioConfig["disk_write_bytes"]?.toLongOrNull() ?: 0L
         runAndFlush {
+            if (diskRead > 0 || diskWrite > 0) {
+                BugsnagPerformance.startSpan("DiskMetricsMock").use { span ->
+                    span.setAttribute("bugsnag.system.disk.read_bytes", diskRead)
+                    span.setAttribute("bugsnag.system.disk.write_bytes", diskWrite)
+                }
+            }
+
             measureSpan("ManualSpanScenario") {
                 Thread.sleep(100L)
             }

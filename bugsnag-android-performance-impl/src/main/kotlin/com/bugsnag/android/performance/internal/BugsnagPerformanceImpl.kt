@@ -175,16 +175,14 @@ public object BugsnagPerformanceImpl {
             }
 
         tracer.worker = bsgWorker
+        worker = bsgWorker
+        bsgWorker.start()
 
         loadModules()
 
         spanControlProvider.addProviders(
             pluginManager.completeContext?.spanControlProviders.orEmpty(),
         )
-
-        bsgWorker.start()
-
-        worker = bsgWorker
 
         NotifierIntegration.link()
     }

@@ -3,6 +3,7 @@ package com.bugsnag.mazeracer
 import android.content.Context
 import com.bugsnag.android.performance.AutoInstrument
 import com.bugsnag.android.performance.PerformanceConfiguration
+import com.bugsnag.android.performance.internal.InternalDebug
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -21,6 +22,8 @@ suspend fun Context.saveStartupConfig(config: PerformanceConfiguration) =
             .putBoolean("cpuMetrics", config.enabledMetrics.cpu)
             .putBoolean("memoryMetrics", config.enabledMetrics.memory)
             .putBoolean("renderingMetrics", config.enabledMetrics.rendering)
+            .putBoolean("diskMetrics", config.enabledMetrics.disk)
+            .putString("procIoPath", InternalDebug.procIoPath)
             .commit()
     }
 
@@ -48,9 +51,11 @@ fun Context.readStartupConfig(): PerformanceConfiguration? {
                     enabledMetrics.cpu = prefs.getBoolean("cpuMetrics", false)
                     enabledMetrics.memory = prefs.getBoolean("memoryMetrics", false)
                     enabledMetrics.rendering = prefs.getBoolean("renderingMetrics", false)
+                    enabledMetrics.disk = prefs.getBoolean("diskMetrics", false)
                 }
 
-        log("got some config Dave: $config")
+        InternalDebug.procIoPath = prefs.getString("procIoPath", "/proc/self/io")!!
+        log("got some config Dave: $config, procIoPath: ${InternalDebug.procIoPath}")
 
         return config
     } finally {
@@ -65,6 +70,8 @@ fun Context.readStartupConfig(): PerformanceConfiguration? {
             .remove("cpuMetrics")
             .remove("memoryMetrics")
             .remove("renderingMetrics")
+            .remove("diskMetrics")
+            .remove("procIoPath")
             .apply()
     }
 }
