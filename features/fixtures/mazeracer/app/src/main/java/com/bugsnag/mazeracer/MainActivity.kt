@@ -387,6 +387,7 @@ class MainActivity : AppCompatActivity() {
             config.appSessionConfig.autoStartSession = false
             config.autoInstrumentAppStarts = false
             config.autoInstrumentActivities = AutoInstrument.OFF
+            config.enabledMetrics.disk = false
             config.logger = DebugLogger
         }
     }

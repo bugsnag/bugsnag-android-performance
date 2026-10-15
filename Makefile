@@ -16,7 +16,7 @@ benchmark-fixture: install
 	@cp features/fixtures/benchmarks/app/build/outputs/apk/release/app-release.apk build/benchmark-fixture.apk
 
 example-app:
-	@./gradlew assembleRelease publishToMavenLocal -x check
+	@./gradlew -PskipSigning assembleRelease publishToMavenLocal -x check
 	# Build example app
 	@cd ./examples/performance-example/ && ./gradlew clean assembleRelease
 

@@ -49,10 +49,14 @@ android {
     }
 }
 
+def sdkProperties = new Properties()
+rootProject.file('../../gradle.properties').withInputStream { sdkProperties.load(it) }
+def sdkVersion = sdkProperties.getProperty('VERSION_NAME')
+
 dependencies {
-    implementation "com.bugsnag:bugsnag-android-performance:3.1.0"
-    implementation "com.bugsnag:bugsnag-android-performance-okhttp:3.1.0"
-    implementation "com.bugsnag:bugsnag-android-performance-compose:3.1.0"
+    implementation "com.bugsnag:bugsnag-android-performance:${sdkVersion}"
+    implementation "com.bugsnag:bugsnag-android-performance-okhttp:${sdkVersion}"
+    implementation "com.bugsnag:bugsnag-android-performance-compose:${sdkVersion}"
 
     implementation 'androidx.core:core-ktx:1.7.0'
     implementation 'androidx.appcompat:appcompat:1.5.1'

@@ -406,6 +406,8 @@ internal class AppSessionSpanController
             index: Int,
         ) {
             val sessionState = currentSessionState ?: return
+            cancelBackgroundTimeout()
+            cancelMaxSessionTimeout()
             sessionState.endTimeNano = endUnixNano
             sessionState.closeReason = mapCloseReason(closeReason)
             sessionState.batchIndex = index

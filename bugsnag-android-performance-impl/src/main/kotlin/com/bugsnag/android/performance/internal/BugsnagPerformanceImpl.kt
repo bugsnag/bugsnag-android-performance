@@ -148,7 +148,11 @@ public object BugsnagPerformanceImpl {
                     spanFactory.sampler = DiscardingSampler
                 }
 
-                workerTasks.add(SendBatchTask(delivery, tracer, resourceAttributes))
+                workerTasks.add(
+                    SendBatchTask(delivery, tracer, resourceAttributes).also {
+                        it.attachAppSessionBuffer(appSessionBuffer)
+                    },
+                )
                 workerTasks.add(
                     RetryDeliveryTask(
                         persistence.retryQueue,
@@ -163,16 +167,14 @@ public object BugsnagPerformanceImpl {
             }
 
         tracer.worker = bsgWorker
+        worker = bsgWorker
+        bsgWorker.start()
 
         loadModules()
 
         spanControlProvider.addProviders(
             pluginManager.completeContext?.spanControlProviders.orEmpty(),
         )
-
-        bsgWorker.start()
-
-        worker = bsgWorker
 
         NotifierIntegration.link()
     }

@@ -364,4 +364,25 @@ class AppSessionSpanControllerTest {
 
         assertEquals(1, spanProcessor.toList().size)
     }
+
+    @Test
+    fun testStartDefaultSessionAndEndCurrentSessionSpanDelivery() {
+        val config = AppSessionConfig(autoStartSession = false)
+        val controller = AppSessionSpanController(context, spanFactory, sessionConfig = config)
+
+        ForegroundState.isInForeground = true
+        controller.startAppSessionSpan()
+        controller.endAppSessionSpan()
+
+        val spans1 = spanProcessor.toList()
+        assertEquals(1, spans1.size)
+        assertEquals("[AppSession/foreground]", spans1[0].name)
+
+        controller.startAppSessionSpan()
+        controller.endAppSessionSpan()
+
+        val spans2 = spanProcessor.toList()
+        assertEquals(2, spans2.size)
+        assertEquals("[AppSession/foreground]", spans2[1].name)
+    }
 }

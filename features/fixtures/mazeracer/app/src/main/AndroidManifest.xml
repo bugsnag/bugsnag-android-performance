@@ -17,6 +17,10 @@
             android:name="com.bugsnag.android.API_KEY"
             android:value="project_apikeyapikeyapikeyapikey" />
 
+        <meta-data
+            android:name="com.bugsnag.performance.android.ENABLED_METRICS_DISK"
+            android:value="true" />
+
         <activity
             android:name=".SplashScreenActivity"
             android:exported="true">
