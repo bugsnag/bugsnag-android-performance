@@ -1,4 +1,11 @@
 
+## 3.2.0 (2026-10-16)
+
+### Enhancements
+
+* Added optional disk I/O metrics (read, write, and total IOPS) to eligible spans, configurable via `PerformanceConfiguration.enabledMetrics.disk`.
+  [#551](https://github.com/bugsnag/bugsnag-android-performance/pull/551)
+
 ## 3.1.1 (2026-10-08)
 
 ### Enhancements

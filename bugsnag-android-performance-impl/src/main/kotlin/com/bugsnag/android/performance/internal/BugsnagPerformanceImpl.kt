@@ -21,7 +21,7 @@ import com.bugsnag.android.performance.internal.util.Prioritized
 
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 public object BugsnagPerformanceImpl {
-    public const val VERSION: String = "3.1.1"
+    public const val VERSION: String = "3.2.0"
 
     public val instrumentedAppState: InstrumentedAppState = InstrumentedAppState()
 
@@ -175,16 +175,14 @@ public object BugsnagPerformanceImpl {
             }
 
         tracer.worker = bsgWorker
+        worker = bsgWorker
+        bsgWorker.start()
 
         loadModules()
 
         spanControlProvider.addProviders(
             pluginManager.completeContext?.spanControlProviders.orEmpty(),
         )
-
-        bsgWorker.start()
-
-        worker = bsgWorker
 
         NotifierIntegration.link()
     }

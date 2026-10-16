@@ -10,8 +10,6 @@ plugins {
     alias(libs.plugins.binaryCompatibility) apply false
 }
 
-tasks.create("clean") {
-    doLast {
-        delete(rootProject.layout.buildDirectory)
-    }
+tasks.register<Delete>("clean") {
+    delete(rootProject.layout.buildDirectory)
 }
